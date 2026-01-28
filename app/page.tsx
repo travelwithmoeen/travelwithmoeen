@@ -71,10 +71,10 @@ export default function Home() {
       {/* <FeatureImages /> */}
 
       {/* Fan Gallery Section */}
-      <FanGallery />
+      {/* <FanGallery /> */}
 
       {/* Featured Tours */}
-      <section className="py-24 bg-slate-50">
+      {/* <section className="py-24 bg-slate-50">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex justify-between items-end mb-12">
             <div>
@@ -130,7 +130,7 @@ export default function Home() {
             View All Tours <ArrowRight size={20} />
           </Link>
         </div>
-      </section>
+      </section> */}
 
       {/* Benefits Section */}
       <section className="py-24">
