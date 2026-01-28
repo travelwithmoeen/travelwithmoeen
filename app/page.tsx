@@ -1,65 +1,186 @@
+"use client";
+
 import Image from "next/image";
+import Link from "next/link";
+import { motion } from "framer-motion";
+import { Search, MapPin, Calendar, Star, ArrowRight, ShieldCheck, Clock, Users } from "lucide-react";
+import { Hero } from "@/components/Hero";
+import { FilterBar } from "@/components/FilterBar";
+import { FeatureImages } from "@/components/FeatureImages";
+import { AboutSection } from "@/components/AboutSection";
+import { TourPlans } from "@/components/TourPlans";
+import { TourCategories } from "@/components/TourCategories";
+import { FanGallery } from "@/components/FanGallery";
+import { FanGallery1 } from "@/components/FanGallery1";
+
+const featuredTours = [
+  {
+    id: 1,
+    title: "Tropical Bali Escape",
+    location: "Bali, Indonesia",
+    price: 899,
+    rating: 4.9,
+    reviews: 124,
+    image: "/images/hero.png", // Reusing hero image for now
+    duration: "7 Days",
+  },
+  {
+    id: 2,
+    title: "Swiss Alps Adventure",
+    location: "Zermatt, Switzerland",
+    price: 1299,
+    rating: 4.8,
+    reviews: 89,
+    image: "/images/hero.png",
+    duration: "5 Days",
+  },
+  {
+    id: 3,
+    title: "Santorini Sunset Tour",
+    location: "Oia, Greece",
+    price: 750,
+    rating: 5.0,
+    reviews: 210,
+    image: "/images/hero.png",
+    duration: "4 Days",
+  },
+];
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="flex flex-col w-full">
+      {/* Hero Section */}
+      <Hero />
+
+      {/* Filter Bar */}
+      <FilterBar />
+
+      <FanGallery1/>
+
+
+      {/* About Section */}
+      <AboutSection />
+
+      {/* Tour Plans Section */}
+      <TourPlans />
+
+      {/* Tour Categories Section */}
+      <TourCategories />
+
+      {/* Feature Images Section */}
+      {/* <FeatureImages /> */}
+
+      {/* Fan Gallery Section */}
+      <FanGallery />
+
+      {/* Featured Tours */}
+      <section className="py-24 bg-slate-50">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex justify-between items-end mb-12">
+            <div>
+              <h2 className="text-indigo-600 font-bold uppercase tracking-widest text-sm mb-3">Popular Packages</h2>
+              <h3 className="text-4xl font-extrabold text-slate-900">Best Selling Tours</h3>
+            </div>
+            <Link href="/tours" className="hidden md:flex items-center gap-2 text-indigo-600 font-bold hover:gap-3 transition-all">
+              View All Tours <ArrowRight size={20} />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {featuredTours.map((tour) => (
+              <motion.div
+                key={tour.id}
+                whileHover={{ y: -10 }}
+                className="bg-white rounded-3xl overflow-hidden shadow-xl shadow-slate-200 group"
+              >
+                <div className="relative h-64 overflow-hidden">
+                  <Image
+                    src={tour.image}
+                    alt={tour.title}
+                    fill
+                    className="object-cover group-hover:scale-110 transition-transform duration-500"
+                  />
+                  <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-indigo-600 font-bold text-sm">
+                    ${tour.price}
+                  </div>
+                </div>
+                <div className="p-6">
+                  <div className="flex items-center gap-2 text-slate-400 text-sm mb-3">
+                    <MapPin size={14} /> {tour.location}
+                  </div>
+                  <h4 className="text-xl font-bold text-slate-900 mb-3">{tour.title}</h4>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1 text-amber-500 font-bold">
+                      <Star size={16} fill="currentColor" /> {tour.rating}
+                      <span className="text-slate-400 font-normal">({tour.reviews})</span>
+                    </div>
+                    <div className="flex items-center gap-1 text-slate-500 text-sm">
+                      <Clock size={16} /> {tour.duration}
+                    </div>
+                  </div>
+                  <button className="w-full mt-6 py-3 bg-slate-100 text-slate-900 font-bold rounded-xl group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                    View Details
+                  </button>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          <Link href="/tours" className="md:hidden flex items-center justify-center gap-2 text-indigo-600 font-bold mt-10">
+            View All Tours <ArrowRight size={20} />
+          </Link>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+      </section>
+
+      {/* Benefits Section */}
+      <section className="py-24">
+        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+          <div className="relative h-[500px] rounded-3xl overflow-hidden shadow-2xl">
             <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+              src="/images/hero.png" // Would be another image in production
+              alt="Experience"
+              fill
+              className="object-cover"
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+          </div>
+          <div>
+            <h2 className="text-indigo-600 font-bold uppercase tracking-widest text-sm mb-3">Why Choose Us</h2>
+            <h3 className="text-4xl font-extrabold text-slate-900 mb-8 leading-tight">We Provide The Best Travel Experience For You</h3>
+            
+            <div className="space-y-8">
+              <div className="flex gap-4">
+                <div className="bg-indigo-100 p-4 rounded-2xl text-indigo-600 h-fit">
+                  <ShieldCheck size={28} />
+                </div>
+                <div>
+                  <h4 className="text-xl font-bold text-slate-900 mb-2">Safe and Reliable</h4>
+                  <p className="text-slate-600">Your safety is our top priority. We only work with certified guides and vetted partners world wide.</p>
+                </div>
+              </div>
+              
+              <div className="flex gap-4">
+                <div className="bg-rose-100 p-4 rounded-2xl text-rose-600 h-fit">
+                  <Star size={28} />
+                </div>
+                <div>
+                  <h4 className="text-xl font-bold text-slate-900 mb-2">Premium Experience</h4>
+                  <p className="text-slate-600">Hand-picked accommodations and activities that ensure you get the most out of every destination.</p>
+                </div>
+              </div>
+              
+              <div className="flex gap-4">
+                <div className="bg-emerald-100 p-4 rounded-2xl text-emerald-600 h-fit">
+                  <Users size={28} />
+                </div>
+                <div>
+                  <h4 className="text-xl font-bold text-slate-900 mb-2">Professional Guides</h4>
+                  <p className="text-slate-600">Our local guides are passionate experts who love sharing their knowledge and culture with you.</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-      </main>
+      </section>
     </div>
   );
 }
