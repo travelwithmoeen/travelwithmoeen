@@ -123,3 +123,20 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Infinite scroll animation for destination cards */
+@keyframes scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(calc(-412px * 5));
+  }
+}
+
+.animate-scroll {
+  animation: scroll 25s linear infinite;
+}
+
+
+

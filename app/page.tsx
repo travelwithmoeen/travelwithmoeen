@@ -12,7 +12,8 @@ import { TourPlans } from "@/components/TourPlans";
 import { TourCategories } from "@/components/TourCategories";
 import { FanGallery } from "@/components/FanGallery";
 import { FanGallery1 } from "@/components/FanGallery1";
-
+import  HeroSection  from "@/components/HeroSection";
+import PopularDestinations from "@/components/PopularDestinations";
 const featuredTours = [
   {
     id: 1,
@@ -50,17 +51,21 @@ export default function Home() {
   return (
     <div className="flex flex-col w-full">
       {/* Hero Section */}
-      <Hero />
+      {/* <Hero /> */}
+      <HeroSection />
 
       {/* Filter Bar */}
-      <FilterBar />
+      {/* <FilterBar /> */}
+
+      {/* Popular Destinations */}
+     
 
       <FanGallery1/>
 
 
       {/* About Section */}
       <AboutSection />
-
+ <PopularDestinations />
       {/* Tour Plans Section */}
       <TourPlans />
 
@@ -74,63 +79,7 @@ export default function Home() {
       {/* <FanGallery /> */}
 
       {/* Featured Tours */}
-      {/* <section className="py-24 bg-slate-50">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex justify-between items-end mb-12">
-            <div>
-              <h2 className="text-indigo-600 font-bold uppercase tracking-widest text-sm mb-3">Popular Packages</h2>
-              <h3 className="text-4xl font-extrabold text-slate-900">Best Selling Tours</h3>
-            </div>
-            <Link href="/tours" className="hidden md:flex items-center gap-2 text-indigo-600 font-bold hover:gap-3 transition-all">
-              View All Tours <ArrowRight size={20} />
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {featuredTours.map((tour) => (
-              <motion.div
-                key={tour.id}
-                whileHover={{ y: -10 }}
-                className="bg-white rounded-3xl overflow-hidden shadow-xl shadow-slate-200 group"
-              >
-                <div className="relative h-64 overflow-hidden">
-                  <Image
-                    src={tour.image}
-                    alt={tour.title}
-                    fill
-                    className="object-cover group-hover:scale-110 transition-transform duration-500"
-                  />
-                  <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-indigo-600 font-bold text-sm">
-                    ${tour.price}
-                  </div>
-                </div>
-                <div className="p-6">
-                  <div className="flex items-center gap-2 text-slate-400 text-sm mb-3">
-                    <MapPin size={14} /> {tour.location}
-                  </div>
-                  <h4 className="text-xl font-bold text-slate-900 mb-3">{tour.title}</h4>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1 text-amber-500 font-bold">
-                      <Star size={16} fill="currentColor" /> {tour.rating}
-                      <span className="text-slate-400 font-normal">({tour.reviews})</span>
-                    </div>
-                    <div className="flex items-center gap-1 text-slate-500 text-sm">
-                      <Clock size={16} /> {tour.duration}
-                    </div>
-                  </div>
-                  <button className="w-full mt-6 py-3 bg-slate-100 text-slate-900 font-bold rounded-xl group-hover:bg-indigo-600 group-hover:text-white transition-all">
-                    View Details
-                  </button>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-
-          <Link href="/tours" className="md:hidden flex items-center justify-center gap-2 text-indigo-600 font-bold mt-10">
-            View All Tours <ArrowRight size={20} />
-          </Link>
-        </div>
-      </section> */}
+   
 
       {/* Benefits Section */}
       <section className="py-24">

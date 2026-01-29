@@ -40,7 +40,7 @@ export function AboutSection() {
           className="text-6xl md:text-7xl lg:text-8xl font-bold text-blue-900 mb-12"
           style={{ fontFamily: "Georgia, serif" }}
         >
-          Travelor
+          Travel With  Moheen
         </motion.h1>
 
         {/* Description Text */}
@@ -53,7 +53,7 @@ export function AboutSection() {
           style={{ fontFamily: "Georgia, serif" }}
         >
           <span className="font-semibold">We Believe</span> That A Clean Space Is
-          Happy Space. <span className="font-semibold">Founded In 1998</span>, Our
+          Happy Space. <span className="font-semibold">Founded In 2020</span>, Our
           Mission Is To Make Homes & Businesses Sparkle While...
         </motion.div>
 
@@ -65,9 +65,7 @@ export function AboutSection() {
           viewport={{ once: true }}
           className="flex justify-center gap-2 mt-12"
         >
-          <div className="w-2 h-2 bg-blue-400 rounded-full" />
-          <div className="w-2 h-2 bg-blue-500 rounded-full" />
-          <div className="w-2 h-2 bg-blue-600 rounded-full" />
+        
         </motion.div>
       </div>
     </section>
