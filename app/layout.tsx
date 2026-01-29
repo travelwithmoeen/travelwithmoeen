@@ -21,8 +21,8 @@ const philosopher = Philosopher({
 });
 
 export const metadata: Metadata = {
-  title: "Elite Travel | Explore the World",
-  description: "Book your next adventure with Elite Travel. Luxury tours, breathtaking destinations.",
+  title: "Travel with Moheen | Explore the World",
+  description: "Book your next adventure with Moheen Travel. Luxury tours, breathtaking destinations.",
 };
 
 export default function RootLayout({

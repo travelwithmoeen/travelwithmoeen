@@ -3,7 +3,16 @@
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Search, MapPin, Calendar, Star, ArrowRight, ShieldCheck, Clock, Users } from "lucide-react";
+import {
+  Search,
+  MapPin,
+  Calendar,
+  Star,
+  ArrowRight,
+  ShieldCheck,
+  Clock,
+  Users,
+} from "lucide-react";
 import { Hero } from "@/components/Hero";
 import { FilterBar } from "@/components/FilterBar";
 import { FeatureImages } from "@/components/FeatureImages";
@@ -12,7 +21,7 @@ import { TourPlans } from "@/components/TourPlans";
 import { TourCategories } from "@/components/TourCategories";
 import { FanGallery } from "@/components/FanGallery";
 import { FanGallery1 } from "@/components/FanGallery1";
-import  HeroSection  from "@/components/HeroSection";
+import HeroSection from "@/components/HeroSection";
 import PopularDestinations from "@/components/PopularDestinations";
 const featuredTours = [
   {
@@ -58,14 +67,12 @@ export default function Home() {
       {/* <FilterBar /> */}
 
       {/* Popular Destinations */}
-     
 
-      <FanGallery1/>
-
+      <FanGallery1 />
 
       {/* About Section */}
       <AboutSection />
- <PopularDestinations />
+      <PopularDestinations />
       {/* Tour Plans Section */}
       <TourPlans />
 
@@ -79,7 +86,6 @@ export default function Home() {
       {/* <FanGallery /> */}
 
       {/* Featured Tours */}
-   
 
       {/* Benefits Section */}
       <section className="py-24">
@@ -93,37 +99,56 @@ export default function Home() {
             />
           </div>
           <div>
-            <h2 className="text-indigo-600 font-bold uppercase tracking-widest text-sm mb-3">Why Choose Us</h2>
-            <h3 className="text-4xl font-extrabold text-slate-900 mb-8 leading-tight">We Provide The Best Travel Experience For You</h3>
-            
+            <h2 className="text-indigo-600 font-bold uppercase tracking-widest text-sm mb-3">
+              Why Choose Us
+            </h2>
+            <h3 className="text-4xl font-extrabold text-slate-900 mb-8 leading-tight">
+              We Provide The Best Travel Experience For You
+            </h3>
+
             <div className="space-y-8">
               <div className="flex gap-4">
                 <div className="bg-indigo-100 p-4 rounded-2xl text-indigo-600 h-fit">
                   <ShieldCheck size={28} />
                 </div>
                 <div>
-                  <h4 className="text-xl font-bold text-slate-900 mb-2">Safe and Reliable</h4>
-                  <p className="text-slate-600">Your safety is our top priority. We only work with certified guides and vetted partners world wide.</p>
+                  <h4 className="text-xl font-bold text-slate-900 mb-2">
+                    Safe and Reliable
+                  </h4>
+                  <p className="text-slate-600">
+                    Your safety is our top priority. We only work with certified
+                    guides and vetted partners world wide.
+                  </p>
                 </div>
               </div>
-              
+
               <div className="flex gap-4">
                 <div className="bg-rose-100 p-4 rounded-2xl text-rose-600 h-fit">
                   <Star size={28} />
                 </div>
                 <div>
-                  <h4 className="text-xl font-bold text-slate-900 mb-2">Premium Experience</h4>
-                  <p className="text-slate-600">Hand-picked accommodations and activities that ensure you get the most out of every destination.</p>
+                  <h4 className="text-xl font-bold text-slate-900 mb-2">
+                    Premium Experience
+                  </h4>
+                  <p className="text-slate-600">
+                    Hand-picked accommodations and activities that ensure you
+                    get the most out of every destination.
+                  </p>
                 </div>
               </div>
-              
+
               <div className="flex gap-4">
                 <div className="bg-emerald-100 p-4 rounded-2xl text-emerald-600 h-fit">
                   <Users size={28} />
                 </div>
                 <div>
-                  <h4 className="text-xl font-bold text-slate-900 mb-2">Professional Guides</h4>
-                  <p className="text-slate-600">Our local guides are passionate experts who love sharing their knowledge and culture with you.</p>
+                  <h4 className="text-xl font-bold text-slate-900 mb-2">
+                    Professional Guides
+                  </h4>
+                  <p className="text-slate-600">
+                    Our local guides are passionate experts who love sharing
+                    their knowledge and culture with you.
+                  </p>
                 </div>
               </div>
             </div>
