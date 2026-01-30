@@ -79,6 +79,18 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+      /* Custom Travel Colors */
+    --navy: 215 50% 23%;
+    --navy-light: 215 45% 35%;
+    --navy-dark: 215 55% 15%;
+    --gold: 40 95% 55%;
+    --gold-hover: 40 95% 48%;
+    --cyan: 185 75% 45%;
+    --cream: 45 30% 96%;
+
+    /* Typography */
+    --font-serif: 'Cormorant Garamond', Georgia, serif;
+    --font-sans: 'Inter', system-ui, sans-serif;
 }
 
 .dark {
@@ -121,6 +133,32 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+
+@layer components {
+  .text-gradient-gold {
+    background: linear-gradient(135deg, hsl(40 95% 55%), hsl(35 90% 50%));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .bg-gradient-gold {
+    background: linear-gradient(135deg, hsl(40 95% 55%), hsl(35 90% 48%));
+  }
+
+  .bg-gradient-navy {
+    background: linear-gradient(135deg, hsl(215 50% 23%), hsl(215 55% 18%));
+  }
+
+  .shadow-travel {
+    box-shadow: var(--shadow-medium);
+  }
+
+  .shadow-travel-strong {
+    box-shadow: var(--shadow-strong);
   }
 }
 

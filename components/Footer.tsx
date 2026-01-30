@@ -12,13 +12,13 @@ export function Footer() {
             <Link href="/" className="flex items-center gap-3">
               <Image
                 src="/images/twm-logo.webp"
-                alt="Travel With Moeen"
+                alt="Travel With Moheen"
                 width={40}
                 height={40}
                 className="rounded-full"
               />
               <span className="text-xl font-serif font-bold text-white italic">
-                Travel With Moeen
+                Travel With Moheen
               </span>
             </Link>
             <p className="text-slate-400 leading-relaxed">

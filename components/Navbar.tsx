@@ -41,11 +41,11 @@ const Navbar = () => {
               <span>+1 (234) 567-890</span>
             </a>
             <a
-              href="mailto:info@travelwithmoeen.com"
+              href="mailto:info@travelwithmoheen.com"
               className="flex items-center gap-2 hover:text-gold transition-colors"
             >
               <Mail className="h-4 w-4" />
-              <span>info@travelwithmoeen.com</span>
+              <span>info@travelwithmoheen.com</span>
             </a>
           </div>
           <div className="flex items-center gap-4">
@@ -121,7 +121,7 @@ const Navbar = () => {
           <Link href="/" className="flex items-center gap-3 group">
             <Image
               src="/images/twm-logo.webp"
-              alt="Travel With Moeen Logo"
+              alt="Travel With Moheen Logo"
               width={64}
               height={64}
               priority
@@ -132,7 +132,7 @@ const Navbar = () => {
                 Travel With
               </span>
               <span className="text-2xl font-serif font-bold text-gold leading-tight">
-                Moeen
+                Moheen
               </span>
             </div>
           </Link>
