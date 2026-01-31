@@ -255,7 +255,7 @@ export default function TourDetails() {
                         </ul>
 
                         {/* CTA */}
-                        <Button variant="gold" size="xl" className="w-full">
+                        <Button  size="xl" className="w-full">
                           Book Now
                         </Button>
                       </div>
