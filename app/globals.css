@@ -44,6 +44,17 @@
   --radius-2xl: calc(var(--radius) + 8px);
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
+
+  /* Custom Travel Colors */
+  --color-navy: var(--navy);
+  --color-navy-light: var(--navy-light);
+  --color-navy-dark: var(--navy-dark);
+  --color-gold: var(--gold);
+  --color-gold-hover: var(--gold-hover);
+  --color-gold-dark: var(--gold-dark);
+  --color-cyan: var(--cyan);
+  --color-cream: var(--cream);
+  --color-cream-dark: var(--cream-dark);
 }
 
 :root {
@@ -79,14 +90,17 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
-      /* Custom Travel Colors */
-    --navy: 215 50% 23%;
-    --navy-light: 215 45% 35%;
-    --navy-dark: 215 55% 15%;
-    --gold: 40 95% 55%;
-    --gold-hover: 40 95% 48%;
-    --cyan: 185 75% 45%;
-    --cream: 45 30% 96%;
+    /* Custom Travel Colors */
+    --navy: hsl(213 53% 23%);
+    --navy-light: hsl(213 40% 35%);
+    --navy-dark: hsl(215 55% 15%);
+    --gold: hsl(43 100% 50%);
+    --gold-hover: hsl(43 100% 45%);
+    --gold-dark: hsl(43 100% 42%);
+    --cyan: hsl(185 75% 45%);
+    --cream: hsl(45 33% 97%);
+    --cream-dark: hsl(45 20% 90%);
+
 
     /* Typography */
     --font-serif: 'Cormorant Garamond', Georgia, serif;

@@ -4,63 +4,159 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
 import {
-  Globe, Eye, Target, MapPin, Phone, Mail, Clock,
-  Building, Hotel, Users, Compass, HeadphonesIcon, Award,
-  Facebook, Twitter, Instagram, ClipboardList, Calculator, CheckCircle, Binoculars
+  Globe,
+  Eye,
+  Target,
+  MapPin,
+  Phone,
+  Mail,
+  Clock,
+  Building,
+  Hotel,
+  Users,
+  Compass,
+  HeadphonesIcon,
+  Award,
+  Facebook,
+  Twitter,
+  Instagram,
+  ClipboardList,
+  Calculator,
+  CheckCircle,
+  Binoculars,
+  ArrowRight,
+  ChevronRight,
+  ClipboardCheck,
+  BadgeDollarSign,
+  Headphones,
 } from "lucide-react";
 
 import Navbar from "@/components/Navbar";
-import {Footer} from "@/components/Footer";
+import { Footer } from "@/components/Footer";
 import PageBanner from "@/components/PageBanner";
 import { Button } from "@/components/ui/button";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import aboutTravelers from "@/public/images/about-travelers.jpg";
 import aboutThumb1 from "@/public/images/about-thumb1.jpg";
 import aboutThumb2 from "@/public/images/about-thumb2.jpg";
 import aboutWhyChoose from "@/public/images/about-why-choose.jpg";
-import teamGuide1 from "@/public/images/team-guide1.jpg";
-import teamGuide2 from "@/public/images/team-guide2.jpg";
-import teamGuide3 from "@/public/images/team-guide3.jpg";
-
+import teamGuide1 from "@/public/images/team/Abdul_Majid_Operation_Manager.webp";
+import teamGuide2 from "@/public/images/team/Faheem_Baloch_Media_Coordinator.webp";
+import teamGuide3 from "@/public/images/team/Rizwan_Ahmad_Video_Editor.webp";
+import teamGuide4 from "@/public/images/team/Sawaira_Fatima_Admin_Log_officer.webp";
+import teamGuide5 from "@/public/images/team/TALIB_HUSSAIN_ARAPA_Tour_Manager.webp";
+import teamGuide6 from "@/public/images/team/Rizwan_Ahmad_Finance_Manager.webp";
+import Logo from "@/public/images/twm-logo.webp"
+import Profile from "@/public/images/moeen/profile.jpg";
 const processSteps = [
   {
     number: "01",
     icon: ClipboardList,
     title: "Book A Tour",
-    description: "Lorem ipsum dolor sit amet, consecte adipiscing elit, sed do eiusmod dolore magna",
+    description:
+      "Lorem ipsum dolor sit amet, consecte adipiscing elit, sed do eiusmod dolore magna",
   },
   {
     number: "02",
     icon: Calculator,
     title: "Payment Process",
-    description: "Lorem ipsum dolor sit amet, consecte adipiscing elit, sed do eiusmod dolore magna",
+    description:
+      "Lorem ipsum dolor sit amet, consecte adipiscing elit, sed do eiusmod dolore magna",
   },
   {
     number: "03",
     icon: CheckCircle,
     title: "Confirmation",
-    description: "Lorem ipsum dolor sit amet, consecte adipiscing elit, sed do eiusmod dolore magna",
+    description:
+      "Lorem ipsum dolor sit amet, consecte adipiscing elit, sed do eiusmod dolore magna",
   },
   {
     number: "04",
     icon: Binoculars,
     title: "Enjoy Your Trip",
-    description: "Lorem ipsum dolor sit amet, consecte adipiscing elit, sed do eiusmod dolore magna",
+    description:
+      "Lorem ipsum dolor sit amet, consecte adipiscing elit, sed do eiusmod dolore magna",
   },
 ];
 
 const whyChooseFeatures = [
-  { icon: Hotel, title: "Best Accommodation", description: "Premium hotels and resorts for your comfort" },
-  { icon: MapPin, title: "Beautiful Destinations", description: "Hunza, Skardu, Kashmir, Fairy Meadows & more" },
-  { icon: Award, title: "Competitive Price", description: "Best value luxury tours without compromise" },
-  { icon: Building, title: "Luxury Transport", description: "Modern vehicles for safe, comfortable travel" },
-  { icon: HeadphonesIcon, title: "Support 24/7", description: "Round-the-clock assistance for peace of mind" },
-  { icon: Users, title: "Expert Guides", description: "Local experts bringing destinations to life" },
+  {
+    icon: Hotel,
+    title: "Best Accommodation",
+    description: "Premium hotels and resorts for your comfort",
+  },
+  {
+    icon: MapPin,
+    title: "Beautiful Destinations",
+    description: "Hunza, Skardu, Kashmir, Fairy Meadows & more",
+  },
+  {
+    icon: Award,
+    title: "Competitive Price",
+    description: "Best value luxury tours without compromise",
+  },
+  {
+    icon: Building,
+    title: "Luxury Transport",
+    description: "Modern vehicles for safe, comfortable travel",
+  },
+  {
+    icon: HeadphonesIcon,
+    title: "Support 24/7",
+    description: "Round-the-clock assistance for peace of mind",
+  },
+  {
+    icon: Users,
+    title: "Expert Guides",
+    description: "Local experts bringing destinations to life",
+  },
 ];
 
 const teamMembers = [
-  { name: "Ahmed Khan", role: "Tour Manager", image: teamGuide1 },
-  { name: "Sara Ahmed", role: "Operations Manager", image: teamGuide2 },
-  { name: "Hassan Ali", role: "Lead Guide", image: teamGuide3 },
+  { name: "Abdul Majid ", role: "Operation Manager", image: teamGuide1 },
+  { name: "Faheem Baloch ", role: "Media Coordinator", image: teamGuide2 },
+  { name: "Rizwan Ahmad", role: "Video Editor", image: teamGuide3 },
+  { name: "Sawaira Fatima", role: "Admin & Log Officer", image: teamGuide4 },
+  { name: "Talib Hussain", role: "Tour Manager", image: teamGuide5 },
+  { name: "Rizwan Ahmad", role: "Finance Manager", image: teamGuide6 },
+];
+
+const faqItems = [
+  {
+    question: "What destinations does Travel with Moeen cover?",
+    answer:
+      "We offer tours to stunning destinations across Pakistan including Hunza, Skardu, Fairy Meadows, Kashmir, Swat, and many more. We also arrange international tours to destinations like Dubai, Turkey, Malaysia, and Thailand.",
+  },
+  {
+    question: "What is included in your tour packages?",
+    answer:
+      "Our packages typically include accommodation, transportation, meals (as specified), experienced tour guides, and all entry fees to attractions. Specific inclusions vary by package, so please check the tour details or contact us for more information.",
+  },
+  {
+    question: "How do I book a tour with Travel with Moeen?",
+    answer:
+      "Booking is simple! You can book through our website by selecting your desired tour, or contact us directly via phone (+92 333 9981177) or email (info@travelwithmoeen.com). Our team will guide you through the booking process.",
+  },
+  {
+    question: "What is your cancellation and refund policy?",
+    answer:
+      "Our cancellation policy varies depending on the tour and how far in advance you cancel. Generally, cancellations made 14+ days before departure receive a full refund minus processing fees. Please contact us for specific terms related to your booking.",
+  },
+  {
+    question: "Do you offer customized or private tours?",
+    answer:
+      "Yes! We specialize in creating customized tour packages tailored to your preferences, whether it's a family trip, honeymoon, corporate retreat, or adventure expedition. Contact us to discuss your requirements.",
+  },
+  {
+    question: "Is it safe to travel to northern areas of Pakistan?",
+    answer:
+      "Yes, the northern areas of Pakistan are generally very safe for tourists. Our experienced guides ensure your safety throughout the journey. We monitor travel conditions and provide up-to-date information before and during your trip.",
+  },
 ];
 
 const About = () => {
@@ -70,8 +166,117 @@ const About = () => {
       <PageBanner
         title="About Us"
         subtitle="Quality Tourism Promoter Since 2020"
-        backgroundImage={'images/contact-hero.jpg'}
+        backgroundImage={"images/contact-hero.jpg"}
       />
+
+      {/* Section: Expertly Crafted Travel Experiences */}
+      <section className="py-20 px-4 bg-[#f7f6f2]">
+        <div className="max-w-[1200px] mx-auto">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Left: Overlapping Images */}
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="relative h-[500px]"
+            >
+              {/* Background rectangular image */}
+              <div className="absolute top-0 left-0 w-[70%] h-[80%] rounded-3xl overflow-hidden shadow-xl z-10">
+                <Image
+                  src={Profile}
+                  alt="Temple destination"
+                  fill
+                  className="object-cover"
+                  placeholder="blur"
+                />
+              </div>
+
+              {/* Overlapping circular image */}
+              <div className="absolute bottom-8 right-0 lg:bottom-0 lg:right-[-40px] w-48 h-48 lg:w-56 lg:h-56 rounded-full overflow-hidden   z-20">
+                <div className="relative w-full h-full">
+                  <Image
+                    src={Logo}
+                    alt="Travel with Moeen Logo"
+                    fill
+                    className="object-contain"
+                    placeholder="blur"
+                  />
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Right: Content */}
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="space-y-8"
+            >
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-serif">
+                <span className="font-bold">About Us </span> Travel with Moeen
+              </h2>
+
+              <p className="text-muted-foreground leading-relaxed">
+                Welcome to Travel with Moeen, a premier travel management
+                company dedicated to redefining quality tourism in Pakistan and
+                abroad. Founded on the principles of authenticity and
+                professional excellence, we provide meticulously curated travel
+                experiences for individuals, families, and corporate entities.
+              </p>
+
+              {/* Features */}
+              <div className="space-y-6">
+                <div className="flex items-start gap-4">
+                  <div className="w-14 h-14 rounded-full border-2 border-gray-300 flex items-center justify-center flex-shrink-0">
+                    <ClipboardCheck className="w-6 h-6 text-gray-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-lg mb-1">
+                      Expert Travel Advisors
+                    </h4>
+                    <p className="text-muted-foreground text-sm">
+                      Our experienced team ensures your trip is stress-free,
+                      safe, and well-planned.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4">
+                  <div className="w-14 h-14 rounded-full border-2 border-gray-300 flex items-center justify-center flex-shrink-0">
+                    <BadgeDollarSign className="w-6 h-6 text-gray-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-lg mb-1">
+                      Affordable & Transparent Pricing
+                    </h4>
+                    <p className="text-muted-foreground text-sm">
+                      No hidden costs—just great value for your perfect
+                      vacation.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4">
+                  <div className="w-14 h-14 rounded-full border-2 border-gray-300 flex items-center justify-center flex-shrink-0">
+                    <Headphones className="w-6 h-6 text-gray-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-lg mb-1">
+                      24/7 Customer Support
+                    </h4>
+                    <p className="text-muted-foreground text-sm">
+                      Enjoy peace of mind with our round-the-clock assistance
+                      wherever you travel.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
 
       {/* Section 1: About Intro with Creative Image Layout */}
       <section className="py-20 px-4">
@@ -106,8 +311,8 @@ const About = () => {
                     src={aboutThumb2}
                     alt="Adventure destination"
                     className="w-28 h-28 object-cover rounded-xl shadow-lg border-4 border-background"
-                    width={112}
-                    height={112}
+                    width={116}
+                    height={116}
                     placeholder="blur"
                   />
                 </div>
@@ -121,14 +326,22 @@ const About = () => {
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
             >
-              <p className="text-gold font-serif italic text-lg mb-2">About Us</p>
+              {/* <p className="text-gold font-serif italic text-lg mb-2">
+                About Us
+              </p> */}
               <h2 className="text-3xl md:text-4xl font-serif font-bold text-primary mb-6">
-                We Will Help You Find Your Dream Vacation
+                The Visionary Behind the Brand
               </h2>
               <p className="text-muted-foreground leading-relaxed mb-8">
-                Registered in Pakistan, Travel with Moeen specializes in deluxe and personalized 
-                luxury experiences since 2020. We curate hassle-free travel in Pakistan's Northern 
-                Areas with modern luxury transportation and premium accommodations.
+                Moeen Akhtar, the founder of Travel with Moeen, brings a unique
+                blend of corporate discipline and a passion for exploration.
+                Originally from Dera Ismail Khan, Moeen relocated to Islamabad
+                in 2009 after earning his MBA. Before transitioning into
+                entrepreneurship in 2016, he spent years serving in high-stakes
+                environments for prestigious international organizations,
+                including INGOs, USAID, and the United Nations. This background
+                in international standards and logistical precision is the
+                backbone of the "Quality Tourism" we deliver today.
               </p>
 
               {/* Vision & Mission */}
@@ -138,10 +351,12 @@ const About = () => {
                     <Eye className="w-7 h-7 text-white" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-serif font-bold text-primary mb-1">Our Vision</h3>
+                    <h3 className="text-xl font-serif font-bold text-primary mb-1">
+                      Our Vision
+                    </h3>
                     <p className="text-muted-foreground text-sm">
-                      To become the leading luxury tour company in Pakistan for group, family, 
-                      couple, and corporate tours.
+                      To become the leading luxury tour company in Pakistan for
+                      group, family, couple, and corporate tours.
                     </p>
                   </div>
                 </div>
@@ -151,16 +366,22 @@ const About = () => {
                     <Target className="w-7 h-7 text-yellow-400" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-serif font-bold text-primary mb-1">Our Mission</h3>
+                    <h3 className="text-xl font-serif font-bold text-primary mb-1">
+                      Our Mission
+                    </h3>
                     <p className="text-muted-foreground text-sm">
-                      To provide the finest luxury tours in Pakistan, making comfort the priority 
-                      while delivering high-quality hospitality services.
+                      To provide the finest luxury tours in Pakistan, making
+                      comfort the priority while delivering high-quality
+                      hospitality services.
                     </p>
                   </div>
                 </div>
               </div>
 
-              <Button asChild className="mt-8 bg-yellow-400 hover:bg-yellow-600 text-black font-semibold px-8">
+              <Button
+                asChild
+                className="mt-8 bg-yellow-400 hover:bg-yellow-600 text-black font-semibold px-8"
+              >
                 <Link href="/gallery">View Tours</Link>
               </Button>
             </motion.div>
@@ -178,13 +399,15 @@ const About = () => {
             transition={{ duration: 0.5 }}
             className="text-center mb-16"
           >
-            <p className="text-gold font-serif italic text-lg mb-2">Our Process</p>
+            <p className="text-gold font-serif italic text-lg mb-2">
+              Our Process
+            </p>
             <h2 className="text-3xl md:text-4xl font-serif font-bold text-primary mb-4">
               We Complete Every Step Carefully
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
-              tempor incididunt ut labore et dolore magna aliqua
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+              eiusmod tempor incididunt ut labore et dolore magna aliqua
             </p>
           </motion.div>
 
@@ -199,7 +422,7 @@ const About = () => {
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                   className={`relative text-center ${
-                    index % 2 === 0 ? 'lg:mt-0' : 'lg:mt-24'
+                    index % 2 === 0 ? "lg:mt-0" : "lg:mt-24"
                   }`}
                 >
                   {/* Icon Box with Number Badge */}
@@ -217,15 +440,22 @@ const About = () => {
                     </div>
                   </div>
 
-                  <h3 className="text-xl font-serif font-bold text-primary mt-6 mb-3">{step.title}</h3>
-                  <p className="text-muted-foreground text-sm max-w-[200px] mx-auto">{step.description}</p>
+                  <h3 className="text-xl font-serif font-bold text-primary mt-6 mb-3">
+                    {step.title}
+                  </h3>
+                  <p className="text-muted-foreground text-sm max-w-[200px] mx-auto">
+                    {step.description}
+                  </p>
 
                   {/* Curved Arrow to next step */}
                   {index < processSteps.length - 1 && (
                     <div className="hidden lg:block absolute top-8 -right-8 w-16 z-20">
                       {index % 2 === 0 ? (
                         /* Arrow going down-right */
-                        <svg viewBox="0 0 60 50" className="w-16 h-12 text-muted-foreground/40">
+                        <svg
+                          viewBox="0 0 60 50"
+                          className="w-16 h-12 text-muted-foreground/40"
+                        >
                           <path
                             d="M5 5 Q30 5, 40 25 Q50 45, 55 45"
                             stroke="currentColor"
@@ -242,7 +472,10 @@ const About = () => {
                         </svg>
                       ) : (
                         /* Arrow going up-right */
-                        <svg viewBox="0 0 60 50" className="w-16 h-12 text-muted-foreground/40">
+                        <svg
+                          viewBox="0 0 60 50"
+                          className="w-16 h-12 text-muted-foreground/40"
+                        >
                           <path
                             d="M5 45 Q30 45, 40 25 Q50 5, 55 5"
                             stroke="currentColor"
@@ -263,6 +496,138 @@ const About = () => {
                 </motion.div>
               ))}
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Section: Why Choose + Gateway to Journeys */}
+      <section className="py-20 px-4 bg-background">
+        <div className="max-w-[1400px] mx-auto">
+          <div className="grid lg:grid-cols-3 gap-8 items-center">
+            {/* Left Column: Why Choose Content */}
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="space-y-6"
+            >
+              <h2 className="text-3xl md:text-4xl font-serif">
+                <span className="italic">Why Choose Travel with Moeen</span> to
+                Make Your Journey <span className="italic">Truly</span>{" "}
+                Meaningful?
+              </h2>
+              <p className="text-muted-foreground">
+                Lorem ipsum dolor sit amet consectetur adipiscing elit mauris
+                interdum.
+              </p>
+
+              {/* Feature List */}
+              <ul className="space-y-3">
+                {[
+                  "Top Destinations",
+                  "Flexible Travel Packages",
+                  "Expert Travel Guides",
+                  "Affordable & Transparent Pricing",
+                ].map((item, index) => (
+                  <li key={index} className="flex items-center gap-3">
+                    <ArrowRight className="w-4 h-4 text-muted-foreground" />
+                    <span className="font-medium">{item}</span>
+                  </li>
+                ))}
+              </ul>
+
+              {/* CTA Box */}
+              <div className="bg-[#1a1a1a] rounded-3xl p-6 mt-8">
+                <h3 className="text-white text-2xl font-serif mb-2">
+                  <span className="font-bold">Ready to</span> explore
+                  <br />
+                  the <span className="font-bold">world?</span>
+                </h3>
+                <Link
+                  href="/tours"
+                  className="inline-flex items-center gap-2 text-white font-semibold mt-4 hover:gap-3 transition-all"
+                >
+                  Discover Now
+                  <span className="w-6 h-6 rounded-full bg-white flex items-center justify-center">
+                    <ChevronRight className="w-4 h-4 text-black" />
+                  </span>
+                </Link>
+              </div>
+            </motion.div>
+
+            {/* Center Column: Circular Image with Badge */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="relative flex justify-center"
+            >
+              {/* Years Badge */}
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 lg:left-auto lg:translate-x-0 lg:-top-2 lg:right-4 z-10">
+                <div className="w-24 h-24 rounded-full bg-[#1a1a1a] flex flex-col items-center justify-center text-white">
+                  <span className="text-2xl font-bold">5+</span>
+                  <span className="text-xs text-center leading-tight">
+                    Years
+                    <br />
+                    Experienced
+                  </span>
+                </div>
+              </div>
+
+              {/* Main Circular Image */}
+              <div className="relative w-72 h-96 lg:w-80 lg:h-[450px]">
+                <div
+                  className="absolute inset-0 rounded-full overflow-hidden"
+                  style={{ borderRadius: "50% 50% 50% 50% / 60% 60% 40% 40%" }}
+                >
+                  <Image
+                    src={aboutTravelers}
+                    alt="Traveler exploring"
+                    fill
+                    className="object-cover"
+                    placeholder="blur"
+                  />
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Right Column: Gateway to Journeys */}
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              className="space-y-6"
+            >
+              {/* Rounded Image */}
+              <div className="relative h-48 w-full rounded-[40px] overflow-hidden">
+                <Image
+                  src={aboutThumb1}
+                  alt="Destination"
+                  fill
+                  className="object-cover"
+                  placeholder="blur"
+                />
+              </div>
+
+              <h2 className="text-3xl md:text-4xl font-serif">
+                <span className="italic">Gateway</span> to
+                <br />
+                <span className="italic">Unforgettable</span>
+                <br />
+                Journeys.
+              </h2>
+
+              <p className="text-muted-foreground leading-relaxed">
+                Travel with Moeen is a trusted travel agency that brings the
+                best travel experiences to exotic destinations around the world.
+                We offer exclusive tour packages, private tours, and
+                unforgettable adventures designed to meet the needs of every
+                traveler.
+              </p>
+            </motion.div>
           </div>
         </div>
       </section>
@@ -296,13 +661,16 @@ const About = () => {
             transition={{ duration: 0.6 }}
             className="bg-[#0B1C2D] p-8 lg:p-12 xl:p-16 flex flex-col justify-center"
           >
-            <p className="text-yellow-500 font-serif italic text-lg mb-2">Why Choose Us</p>
+            <p className="text-yellow-500 font-serif italic text-lg mb-2">
+              Why Choose Us
+            </p>
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-serif font-bold text-primary-foreground mb-4">
               We are Professional Planners for Your Vacations
             </h2>
             <p className="text-primary-foreground/70 mb-8 leading-relaxed">
-              From the peaks of Hunza to the valleys of Skardu, we&apos;ve helped thousands
-              of travelers experience Pakistan&apos;s beauty with luxury and comfort.
+              From the peaks of Hunza to the valleys of Skardu, we&apos;ve
+              helped thousands of travelers experience Pakistan&apos;s beauty
+              with luxury and comfort.
             </p>
 
             <div className="grid sm:grid-cols-2 gap-x-8 gap-y-6">
@@ -312,8 +680,12 @@ const About = () => {
                     <feature.icon className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <h4 className="font-semibold text-primary-foreground mb-1">{feature.title}</h4>
-                    <p className="text-primary-foreground/60 text-sm leading-relaxed">{feature.description}</p>
+                    <h4 className="font-semibold text-primary-foreground mb-1">
+                      {feature.title}
+                    </h4>
+                    <p className="text-primary-foreground/60 text-sm leading-relaxed">
+                      {feature.description}
+                    </p>
                   </div>
                 </div>
               ))}
@@ -337,12 +709,12 @@ const About = () => {
               Meet Our Professional Guides
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Our experienced team brings destinations to life with authentic local knowledge 
-              and warm hospitality.
+              Our experienced team brings destinations to life with authentic
+              local knowledge and warm hospitality.
             </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-4 gap-8">
             {teamMembers.map((member, index) => (
               <motion.div
                 key={index}
@@ -352,7 +724,7 @@ const About = () => {
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 className="group relative"
               >
-                <div className="relative overflow-hidden rounded-t-2xl h-80">
+                <div className="relative overflow-hidden rounded-t-2xl h-96">
                   <Image
                     src={member.image}
                     alt={member.name}
@@ -363,13 +735,22 @@ const About = () => {
                   {/* Hover Overlay */}
                   <div className="absolute inset-0 bg-[#e8ac46]/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                     <div className="flex gap-3">
-                      <a href="#" className="w-10 h-10 rounded-full bg-gold flex items-center justify-center hover:bg-gold-hover transition-colors">
+                      <a
+                        href="#"
+                        className="w-10 h-10 rounded-full bg-gold flex items-center justify-center hover:bg-gold-hover transition-colors"
+                      >
                         <Facebook className="w-5 h-5 text-primary" />
                       </a>
-                      <a href="#" className="w-10 h-10 rounded-full bg-gold flex items-center justify-center hover:bg-gold-hover transition-colors">
+                      <a
+                        href="#"
+                        className="w-10 h-10 rounded-full bg-gold flex items-center justify-center hover:bg-gold-hover transition-colors"
+                      >
                         <Twitter className="w-5 h-5 text-primary" />
                       </a>
-                      <a href="#" className="w-10 h-10 rounded-full bg-gold flex items-center justify-center hover:bg-gold-hover transition-colors">
+                      <a
+                        href="#"
+                        className="w-10 h-10 rounded-full bg-gold flex items-center justify-center hover:bg-gold-hover transition-colors"
+                      >
                         <Instagram className="w-5 h-5 text-primary" />
                       </a>
                     </div>
@@ -377,7 +758,9 @@ const About = () => {
                 </div>
                 {/* Name Card */}
                 <div className="bg-card rounded-b-2xl p-6 text-center shadow-travel border border-border">
-                  <h3 className="text-xl font-serif font-bold text-primary">{member.name}</h3>
+                  <h3 className="text-xl font-serif font-bold text-primary">
+                    {member.name}
+                  </h3>
                   <p className="text-muted-foreground">{member.role}</p>
                 </div>
               </motion.div>
@@ -396,7 +779,9 @@ const About = () => {
             transition={{ duration: 0.5 }}
             className="text-center mb-12"
           >
-            <p className="text-gold font-serif italic text-lg mb-2">Company Information</p>
+            <p className="text-gold font-serif italic text-lg mb-2">
+              Company Information
+            </p>
             <h2 className="text-3xl md:text-4xl font-serif font-bold text-primary">
               Travel With Moeen
             </h2>
@@ -444,7 +829,9 @@ const About = () => {
                 <Mail className="w-6 h-6 text-primary" />
               </div>
               <h4 className="font-semibold text-primary mb-2">Email</h4>
-              <p className="text-muted-foreground text-sm">info@travelwithmoeen.com</p>
+              <p className="text-muted-foreground text-sm">
+                info@travelwithmoeen.com
+              </p>
             </motion.div>
 
             <motion.div
@@ -458,7 +845,9 @@ const About = () => {
                 <Globe className="w-6 h-6 text-primary" />
               </div>
               <h4 className="font-semibold text-primary mb-2">Website</h4>
-              <p className="text-muted-foreground text-sm">travelwithmoeen.com</p>
+              <p className="text-muted-foreground text-sm">
+                travelwithmoeen.com
+              </p>
             </motion.div>
           </div>
 
@@ -472,22 +861,75 @@ const About = () => {
           >
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center mb-8">
               {[
-                { number: "5+", label: "Years Experience" },
-                { number: "15+", label: "Destinations" },
-                { number: "3000+", label: "Happy Clients" },
-                { number: "100%", label: "Satisfaction" },
+                { number: "50+", label: "Tours" },
+                { number: "10+", label: "Countries" },
+                { number: "40k+", label: "Happy Clients" },
+                { number: "20+", label: "Activities" },
               ].map((stat, index) => (
                 <div key={index}>
-                  <p className="text-3xl md:text-4xl font-serif font-bold text-yellow-500">{stat.number}</p>
-                  <p className="text-primary-foreground/80 mt-2">{stat.label}</p>
+                  <p className="text-3xl md:text-4xl font-serif font-bold text-yellow-500">
+                    {stat.number}
+                  </p>
+                  <p className="text-primary-foreground/80 mt-2">
+                    {stat.label}
+                  </p>
                 </div>
               ))}
             </div>
             <div className="text-center border-t border-primary-foreground/20 pt-6">
               <p className="text-primary-foreground/60 text-sm">
-                <span className="text-yellow-500 font-semibold">License:</span> Membership # 054, LIC ISB-9383
+                <span className="text-yellow-500 font-semibold">License:</span>{" "}
+                Membership # 054, LIC ISB-9383
               </p>
             </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="py-20 px-4 bg-background">
+        <div className="max-w-[900px] mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="text-center mb-12"
+          >
+            <p className="text-gold font-serif italic text-lg mb-2">
+              Have Questions?
+            </p>
+            <h2 className="text-3xl md:text-4xl font-serif font-bold text-primary mb-4">
+              Frequently Asked Questions
+            </h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Find answers to common questions about our tours, booking process,
+              and travel experiences.
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <Accordion type="single" collapsible className="w-full space-y-4">
+              {faqItems.map((item, index) => (
+                <AccordionItem
+                  key={index}
+                  value={`item-${index}`}
+                  className="bg-card border border-border rounded-xl px-6 shadow-sm"
+                >
+                  <AccordionTrigger className="text-left font-semibold text-primary hover:no-underline py-5">
+                    {item.question}
+                  </AccordionTrigger>
+                  <AccordionContent className="text-muted-foreground pb-5">
+                    {item.answer}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
           </motion.div>
         </div>
       </section>
