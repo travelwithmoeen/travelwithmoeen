@@ -40,7 +40,7 @@ export function AboutSection() {
           className="text-6xl md:text-7xl lg:text-8xl font-bold text-blue-900 mb-12"
           style={{ fontFamily: "Georgia, serif" }}
         >
-          Travel With  Moheen
+          Travel With  Moeen
         </motion.h1>
 
         {/* Description Text */}

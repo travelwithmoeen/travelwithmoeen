@@ -41,11 +41,11 @@ const Navbar = () => {
               <span>+1 (234) 567-890</span>
             </a>
             <a
-              href="mailto:info@travelwithmoheen.com"
+              href="mailto:info@travelwithmoeen.com"
               className="flex items-center gap-2 hover:text-gold transition-colors"
             >
               <Mail className="h-4 w-4" />
-              <span>info@travelwithmoheen.com</span>
+              <span>info@travelwithmoeen.com</span>
             </a>
           </div>
           <div className="flex items-center gap-4">
@@ -132,7 +132,7 @@ const Navbar = () => {
                 Travel With
               </span>
               <span className="text-2xl font-serif font-bold text-gold leading-tight">
-                Moheen
+                Moeen
               </span>
             </div>
           </Link>
