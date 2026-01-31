@@ -95,15 +95,15 @@ export function Footer() {
             <ul className="space-y-4">
               <li className="flex items-start gap-3">
                 <MapPin size={20} className="text-amber-400 mt-0.5 flex-shrink-0" />
-                <span>123 Travel Street, Adventure City, AC 12345</span>
+                <span>Office # 3, 2nd Floor, Shalimar Plaza, F-10 Markaz, Islamabad</span>
               </li>
               <li className="flex items-center gap-3">
                 <Phone size={20} className="text-amber-400 flex-shrink-0" />
-                <span>+1 (555) 123-4567</span>
+                <span>+92 333 9981177</span>
               </li>
               <li className="flex items-center gap-3">
                 <Mail size={20} className="text-amber-400 flex-shrink-0" />
-                <span>hello@travelwithmoeen.com</span>
+                <span>info@travelwithmoeen.com</span>
               </li>
             </ul>
           </div>

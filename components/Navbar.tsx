@@ -34,11 +34,11 @@ const Navbar = () => {
         <div className="mx-auto max-w-7xl flex items-center justify-between text-sm">
           <div className="flex items-center gap-6">
             <a
-              href="tel:+1234567890"
+              href="tel:+92 333 9981177"
               className="flex items-center gap-2 hover:text-gold transition-colors"
             >
               <Phone className="h-4 w-4" />
-              <span>+1 (234) 567-890</span>
+              <span>+92 333 9981177</span>
             </a>
             <a
               href="mailto:info@travelwithmoeen.com"
