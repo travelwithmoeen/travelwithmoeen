@@ -22,7 +22,7 @@ const philosopher = Philosopher({
 
 export const metadata: Metadata = {
   title: "Travel with Moeen | Explore the World",
-  description: "Book your next adventure with Moheen Travel. Luxury tours, breathtaking destinations.",
+  description: "Book your next adventure with Moeen Travel. Luxury tours, breathtaking destinations.",
 };
 
 export default function RootLayout({
