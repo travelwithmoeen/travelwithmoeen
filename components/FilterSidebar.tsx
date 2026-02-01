@@ -236,7 +236,7 @@ export default function FilterSidebar({
 
         {/* Clear Filters */}
         <Button
-          variant="outline-navy"
+        
           className="w-full bg-navy text-cream hover:bg-navy-light"
          
           onClick={onClearFilters}

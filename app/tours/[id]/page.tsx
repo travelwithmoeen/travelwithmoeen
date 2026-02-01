@@ -83,7 +83,7 @@ export default function TourDetails() {
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
         {/* Back Button */}
-        <Button asChild variant="outline-navy" className="mb-6 bg-accent hover:bg-navy">
+        <Button asChild  className="mb-6 bg-accent hover:bg-navy">
           <Link href="/tours">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Tours

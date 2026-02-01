@@ -37,7 +37,7 @@ export default function SearchAndSort({
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
         {/* Mobile Filter Button */}
         <Button
-          variant="outline-navy"
+       
           className="lg:hidden"
           onClick={onFilterClick}
         >
