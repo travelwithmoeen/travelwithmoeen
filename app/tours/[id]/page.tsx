@@ -31,7 +31,7 @@ export default function TourDetails() {
           <p className="mb-8 text-muted-foreground">
             The tour you're looking for doesn't exist.
           </p>
-          <Button asChild variant="gold">
+          <Button asChild >
             <Link href="/tours">Browse All Tours</Link>
           </Button>
         </div>
