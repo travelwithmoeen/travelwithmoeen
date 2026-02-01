@@ -139,7 +139,7 @@ export default function Tours() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* <Header /> */}
+    
 
       {/* Hero Section */}
       <section className="bg-secondary px-4 py-12 text-center">
@@ -152,7 +152,7 @@ export default function Tours() {
       </section>
 
       {/* Main Content */}
-      <div className="container mx-auto flex px-4 py-8">
+      <div className="container mx-auto flex px-4 py-8 ">
         {/* Filter Sidebar */}
         <FilterSidebar
           isOpen={sidebarOpen}
@@ -170,6 +170,7 @@ export default function Tours() {
           selectedDuration={selectedDuration}
           onDurationChange={setSelectedDuration}
           onClearFilters={handleClearFilters}
+       
         />
 
         {/* Main Content Area */}
@@ -192,7 +193,7 @@ export default function Tours() {
               className={cn(
                 "grid gap-6",
                 view === "grid"
-                  ? "grid-cols-1 sm:grid-cols-2 xl:grid-cols-3"
+                  ? "grid-cols-1 sm:grid-cols-2 xl:grid-cols-3  text-gold"
                   : "grid-cols-1"
               )}
             >

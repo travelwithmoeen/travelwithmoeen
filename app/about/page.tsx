@@ -53,6 +53,11 @@ import teamGuide5 from "@/public/images/team/TALIB_HUSSAIN_ARAPA_Tour_Manager.we
 import teamGuide6 from "@/public/images/team/Rizwan_Ahmad_Finance_Manager.webp";
 import Logo from "@/public/images/twm-logo.webp"
 import Profile from "@/public/images/moeen/profile.jpg";
+import RoundImage from "@/public/images/Picture14.jpg";
+import vision1 from "@/public/images/moeen/vision1.jpg";
+import vision2 from "@/public/images/moeen/vision2.jpg";
+import vision3 from "@/public/images/moeen/vision3.jpg";
+
 const processSteps = [
   {
     number: "01",
@@ -292,7 +297,7 @@ const About = () => {
             >
               <div className="relative">
                 <Image
-                  src={aboutTravelers}
+                  src={vision3}
                   alt="Travelers exploring"
                   className="w-full max-w-md rounded-2xl shadow-travel-strong"
                   placeholder="blur"
@@ -300,7 +305,7 @@ const About = () => {
                 {/* Overlapping thumbnails */}
                 <div className="absolute -bottom-8 right-0 lg:right-[-40px] flex gap-3">
                   <Image
-                    src={aboutThumb1}
+                    src={vision2}
                     alt="Mountain destination"
                     className="w-28 h-28 object-cover rounded-xl shadow-lg border-4 border-background"
                     width={112}
@@ -308,7 +313,7 @@ const About = () => {
                     placeholder="blur"
                   />
                   <Image
-                    src={aboutThumb2}
+                    src={vision1}
                     alt="Adventure destination"
                     className="w-28 h-28 object-cover rounded-xl shadow-lg border-4 border-background"
                     width={116}
@@ -583,7 +588,7 @@ const About = () => {
                   style={{ borderRadius: "50% 50% 50% 50% / 60% 60% 40% 40%" }}
                 >
                   <Image
-                    src={aboutTravelers}
+                    src={Profile}
                     alt="Traveler exploring"
                     fill
                     className="object-cover"
@@ -604,7 +609,7 @@ const About = () => {
               {/* Rounded Image */}
               <div className="relative h-48 w-full rounded-[40px] overflow-hidden">
                 <Image
-                  src={aboutThumb1}
+                  src={RoundImage}
                   alt="Destination"
                   fill
                   className="object-cover"
@@ -633,66 +638,7 @@ const About = () => {
       </section>
 
       {/* Section 3: Why Choose Us (Dark Background) */}
-      <section className="relative">
-        <div className="grid lg:grid-cols-2 min-h-[600px]">
-          {/* Left: Image */}
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="relative h-[400px] lg:h-auto min-h-[400px]"
-          >
-            <Image
-              src={aboutWhyChoose}
-              alt="Happy travelers"
-              className="object-cover"
-              fill
-              placeholder="blur"
-              sizes="(max-width: 1024px) 100vw, 50vw"
-            />
-          </motion.div>
-
-          {/* Right: Content with Navy Background */}
-          <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="bg-[#0B1C2D] p-8 lg:p-12 xl:p-16 flex flex-col justify-center"
-          >
-            <p className="text-yellow-500 font-serif italic text-lg mb-2">
-              Why Choose Us
-            </p>
-            <h2 className="text-2xl md:text-3xl lg:text-4xl font-serif font-bold text-primary-foreground mb-4">
-              We are Professional Planners for Your Vacations
-            </h2>
-            <p className="text-primary-foreground/70 mb-8 leading-relaxed">
-              From the peaks of Hunza to the valleys of Skardu, we&apos;ve
-              helped thousands of travelers experience Pakistan&apos;s beauty
-              with luxury and comfort.
-            </p>
-
-            <div className="grid sm:grid-cols-2 gap-x-8 gap-y-6">
-              {whyChooseFeatures.map((feature, index) => (
-                <div key={index} className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-lg bg-[#e8ac46] flex items-center justify-center flex-shrink-0">
-                    <feature.icon className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-primary-foreground mb-1">
-                      {feature.title}
-                    </h4>
-                    <p className="text-primary-foreground/60 text-sm leading-relaxed">
-                      {feature.description}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        </div>
-      </section>
+   
 
       {/* Section 4: Our Team */}
       <section className="py-20 px-4">

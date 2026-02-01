@@ -35,7 +35,7 @@ export function TourCard({ tour, view }: TourCardProps) {
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
         />
         {tour.featured && (
-          <Badge className="absolute left-3 top-3 bg-primary text-primary-foreground">
+          <Badge className="absolute left-3 top-3 bg-gold text-black">
             Featured
           </Badge>
         )}
@@ -45,12 +45,12 @@ export function TourCard({ tour, view }: TourCardProps) {
       <div className="flex flex-1 flex-col">
         <CardHeader className={cn(isGrid ? "pb-2" : "pb-2")}>
           {/* Categories */}
-          <div className="mb-2 flex flex-wrap gap-1.5">
+          <div className="mb-2 flex flex-wrap gap-1.5 text-navy">
             {tour.categories.map((category) => (
               <Badge
                 key={category}
                 variant="secondary"
-                className={cn("text-xs", getCategoryBadgeClass(category))}
+                className={cn("text-xs text-gold hover:bg-gold/80", getCategoryBadgeClass(category))}
               >
                 {category}
               </Badge>
@@ -91,7 +91,7 @@ export function TourCard({ tour, view }: TourCardProps) {
           </div>
 
           {/* CTA */}
-          <Button asChild  className="text-black bg-gold" size="sm">
+          <Button asChild  className="text-black bg-gold hover:bg-gold/90" size="sm">
             <Link href={`/tours/${tour.id}`}>View Details</Link>
           </Button>
         </CardFooter>

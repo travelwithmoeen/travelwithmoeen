@@ -59,7 +59,8 @@
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
+  /* --background: oklch(1 0 0); */
+   --background: 45 33% 97%; /* #f7f6f2 cream */
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
@@ -100,7 +101,9 @@
     --cyan: hsl(185 75% 45%);
     --cream: hsl(45 33% 97%);
     --cream-dark: hsl(45 20% 90%);
-
+   /* Primary: Yellow accent */
+    --destincation-card: 43 100% 50%; /* #ffb900 */
+    --destincation-foreground1: 0 0% 0%;
 
     /* Typography */
     --font-serif: 'Cormorant Garamond', Georgia, serif;

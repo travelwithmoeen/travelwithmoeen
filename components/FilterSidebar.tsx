@@ -73,7 +73,7 @@ export default function FilterSidebar({
       {/* Sidebar */}
       <aside
         className={cn(
-          "filter-sidebar fixed left-0 top-0 z-50 h-full w-80 overflow-y-auto p-6 transition-transform duration-300 lg:static lg:translate-x-0",
+          "filter-sidebar fixed left-0 top-0 z-40 h-full w-80 overflow-y-auto p-6 transition-transform duration-300 lg:static lg:translate-x-0 border-2 border-neutral-200",
           isOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >

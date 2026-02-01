@@ -11,6 +11,7 @@ const navLinks = [
   { name: "Tours", href: "/tours", hasDropdown: true },
   { name: "About", href: "/about", hasDropdown: false },
   { name: "Gallery", href: "/gallery", hasDropdown: false },
+    { name: "Blog", href: "/blog", hasDropdown: false },
   { name: "Contact", href: "/contact", hasDropdown: false },
 ];
 
@@ -30,7 +31,7 @@ const Navbar = () => {
   return (
     <>
       {/* Top Bar */}
-      <div className="hidden lg:block bg-primary text-primary-foreground py-2 px-6">
+      <div className="hidden lg:block bg-primary text-primary-foreground py-2 px-6 z-50">
         <div className="mx-auto max-w-7xl flex items-center justify-between text-sm">
           <div className="flex items-center gap-6">
             <a
