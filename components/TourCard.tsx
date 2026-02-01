@@ -91,7 +91,7 @@ export function TourCard({ tour, view }: TourCardProps) {
           </div>
 
           {/* CTA */}
-          <Button asChild variant="gold"  className="text-black bg-gold" size="sm">
+          <Button asChild  className="text-black bg-gold" size="sm">
             <Link href={`/tours/${tour.id}`}>View Details</Link>
           </Button>
         </CardFooter>
