@@ -1,5 +1,5 @@
 export type TourCategory = "Deluxe" | "Executive" | "Luxury";
-export type TourRegion = "Skardu" | "Deosai" | "Minimarg" | "Hunza";
+export type TourRegion = "Skardu" |  "Swat"| "Minimarg" | "Hunza" ;
 export type PackageType = "Couple" | "Family" | "Group";
 export type TransportType = "By Road" | "By Air";
 
@@ -129,173 +129,531 @@ export const tours: Tour[] = [
     notIncluded: ["Lunch & Dinner", "Personal Expenses", "Recreation, Boating, Jeeps", "Any items not mentioned in services"],
     featured: true,
   },
+ {
+  "id": "2",
+  "name": "5 Days By Air Trip to Astor, Minimarg & Skardu (Couple)",
+  "location": "Skardu, Astor & Minimarg, Pakistan",
+  "region": "Skardu",
+  "duration": 5,
+  "description": "An unforgettable 5-day couple tour covering Skardu, Astor, Burzil Top, Minimarg, and Rainbow Lake. Experience scenic flights, alpine lakes, border villages, and the breathtaking beauty of northern Pakistan.",
+  "image": "/images/tours/astor-minimarg.jpg",
+  "galleryImages": [
+    "/images/tours/Picture1.jpg",
+    "/images/tours/minimarg1.jpg",
+    "/images/tours/skardu1.jpg"
+  ],
+  "categories": ["Deluxe", "Executive", "Luxury"],
+  "packageTypes": ["Couple"],
+  "transport": "By Air",
+  "basePrice": 430000,
+  "packages": [
+    {
+      "category": "Deluxe",
+      "price": 430000,
+      "features": [
+        "Minimarg Camping Side (2 nights)",
+        "Qayyam Hotel Skardu (Deluxe Room) (2 nights)"
+      ]
+    },
+    {
+      "category": "Executive",
+      "price": 490000,
+      "features": [
+        "Khar Hotel Skardu (Deluxe Room) (1 night)",
+        "Minimarg Camping Side (2 nights)",
+        "Khoj Resort Skardu (Deluxe Room) (1 night)"
+      ]
+    },
+    {
+      "category": "Luxury",
+      "price": 580000,
+      "features": [
+        "Minimarg Army Camping Side (2 nights)",
+        "Khoj Resorts Skardu (Deluxe Room) (2 nights)"
+      ]
+    }
+  ],
+  "itinerary": [
+    {
+      "day": 1,
+      "title": "Arrival & Kachura Lakes",
+      "description": "",
+      "highlights": [
+        "Morning scenic flight from Islamabad to Skardu",
+        "Meet & greet at Skardu International Airport",
+        "Visit Shangri-La Resort (Lower Kachura Lake)",
+        "Explore Upper Kachura Lake and Soq Valley",
+        "Evening leisure time and sunset views",
+        "Overnight stay at hotel"
+      ]
+    },
+    {
+      "day": 2,
+      "title": "Roof of the World & Burzil Top",
+      "description": "",
+      "highlights": [
+        "Breakfast at hotel",
+        "Travel towards Astor Valley",
+        "Visit Burzil Top – the roof of the world",
+        "Scenic mountain views and photography stops",
+        "Overnight stay at Astor / Minimarg camping site"
+      ]
+    },
+    {
+      "day": 3,
+      "title": "Minimarg, Rainbow Lake & Indian Border",
+      "description": "",
+      "highlights": [
+        "Breakfast at Astor",
+        "Depart for Minimarg – last village near Indian border",
+        "Visit Rainbow Lake with vibrant colors",
+        "Explore local village culture",
+        "View Kargil base camp area",
+        "Dinner and overnight stay at Minimarg camping site"
+      ]
+    },
+    {
+      "day": 4,
+      "title": "Return to Skardu Valley",
+      "description": "",
+      "highlights": [
+        "Breakfast at Chilim",
+        "Travel back towards Skardu",
+        "Optional shopping at Skardu Bazaar",
+        "Leisure walk and relaxation",
+        "Dinner and overnight stay at hotel in Skardu"
+      ]
+    },
+    {
+      "day": 5,
+      "title": "Departure to Islamabad",
+      "description": "",
+      "highlights": [
+        "Final breakfast at hotel",
+        "Transfer to Skardu International Airport",
+        "Return flight to Islamabad",
+        "Tour ends with unforgettable memories"
+      ]
+    }
+  ],
+  "included": [
+    "Air Tickets both sides (one-way window seat)",
+    "Private Transport (Parado TZ 2004–07 New Model)",
+    "Fuel & Toll Tax",
+    "4 Nights Accommodation",
+    "5 Breakfasts"
+  ],
+  "notIncluded": [
+    "Lunch & Dinner",
+    "Personal expenses",
+    "Recreation activities, boating, jeep rides",
+    "Any item not mentioned in included services"
+  ],
+  "featured": false
+}
+,
   {
-    id: "2",
-    name: "Ancient Wonders of Egypt",
-    location: "Egypt",
-    region: "Deosai",
-    duration: 5,
-    description: "Discover the mysteries of ancient Egypt with visits to pyramids, temples, and a Nile cruise through history.",
-    image: "https://images.unsplash.com/photo-1539650116574-8efeb43e2750?w=800&q=80",
-    galleryImages: [
-      "/images/gallery/egypt1.jpg",
-      "https://images.unsplash.com/photo-1568322445389-f64ac2515020?w=600&q=80",
-      "https://images.unsplash.com/photo-1553913861-c0fddf2619ee?w=600&q=80",
-      "https://images.unsplash.com/photo-1541769669-3f75b2dcf440?w=600&q=80",
-    ],
-    categories: ["Deluxe", "Executive"],
-    packageTypes: ["Family", "Group"],
-    transport: "By Road",
-    basePrice: 1899,
-    packages: [
-      {
-        category: "Deluxe",
-        price: 1899,
-        features: ["4-star hotels", "Daily breakfast", "Expert guides", "Domestic flights"],
-      },
-      {
-        category: "Executive",
-        price: 2999,
-        features: ["5-star hotels & Nile cruise", "All meals", "Private Egyptologist", "VIP access to sites"],
-      },
-    ],
-    itinerary: [
-      { day: 1, title: "Cairo Arrival", description: "Welcome to Egypt! Evening at leisure to explore Khan el-Khalili bazaar.", highlights: ["Airport pickup", "Hotel check-in", "Bazaar visit"] },
-      { day: 2, title: "Pyramids of Giza", description: "Marvel at the Great Pyramids and the enigmatic Sphinx.", highlights: ["Great Pyramid", "Sphinx", "Camel ride"] },
-      { day: 3, title: "Luxor Temples", description: "Fly to Luxor and explore the Valley of the Kings.", highlights: ["Valley of Kings", "Karnak Temple", "Luxor Temple"] },
-      { day: 4, title: "Nile Experience", description: "Cruise the Nile and visit ancient temples along the way.", highlights: ["Nile cruise", "Temple of Edfu", "Sunset sailing"] },
-      { day: 5, title: "Departure", description: "Final breakfast and transfer for your flight home.", highlights: ["Breakfast", "Airport transfer", "Departure"] },
-    ],
-    included: ["Airport transfers", "Accommodation", "Breakfast daily", "Domestic flights", "Entrance fees", "Expert guides"],
-    notIncluded: ["International flights", "Visa fees", "Travel insurance", "Personal expenses", "Tips"],
-  },
-  {
-    id: "3",
-    name: "Japanese Cultural Immersion",
-    location: "Japan",
-    region: "Hunza",
-    duration: 6,
-    description: "From ancient temples to neon-lit streets, experience Japan's unique blend of tradition and innovation.",
-    image: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=800&q=80",
-    galleryImages: [
-      "https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=600&q=80",
-      "https://images.unsplash.com/photo-1545569341-9eb8b30979d9?w=600&q=80",
-      "https://images.unsplash.com/photo-1524413840807-0c3cb6fa808d?w=600&q=80",
-      "https://images.unsplash.com/photo-1490806843957-31f4c9a91c65?w=600&q=80",
-    ],
-    categories: ["Executive", "Luxury"],
-    packageTypes: ["Couple"],
-    transport: "By Air",
-    basePrice: 3299,
-    packages: [
-      {
-        category: "Executive",
-        price: 3299,
-        features: ["Premium ryokans", "Most meals", "JR Pass", "Cultural experiences"],
-      },
-      {
-        category: "Luxury",
-        price: 5499,
-        features: ["Luxury ryokans", "All meals including Michelin", "Private guides", "Exclusive access"],
-      },
-    ],
-    itinerary: [
-      { day: 1, title: "Tokyo Arrival", description: "Welcome to Japan! Check into your hotel in vibrant Shinjuku.", highlights: ["Airport pickup", "Hotel check-in", "Evening walk"] },
-      { day: 2, title: "Tokyo Exploration", description: "Discover the contrasts of Tokyo from Senso-ji to Shibuya.", highlights: ["Senso-ji Temple", "Harajuku", "Shibuya crossing"] },
-      { day: 3, title: "Mount Fuji & Hakone", description: "Day trip to see iconic Mt. Fuji and relax in Hakone.", highlights: ["Mt. Fuji views", "Lake Ashi cruise", "Hot springs"] },
-      { day: 4, title: "Kyoto Traditions", description: "Bullet train to Kyoto for temples and geisha districts.", highlights: ["Shinkansen", "Fushimi Inari", "Gion district"] },
-      { day: 5, title: "Nara & Osaka", description: "Visit Nara's deer park and experience Osaka's food scene.", highlights: ["Deer Park", "Osaka Castle", "Street food tour"] },
-      { day: 6, title: "Departure", description: "Final tea ceremony experience before heading home.", highlights: ["Tea ceremony", "Airport transfer", "Sayonara"] },
-    ],
-    included: ["Airport transfers", "Premium accommodation", "JR Pass", "Select meals", "Cultural activities", "English guides"],
-    notIncluded: ["International flights", "Travel insurance", "Personal shopping", "Optional activities"],
-    featured: true,
-  },
-  {
-    id: "4",
-    name: "Serengeti Safari Experience",
-    location: "Tanzania",
-    region: "Minimarg",
-    duration: 4,
-    description: "Witness the incredible wildlife of the Serengeti on an unforgettable African safari adventure.",
-    image: "https://images.unsplash.com/photo-1516426122078-c23e76319801?w=800&q=80",
-    galleryImages: [
-      "https://images.unsplash.com/photo-1547471080-7cc2caa01a7e?w=600&q=80",
-      "https://images.unsplash.com/photo-1535941339077-2dd1c7963098?w=600&q=80",
-      "https://images.unsplash.com/photo-1549366021-9f761d450615?w=600&q=80",
-      "https://images.unsplash.com/photo-1517036723157-4017ba347b80?w=600&q=80",
-    ],
-    categories: ["Deluxe", "Luxury"],
-    packageTypes: ["Family", "Group"],
-    transport: "By Road",
-    basePrice: 2799,
-    packages: [
-      {
-        category: "Deluxe",
-        price: 2799,
-        features: ["Tented camps", "All meals", "Game drives", "Park fees"],
-      },
-      {
-        category: "Luxury",
-        price: 4999,
-        features: ["Luxury lodges", "Gourmet bush dining", "Private 4x4", "Balloon safari"],
-      },
-    ],
-    itinerary: [
-      { day: 1, title: "Arusha Arrival", description: "Arrive in Tanzania and prepare for your safari adventure.", highlights: ["Airport pickup", "Safari briefing", "Lodge dinner"] },
-      { day: 2, title: "Serengeti Bound", description: "Enter the Serengeti and begin wildlife spotting.", highlights: ["Scenic drive", "First game drive", "Sunset viewing"] },
-      { day: 3, title: "Full Safari Day", description: "Full day of morning and afternoon game drives.", highlights: ["Big Five search", "Picnic lunch", "Night sounds"] },
-      { day: 4, title: "Final Drive & Departure", description: "Morning game drive before flying back to Arusha.", highlights: ["Sunrise drive", "Flight back", "Departure"] },
-    ],
-    included: ["Airport transfers", "Safari accommodation", "All meals on safari", "Game drives", "Park fees", "Professional guide"],
-    notIncluded: ["International flights", "Visa fees", "Travel insurance", "Premium beverages", "Gratuities"],
-  },
-  {
-    id: "5",
-    name: "Amalfi Coast Romance",
-    location: "Italy",
-    region: "Skardu",
-    duration: 5,
-    description: "Drive the stunning Amalfi Coast, savor Italian cuisine, and explore charming cliffside villages.",
-    image: "https://images.unsplash.com/photo-1533104816931-20fa691ff6ca?w=800&q=80",
-    galleryImages: [
-      "https://images.unsplash.com/photo-1534008757030-27299c4371b6?w=600&q=80",
-      "https://images.unsplash.com/photo-1523528283115-9bf9b1699245?w=600&q=80",
-      "https://images.unsplash.com/photo-1559128010-7c1ad6e1b6a5?w=600&q=80",
-      "https://images.unsplash.com/photo-1515859005217-8a1f08870f59?w=600&q=80",
-    ],
-    categories: ["Deluxe", "Executive", "Luxury"],
-    packageTypes: ["Couple"],
-    transport: "By Air",
-    basePrice: 2199,
-    packages: [
-      {
-        category: "Deluxe",
-        price: 2199,
-        features: ["Boutique hotels", "Daily breakfast", "Guided tours", "Local experiences"],
-      },
-      {
-        category: "Executive",
-        price: 3299,
-        features: ["4-star sea view hotels", "All meals", "Private driver", "Cooking class"],
-      },
-      {
-        category: "Luxury",
-        price: 4799,
-        features: ["5-star luxury hotels", "Fine dining", "Yacht excursion", "VIP transfers"],
-      },
-    ],
-    itinerary: [
-      { day: 1, title: "Naples Arrival", description: "Arrive in Naples and transfer to the Amalfi Coast.", highlights: ["Airport pickup", "Scenic drive", "Welcome aperitivo"] },
-      { day: 2, title: "Positano & Amalfi", description: "Explore the iconic towns of Positano and Amalfi.", highlights: ["Positano streets", "Amalfi Cathedral", "Limoncello tasting"] },
-      { day: 3, title: "Ravello Gardens", description: "Visit the stunning gardens and villas of Ravello.", highlights: ["Villa Rufolo", "Villa Cimbrone", "Panoramic views"] },
-      { day: 4, title: "Capri Island", description: "Ferry to the glamorous island of Capri.", highlights: ["Blue Grotto", "Anacapri", "Italian lunch"] },
-      { day: 5, title: "Departure", description: "Final breakfast overlooking the Mediterranean.", highlights: ["Breakfast", "Airport transfer", "Arrivederci"] },
-    ],
-    included: ["Airport transfers", "Accommodation", "Breakfast daily", "Guided tours", "Ferry to Capri", "Local tastings"],
-    notIncluded: ["International flights", "Travel insurance", "Lunches & dinners", "Personal expenses"],
-    featured: true,
-  },
+  "id": "3",
+  "name": "6 Days By Air Trip to Astor, Minimarg & Skardu (Couple)",
+  "location": "Skardu, Astor & Minimarg, Pakistan",
+  "region": "Skardu",
+  "duration": 6,
+  "description": "A romantic 6-day couple adventure covering Skardu, Rama Meadows, Tarishing, Deosai National Park, Burzil Top, Minimarg, and Rainbow Lake. Experience scenic flights, alpine camping, cultural encounters, and breathtaking mountain landscapes.",
+  "image": "/images/tours/Picture2.jpg",
+  "galleryImages": [
+    "/images/tours/Picture2.jpg",
+    "/images/tours/astor1.jpg",
+    "/images/tours/minimarg1.jpg",
+    "/images/tours/skardu1.jpg"
+  ],
+  "categories": ["Deluxe", "Executive", "Luxury"],
+  "packageTypes": ["Couple"],
+  "transport": "By Air",
+  "basePrice": 530000,
+  "packages": [
+    {
+      "category": "Deluxe",
+      "price": 530000,
+      "features": [
+        "Rama Meadows Camping (1 night)",
+        "Minimarg Camping (1 night)",
+        "Tarishing Camping (1 night)",
+        "Qayyam Hotel Skardu – Deluxe Room (2 nights)"
+      ]
+    },
+    {
+      "category": "Executive",
+      "price": 580000,
+      "features": [
+        "Rama Meadows Camping (1 night)",
+        "Minimarg Camping (1 night)",
+        "Tarishing Camping (1 night)",
+        "Khar Hotel Skardu – Deluxe Room (1 night)",
+        "Khoj Resort Skardu – Deluxe Room (1 night)"
+      ]
+    },
+    {
+      "category": "Luxury",
+      "price": 640000,
+      "features": [
+        "Rama Meadows Camping (1 night)",
+        "Minimarg Camping (1 night)",
+        "Tarishing Camping (1 night)",
+        "Khoj Resorts Skardu – Deluxe Room (2 nights)"
+      ]
+    }
+  ],
+  "itinerary": [
+    {
+      "day": 1,
+      "title": "Arrival & Kachura Lakes",
+      "description": "",
+      "highlights": [
+        "Morning scenic flight from Islamabad to Skardu",
+        "Meet & greet at Skardu International Airport",
+        "Visit Shangri-La Resort (Lower Kachura Lake)",
+        "Explore Upper Kachura Lake and Soq Valley",
+        "Sunset views and leisure time",
+        "Overnight stay at hotel"
+      ]
+    },
+    {
+      "day": 2,
+      "title": "Roof of the World & Rama Meadows",
+      "description": "",
+      "highlights": [
+        "Breakfast at hotel",
+        "Travel towards Rama Meadows",
+        "Explore lush green meadows and Rama Lake",
+        "Photography and relaxation time",
+        "Overnight camping at Rama Meadows"
+      ]
+    },
+    {
+      "day": 3,
+      "title": "Tarishing & Rupal Face of Nanga Parbat",
+      "description": "",
+      "highlights": [
+        "Open-air breakfast at Rama Meadows",
+        "Travel to Tarishing village",
+        "View Rupal Face of Nanga Parbat",
+        "Explore wooden houses and terraced fields",
+        "Short hike to scenic ridges",
+        "Cultural interaction with locals",
+        "Overnight stay at guesthouse or camping"
+      ]
+    },
+    {
+      "day": 4,
+      "title": "Deosai, Burzil Top & Minimarg",
+      "description": "",
+      "highlights": [
+        "Breakfast and departure for Deosai National Park",
+        "Visit Sadpara Lake and Sheosar Lake",
+        "Explore Deosai Plateau – Roof of the World",
+        "Travel to Astor and Burzil Top",
+        "Visit Minimarg village and Rainbow Lake",
+        "Dinner and overnight stay at Minimarg camping site"
+      ]
+    },
+    {
+      "day": 5,
+      "title": "Domail to Skardu Road Journey",
+      "description": "",
+      "highlights": [
+        "Breakfast at Minimarg Domail",
+        "Scenic road journey back to Skardu",
+        "Stops at Deosai viewpoints",
+        "Optional shopping at Skardu Bazaar",
+        "Overnight stay in Skardu"
+      ]
+    },
+    {
+      "day": 6,
+      "title": "Departure to Islamabad",
+      "description": "",
+      "highlights": [
+        "Final buffet breakfast at hotel",
+        "Transfer to Skardu International Airport",
+        "Return flight to Islamabad",
+        "Tour concludes with unforgettable memories"
+      ]
+    }
+  ],
+  "included": [
+    "Air Tickets both sides (one-way window seat)",
+    "Private Transport (Parado TZ 2004–07 New Model)",
+    "Fuel & Toll Tax",
+    "5 Nights Accommodation",
+    "5 Breakfasts"
+  ],
+  "notIncluded": [
+    "Lunch & Dinner",
+    "Personal expenses",
+    "Recreation activities, boating, jeep rides",
+    "Any item not mentioned in included services"
+  ],
+  "featured": false
+}
+,
+{
+  "id": "4",
+  "name": "7 Days By Air Trip to Skardu Valley (Couple)",
+  "location": "Skardu Valley, Pakistan",
+  "region": "Skardu",
+  "duration": 7,
+  "description": "A romantic 7-day couple tour exploring the heart of Skardu Valley. Visit alpine lakes, waterfalls, deserts, ancient forts, lush meadows, and cultural villages while enjoying scenic flights and comfortable stays.",
+  "image": "/images/tours/Picture2.jpg",
+  "galleryImages": [
+    "/images/tours/Picture2.jpg",
+    "/images/tours/Picture1.jpg",
+    "/images/tours/Picture3.jpg",
+    "/images/tours/Picture4.jpg"
+  ],
+  "categories": ["Deluxe", "Executive", "Luxury"],
+  "packageTypes": ["Couple"],
+  "transport": "By Air",
+  "basePrice": 400000,
+  "packages": [
+    {
+      "category": "Deluxe",
+      "price": 400000,
+      "features": [
+        "Hotel Himalaya / Al Noor Starlet Hotel / Dirleh Resort (Deluxe Room)"
+      ]
+    },
+    {
+      "category": "Executive",
+      "price": 550000,
+      "features": [
+        "Khar Resort Skardu / Guman Resort / PC Legacy / Rivage Resort Skardu"
+      ]
+    },
+    {
+      "category": "Luxury",
+      "price": 640000,
+      "features": [
+        "Khoj Resorts (Deluxe Room) or Rivage Resort Skardu (Executive Room)"
+      ]
+    }
+  ],
+  "itinerary": [
+    {
+      "day": 1,
+      "title": "Arrival & Kachura Lakes",
+      "description": "",
+      "highlights": [
+        "Scenic morning flight from Islamabad to Skardu",
+        "Meet & greet at Skardu International Airport",
+        "Visit Shangri-La Resort (Lower Kachura Lake)",
+        "Explore Upper Kachura Lake and Soq Valley",
+        "Sunset views and leisure time",
+        "Overnight stay at hotel"
+      ]
+    },
+    {
+      "day": 2,
+      "title": "Waterfalls & Cold Desert",
+      "description": "",
+      "highlights": [
+        "Breakfast at hotel",
+        "Visit Manthoka Waterfall",
+        "Photo stop at Chocolate Rock",
+        "Evening visit to Sarfaranga Cold Desert",
+        "Overnight stay in Skardu"
+      ]
+    },
+    {
+      "day": 3,
+      "title": "Forts, Lakes & Ancient Carvings",
+      "description": "",
+      "highlights": [
+        "Visit historic Shigar Fort",
+        "Explore the beautiful Blind Lake",
+        "Visit Sadpara Lake",
+        "See the 7th-century Buddha Rock carving",
+        "Overnight stay in Skardu"
+      ]
+    },
+    {
+      "day": 4,
+      "title": "Basho Meadows (If Deosai Is Closed)",
+      "description": "",
+      "highlights": [
+        "Breakfast at hotel",
+        "Transfer to 4x4 jeeps",
+        "Drive to Basho Valley",
+        "Visit Basho Village and Suspension Bridge",
+        "Explore Basho Meadows",
+        "Return to Skardu for overnight stay"
+      ]
+    },
+    {
+      "day": 5,
+      "title": "Khaplu Valley & Historic Forts",
+      "description": "",
+      "highlights": [
+        "Drive to Khaplu Valley",
+        "Visit Khaplu Palace",
+        "Explore Chaqchan Mosque (700 years old)",
+        "Walk through Khaplu bazaars and apricot orchards",
+        "Return to Skardu for overnight stay"
+      ]
+    },
+    {
+      "day": 6,
+      "title": "Skardu City & Optional Chunda Valley",
+      "description": "",
+      "highlights": [
+        "Visit Skardu Bazaar for local handicrafts",
+        "Optional walk along the Indus River",
+        "Visit Nangsoq Organic Village",
+        "Leisure time and relaxation",
+        "Overnight stay in Skardu"
+      ]
+    },
+    {
+      "day": 7,
+      "title": "Departure to Islamabad",
+      "description": "",
+      "highlights": [
+        "Final buffet breakfast at hotel",
+        "Transfer to Skardu International Airport",
+        "Return flight to Islamabad",
+        "Tour ends with unforgettable memories"
+      ]
+    }
+  ],
+  "included": [
+    "Air Tickets both sides (one-way window seat)",
+    "Private Transport (Parado TZ 2004–07 New Model)",
+    "Fuel & Toll Tax",
+    "6 Nights Accommodation",
+    "6 Breakfasts"
+  ],
+  "notIncluded": [
+    "Lunch & Dinner",
+    "Personal expenses",
+    "Entry tickets, recreation activities, boating, jeep rides",
+    "Any item not mentioned in included services"
+  ],
+  "featured": false
+},
+
+
+{
+  "id": "5",
+  "name": "4 Days Trip to Swat, Kalam & Malam Jabba",
+  "location": "Swat, Kalam & Malam Jabba, Pakistan",
+  "region": "Swat",
+  "duration": 4,
+  "description": "A scenic 4-day tour to Swat Valley covering Kalam, Mahodand Lake, Ushu Forest, and Malam Jabba. Enjoy lush forests, alpine lakes, waterfalls, cultural sites, and adventure activities in Pakistan’s most beautiful northern valleys.",
+  "image": "/images/tours/Picture2.jpg",
+  "galleryImages": [
+    "/images/tours/Picture2.jpg",
+    "/images/tours/Picture1.jpg",
+    "/images/tours/Picture3.jpg"
+  ],
+  "categories": ["Single", "Solo", "Couple"],
+  "packageTypes": ["Single", "Solo", "Couple"],
+  "transport": "By Road",
+  "basePrice": 30000,
+  "packages": [
+    {
+      "category": "Single",
+      "price": 30000,
+      "features": [
+        "03 persons sharing room"
+      ]
+    },
+    {
+      "category": "Solo",
+      "price": 45000,
+      "features": [
+        "Single room accommodation"
+      ]
+    },
+    {
+      "category": "Couple",
+      "price": 70000,
+      "features": [
+        "Separate room for couple"
+      ]
+    }
+  ],
+  "itinerary": [
+    {
+      "day": 1,
+      "title": "Islamabad to Kalam Valley",
+      "description": "",
+      "highlights": [
+        "Early morning pickup from Islamabad",
+        "Breakfast stop at Shakardara",
+        "Visit Shingardar Stupa (Gandhara civilization)",
+        "Explore Bahrain Bazaar",
+        "Travel towards Kalam Valley",
+        "Photography and sightseeing",
+        "Dinner and overnight stay in Kalam"
+      ]
+    },
+    {
+      "day": 2,
+      "title": "Mahodand Lake, Ushu Forest & Blue Water",
+      "description": "",
+      "highlights": [
+        "Breakfast at hotel",
+        "4x4 jeep excursion to Mahodand Lake (if open)",
+        "Explore snow-covered Ushu Forest",
+        "Visit Blue Water glacier-fed river",
+        "Photography and sightseeing",
+        "Dinner and overnight stay in Kalam"
+      ]
+    },
+    {
+      "day": 3,
+      "title": "Kalam to Malam Jabba Exploration",
+      "description": "",
+      "highlights": [
+        "Breakfast at hotel",
+        "Travel to Malam Jabba ski resort",
+        "Sightseeing and photography",
+        "Optional activities: skiing, chair lift, zip lining (personal expense)",
+        "Bonfire night",
+        "Dinner and overnight stay in Malam Jabba"
+      ]
+    },
+    {
+      "day": 4,
+      "title": "Return to Islamabad",
+      "description": "",
+      "highlights": [
+        "Breakfast at hotel",
+        "Visit Marghazar (White Palace of Swat)",
+        "Sightseeing and photography",
+        "Departure for Islamabad",
+        "Arrival in Islamabad by evening",
+        "Tour ends with unforgettable memories"
+      ]
+    }
+  ],
+  "included": [
+    "Private transport (Coaster 5C New Model)",
+    "Fuel & Toll Tax",
+    "3 Nights Accommodation",
+    "4 Breakfasts & 3 Dinners",
+    "Jeep for sightseeing",
+    "Tour guide services"
+  ],
+  "notIncluded": [
+    "Entry or activity tickets",
+    "Boating expenses",
+    "Personal expenses",
+    "Horse riding or skiing charges",
+    "Any item not mentioned in included services"
+  ],
+  "featured": false
+}
+,
   {
     id: "6",
     name: "Machu Picchu Trek",
