@@ -1,5 +1,5 @@
 export type TourCategory = "Deluxe" | "Executive" | "Luxury";
-export type TourRegion = "Skardu" |  "Swat"| "Minimarg" | "Hunza" ;
+export type TourRegion = "Skardu" | "Deosai" | "Minimarg" | "Hunza" | "Swat";
 export type PackageType = "Couple" | "Family" | "Group";
 export type TransportType = "By Road" | "By Air";
 
