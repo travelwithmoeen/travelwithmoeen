@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 export default function Tours() {
   // Filter states
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 6000]);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000000]);
   const [selectedCategories, setSelectedCategories] = useState<TourCategory[]>([]);
   const [selectedRegions, setSelectedRegions] = useState<TourRegion[]>([]);
   const [selectedPackageTypes, setSelectedPackageTypes] = useState<PackageType[]>([]);
@@ -59,7 +59,7 @@ export default function Tours() {
 
   // Clear all filters
   const handleClearFilters = () => {
-    setPriceRange([0, 6000]);
+    setPriceRange([0, 500000]);
     setSelectedCategories([]);
     setSelectedRegions([]);
     setSelectedPackageTypes([]);

@@ -96,7 +96,7 @@ export default function TourDetails() {
           {/* Left Column - Details */}
           <div className="lg:col-span-2">
             {/* Description */}
-            <Card className="mb-8">
+            {/* <Card className="mb-8">
               <CardHeader>
                 <CardTitle className="accent-underline pb-2">
                   About This Tour
@@ -107,7 +107,7 @@ export default function TourDetails() {
                   {tour.description}
                 </p>
               </CardContent>
-            </Card>
+            </Card> */}
             {/* Included / Not Included */}
             <div className="grid gap-6 md:grid-cols-2">
               <Card>
@@ -169,12 +169,12 @@ export default function TourDetails() {
                   defaultValue={tour.packages[0].category}
                   className="w-full"
                 >
-                  <TabsList className="mb-4 grid w-full grid-cols-1 gap-1">
+                  <TabsList className="mb-6 grid w-full grid-cols-3 h-auto p-1 bg-muted ">
                     {tour.packages.map((pkg) => (
                       <TabsTrigger
                         key={pkg.category}
                         value={pkg.category}
-                        className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                        className="py-2.5 text-sm font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm"
                       >
                         {pkg.category}
                       </TabsTrigger>
@@ -182,18 +182,18 @@ export default function TourDetails() {
                   </TabsList>
 
                   {tour.packages.map((pkg) => (
-                    <TabsContent key={pkg.category} value={pkg.category}>
+                    <TabsContent key={pkg.category} value={pkg.category} className="mt-0">
                       <div className="space-y-4">
                         {/* Price */}
-                        <div className="text-center">
+                        <div className="text-center py-4 bg-muted/30 rounded-lg">
                           <span className="text-sm text-muted-foreground">
                             Starting from
                           </span>
-                          <p className="text-3xl font-bold text-primary">
-                            ${pkg.price.toLocaleString()}
+                          <p className="text-3xl font-bold text-primary my-1">
+                            {pkg.price.toLocaleString()}.PKR
                           </p>
                           <span className="text-sm text-muted-foreground">
-                            per person
+                            per Couple
                           </span>
                         </div>
 
@@ -211,7 +211,7 @@ export default function TourDetails() {
                         </ul>
 
                         {/* CTA */}
-                        <Button  className="w-full">
+                        <Button className="w-full">
                           Book Now
                         </Button>
                       </div>

@@ -104,17 +104,17 @@ export default function FilterSidebar({
               onPriceRangeChange(value as [number, number])
             }
             min={0}
-            max={6000}
-            step={100}
+            max={500000}
+            step={5000}
             className="mb-3"
           />
           <div className="flex items-center justify-between text-sm">
             <span className="font-medium text-gold">
-              ${priceRange[0].toLocaleString()}
+              {priceRange[0].toLocaleString()}PKR
             </span>
             <span className="text-muted-navy">to</span>
             <span className="font-medium text-gold">
-              ${priceRange[1].toLocaleString()}
+              {priceRange[1].toLocaleString()}PKR
             </span>
           </div>
         </div>

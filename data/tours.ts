@@ -44,12 +44,12 @@ export const tours: Tour[] = [
     region: "Skardu",
     duration: 4,
     description: "Join us for an unforgettable group adventure exploring the majestic beauty of Skardu, Deosai National Park, and Minimarg. Experience pristine lakes, stunning landscapes, and the unique culture of Baltistan.",
-    image: "https://images.unsplash.com/photo-1586348943529-beaae6c28db9?w=800&q=80",
+    image: "/images/tours/Picture2.jpg",
     galleryImages: [
-      "https://images.unsplash.com/photo-1566837945700-30057527ade0?w=600&q=80",
-      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=80",
-      "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80",
-      "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=600&q=80",
+      "/images/tours/Picture1.jpg",
+       "/images/tours/Picture2.jpg",
+       "/images/tours/Picture3.jpg",
+       "/images/tours/Picture4.jpg",
     ],
     categories: ["Deluxe", "Executive", "Luxury"],
     packageTypes: ["Couple", "Family", "Group"],
@@ -76,7 +76,7 @@ export const tours: Tour[] = [
       { 
         day: 1, 
         title: "Explore the charming Beauty of Kachura and Shangrila Lake", 
-        description: "Morning Flight from Islamabad to Skardu (One of world scenic flight). Meet and greet at Skardu International Airport and transferred to your hotel for check-in or directly leave for tour.Visit the serene Shangri-La Resort (Lower Kachura Lake).Upper Kachura Lake, followed by an exploration of the hidden Soq Valley.Evening: Enjoy leisure time and stunning sunset viewsOver Night stay in Hotel. ", 
+        description: "", 
         highlights: [
           "Morning flight from Islamabad to Skardu International Airport",
           "Meet and greet at airport, transfer to hotel for check-in",
@@ -89,7 +89,7 @@ export const tours: Tour[] = [
       { 
         day: 2, 
         title: "Waterfalls, Rock and Deserts!", 
-        description: "Explore Morning: After breakfast, depart for a scenic drive to the magnificent Manthoka Waterfall.En route: Stop for photos at the unique Chocolate Rock.Evening: Experience the Sarfaranga Cold Desert at dusk, a high-altitude desert with stunning dunes.Overnight stay at hotel. ", 
+        description: " ", 
         highlights: [
           "Explore Morning: After breakfast, depart for a scenic drive to the magnificent Manthoka Waterfall.",
           "En route: Stop for photos at the unique Chocolate Rock.",
@@ -101,43 +101,31 @@ export const tours: Tour[] = [
       },
       { 
         day: 3, 
-        title: "Rainbow Lakes and Indian Border", 
-        description: "Experience the scenic beauty of Domail Valley and the famous Rainbow Lake. Visit Minimarg, the last village of Pakistan before the Indian border, and explore its unique culture.", 
+        title: "Experience the vibrant culture and scenic beauty of Shigar Valley.", 
+        description: "", 
         highlights: [
-          "Breakfast at Astor with refreshments",
-          "Depart for Minimarg, last village before Indian border",
-          "Explore the village and its unique culture and way of life",
-          "Head towards base camp of Kargil for mountain views",
-          "Visit the famous Rainbow Lake known for vibrant colors",
-          "Return to Chilim for dinner",
-          "Night stay at Minimarg Camping Side"
+          "Morning: Following breakfast, ",
+          "Visit Shigar Fort ",
+          "visit the beautiful Blind Lake",
+          "Afternoon: Visit the expansive Sadpara Lake and the nearby Buddha Rock, a 7th-century carving.",
+          "Overnight stay at Hotel.",
+      
         ] 
       },
       { 
         day: 4, 
-        title: "Back to Skardu", 
-        description: "Departure from Minimarg through the stunning Deosai plateau. Return to Skardu with optional activities including shopping for local souvenirs or a relaxing walk in Skardu Bazaar.", 
+        title: "Take flight back from Skardu Airport", 
+        description: "", 
         highlights: [
-          "Breakfast at Chilim",
-          "Begin journey towards Astor with scenic stops",
-          "Travel through Deosai back to Skardu Valley",
-          "Optional activities: shopping or walking in Skardu Bazaar",
-          "Dinner & overnight stay at hotel in Skardu"
+          "Morning: Enjoy a final buffet breakfast at the resort.",
+          "Transfer: You will be transferred to Skardu Airport for your return flight to Islamabad, filled with ",
+          "unforgettable memories.",
+       
         ] 
       },
-      { 
-        day: 5, 
-        title: "Departure to Islamabad", 
-        description: "Enjoy a final breakfast at the hotel, reminiscing about your incredible journey. Transfer to Skardu International Airport and fly out with fond memories of the majestic mountains, historic forts, and unparalleled hospitality of Baltistan.", 
-        highlights: [
-          "Final breakfast at hotel",
-          "Transfer to Skardu International Airport",
-          "Departure flight back to Islamabad",
-          "End of services with fond memories"
-        ] 
-      },
+    
     ],
-    included: ["Air Tickets both sides (Window Seat - One Way)", "Private Transport (Parado TZ 2004-07 New Model)", "Fuel & Toll Tax", "4 Nights Accommodation", "5 Breakfasts"],
+    included: ["Air Tickets both Sides (With Window Seat- One way)", "Private Transport (Parado TZ 2004-07 New Model) (1 Vehicle)", "Fuel & Toll Tax", "3 Night`s Accommodation", "3 Breakfasts"],
     notIncluded: ["Lunch & Dinner", "Personal Expenses", "Recreation, Boating, Jeeps", "Any items not mentioned in services"],
     featured: true,
   },
@@ -150,7 +138,7 @@ export const tours: Tour[] = [
     description: "Discover the mysteries of ancient Egypt with visits to pyramids, temples, and a Nile cruise through history.",
     image: "https://images.unsplash.com/photo-1539650116574-8efeb43e2750?w=800&q=80",
     galleryImages: [
-      "https://images.unsplash.com/photo-1503177119275-0aa32b3a9368?w=600&q=80",
+      "/images/gallery/egypt1.jpg",
       "https://images.unsplash.com/photo-1568322445389-f64ac2515020?w=600&q=80",
       "https://images.unsplash.com/photo-1553913861-c0fddf2619ee?w=600&q=80",
       "https://images.unsplash.com/photo-1541769669-3f75b2dcf440?w=600&q=80",
