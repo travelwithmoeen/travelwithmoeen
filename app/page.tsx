@@ -27,6 +27,7 @@ import { TestimonialCarousel } from "@/components/home/TestimonialCarousel";
 import { LatestBlogsSection } from "@/components/home/LatestBlogsSection";
 import { PopularToursSection } from "@/components/home/PopularToursSection";
 import { PopularDestinationsCarousel } from "@/components/home/PopularDestinationsCarousel";
+import { PackageCalculator } from "@/components/home/PackageCalculator";
 const featuredTours = [
   {
     id: 1,
@@ -90,6 +91,10 @@ export default function Home() {
       {/* <FanGallery /> */}
 
       {/* Featured Tours */}
+
+   {/* Package Calculator */}
+      <PackageCalculator />
+
 
       {/* Benefits Section */}
    {/* Popular Destinations Carousel */}
