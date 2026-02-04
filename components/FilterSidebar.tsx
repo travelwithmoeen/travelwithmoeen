@@ -32,10 +32,10 @@ interface FilterSidebarProps {
   onClearFilters: () => void;
 }
 
-const categories: TourCategory[] = ["Deluxe", "Executive", "Luxury"];
-const regions: TourRegion[] = ["Skardu", "Deosai", "Minimarg", "Hunza"];
-const packageTypes: PackageType[] = ["Couple", "Family", "Group"];
-const transportTypes: TransportType[] = ["By Road", "By Air"];
+const categories: TourCategory[] = ["Deluxe", "Executive", "Luxury", "Single", "Couple",  "Private"];
+const regions: TourRegion[] = ["Skardu",  "Hunza", "Swat", "Kashmir", "Islamabad", "Fairy Meadows", "Astore"];
+const packageTypes: PackageType[] = ["Couple", "Family", "Group", "City Tour", "Private"];
+const transportTypes: TransportType[] = ["By Road", "By Air", "By Air & Road"];
 const durations = [
   { value: "all", label: "All Durations" },
   { value: "1-3", label: "1-3 Days" },
