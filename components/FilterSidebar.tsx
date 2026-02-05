@@ -41,6 +41,7 @@ const durations = [
   { value: "1-3", label: "1-3 Days" },
   { value: "4-5", label: "4-5 Days" },
   { value: "6-7", label: "6-7 Days" },
+  { value: "8-10", label: "8-10 Days" },
 ];
 
 export default function FilterSidebar({
@@ -73,7 +74,7 @@ export default function FilterSidebar({
       {/* Sidebar */}
       <aside
         className={cn(
-          "filter-sidebar fixed left-0 top-0 z-40 h-full w-80 overflow-y-auto p-6 transition-transform duration-300 lg:static lg:translate-x-0 border-2 border-neutral-200",
+          "filter-sidebar fixed left-0 top-0 z-40 h-full w-60 overflow-y-auto p-6 transition-transform duration-300 lg:sticky lg:top-4 lg:h-[calc(100vh-2rem)] lg:translate-x-0 lg:self-start border-2 border-neutral-200 bg-background rounded-lg",
           isOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
@@ -104,7 +105,7 @@ export default function FilterSidebar({
               onPriceRangeChange(value as [number, number])
             }
             min={0}
-            max={500000}
+            max={1000000}
             step={5000}
             className="mb-3"
           />

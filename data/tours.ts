@@ -1778,7 +1778,7 @@ export const tours: Tour[] = [
 
 
 {
-  "id": "14",
+  "id": "16",
   "name": "5 Days By Air Trip to Astore, Minimarg & Skardu (Couple)",
   "location": "Astore, Minimarg & Skardu, Gilgit-Baltistan, Pakistan",
   "region": "Astore",

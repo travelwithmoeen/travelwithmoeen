@@ -7,8 +7,8 @@ import Link from "next/link";
 
 const navLinks = [
   { name: "Home", href: "/", hasDropdown: false },
-  { name: "Destinations", href: "/destinations", hasDropdown: true },
-  { name: "Tours", href: "/tours", hasDropdown: true },
+  { name: "Destinations", href: "/destinations", hasDropdown: false },
+  { name: "Tours", href: "/tours", hasDropdown: false },
   { name: "About", href: "/about", hasDropdown: false },
   { name: "Gallery", href: "/gallery", hasDropdown: false },
     { name: "Blog", href: "/blog", hasDropdown: false },
@@ -158,9 +158,10 @@ const Navbar = () => {
             <button className="p-2.5 hover:bg-muted rounded-full transition-colors">
               {/* <Search className="h-5 w-5 text-foreground/70" /> */}
             </button>
-            {/* <Button className="gap-2 rounded-full bg-gradient-gold text-primary font-semibold hover:opacity-90 shadow-md hover:shadow-lg transition-all px-6">
-              Book Now
-            </Button> */}
+            <Button className="gap-2 rounded-full bg-gradient-gold text-primary font-semibold hover:opacity-90 shadow-md hover:shadow-lg transition-all px-6">
+              <Link href="/customize-trip" className="flex items-center gap-2">
+              Book Trip</Link>
+            </Button>
           </div>
 
           {/* Mobile Menu Button */}

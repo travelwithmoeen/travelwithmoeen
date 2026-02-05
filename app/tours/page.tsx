@@ -1,10 +1,14 @@
 "use client";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { TourCard } from "@/components/TourCard";
 import  FilterSidebar  from "@/components/FilterSidebar";
 import  SearchAndSort  from "@/components/SearchAndSort";
 import { tours, Tour, TourCategory, TourRegion, PackageType, TransportType } from "@/data/tours";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+
+const ITEMS_PER_PAGE = 12;
 
 export default function Tours() {
   // Filter states
@@ -20,6 +24,9 @@ export default function Tours() {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("latest");
   const [view, setView] = useState<"grid" | "list">("grid");
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Handle category toggle
   const handleCategoryChange = (category: TourCategory) => {
@@ -59,7 +66,7 @@ export default function Tours() {
 
   // Clear all filters
   const handleClearFilters = () => {
-    setPriceRange([0, 500000]);
+    setPriceRange([0, 1000000]);
     setSelectedCategories([]);
     setSelectedRegions([]);
     setSelectedPackageTypes([]);
@@ -137,6 +144,22 @@ export default function Tours() {
     return result;
   }, [searchQuery, priceRange, selectedCategories, selectedRegions, selectedPackageTypes, selectedTransport, selectedDuration, sortBy]);
 
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, priceRange, selectedCategories, selectedRegions, selectedPackageTypes, selectedTransport, selectedDuration, sortBy]);
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredTours.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const paginatedTours = filteredTours.slice(startIndex, endIndex);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   return (
     <div className="min-h-screen bg-background">
     
@@ -152,7 +175,7 @@ export default function Tours() {
       </section>
 
       {/* Main Content */}
-      <div className="container mx-auto flex px-4 py-8 ">
+      <div className="container mx-auto flex items-start px-4 py-8 gap-0">
         {/* Filter Sidebar */}
         <FilterSidebar
           isOpen={sidebarOpen}
@@ -189,24 +212,95 @@ export default function Tours() {
 
           {/* Tour Grid/List */}
           {filteredTours.length > 0 ? (
-            <div
-              className={cn(
-                "grid gap-6",
-                view === "grid"
-                  ? "grid-cols-1 sm:grid-cols-2 xl:grid-cols-3  text-gold"
-                  : "grid-cols-1"
-              )}
-            >
-              {filteredTours.map((tour, index) => (
-                <div
-                  key={tour.id}
-                  className="animate-fade-in"
-                  style={{ animationDelay: `${index * 0.1}s` }}
-                >
-                  <TourCard tour={tour} view={view} />
+            <>
+              <div
+                className={cn(
+                  "grid gap-6",
+                  view === "grid"
+                    ? "grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 text-gold"
+                    : "grid-cols-1"
+                )}
+              >
+                {paginatedTours.map((tour, index) => (
+                  <div
+                    key={tour.id}
+                    className="animate-fade-in"
+                    style={{ animationDelay: `${index * 0.05}s` }}
+                  >
+                    <TourCard tour={tour} view={view} />
+                  </div>
+                ))}
+              </div>
+
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <div className="mt-8 flex flex-col items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+
+                    {/* Page Numbers */}
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                        // Show first page, last page, current page, and pages around current
+                        const showPage =
+                          page === 1 ||
+                          page === totalPages ||
+                          Math.abs(page - currentPage) <= 1;
+
+                        const showEllipsis =
+                          (page === 2 && currentPage > 3) ||
+                          (page === totalPages - 1 && currentPage < totalPages - 2);
+
+                        if (showEllipsis && !showPage) {
+                          return (
+                            <span key={page} className="px-2 text-muted-foreground">
+                              ...
+                            </span>
+                          );
+                        }
+
+                        if (!showPage) return null;
+
+                        return (
+                          <Button
+                            key={page}
+                            variant={currentPage === page ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => handlePageChange(page)}
+                            className={cn(
+                              "min-w-[2.5rem]",
+                              currentPage === page && "bg-navy text-cream hover:bg-navy-light"
+                            )}
+                          >
+                            {page}
+                          </Button>
+                        );
+                      })}
+                    </div>
+
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+
+                  <p className="text-sm text-muted-foreground">
+                    Showing {startIndex + 1}-{Math.min(endIndex, filteredTours.length)} of {filteredTours.length} tours
+                  </p>
                 </div>
-              ))}
-            </div>
+              )}
+            </>
           ) : (
             <div className="py-16 text-center">
               <p className="text-lg font-medium text-muted-foreground">
