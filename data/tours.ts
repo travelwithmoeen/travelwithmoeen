@@ -1784,12 +1784,12 @@ export const tours: Tour[] = [
   "region": "Astore",
   "duration": 5,
   "description": "A romantic 5-day by-air couple getaway to Astore, Minimarg, and Skardu. Explore the breathtaking Kachura Lakes, Burzil Top, Rainbow Lake of Minimarg near the Indian border, and the scenic valleys of Baltistan with comfortable stays and private transport.",
-  "image": "/images/tours/Picture4.jpg",
+  "image": "/images/All_Tour_Images/Astore_valley/5daytrip/Picture4.jpg",
   "galleryImages": [
-    "/images/tours/Picture4.jpg",
-    "/images/tours/Picture1.jpg",
-    "/images/tours/Picture2.jpg",
-    "/images/tours/Picture3.jpg"
+    "/images/All_Tour_Images/Astore_valley/5daytrip/Picture1.jpg",
+    "/images/All_Tour_Images/Astore_valley/5daytrip/Picture2.jpg",
+    "/images/All_Tour_Images/Astore_valley/5daytrip/Picture3.jpg",
+    "/images/All_Tour_Images/Astore_valley/5daytrip/Picture4.jpg"
   ],
   "categories": ["Couple"],
   "packageTypes": ["Private", "Couple"],
@@ -1920,12 +1920,12 @@ export const tours: Tour[] = [
   "region": "Astore",
   "duration": 6,
   "description": "A romantic 6-day by-air couple adventure to Astore, Minimarg, and Skardu. Experience the beauty of Kachura Lakes, Rama Meadows, Tarishing, Burzil Top, Rainbow Lake near the Indian border, and the scenic valleys of Baltistan with private transport and comfortable stays.",
-  "image": "/images/tours/Picture5.jpg",
+  "image": "/images/All_Tour_Images/Astore_valley/6daytrip/Picture4.jpg",
   "galleryImages": [
-    "/images/tours/Picture5.jpg",
-    "/images/tours/Picture1.jpg",
-    "/images/tours/Picture2.jpg",
-    "/images/tours/Picture3.jpg"
+    "/images/All_Tour_Images/Astore_valley/6daytrip/Picture1.jpg",
+    "/images/All_Tour_Images/Astore_valley/6daytrip/Picture2.jpg",
+    "/images/All_Tour_Images/Astore_valley/6daytrip/Picture3.png",
+    "/images/All_Tour_Images/Astore_valley/6daytrip/Picture4.jpg"
   ],
   "categories": ["Couple"],
   "packageTypes": ["Private", "Couple"],
