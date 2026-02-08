@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { TourCard } from "@/components/TourCard";
 import  FilterSidebar  from "@/components/FilterSidebar";
@@ -11,7 +11,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const ITEMS_PER_PAGE = 12;
 
-export default function Tours() {
+function ToursContent() {
   const searchParams = useSearchParams();
 
   // Filter states
@@ -341,5 +341,24 @@ export default function Tours() {
         </main>
       </div>
     </div>
+  );
+}
+
+export default function Tours() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-background">
+        <section className="bg-secondary px-4 py-12 text-center">
+          <h1 className="mb-2 text-3xl font-bold text-secondary-foreground md:text-4xl">
+            Explore Our Tours
+          </h1>
+          <p className="mx-auto max-w-2xl text-secondary-foreground/80">
+            Loading tours...
+          </p>
+        </section>
+      </div>
+    }>
+      <ToursContent />
+    </Suspense>
   );
 }
