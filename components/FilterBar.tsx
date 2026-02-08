@@ -1,49 +1,65 @@
 "use client";
 
-import React, { useState } from "react";
-import { MapPin, Activity, Calendar as CalendarIcon, Award, Plane, ChevronDown, Search } from "lucide-react";
+import React, { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
+import { MapPin, Calendar as CalendarIcon, Award, Plane, ChevronDown, Search } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { tours } from "@/data/tours";
 
 interface FilterOption {
   value: string;
   label: string;
 }
 
-const destinationOptions: FilterOption[] = [
-  { value: "hunza", label: "Hunza Valley" },
-  { value: "skardu", label: "Skardu" },
-  { value: "naran", label: "Naran Kaghan" },
-  { value: "swat", label: "Swat Valley" },
-  { value: "murree", label: "Murree" },
-  { value: "neelum", label: "Neelum Valley" },
-];
+// Helper functions to get unique values from tours data
+function getUniqueRegions(): FilterOption[] {
+  const regions = [...new Set(tours.map(tour => tour.region))];
+  return regions.map(region => ({
+    value: region,
+    label: region === "Fairy Meadows" || region === "Islamabad" ? region : `${region} Valley`
+  })).sort((a, b) => a.label.localeCompare(b.label));
+}
 
-const activityOptions: FilterOption[] = [
-  { value: "all", label: "All Tours" },
-  { value: "adventure", label: "Adventure" },
-  { value: "cultural", label: "Cultural" },
-  { value: "hiking", label: "Hiking & Trekking" },
-  { value: "family", label: "Family Tours" },
-  { value: "luxury", label: "Luxury" },
-];
+function getUniqueCategories(): FilterOption[] {
+  const categories = [...new Set(tours.flatMap(tour => tour.categories))];
+  // Filter to show only main plan categories (Deluxe, Executive, Luxury)
+  const planCategories = categories.filter(cat =>
+    ["Deluxe", "Executive", "Luxury"].includes(cat)
+  );
+  return planCategories.map(cat => ({
+    value: cat,
+    label: cat
+  }));
+}
 
-const durationOptions: FilterOption[] = [
-  { value: "1-day", label: "1 day" },
-  { value: "1-3-days", label: "1-3 days" },
-  { value: "4-7-days", label: "4-7 days" },
-  { value: "8-plus-days", label: "8+ days" },
-];
+function getUniqueTransportTypes(): FilterOption[] {
+  const transports = [...new Set(tours.map(tour => tour.transport))];
+  return transports.map(transport => ({
+    value: transport,
+    label: transport
+  }));
+}
 
-const planCategoryOptions: FilterOption[] = [
-  { value: "deluxe", label: "Deluxe" },
-  { value: "executive", label: "Executive" },
-  { value: "luxury", label: "Luxury" },
-];
+function getDurationOptions(): FilterOption[] {
+  // Get durations from tours
+  const durations = tours.map(tour => tour.duration);
+  const options: FilterOption[] = [];
 
-const transportOptions: FilterOption[] = [
-  { value: "air", label: "By Air" },
-  { value: "road", label: "By Road" },
-];
+  if (durations.some(d => d >= 1 && d <= 3)) {
+    options.push({ value: "1-3", label: "1-3 days" });
+  }
+  if (durations.some(d => d >= 4 && d <= 5)) {
+    options.push({ value: "4-5", label: "4-5 days" });
+  }
+  if (durations.some(d => d >= 6 && d <= 7)) {
+    options.push({ value: "6-7", label: "6-7 days" });
+  }
+  if (durations.some(d => d >= 8 && d <= 10)) {
+    options.push({ value: "8-10", label: "8-10 days" });
+  }
+
+  return options;
+}
 
 interface FilterFieldProps {
   icon: React.ReactNode;
@@ -131,20 +147,43 @@ function FilterField({
 }
 
 export function FilterBar() {
+  const router = useRouter();
   const [destination, setDestination] = useState("");
-  const [activity, setActivity] = useState("");
   const [duration, setDuration] = useState("");
   const [planCategory, setPlanCategory] = useState("");
   const [transport, setTransport] = useState("");
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+
+  // Get dynamic options from tours data
+  const destinationOptions = useMemo(() => getUniqueRegions(), []);
+  const durationOptions = useMemo(() => getDurationOptions(), []);
+  const planCategoryOptions = useMemo(() => getUniqueCategories(), []);
+  const transportOptions = useMemo(() => getUniqueTransportTypes(), []);
 
   const handleDropdownToggle = (fieldId: string) => {
     setOpenDropdown(openDropdown === fieldId ? null : fieldId);
   };
 
   const handleSearch = () => {
-    console.log("Search filters:", { destination, activity, duration, planCategory, transport });
-    // Add search logic here
+    // Build query parameters
+    const params = new URLSearchParams();
+
+    if (destination) {
+      params.set("region", destination);
+    }
+    if (duration) {
+      params.set("duration", duration);
+    }
+    if (planCategory) {
+      params.set("category", planCategory);
+    }
+    if (transport) {
+      params.set("transport", transport);
+    }
+
+    // Navigate to tours page with filters
+    const queryString = params.toString();
+    router.push(`/tours${queryString ? `?${queryString}` : ""}`);
   };
 
   return (
@@ -157,26 +196,11 @@ export function FilterBar() {
               icon={<MapPin size={20} />}
               label="Destination"
               value={destination}
-              placeholder="Your city Region"
+              placeholder="Select Region"
               options={destinationOptions}
               isOpen={openDropdown === "destination"}
               onToggle={() => handleDropdownToggle("destination")}
               onSelect={setDestination}
-            />
-
-            {/* Divider */}
-            <div className="hidden lg:block w-px h-12 bg-slate-200" />
-
-            {/* Activity/Tour Type Field */}
-            <FilterField
-              icon={<Activity size={20} />}
-              label="All Tour"
-              value={activity}
-              placeholder="Choose Activity"
-              options={activityOptions}
-              isOpen={openDropdown === "activity"}
-              onToggle={() => handleDropdownToggle("activity")}
-              onSelect={setActivity}
             />
 
             {/* Divider */}

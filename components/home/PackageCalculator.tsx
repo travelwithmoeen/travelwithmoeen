@@ -17,7 +17,7 @@ import {
 import { Label } from "@/components/ui/label";
 import {
   roadDestinations, airDestinations, hotelCategories,
-  optionalAddOns, calculateTripPrice, getAvailableVehicles,
+  optionalAddOns, roadOnlyAddOns, calculateTripPrice, getAvailableVehicles,
   roadDepartures, airDepartures,
   type HotelCategory, type VehicleType,
 } from "@/data/pricing";
@@ -37,7 +37,8 @@ export function PackageCalculator() {
   const [hotelCategory, setHotelCategory] = useState<HotelCategory>("Deluxe (Lower)");
   const [vehicleType, setVehicleType] = useState<VehicleType>("Honda BRV");
   const [roomType, setRoomType] = useState<RoomType>("twin");
-  const [selectedAddOns, setSelectedAddOns] = useState<string[]>([]);
+  // Default: arrival_breakfast is selected for By Road mode
+  const [selectedAddOns, setSelectedAddOns] = useState<string[]>(["arrival_breakfast"]);
   const [showMatchingTours, setShowMatchingTours] = useState(false);
 
   const destinations = transportMode === "By Air" ? airDestinations : roadDestinations;
@@ -61,6 +62,15 @@ export function PackageCalculator() {
     setTransportMode(mode);
     setSelectedDestination("");
     setDeparture("Islamabad");
+
+    // Add/remove arrival_breakfast based on transport mode
+    if (mode === "By Road") {
+      setSelectedAddOns((prev) =>
+        prev.includes("arrival_breakfast") ? prev : [...prev, "arrival_breakfast"]
+      );
+    } else {
+      setSelectedAddOns((prev) => prev.filter((id) => id !== "arrival_breakfast"));
+    }
   };
 
   const pricing = useMemo(() => {
@@ -202,10 +212,49 @@ export function PackageCalculator() {
                       </Select>
                     </div>
 
-                    {/* 5. Vehicle Type (filtered by seats) */}
+   <div>
+                      <label className="mb-3 block text-xs font-semibold uppercase tracking-wide text-navy">
+                        <Users className="mr-1 inline h-3.5 w-3.5" /> 5. Travelers ({travelers})
+                      </label>
+                      <div className="flex items-center gap-4 pt-2">
+                        <Slider
+                          value={[travelers]}
+                          onValueChange={([val]) => setTravelers(val)}
+                          min={1}
+                          max={21}
+                          step={1}
+                          className="flex-1"
+                        />
+                        <span className="w-8 text-center font-semibold text-navy">{travelers}</span>
+                      </div>
+                    </div>
+
+
+
+                 
+
+                    {/* 6. Days */}
                     <div>
                       <label className="mb-3 block text-xs font-semibold uppercase tracking-wide text-navy">
-                        <Car className="mr-1 inline h-3.5 w-3.5" /> 5. Vehicle Type
+                        <Calendar className="mr-1 inline h-3.5 w-3.5" /> 6. Duration ({days} Days)
+                      </label>
+                      <div className="flex items-center gap-4 pt-2">
+                        <Slider
+                          value={[days]}
+                          onValueChange={([val]) => setDays(val)}
+                          min={1}
+                          max={15}
+                          step={1}
+                          className="flex-1"
+                        />
+                        <span className="w-8 text-center font-semibold text-navy">{days}</span>
+                      </div>
+                    </div>
+
+                     {/* 5. Vehicle Type (filtered by seats) */}
+                    <div>
+                      <label className="mb-3 block text-xs font-semibold uppercase tracking-wide text-navy">
+                        <Car className="mr-1 inline h-3.5 w-3.5" /> 7. Vehicle Type
                       </label>
                       <Select
                         value={vehicleType}
@@ -226,42 +275,6 @@ export function PackageCalculator() {
                       {selectedDestination && availableVehicles.length === 0 && (
                         <p className="mt-1.5 text-xs text-destructive">No vehicle fits {travelers} travelers</p>
                       )}
-                    </div>
-
-                    {/* 6. Days */}
-                    <div>
-                      <label className="mb-3 block text-xs font-semibold uppercase tracking-wide text-navy">
-                        <Calendar className="mr-1 inline h-3.5 w-3.5" /> 6. Duration ({days} Days)
-                      </label>
-                      <div className="flex items-center gap-4 pt-2">
-                        <Slider
-                          value={[days]}
-                          onValueChange={([val]) => setDays(val)}
-                          min={2}
-                          max={15}
-                          step={1}
-                          className="flex-1"
-                        />
-                        <span className="w-8 text-center font-semibold text-navy">{days}</span>
-                      </div>
-                    </div>
-
-                    {/* 7. Travelers */}
-                    <div>
-                      <label className="mb-3 block text-xs font-semibold uppercase tracking-wide text-navy">
-                        <Users className="mr-1 inline h-3.5 w-3.5" /> 7. Travelers ({travelers})
-                      </label>
-                      <div className="flex items-center gap-4 pt-2">
-                        <Slider
-                          value={[travelers]}
-                          onValueChange={([val]) => setTravelers(val)}
-                          min={1}
-                          max={21}
-                          step={1}
-                          className="flex-1"
-                        />
-                        <span className="w-8 text-center font-semibold text-navy">{travelers}</span>
-                      </div>
                     </div>
                   </div>
 
@@ -290,7 +303,23 @@ export function PackageCalculator() {
                       9. Optional Add-ons
                     </label>
                     <div className="flex flex-wrap gap-2">
+                      {/* Common add-ons */}
                       {optionalAddOns.map((addon) => (
+                        <Button
+                          key={addon.id}
+                          variant="outline"
+                          className={cn(
+                            "gap-2",
+                            selectedAddOns.includes(addon.id) && "border-navy bg-navy/10 text-navy"
+                          )}
+                          onClick={() => toggleAddOn(addon.id)}
+                        >
+                          {selectedAddOns.includes(addon.id) ? <Check className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                          {addon.name}
+                        </Button>
+                      ))}
+                      {/* Road-only add-ons (Arrival Breakfast) */}
+                      {transportMode === "By Road" && roadOnlyAddOns.map((addon) => (
                         <Button
                           key={addon.id}
                           variant="outline"

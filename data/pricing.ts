@@ -171,6 +171,14 @@ export const optionalAddOns: AddOn[] = [
   { id: "entry_tickets", name: "Entry Tickets", pricePerUnit: 2500, unit: "per_person" },
 ];
 
+// Road-only add-ons (Arrival Breakfast is default selected for By Road)
+export const roadOnlyAddOns: AddOn[] = [
+  { id: "arrival_breakfast", name: "Arrival Breakfast", pricePerUnit: 500, unit: "per_person" },
+];
+
+// Profit margin percentage
+export const profitMargin = 0.20; // 20%
+
 // ---- Vehicle Filtering by Seats ----
 export function getAvailableVehicles(destination: string, travelers: number): { type: VehicleType; rate: VehicleRate }[] {
   const destVehicles = vehiclePricing[destination];
@@ -213,9 +221,14 @@ export function calculateTripPrice(params: {
   const hotelTotal = nightlyRate * nights * roomsNeeded;
 
   // Vehicle cost
+  // cost_per_day = rent + fuel, total = (cost_per_day * days) + toll (toll is one-time)
   const vehicleData = vehiclePricing[destination];
   const vehicle = vehicleData?.[vehicleType];
-  const vehicleTotal = (vehicle?.per_day_total || 28000) * days;
+  const dailyRent = vehicle?.daily_rent || 14000;
+  const fuel = vehicle?.fuel || 10000;
+  const toll = vehicle?.toll || 4000;
+  const costPerDay = dailyRent + fuel;
+  const vehicleTotal = (costPerDay * days) + toll;
 
   // Air ticket & departure surcharge
   let airTicketTotal = 0;
@@ -230,10 +243,11 @@ export function calculateTripPrice(params: {
     }
   }
 
-  // Add-ons cost
+  // Add-ons cost (check both common and road-only add-ons)
   let addOnsTotal = 0;
+  const allAddOns = [...optionalAddOns, ...roadOnlyAddOns];
   selectedAddOns.forEach((addonId) => {
-    const addon = optionalAddOns.find((a) => a.id === addonId);
+    const addon = allAddOns.find((a) => a.id === addonId);
     if (addon) {
       switch (addon.unit) {
         case "per_person": addOnsTotal += addon.pricePerUnit * travelers; break;
@@ -244,7 +258,9 @@ export function calculateTripPrice(params: {
     }
   });
 
-  const grandTotal = hotelTotal + vehicleTotal + airTicketTotal + addOnsTotal + departureSurcharge;
+  const subtotal = hotelTotal + vehicleTotal + airTicketTotal + addOnsTotal + departureSurcharge;
+  const profitAmount = Math.round(subtotal * profitMargin);
+  const grandTotal = subtotal + profitAmount;
   const perPerson = Math.round(grandTotal / travelers);
 
   return { hotelTotal, vehicleTotal, airTicketTotal, addOnsTotal, departureSurcharge, grandTotal, perPerson };

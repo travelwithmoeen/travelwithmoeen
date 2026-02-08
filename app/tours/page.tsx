@@ -1,5 +1,6 @@
 "use client";
 import { useState, useMemo, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { TourCard } from "@/components/TourCard";
 import  FilterSidebar  from "@/components/FilterSidebar";
 import  SearchAndSort  from "@/components/SearchAndSort";
@@ -11,6 +12,8 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 const ITEMS_PER_PAGE = 12;
 
 export default function Tours() {
+  const searchParams = useSearchParams();
+
   // Filter states
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000000]);
@@ -27,6 +30,27 @@ export default function Tours() {
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
+
+  // Apply URL query parameters on mount
+  useEffect(() => {
+    const region = searchParams.get("region");
+    const duration = searchParams.get("duration");
+    const category = searchParams.get("category");
+    const transport = searchParams.get("transport");
+
+    if (region) {
+      setSelectedRegions([region as TourRegion]);
+    }
+    if (duration) {
+      setSelectedDuration(duration);
+    }
+    if (category) {
+      setSelectedCategories([category as TourCategory]);
+    }
+    if (transport) {
+      setSelectedTransport([transport as TransportType]);
+    }
+  }, [searchParams]);
 
   // Handle category toggle
   const handleCategoryChange = (category: TourCategory) => {
