@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { TourCategory, TourRegion, PackageType, TransportType } from "@/data/tours";
+import { TourCategory, TourRegion, TransportType } from "@/data/tours";
 import { cn } from "@/lib/utils";
 
 interface FilterSidebarProps {
@@ -23,8 +23,6 @@ interface FilterSidebarProps {
   onCategoryChange: (category: TourCategory) => void;
   selectedRegions: TourRegion[];
   onRegionChange: (region: TourRegion) => void;
-  selectedPackageTypes: PackageType[];
-  onPackageTypeChange: (packageType: PackageType) => void;
   selectedTransport: TransportType[];
   onTransportChange: (transport: TransportType) => void;
   selectedDuration: string;
@@ -32,9 +30,8 @@ interface FilterSidebarProps {
   onClearFilters: () => void;
 }
 
-const categories: TourCategory[] = ["Deluxe", "Executive", "Luxury", "Single", "Couple",  "Private"];
+const categories: TourCategory[] = ["Deluxe", "Executive", "Luxury"];
 const regions: TourRegion[] = ["Skardu",  "Hunza", "Swat", "Kashmir", "Islamabad", "Fairy Meadows", "Astore"];
-const packageTypes: PackageType[] = ["Couple", "Family", "Group", "City Tour", "Private"];
 const transportTypes: TransportType[] = ["By Road", "By Air", "By Air & Road"];
 const durations = [
   { value: "all", label: "All Durations" },
@@ -53,8 +50,6 @@ export default function FilterSidebar({
   onCategoryChange,
   selectedRegions,
   onRegionChange,
-  selectedPackageTypes,
-  onPackageTypeChange,
   selectedTransport,
   onTransportChange,
   selectedDuration,
@@ -162,30 +157,6 @@ export default function FilterSidebar({
                   className="cursor-pointer text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                 >
                   {category}
-                </label>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Package Type */}
-        <div className="mb-8">
-          <Label className="mb-3 block text-sm font-semibold text-navy">
-            Package Type
-          </Label>
-          <div className="space-y-3">
-            {packageTypes.map((pkgType) => (
-              <div key={pkgType} className="flex items-center space-x-2">
-                <Checkbox
-                  id={`pkg-${pkgType}`}
-                  checked={selectedPackageTypes.includes(pkgType)}
-                  onCheckedChange={() => onPackageTypeChange(pkgType)}
-                />
-                <label
-                  htmlFor={`pkg-${pkgType}`}
-                  className="cursor-pointer text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                  {pkgType}
                 </label>
               </div>
             ))}

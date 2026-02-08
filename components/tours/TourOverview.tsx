@@ -1,7 +1,11 @@
 import { motion } from "framer-motion";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import type { TourDay } from "@/data/tours";
 
 interface TourOverviewProps {
@@ -25,51 +29,55 @@ export function TourOverview({ itinerary, galleryImages }: TourOverviewProps) {
 
       <div className="grid gap-8 lg:grid-cols-3">
         {/* Left: Itinerary Content */}
-        <div className="space-y-6 lg:col-span-2">
-          {itinerary.map((day, index) => (
-            <motion.div
-              key={day.day}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-            >
-              <Card className="overflow-hidden border-l-4 border-l-gold transition-shadow hover:shadow-lg">
-                <CardContent className="p-6">
-                  <div className="mb-4 flex items-center gap-3">
-                    <Badge className="bg-gold px-3 py-1 text-sm font-bold text-black hover:bg-gold/80">
-                      DAY {day.day}
-                    </Badge>
-                    <h3 className="text-lg font-semibold text-navy md:text-xl">
-                      {day.title}
-                    </h3>
-                  </div>
+        <div className="lg:col-span-2">
+          <Accordion type="multiple" className="space-y-4">
+            {itinerary.map((day, index) => (
+              <motion.div
+                key={day.day}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+              >
+                <AccordionItem
+                  value={`day-${day.day}`}
+                  className="overflow-hidden rounded-lg border-l-4 border-l-gold bg-card shadow-sm transition-shadow hover:shadow-lg"
+                >
+                  <AccordionTrigger className="px-6 py-4 hover:no-underline">
+                    <div className="flex items-center gap-3">
+                      <Badge className="bg-gold px-3 py-1 text-sm font-bold text-black hover:bg-gold/80">
+                        DAY {day.day}
+                      </Badge>
+                      <span className="text-lg font-semibold text-navy md:text-xl">
+                        {day.title}
+                      </span>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-6 pb-6">
+                    <p className="mb-4 leading-relaxed text-muted-foreground">
+                      {day.description}
+                    </p>
 
-                  <Separator className="mb-4" />
-
-                  <p className="mb-4 leading-relaxed text-muted-foreground">
-                    {day.description}
-                  </p>
-
-                  <ul className="space-y-2">
-                    {day.highlights.map((activity, i) => (
-                      <motion.li
-                        key={i}
-                        initial={{ opacity: 0, x: -10 }}
-                        whileInView={{ opacity: 1, x: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.3, delay: i * 0.05 }}
-                        className="flex items-start gap-2 text-sm text-foreground"
-                      >
-                        <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-primary" />
-                        {activity}
-                      </motion.li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
+                    <ul className="space-y-2">
+                      {day.highlights.map((activity, i) => (
+                        <motion.li
+                          key={i}
+                          initial={{ opacity: 0, x: -10 }}
+                          whileInView={{ opacity: 1, x: 0 }}
+                          viewport={{ once: true }}
+                          transition={{ duration: 0.3, delay: i * 0.05 }}
+                          className="flex items-start gap-2 text-sm text-foreground"
+                        >
+                          <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-primary" />
+                          {activity}
+                        </motion.li>
+                      ))}
+                    </ul>
+                  </AccordionContent>
+                </AccordionItem>
+              </motion.div>
+            ))}
+          </Accordion>
         </div>
 
         {/* Right: Image Gallery */}

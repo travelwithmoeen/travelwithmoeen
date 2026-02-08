@@ -128,7 +128,7 @@ const teamMembers = [
   { name: "Rizwan Ahmad", role: "Video Editor", image: teamGuide3 },
   { name: "Sawaira Fatima", role: "Admin & Log Officer", image: teamGuide4 },
   { name: "Talib Hussain", role: "Tour Manager", image: teamGuide5 },
-  { name: "Rizwan Ahmad", role: "Finance Manager", image: teamGuide6 },
+  { name: "Muhammad Umair", role: "Finance Manager", image: teamGuide6 },
 ];
 
 const faqItems = [
