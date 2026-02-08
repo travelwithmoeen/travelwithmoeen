@@ -4,7 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { TourCard } from "@/components/TourCard";
 import  FilterSidebar  from "@/components/FilterSidebar";
 import  SearchAndSort  from "@/components/SearchAndSort";
-import { tours, Tour, TourCategory, TourRegion, PackageType, TransportType } from "@/data/tours";
+import { tours, Tour, TourCategory, TourRegion, TransportType } from "@/data/tours";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -19,7 +19,6 @@ function ToursContent() {
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000000]);
   const [selectedCategories, setSelectedCategories] = useState<TourCategory[]>([]);
   const [selectedRegions, setSelectedRegions] = useState<TourRegion[]>([]);
-  const [selectedPackageTypes, setSelectedPackageTypes] = useState<PackageType[]>([]);
   const [selectedTransport, setSelectedTransport] = useState<TransportType[]>([]);
   const [selectedDuration, setSelectedDuration] = useState("all");
 
@@ -70,15 +69,6 @@ function ToursContent() {
     );
   };
 
-  // Handle package type toggle
-  const handlePackageTypeChange = (packageType: PackageType) => {
-    setSelectedPackageTypes((prev) =>
-      prev.includes(packageType)
-        ? prev.filter((p) => p !== packageType)
-        : [...prev, packageType]
-    );
-  };
-
   // Handle transport toggle
   const handleTransportChange = (transport: TransportType) => {
     setSelectedTransport((prev) =>
@@ -93,7 +83,6 @@ function ToursContent() {
     setPriceRange([0, 1000000]);
     setSelectedCategories([]);
     setSelectedRegions([]);
-    setSelectedPackageTypes([]);
     setSelectedTransport([]);
     setSelectedDuration("all");
     setSearchQuery("");
@@ -210,8 +199,6 @@ function ToursContent() {
           onCategoryChange={handleCategoryChange}
           selectedRegions={selectedRegions}
           onRegionChange={handleRegionChange}
-          selectedPackageTypes={selectedPackageTypes}
-          onPackageTypeChange={handlePackageTypeChange}
           selectedTransport={selectedTransport}
           onTransportChange={handleTransportChange}
           selectedDuration={selectedDuration}
