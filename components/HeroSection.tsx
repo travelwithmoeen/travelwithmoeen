@@ -18,7 +18,7 @@ const HeroSection = () => {
       {/* Content */}
       <div className="relative z-10 flex-1 flex flex-col items-center justify-center pt-32 pb-40 px-4">
         {/* Tagline */}
-        <p className="text-cyan font-serif italic text-lg md:text-xl mb-4 animate-fade-up" style={{ animationDelay: "0.1s" }}>
+        <p className=" text-navy  font-serif italic text-lg md:text-xl mb-4 animate-fade-up" style={{ animationDelay: "0.1s" }}>
           Explore the world as much possible
         </p>
 

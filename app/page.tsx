@@ -76,10 +76,10 @@ export default function Home() {
       <FanGallery1 />
 
       {/* About Section */}
-      <AboutSection />
-      <PopularDestinations />
+      {/* <AboutSection /> */}
+      {/* <PopularDestinations /> */}
       {/* Tour Plans Section */}
-      <TourPlans />
+     {/* <TourPlans />   */}
 
       {/* Tour Categories Section */}
       <TourCategories />
