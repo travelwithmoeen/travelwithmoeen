@@ -119,13 +119,6 @@ function ToursContent() {
       result = result.filter((tour) => selectedRegions.includes(tour.region));
     }
 
-    // Package type filter
-    if (selectedPackageTypes.length > 0) {
-      result = result.filter((tour) =>
-        tour.packageTypes.some((pkg) => selectedPackageTypes.includes(pkg))
-      );
-    }
-
     // Transport filter
     if (selectedTransport.length > 0) {
       result = result.filter((tour) => selectedTransport.includes(tour.transport));
@@ -155,12 +148,12 @@ function ToursContent() {
     }
 
     return result;
-  }, [searchQuery, priceRange, selectedCategories, selectedRegions, selectedPackageTypes, selectedTransport, selectedDuration, sortBy]);
+  }, [searchQuery, priceRange, selectedCategories, selectedRegions, selectedTransport, selectedDuration, sortBy]);
 
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, priceRange, selectedCategories, selectedRegions, selectedPackageTypes, selectedTransport, selectedDuration, sortBy]);
+  }, [searchQuery, priceRange, selectedCategories, selectedRegions, selectedTransport, selectedDuration, sortBy]);
 
   // Pagination calculations
   const totalPages = Math.ceil(filteredTours.length / ITEMS_PER_PAGE);
