@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { TourCategory, TourRegion, TransportType } from "@/data/tours";
+import { TourCategory, TourRegion, TransportType, tours } from "@/data/tours";
 import { cn } from "@/lib/utils";
 
 interface FilterSidebarProps {
@@ -30,9 +30,16 @@ interface FilterSidebarProps {
   onClearFilters: () => void;
 }
 
-const categories: TourCategory[] = ["Deluxe", "Executive", "Luxury"];
-const regions: TourRegion[] = ["Skardu",  "Hunza", "Swat", "Kashmir", "Islamabad", "Fairy Meadows", "Astore"];
-const transportTypes: TransportType[] = ["By Road", "By Air", "By Air & Road"];
+// Derive available filter values from the tours data so filters stay in sync
+const categories: TourCategory[] = Array.from(
+  new Set(tours.flatMap((t) => t.categories))
+).sort() as TourCategory[];
+
+const regions: TourRegion[] = Array.from(new Set(tours.map((t) => t.region))).sort() as TourRegion[];
+
+const transportTypes: TransportType[] = Array.from(
+  new Set(tours.map((t) => t.transport))
+).sort() as TransportType[];
 const durations = [
   { value: "all", label: "All Durations" },
   { value: "1-3", label: "1-3 Days" },
