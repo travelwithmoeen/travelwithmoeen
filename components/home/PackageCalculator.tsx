@@ -369,7 +369,7 @@ export function PackageCalculator() {
                       </motion.div>
 
                       {/* Breakdown */}
-                      <div className="mb-4 space-y-2 rounded-xl bg-background p-4 text-sm">
+                      {/* <div className="mb-4 space-y-2 rounded-xl bg-background p-4 text-sm">
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">Hotel ({Math.max(days - 1, 1)} nights)</span>
                           <span className="font-medium text-navy">PKR {formatPrice(pricing.hotelTotal)}</span>
@@ -401,7 +401,7 @@ export function PackageCalculator() {
                           <span className="text-navy">Grand Total</span>
                           <span className="text-gold">PKR {formatPrice(pricing.grandTotal)}</span>
                         </div>
-                      </div>
+                      </div> */}
                     </>
                   ) : (
                     <div className="mb-4 rounded-2xl bg-navy/50 p-8 text-center">
