@@ -57,35 +57,36 @@ import RoundImage from "@/public/images/Picture14.jpg";
 import vision1 from "@/public/images/moeen/vision1.jpg";
 import vision2 from "@/public/images/moeen/vision2.jpg";
 import vision3 from "@/public/images/moeen/vision3.jpg";
+import { SocialMediaSection } from "@/components/home/SocialMediaSection";
 
 const processSteps = [
   {
     number: "01",
     icon: ClipboardList,
-    title: "Book A Tour",
+    title: "Book A Tour Consult & Select",
     description:
-      "Lorem ipsum dolor sit amet, consecte adipiscing elit, sed do eiusmod dolore magna",
+      "Choose from our hand-picked public group tours or collaborate with our team to create a customized private itinerary that fits your schedule.",
   },
   {
     number: "02",
     icon: Calculator,
-    title: "Payment Process",
+    title: "Payment Process Secure Booking",
     description:
-      "Lorem ipsum dolor sit amet, consecte adipiscing elit, sed do eiusmod dolore magna",
+      "Finalize your reservation through our transparent payment system. As a fully registered company, we ensure your transaction is handled professionally.",
   },
   {
     number: "03",
     icon: CheckCircle,
-    title: "Confirmation",
+    title: "Confirmation Finalize Details",
     description:
-      "Lorem ipsum dolor sit amet, consecte adipiscing elit, sed do eiusmod dolore magna",
+      "Receive a comprehensive trip briefing and official confirmation. Our team double-checks every logistical detail to ensure your safety and comfort.",
   },
   {
     number: "04",
     icon: Binoculars,
-    title: "Enjoy Your Trip",
+    title: "Enjoy Your Trip Travel with Confidence",
     description:
-      "Lorem ipsum dolor sit amet, consecte adipiscing elit, sed do eiusmod dolore magna",
+      "Embark on your journey knowing you are supported by a seasoned team dedicated to providing authentic and high-quality tourism.",
   },
 ];
 
@@ -135,32 +136,32 @@ const faqItems = [
   {
     question: "What destinations does Travel with Moeen cover?",
     answer:
-      "We offer tours to stunning destinations across Pakistan including Hunza, Skardu, Fairy Meadows, Kashmir, Swat, and many more. We also arrange international tours to destinations like Dubai, Turkey, Malaysia, and Thailand.",
+      "We specialize in redefining quality tourism within Pakistan and abroad. Our services include carefully planned adventures to domestic northern regions and travel logistics for international destinations.",
   },
   {
-    question: "What is included in your tour packages?",
+    question: "What is included in your tour packages? ",
     answer:
-      "Our packages typically include accommodation, transportation, meals (as specified), experienced tour guides, and all entry fees to attractions. Specific inclusions vary by package, so please check the tour details or contact us for more information.",
+      "Our packages are carefully organized to ensure safety, comfort, and a premium experience. Typically, this includes professional logistical management, authentic travel insights, and expert-led itineraries for individuals, families, and corporate groups.",
   },
   {
-    question: "How do I book a tour with Travel with Moeen?",
+    question: "How do I book a tour with Travel with Moeen? ",
     answer:
-      "Booking is simple! You can book through our website by selecting your desired tour, or contact us directly via phone (+92 333 9981177) or email (info@travelwithmoeen.com). Our team will guide you through the booking process.",
+      "You can start by selecting a tour or requesting a customized itinerary. As a fully registered travel management company, we invite you to contact our team or visit our Islamabad headquarters to discuss your travel plans.",
   },
   {
-    question: "What is your cancellation and refund policy?",
+    question: "What is your cancellation and refund policy? ",
     answer:
-      "Our cancellation policy varies depending on the tour and how far in advance you cancel. Generally, cancellations made 14+ days before departure receive a full refund minus processing fees. Please contact us for specific terms related to your booking.",
+      "We maintain professional excellence in all our business dealings. Cancellation and refund terms are clearly defined based on the specific tour type—public, private, or corporate—and will be provided transparently during your booking process.",
   },
   {
     question: "Do you offer customized or private tours?",
     answer:
-      "Yes! We specialize in creating customized tour packages tailored to your preferences, whether it's a family trip, honeymoon, corporate retreat, or adventure expedition. Contact us to discuss your requirements.",
+      "Yes, we specialize in both public group adventures and exclusive private tours. We also provide tailor-made itineraries designed to meet your specific interests and schedule.",
   },
   {
     question: "Is it safe to travel to northern areas of Pakistan?",
     answer:
-      "Yes, the northern areas of Pakistan are generally very safe for tourists. Our experienced guides ensure your safety throughout the journey. We monitor travel conditions and provide up-to-date information before and during your trip.",
+      "Safety is our top priority. Our founder’s background in high-stakes international organizations, including the UN and USAID, ensures that we apply strict international standards to every trip we manage.",
   },
 ];
 
@@ -198,7 +199,7 @@ const About = () => {
               </div>
 
               {/* Overlapping circular image */}
-              <div className="absolute bottom-8 right-0 lg:bottom-0 lg:right-[-40px] w-48 h-48 lg:w-56 lg:h-56 rounded-full overflow-hidden   z-20">
+              {/* <div className="absolute bottom-8 right-0 lg:bottom-0 lg:right-[-40px] w-48 h-48 lg:w-56 lg:h-56 rounded-full overflow-hidden   z-20">
                 <div className="relative w-full h-full">
                   <Image
                     src={Logo}
@@ -208,7 +209,7 @@ const About = () => {
                     placeholder="blur"
                   />
                 </div>
-              </div>
+              </div> */}
             </motion.div>
 
             {/* Right: Content */}
@@ -411,8 +412,7 @@ const About = () => {
               We Complete Every Step Carefully
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-              eiusmod tempor incididunt ut labore et dolore magna aliqua
+              From your first inquiry to your final destination, we apply corporate standards and logistical precision to ensure a seamless travel experience.
             </p>
           </motion.div>
 
@@ -879,7 +879,7 @@ const About = () => {
           </motion.div>
         </div>
       </section>
-
+              <SocialMediaSection/>
       {/* <Footer /> */}
     </div>
   );
