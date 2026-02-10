@@ -36,6 +36,7 @@ export function TestimonialCarousel() {
         </motion.div>
       </div>
 
+
       <div
         className="relative"
         onMouseEnter={() => setIsPaused(true)}
@@ -113,6 +114,37 @@ export function TestimonialCarousel() {
             </motion.div>
           ))}
         </motion.div>
+
+      {/* Google review link and button below carousel */}
+      <div className="mt-8 flex items-center justify-center">
+        <div className="flex items-center gap-6 rounded-lg bg-white p-4 shadow-sm">
+          <div className="hidden items-center sm:flex">
+            <img
+              src="/images/twm-logo.webp"
+              alt="Eventica Travels"
+              className="h-28  w-auto"
+            />
+          </div>
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-1">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Star key={`g-${i}`} className="h-5 w-5 fill-gold/90 text-gold" />
+              ))}
+            </div>
+            <p className="mt-1 text-lg font-medium text-navy">41 Google reviews</p>
+            <a
+              href="https://www.google.com/maps/place/Travelwithmoeen/@33.6941091,73.0122588,17z/data=!3m1!4b1!4m6!3m5!1s0x38dfbf129a345dc9:0xa21e40956cae10dd!8m2!3d33.6941047!4d73.0148337!16s%2Fg%2F11ys6km83v?entry=ttu&g_ep=EgoyMDI2MDIwNC4wIKXMDSoASAFQAw%3D%3D"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 inline-block rounded-md border-2 border-muted-foreground bg-white hover:bg-navy hover:text-white px-6 py-2 font-semibold text-navy hover:opacity-95"
+            >
+              Write a review
+            </a>
+          </div>
+        </div>
+      </div>
+
+
       </div>
     </section>
   );
