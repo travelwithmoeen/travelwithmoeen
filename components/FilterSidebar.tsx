@@ -63,6 +63,41 @@ export default function FilterSidebar({
   onDurationChange,
   onClearFilters,
 }: FilterSidebarProps) {
+  // Define transport-specific region lists
+  const roadRegions: TourRegion[] = [
+    "Skardu Valley",
+    "Hunza Valley",
+    "Skardu & Hunza",
+    "Minimarg Astor Valley",
+    "Fairy Meadows Nanga Base Camp",
+    "Murree Patriata Galiyat",
+    "Murree Ayubia Nathiagali",
+    "Naran Kaghan & Babusar Top",
+    "Neelum Valley Kashmir",
+    "Neelum Taobat Arang Kel",
+    "Swat Kalam & Malam Jabba",
+    "Islamabad",
+    "Kalash Valley & Chitral",
+    "Kumrat and Katora Lake",
+  ];
+
+  const airRegions: TourRegion[] = [
+    "Skardu Valley",
+    "Hunza Valley",
+    "Skardu & Hunza",
+    "Minimarg Astor Valley",
+    "Fairy Meadows Nanga Base Camp",
+  ];
+
+  // Compute which regions to display based on selected transport
+  let displayedRegions: TourRegion[] = regions;
+  if (selectedTransport.length === 1) {
+    if (selectedTransport.includes("By Road")) displayedRegions = roadRegions;
+    else if (selectedTransport.includes("By Air")) displayedRegions = airRegions;
+  } else if (selectedTransport.length > 1) {
+    // If both transports selected, show union of both lists (unique values)
+    displayedRegions = Array.from(new Set([...roadRegions, ...airRegions, ...regions]));
+  }
   return (
     <>
       {/* Mobile Overlay */}
@@ -128,7 +163,7 @@ export default function FilterSidebar({
             Location / Region
           </Label>
           <div className="space-y-3">
-            {regions.map((region) => (
+            {displayedRegions.map((region) => (
               <div key={region} className="flex items-center space-x-2">
                 <Checkbox
                   id={`region-${region}`}
@@ -147,7 +182,7 @@ export default function FilterSidebar({
         </div>
 
         {/* Categories */}
-        <div className="mb-8">
+        {/* <div className="mb-8">
           <Label className="mb-3 block text-sm font-semibold text-navy">
             Categories
           </Label>
@@ -168,7 +203,7 @@ export default function FilterSidebar({
               </div>
             ))}
           </div>
-        </div>
+        </div> */}
 
         {/* Transport */}
         <div className="mb-8">

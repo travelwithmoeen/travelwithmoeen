@@ -8,7 +8,7 @@ export interface GalleryImage {
 
 export const galleryImages: GalleryImage[] = [
   // Private/Customized Tours
-  { id: 1, src: "/images/gallery/Picture11.JPG", alt: "Jeep ride through mountain valleys", category: "private" },
+  { id: 1, src: "/images/gallery/Picture11.webp", alt: "Jeep ride through mountain valleys", category: "private" },
   { id: 2, src: "/images/gallery/Picture12.JPG", alt: "Snow-capped peaks and clear skies", category: "private", span: "tall" },
   { id: 3, src: "/images/gallery/Picture22.JPG", alt: "Golden sunset over Karakoram range", category: "private", span: "wide" },
   { id: 4, src: "/images/gallery/Picture4.png", alt: "Couple at viewpoint overlooking lake", category: "private" },
