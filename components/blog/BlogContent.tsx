@@ -24,6 +24,15 @@ export function BlogContent({ sections }: BlogContentProps) {
               />
             </div>
           )}
+          {section.highlight && section.highlight.length > 0 && (
+            <ul className="mt-4 space-y-2 rounded-lg bg-gray-50 p-4">
+              {section.highlight.map((item, idx) => (
+                <li key={idx} className="text-sm leading-relaxed text-navy">
+                  {item}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       ))}
     </div>

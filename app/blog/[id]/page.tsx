@@ -37,12 +37,12 @@ export default function BlogDetail() {
 
       <div className="container mx-auto px-4 py-8">
         {/* Back Button */}
-        <Button asChild  className="mb-6 border border-navy hover:bg-navy-hover/10">
+        {/* <Button asChild  className="mb-6 border border-navy hover:bg-navy-hover/10">
           <Link href="/blog">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Blog
           </Link>
-        </Button>
+        </Button> */}
 
         {isLoading ? (
           <BlogDetailSkeleton />
