@@ -53,7 +53,7 @@ const Navbar = () => {
             <span className="text-primary-foreground/80">Follow Us:</span>
             <div className="flex items-center gap-3">
               <a
-                href="https://facebook.com"
+                href="https://www.facebook.com/TravelwithMoeen?mibextid=rS40aB7S9Ucbxw6v"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-gold transition-colors"
@@ -67,7 +67,7 @@ const Navbar = () => {
                 </svg>
               </a>
               <a
-                href="https://instagram.com"
+                href="https://www.instagram.com/travelwithmoeen/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-gold transition-colors"
@@ -81,7 +81,7 @@ const Navbar = () => {
                 </svg>
               </a>
               <a
-                href="https://youtube.com"
+                href="https://www.youtube.com/@itsmoeen"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-gold transition-colors"
@@ -95,7 +95,7 @@ const Navbar = () => {
                 </svg>
               </a>
               <a
-                href="https://tiktok.com"
+                href="https://www.tiktok.com/@travelwithmoeen"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-gold transition-colors"
@@ -130,11 +130,10 @@ const Navbar = () => {
             />
             <div className="hidden sm:flex flex-col">
               <span className="text-xl font-serif font-bold text-primary leading-tight">
-                Travel With
+                Travel With Moeen
+                
               </span>
-              <span className="text-2xl font-serif font-bold text-gold leading-tight">
-                Moeen
-              </span>
+            
             </div>
           </Link>
          

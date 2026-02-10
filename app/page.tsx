@@ -28,6 +28,7 @@ import { LatestBlogsSection } from "@/components/home/LatestBlogsSection";
 import { PopularToursSection } from "@/components/home/PopularToursSection";
 import { PopularDestinationsCarousel } from "@/components/home/PopularDestinationsCarousel";
 import { PackageCalculator } from "@/components/home/PackageCalculator";
+import { GallerySection } from "@/components/home/GallerySection";
 const featuredTours = [
   {
     id: 1,
@@ -104,6 +105,7 @@ export default function Home() {
       <PopularToursSection />
   {/* Testimonials */}
       <TestimonialCarousel />
+      <GallerySection/>
       {/* Latest Blogs Section */}
       <LatestBlogsSection />
 

@@ -25,10 +25,10 @@ const HeroSection = () => {
         {/* Main Heading */}
         <h1 className="text-center animate-fade-up" style={{ animationDelay: "0.2s" }}>
           <span className="block text-5xl md:text-7xl lg:text-8xl font-serif font-bold text-primary tracking-wide">
-            EXPLORE
+            QUALITY
           </span>
           <span className="inline-block mt-2 px-6 py-2 border-4 border-primary text-primary text-3xl md:text-5xl lg:text-6xl font-serif font-bold tracking-widest bg-card/80 backdrop-blur-sm">
-            THE WORLD
+            TOURISM PROMOTER
           </span>
         </h1>
 

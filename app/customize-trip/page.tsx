@@ -388,7 +388,7 @@ export default function CustomizeTrip() {
           </motion.div>
         </div>
       </main>
-      <Footer />
+    
     </div>
   );
 }
