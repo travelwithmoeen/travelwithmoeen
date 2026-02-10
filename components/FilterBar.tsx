@@ -16,7 +16,7 @@ function getUniqueRegions(): FilterOption[] {
   const regions = [...new Set(tours.map(tour => tour.region))];
   return regions.map(region => ({
     value: region,
-    label: region === "Fairy Meadows" || region === "Islamabad" ? region : `${region} Valley`
+    label: region
   })).sort((a, b) => a.label.localeCompare(b.label));
 }
 
