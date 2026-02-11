@@ -58,7 +58,7 @@ export const hotelCategories: HotelCategory[] = [
 export const roadDestinations: RoadDestination[] = [
     "Skardu Valley", "Hunza Valley", "Skardu & Hunza", "Minimarg Astor Valley", "Fairy Meadows Nanga Base Camp",
     "Naran Kaghan & Babusar Top", "Murree Ayubia Nathiagali", "Neelum Valley Kashmir",
-    "Neelum Taobat Arang Kel", "Swat Kalam & Malam Jabba ", "Islamabad", "Kumrat and Katora Lake", "Kalash Valley & Chitral ",
+    "Neelum Taobat Arang Kel", "Swat Kalam & Malam Jabba", "Islamabad", "Kumrat and Katora Lake", "Kalash Valley & Chitral ",
 ];
 // testing purposes
 // ---- Air Destinations ----
