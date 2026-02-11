@@ -29,7 +29,7 @@ export type RoadDestination =
     | "Islamabad"
     | "Kumrat and Katora Lake"
      |"Naran"
-    | "Kalash Valley & Chitral ";
+    | "Kalash Valley & Chitral";
 
 export type AirDestination = "Skardu Valley" | "Hunza Valley" | "Skardu & Hunza" | "Minimarg Astor Valley" | "Fairy Meadows Nanga Base Camp";
 
@@ -58,7 +58,7 @@ export const hotelCategories: HotelCategory[] = [
 export const roadDestinations: RoadDestination[] = [
     "Skardu Valley", "Hunza Valley", "Skardu & Hunza", "Minimarg Astor Valley", "Fairy Meadows Nanga Base Camp",
     "Naran Kaghan & Babusar Top", "Murree Ayubia Nathiagali", "Neelum Valley Kashmir",
-    "Neelum Taobat Arang Kel", "Swat Kalam & Malam Jabba", "Islamabad", "Kumrat and Katora Lake", "Kalash Valley & Chitral ",
+    "Neelum Taobat Arang Kel", "Swat Kalam & Malam Jabba", "Islamabad", "Kumrat and Katora Lake", "Kalash Valley & Chitral",
 ];
 // testing purposes
 // ---- Air Destinations ----
@@ -311,6 +311,72 @@ export const roadHotelPricing: Record<RoadDestination, Record<HotelCategory, Hot
         "Luxury (Exec RM)": {
             "twin_rate": 35000,
             "triple_rate": 40000
+        }
+    },
+    "Naran Kaghan & Babusar Top": {
+        "Deluxe (Lower)": {
+            "twin_rate": 15000,
+            "triple_rate": 18000
+        },
+        "Deluxe (Upper)": {
+            "twin_rate": 19000,
+            "triple_rate": 22000
+        },
+        "Executive": {
+            "twin_rate": 21000,
+            "triple_rate": 23000
+        },
+        "Luxury (Deluxe RM)": {
+            "twin_rate": 23000,
+            "triple_rate": 25000
+        },
+        "Luxury (Exec RM)": {
+            "twin_rate": 25000,
+            "triple_rate": 27000
+        }
+    },
+    "Kumrat and Katora Lake": {
+        "Deluxe (Lower)": {
+            "twin_rate": 9000,
+            "triple_rate": 12000
+        },
+        "Deluxe (Upper)": {
+            "twin_rate": 12000,
+            "triple_rate": 15000
+        },
+        "Executive": {
+            "twin_rate": 15000,
+            "triple_rate": 18000
+        },
+        "Luxury (Deluxe RM)": {
+            "twin_rate": 18000,
+            "triple_rate": 21000
+        },
+        "Luxury (Exec RM)": {
+            "twin_rate": 22000,
+            "triple_rate": 25000
+        }
+    },
+    "Kalash Valley & Chitral": {
+        "Deluxe (Lower)": {
+            "twin_rate": 9000,
+            "triple_rate": 12000
+        },
+        "Deluxe (Upper)": {
+            "twin_rate": 12000,
+            "triple_rate": 15000
+        },
+        "Executive": {
+            "twin_rate": 15000,
+            "triple_rate": 18000
+        },
+        "Luxury (Deluxe RM)": {
+            "twin_rate": 18000,
+            "triple_rate": 21000
+        },
+        "Luxury (Exec RM)": {
+            "twin_rate": 22000,
+            "triple_rate": 25000
         }
     },
 };
