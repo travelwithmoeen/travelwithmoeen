@@ -28,6 +28,7 @@ export type RoadDestination =
     | "Swat Kalam & Malam Jabba "
     | "Islamabad"
     | "Kumrat and Katora Lake"
+     |"Naran"
     | "Kalash Valley & Chitral ";
 
 export type AirDestination = "Skardu Valley" | "Hunza Valley" | "Skardu & Hunza" | "Minimarg Astor Valley" | "Fairy Meadows Nanga Base Camp";
