@@ -25,7 +25,7 @@ export type RoadDestination =
     | "Murree Patriata Galiyat"
     | "Neelum Valley Kashmir"
     | "Neelum Taobat Arang Kel"
-    | "Swat Kalam & Malam Jabba "
+    | "Swat Kalam & Malam Jabba"
     | "Islamabad"
     | "Kumrat and Katora Lake"
      |"Naran"
@@ -269,7 +269,7 @@ export const roadHotelPricing: Record<RoadDestination, Record<HotelCategory, Hot
             "triple_rate": 30000
         }
     },
-    Swat: {
+    "Swat Kalam & Malam Jabba": {
         "Deluxe (Lower)": {
             "twin_rate": 9000,
             "triple_rate": 12000
