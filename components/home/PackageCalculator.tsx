@@ -15,9 +15,10 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import {
   roadDestinations, airDestinations, hotelCategories,
-  optionalAddOns, roadOnlyAddOns, calculateTripPrice, getAvailableVehicles,
+  optionalAddOns, calculateTripPrice, getAvailableVehicles,
   roadDepartures, airDepartures,
   type HotelCategory, type VehicleType,
 } from "@/data/pricing";
@@ -34,21 +35,36 @@ export function PackageCalculator() {
   const [selectedDestination, setSelectedDestination] = useState<string>("");
   const [days, setDays] = useState<number>(5);
   const [travelers, setTravelers] = useState<number>(2);
+  // By Air traveler types
+  const [adults, setAdults] = useState<number>(2);
+  const [children, setChildren] = useState<number>(0);
+  const [infantLap, setInfantLap] = useState<number>(0);
+  const [infantOwnSeat, setInfantOwnSeat] = useState<number>(0);
   const [hotelCategory, setHotelCategory] = useState<HotelCategory>("Deluxe (Lower)");
   const [vehicleType, setVehicleType] = useState<VehicleType>("Honda BRV");
   const [roomType, setRoomType] = useState<RoomType>("twin");
-  // Default: arrival_breakfast is selected for By Road mode
-  const [selectedAddOns, setSelectedAddOns] = useState<string[]>(["arrival_breakfast"]);
+  // Default: welcome_pack, entry_tickets, arrival_breakfast are always included (not shown to user)
+  const [selectedAddOns, setSelectedAddOns] = useState<string[]>(["welcome_pack", "entry_tickets", "arrival_breakfast"]);
   const [showMatchingTours, setShowMatchingTours] = useState(false);
 
   const destinations = transportMode === "By Air" ? airDestinations : roadDestinations;
   const departures = transportMode === "By Air" ? airDepartures : roadDepartures;
 
+  // Calculate total seats needed (infant lap doesn't need seat)
+  const totalSeatsNeeded = transportMode === "By Air"
+    ? adults + children + infantOwnSeat
+    : travelers;
+
+  // Total travelers for per-person calculations
+  const totalTravelers = transportMode === "By Air"
+    ? adults + children + infantLap + infantOwnSeat
+    : travelers;
+
   // Available vehicles filtered by seat capacity
   const availableVehicles = useMemo(() => {
     if (!selectedDestination) return [];
-    return getAvailableVehicles(selectedDestination, travelers);
-  }, [selectedDestination, travelers]);
+    return getAvailableVehicles(departure, selectedDestination, totalSeatsNeeded);
+  }, [departure, selectedDestination, totalSeatsNeeded]);
 
   // Auto-select first valid vehicle when list changes
   useEffect(() => {
@@ -62,24 +78,27 @@ export function PackageCalculator() {
     setTransportMode(mode);
     setSelectedDestination("");
     setDeparture("Islamabad");
-
-    // Add/remove arrival_breakfast based on transport mode
-    if (mode === "By Road") {
-      setSelectedAddOns((prev) =>
-        prev.includes("arrival_breakfast") ? prev : [...prev, "arrival_breakfast"]
-      );
-    } else {
-      setSelectedAddOns((prev) => prev.filter((id) => id !== "arrival_breakfast"));
-    }
   };
+
+  // Add-ons that users can toggle (shown in UI) - only Guide and Meals
+  const toggleableAddOns = optionalAddOns.filter(
+    (addon) => addon.id === "guide" || addon.id === "meal"
+  );
 
   const pricing = useMemo(() => {
     if (!selectedDestination) return null;
+    if (transportMode === "By Air") {
+      return calculateTripPrice({
+        transportMode, destination: selectedDestination, hotelCategory,
+        vehicleType, days, travelers: totalSeatsNeeded, roomType, selectedAddOns, departure,
+        adults, children, infantLap, infantOwnSeat,
+      });
+    }
     return calculateTripPrice({
       transportMode, destination: selectedDestination, hotelCategory,
       vehicleType, days, travelers, roomType, selectedAddOns, departure,
     });
-  }, [transportMode, selectedDestination, hotelCategory, vehicleType, days, travelers, roomType, selectedAddOns, departure]);
+  }, [transportMode, selectedDestination, hotelCategory, vehicleType, days, travelers, totalSeatsNeeded, roomType, selectedAddOns, departure, adults, children, infantLap, infantOwnSeat]);
 
   const matchingTours = useMemo(() => {
     return tours.filter((tour) => {
@@ -212,31 +231,89 @@ export function PackageCalculator() {
                       </Select>
                     </div>
 
-   <div>
-                      <label className="mb-3 block text-xs font-semibold uppercase tracking-wide text-navy">
-                        <Users className="mr-1 inline h-3.5 w-3.5" /> 5. Travelers ({travelers})
-                      </label>
-                      <div className="flex items-center gap-4 pt-2">
-                        <Slider
-                          value={[travelers]}
-                          onValueChange={([val]) => setTravelers(val)}
-                          min={1}
-                          max={21}
-                          step={1}
-                          className="flex-1"
-                        />
-                        <span className="w-8 text-center font-semibold text-navy">{travelers}</span>
+                    {/* 5. Travelers - Different UI for By Air vs By Road */}
+                    {transportMode === "By Air" ? (
+                      <>
+                        {/* By Air: Traveler Types */}
+                        <div>
+                          <label className="mb-3 block text-xs font-semibold uppercase tracking-wide text-navy">
+                            <Users className="mr-1 inline h-3.5 w-3.5" /> 5. Adults (12+)
+                          </label>
+                          <Input
+                            type="number"
+                            min={1}
+                            max={25}
+                            value={adults}
+                            onChange={(e) => setAdults(Math.max(1, parseInt(e.target.value) || 1))}
+                            className="h-11"
+                          />
+                        </div>
+                        <div>
+                          <label className="mb-3 block text-xs font-semibold uppercase tracking-wide text-navy">
+                            6. Children (2-11 yrs)
+                          </label>
+                          <Input
+                            type="number"
+                            min={0}
+                            max={25}
+                            value={children}
+                            onChange={(e) => setChildren(Math.max(0, parseInt(e.target.value) || 0))}
+                            className="h-11"
+                          />
+                          <p className="mt-1 text-xs text-muted-foreground">75% of adult fare</p>
+                        </div>
+                        <div>
+                          <label className="mb-3 block text-xs font-semibold uppercase tracking-wide text-navy">
+                            7. Infant (Lap)
+                          </label>
+                          <Input
+                            type="number"
+                            min={0}
+                            max={10}
+                            value={infantLap}
+                            onChange={(e) => setInfantLap(Math.max(0, parseInt(e.target.value) || 0))}
+                            className="h-11"
+                          />
+                          <p className="mt-1 text-xs text-muted-foreground">PKR 1,000 fixed, no seat</p>
+                        </div>
+                        <div>
+                          <label className="mb-3 block text-xs font-semibold uppercase tracking-wide text-navy">
+                            8. Infant (Own Seat)
+                          </label>
+                          <Input
+                            type="number"
+                            min={0}
+                            max={10}
+                            value={infantOwnSeat}
+                            onChange={(e) => setInfantOwnSeat(Math.max(0, parseInt(e.target.value) || 0))}
+                            className="h-11"
+                          />
+                          <p className="mt-1 text-xs text-muted-foreground">PKR 5,000 fixed, 1 seat</p>
+                        </div>
+                      </>
+                    ) : (
+                      <div>
+                        <label className="mb-3 block text-xs font-semibold uppercase tracking-wide text-navy">
+                          <Users className="mr-1 inline h-3.5 w-3.5" /> 5. Travelers ({travelers})
+                        </label>
+                        <div className="flex items-center gap-4 pt-2">
+                          <Slider
+                            value={[travelers]}
+                            onValueChange={([val]) => setTravelers(val)}
+                            min={1}
+                            max={25}
+                            step={1}
+                            className="flex-1"
+                          />
+                          <span className="w-8 text-center font-semibold text-navy">{travelers}</span>
+                        </div>
                       </div>
-                    </div>
+                    )}
 
-
-
-                 
-
-                    {/* 6. Days */}
+                    {/* Days */}
                     <div>
                       <label className="mb-3 block text-xs font-semibold uppercase tracking-wide text-navy">
-                        <Calendar className="mr-1 inline h-3.5 w-3.5" /> 6. Duration ({days} Days)
+                        <Calendar className="mr-1 inline h-3.5 w-3.5" /> {transportMode === "By Air" ? "9" : "6"}. Duration ({days} Days)
                       </label>
                       <div className="flex items-center gap-4 pt-2">
                         <Slider
@@ -251,10 +328,10 @@ export function PackageCalculator() {
                       </div>
                     </div>
 
-                     {/* 5. Vehicle Type (filtered by seats) */}
+                     {/* Vehicle Type (filtered by seats) */}
                     <div>
                       <label className="mb-3 block text-xs font-semibold uppercase tracking-wide text-navy">
-                        <Car className="mr-1 inline h-3.5 w-3.5" /> 7. Vehicle Type
+                        <Car className="mr-1 inline h-3.5 w-3.5" /> {transportMode === "By Air" ? "10" : "7"}. Vehicle Type
                       </label>
                       <Select
                         value={vehicleType}
@@ -273,15 +350,15 @@ export function PackageCalculator() {
                         </SelectContent>
                       </Select>
                       {selectedDestination && availableVehicles.length === 0 && (
-                        <p className="mt-1.5 text-xs text-destructive">No vehicle fits {travelers} travelers</p>
+                        <p className="mt-1.5 text-xs text-destructive">No vehicle fits {totalSeatsNeeded} travelers</p>
                       )}
                     </div>
                   </div>
 
-                  {/* 8. Room Type */}
+                  {/* Room Type */}
                   <div className="mt-6">
                     <label className="mb-3 block text-xs font-semibold uppercase tracking-wide text-navy">
-                      8. Room Type
+                      {transportMode === "By Air" ? "11" : "8"}. Room Type
                     </label>
                     <div className="flex gap-2">
                       {(["twin", "triple"] as RoomType[]).map((type) => (
@@ -297,29 +374,14 @@ export function PackageCalculator() {
                     </div>
                   </div>
 
-                  {/* 9. Add-ons */}
+                  {/* Add-ons */}
                   <div className="mt-6">
                     <label className="mb-3 block text-xs font-semibold uppercase tracking-wide text-navy">
-                      9. Optional Add-ons
+                      {transportMode === "By Air" ? "12" : "9"}. Optional Add-ons
                     </label>
                     <div className="flex flex-wrap gap-2">
-                      {/* Common add-ons */}
-                      {optionalAddOns.map((addon) => (
-                        <Button
-                          key={addon.id}
-                          variant="outline"
-                          className={cn(
-                            "gap-2",
-                            selectedAddOns.includes(addon.id) && "border-navy bg-navy/10 text-navy"
-                          )}
-                          onClick={() => toggleAddOn(addon.id)}
-                        >
-                          {selectedAddOns.includes(addon.id) ? <Check className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-                          {addon.name}
-                        </Button>
-                      ))}
-                      {/* Road-only add-ons (Arrival Breakfast) */}
-                      {transportMode === "By Road" && roadOnlyAddOns.map((addon) => (
+                      {/* Only show Guide and Meals as toggleable options */}
+                      {toggleableAddOns.map((addon) => (
                         <Button
                           key={addon.id}
                           variant="outline"
@@ -334,6 +396,9 @@ export function PackageCalculator() {
                         </Button>
                       ))}
                     </div>
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      * Welcome Pack, Entry Tickets & Arrival Breakfast included
+                    </p>
                   </div>
                 </div>
 
@@ -360,7 +425,7 @@ export function PackageCalculator() {
                             PKR {formatPrice(pricing.grandTotal)}
                           </p>
                           <p className="mt-1 text-sm text-gold/80">
-                            Total for {travelers} traveler{travelers > 1 ? "s" : ""}
+                            Total for {totalTravelers} traveler{totalTravelers > 1 ? "s" : ""}
                           </p>
                           <p className="mt-1 text-lg font-semibold text-gold/90">
                             PKR {formatPrice(pricing.perPerson)} / person
@@ -369,7 +434,7 @@ export function PackageCalculator() {
                       </motion.div>
 
                       {/* Breakdown */}
-                      {/* <div className="mb-4 space-y-2 rounded-xl bg-background p-4 text-sm">
+                      <div className="mb-4 space-y-2 rounded-xl bg-background p-4 text-sm">
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">Hotel ({Math.max(days - 1, 1)} nights)</span>
                           <span className="font-medium text-navy">PKR {formatPrice(pricing.hotelTotal)}</span>
@@ -379,10 +444,40 @@ export function PackageCalculator() {
                           <span className="font-medium text-navy">PKR {formatPrice(pricing.vehicleTotal)}</span>
                         </div>
                         {pricing.airTicketTotal > 0 && (
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">Air Tickets</span>
-                            <span className="font-medium text-navy">PKR {formatPrice(pricing.airTicketTotal)}</span>
-                          </div>
+                          <>
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Air Tickets</span>
+                              <span className="font-medium text-navy">PKR {formatPrice(pricing.airTicketTotal)}</span>
+                            </div>
+                            {transportMode === "By Air" && (
+                              <div className="ml-4 space-y-1 text-xs">
+                                {adults > 0 && pricing.adultTicketTotal && pricing.adultTicketTotal > 0 && (
+                                  <div className="flex justify-between text-muted-foreground">
+                                    <span>Adults ({adults})</span>
+                                    <span>PKR {formatPrice(pricing.adultTicketTotal)}</span>
+                                  </div>
+                                )}
+                                {children > 0 && pricing.childTicketTotal && pricing.childTicketTotal > 0 && (
+                                  <div className="flex justify-between text-muted-foreground">
+                                    <span>Children ({children}) @ 75%</span>
+                                    <span>PKR {formatPrice(pricing.childTicketTotal)}</span>
+                                  </div>
+                                )}
+                                {infantLap > 0 && pricing.infantLapTotal && pricing.infantLapTotal > 0 && (
+                                  <div className="flex justify-between text-muted-foreground">
+                                    <span>Infant Lap ({infantLap})</span>
+                                    <span>PKR {formatPrice(pricing.infantLapTotal)}</span>
+                                  </div>
+                                )}
+                                {infantOwnSeat > 0 && pricing.infantOwnSeatTotal && pricing.infantOwnSeatTotal > 0 && (
+                                  <div className="flex justify-between text-muted-foreground">
+                                    <span>Infant Seat ({infantOwnSeat})</span>
+                                    <span>PKR {formatPrice(pricing.infantOwnSeatTotal)}</span>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </>
                         )}
                         {pricing.departureSurcharge > 0 && (
                           <div className="flex justify-between">
@@ -401,7 +496,7 @@ export function PackageCalculator() {
                           <span className="text-navy">Grand Total</span>
                           <span className="text-gold">PKR {formatPrice(pricing.grandTotal)}</span>
                         </div>
-                      </div> */}
+                      </div>
                     </>
                   ) : (
                     <div className="mb-4 rounded-2xl bg-navy/50 p-8 text-center">
