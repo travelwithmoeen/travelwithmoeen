@@ -73,10 +73,10 @@ export const vehicleTypes: VehicleType[] = [
 
 // ---- Departure Cities ----
 export type RoadDeparture = "Islamabad" | "Lahore";
-export type AirDeparture = "Islamabad" | "Karachi";
+export type AirDeparture = "Islamabad" | "Karachi" | "Lahore";
 
 export const roadDepartures: RoadDeparture[] = ["Islamabad", "Lahore"];
-export const airDepartures: AirDeparture[] = ["Islamabad", "Karachi"];
+export const airDepartures: AirDeparture[] = ["Islamabad", "Karachi", "Lahore"];
 
 export const lahoreSurcharge = 15000; // flat per-trip surcharge for Lahore departure
 
@@ -1573,8 +1573,9 @@ export function calculateTripPrice(params: {
 
     if (transportMode === "By Air") {
         const baseTicket = byAirExtras["Air Ticket (Islamabad Base)"] || 45000;
-        const karachiSurcharge = departure === "Karachi" ? (byAirExtras["Karachi Surcharge (Add-on)"] || 30000) : 0;
-        const adultFare = baseTicket + karachiSurcharge;
+        const karachiSurcharge = departure === "Karachi" ? (byAirExtras["Karachi Surcharge (Add-on)"] || 40000) : 0;
+        const lahoreSurchargeAir = departure === "Lahore" ? (byAirExtras["Lahore Surcharge (Add-on)"] || 30000) : 0;
+        const adultFare = baseTicket + karachiSurcharge + lahoreSurchargeAir;
 
         // Adult: 100% fare
         adultTicketTotal = adultFare * adultCount;
