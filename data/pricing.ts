@@ -60,7 +60,7 @@ export const roadDestinations: RoadDestination[] = [
     "Naran Kaghan & Babusar Top", "Murree Ayubia Nathiagali", "Neelum Valley Kashmir",
     "Neelum Taobat Arang Kel", "Swat Kalam & Malam Jabba ", "Islamabad", "Kumrat and Katora Lake", "Kalash Valley & Chitral ",
 ];
-
+// testing purposes
 // ---- Air Destinations ----
 export const airDestinations: AirDestination[] = [
     "Hunza Valley", "Minimarg Astor Valley", "Fairy Meadows Nanga Base Camp", "Skardu & Hunza",
