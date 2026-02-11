@@ -22,6 +22,7 @@ export type RoadDestination =
     | "Fairy Meadows Nanga Base Camp"
     | "Naran Kaghan & Babusar Top"
     | "Murree Ayubia Nathiagali"
+    | "Murree Patriata Galiyat"
     | "Neelum Valley Kashmir"
     | "Neelum Taobat Arang Kel"
     | "Swat Kalam & Malam Jabba "
