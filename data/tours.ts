@@ -8,7 +8,7 @@ export type TourCategory =
 
 export type TourRegion =
   | "Skardu Valley"
-  | "Skardu & Hunza" | "Hunza Valley" | "Minimarg Astor Valley" | "Fairy Meadows Nanga Base Camp" | "Murree Patriata Galiyat" | "Murree Ayubia Nathiagali" | "Naran Kaghan & Babusar Top" | "Neelum Valley Kashmir" | "Ratti Gali Lake" | "Swat Kalam & Malam Jabba" | "Islamabad" | "Kalash Valley & Chitral" | "Kumrat and Katora Lake";
+  | "Skardu & Hunza" | "Hunza Valley" | "Minimarg Astor Valley" | "Fairy Meadows Nanga Base Camp" | "Murree Patriata Galiyat" | "Murree Ayubia Nathiagali" | "Naran Kaghan & Babusar Top" | "Neelum Valley Kashmir" | "Neelum Taobat Arang Kel" | "Ratti Gali Lake" | "Swat Kalam & Malam Jabba" | "Islamabad" | "Kalash Valley & Chitral" | "Kumrat and Katora Lake";
 
 
 export type PackageType = "Couple" | "Family" | "Group" | "City Tour" | "Private";
