@@ -32,7 +32,7 @@ const contactInfo = [
   {
     icon: Clock,
     title: "Working Hours",
-    details: ["Mon - Sat: 9:00 AM - 6:00 PM" , "Sun: Closed"],
+    details: ["Mon - Sat: 9:00 AM - 6:00 PM" , "Sunday office Closed but virtually open"],
   },
 ];
 

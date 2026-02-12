@@ -193,7 +193,7 @@ export default function TourDetails() {
                             {pkg.price.toLocaleString()}.PKR
                           </p>
                           <span className="text-sm text-muted-foreground">
-                            per Couple
+                           For 2 Persons
                           </span>
                         </div>
 

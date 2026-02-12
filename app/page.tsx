@@ -66,9 +66,13 @@ export default function Home() {
   return (
     <div className="flex flex-col w-full">
       {/* Hero Section */}
-      {/* <Hero /> */}
-      <HeroSection />
-
+      <Hero />
+      {/* <HeroSection /> */}
+  {/* Search Bar */}
+      <div className="relative z-20  bg-[#f7f6f1]">
+        {/* <SearchBar /> */}
+        <FilterBar />
+      </div>
       {/* Filter Bar */}
       {/* <FilterBar /> */}
 

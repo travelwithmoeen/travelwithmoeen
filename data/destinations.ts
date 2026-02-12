@@ -40,8 +40,8 @@ export const destinations: Destination[] = [
     ]
   },
   {
-    title: "Deosai National Park",
-    slug: "deosai-national-park",
+    title: "Hunza Valley",
+    slug: "hunza-valley",
     excerpt: "One of the highest plateaus in the world, home to the Himalayan brown bear and stunning wildflower meadows.",
     bannerImage: "https://images.unsplash.com/photo-1501854140801-50d01698950b?w=800&q=80",
     location: "Gilgit-Baltistan, Pakistan",
@@ -64,8 +64,8 @@ export const destinations: Destination[] = [
     ]
   },
   {
-    title: "Minimarg Valley",
-    slug: "minimarg-valley",
+    title: "Kashmir",
+    slug: "Kashmir",
     excerpt: "A hidden gem in Astore District, offering serene landscapes and traditional mountain village life.",
     bannerImage: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&q=80",
     location: "Astore District, Gilgit-Baltistan",
@@ -88,12 +88,108 @@ export const destinations: Destination[] = [
     ]
   },
   {
-    title: "Hunza Valley",
-    slug: "hunza-valley",
+    title: "Swat",
+    slug: "Swat",
     excerpt: "A legendary valley known for its stunning beauty, ancient forts, and the longevity of its people.",
     bannerImage: "https://images.unsplash.com/photo-1482938289607-e9573fc25ebb?w=800&q=80",
     location: "Gilgit-Baltistan, Pakistan",
     listingNumber: 4,
+    content: [
+      {
+        heading: "The Jewel of Karakoram",
+        body: "Hunza Valley has captivated travelers for centuries with its dramatic mountain scenery and rich cultural heritage. Dominated by the mighty Rakaposhi and Ultar Sar peaks, the valley's terraced fields and ancient watchtowers create a landscape that seems straight out of a fairy tale.",
+        image: "https://images.unsplash.com/photo-1426604966848-d7adac402bff?w=800&q=80"
+      },
+      {
+        heading: "Baltit and Altit Forts",
+        body: "The 700-year-old Baltit Fort stands as a testament to the region's royal history, overlooking the valley from its perch in Karimabad. Nearby Altit Fort, even older, offers a more intimate glimpse into the lives of the Mirs who once ruled these mountain kingdoms.",
+        image: "https://images.unsplash.com/photo-1458668383970-8ddd3927deed?w=800&q=80"
+      },
+      {
+        heading: "The Secret of Longevity",
+        body: "Hunza is famous for the exceptional longevity of its people, often attributed to their organic diet rich in apricots and glacial water. The apricot blossoms in spring paint the entire valley in shades of pink, creating one of Pakistan's most photographed natural spectacles."
+      }
+    ]
+  },
+    {
+    title: "Minimarg",
+    slug: "Minimarg",
+    excerpt: "A legendary valley known for its stunning beauty, ancient forts, and the longevity of its people.",
+    bannerImage: "https://images.unsplash.com/photo-1482938289607-e9573fc25ebb?w=800&q=80",
+    location: "Gilgit-Baltistan, Pakistan",
+    listingNumber: 5,
+    content: [
+      {
+        heading: "The Jewel of Karakoram",
+        body: "Hunza Valley has captivated travelers for centuries with its dramatic mountain scenery and rich cultural heritage. Dominated by the mighty Rakaposhi and Ultar Sar peaks, the valley's terraced fields and ancient watchtowers create a landscape that seems straight out of a fairy tale.",
+        image: "https://images.unsplash.com/photo-1426604966848-d7adac402bff?w=800&q=80"
+      },
+      {
+        heading: "Baltit and Altit Forts",
+        body: "The 700-year-old Baltit Fort stands as a testament to the region's royal history, overlooking the valley from its perch in Karimabad. Nearby Altit Fort, even older, offers a more intimate glimpse into the lives of the Mirs who once ruled these mountain kingdoms.",
+        image: "https://images.unsplash.com/photo-1458668383970-8ddd3927deed?w=800&q=80"
+      },
+      {
+        heading: "The Secret of Longevity",
+        body: "Hunza is famous for the exceptional longevity of its people, often attributed to their organic diet rich in apricots and glacial water. The apricot blossoms in spring paint the entire valley in shades of pink, creating one of Pakistan's most photographed natural spectacles."
+      }
+    ]
+  },
+    {
+    title: "Chital Valley ",
+    slug: "Chital-Valley ",
+    excerpt: "A legendary valley known for its stunning beauty, ancient forts, and the longevity of its people.",
+    bannerImage: "https://images.unsplash.com/photo-1482938289607-e9573fc25ebb?w=800&q=80",
+    location: "Gilgit-Baltistan, Pakistan",
+    listingNumber: 6,
+    content: [
+      {
+        heading: "The Jewel of Karakoram",
+        body: "Hunza Valley has captivated travelers for centuries with its dramatic mountain scenery and rich cultural heritage. Dominated by the mighty Rakaposhi and Ultar Sar peaks, the valley's terraced fields and ancient watchtowers create a landscape that seems straight out of a fairy tale.",
+        image: "https://images.unsplash.com/photo-1426604966848-d7adac402bff?w=800&q=80"
+      },
+      {
+        heading: "Baltit and Altit Forts",
+        body: "The 700-year-old Baltit Fort stands as a testament to the region's royal history, overlooking the valley from its perch in Karimabad. Nearby Altit Fort, even older, offers a more intimate glimpse into the lives of the Mirs who once ruled these mountain kingdoms.",
+        image: "https://images.unsplash.com/photo-1458668383970-8ddd3927deed?w=800&q=80"
+      },
+      {
+        heading: "The Secret of Longevity",
+        body: "Hunza is famous for the exceptional longevity of its people, often attributed to their organic diet rich in apricots and glacial water. The apricot blossoms in spring paint the entire valley in shades of pink, creating one of Pakistan's most photographed natural spectacles."
+      }
+    ]
+  },
+    {
+    title: "Naran Kaghan",
+    slug: "Naran-Kaghan",
+    excerpt: "A legendary valley known for its stunning beauty, ancient forts, and the longevity of its people.",
+    bannerImage: "https://images.unsplash.com/photo-1482938289607-e9573fc25ebb?w=800&q=80",
+    location: "Gilgit-Baltistan, Pakistan",
+    listingNumber: 7,
+    content: [
+      {
+        heading: "The Jewel of Karakoram",
+        body: "Hunza Valley has captivated travelers for centuries with its dramatic mountain scenery and rich cultural heritage. Dominated by the mighty Rakaposhi and Ultar Sar peaks, the valley's terraced fields and ancient watchtowers create a landscape that seems straight out of a fairy tale.",
+        image: "https://images.unsplash.com/photo-1426604966848-d7adac402bff?w=800&q=80"
+      },
+      {
+        heading: "Baltit and Altit Forts",
+        body: "The 700-year-old Baltit Fort stands as a testament to the region's royal history, overlooking the valley from its perch in Karimabad. Nearby Altit Fort, even older, offers a more intimate glimpse into the lives of the Mirs who once ruled these mountain kingdoms.",
+        image: "https://images.unsplash.com/photo-1458668383970-8ddd3927deed?w=800&q=80"
+      },
+      {
+        heading: "The Secret of Longevity",
+        body: "Hunza is famous for the exceptional longevity of its people, often attributed to their organic diet rich in apricots and glacial water. The apricot blossoms in spring paint the entire valley in shades of pink, creating one of Pakistan's most photographed natural spectacles."
+      }
+    ]
+  },
+    {
+    title: "Kumrat Valley ",
+    slug: "kumrat-valley",
+    excerpt: "A legendary valley known for its stunning beauty, ancient forts, and the longevity of its people.",
+    bannerImage: "https://images.unsplash.com/photo-1482938289607-e9573fc25ebb?w=800&q=80",
+    location: "Gilgit-Baltistan, Pakistan",
+    listingNumber: 8,
     content: [
       {
         heading: "The Jewel of Karakoram",
