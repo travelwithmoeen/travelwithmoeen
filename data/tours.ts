@@ -8,7 +8,7 @@ export type TourCategory =
 
 export type TourRegion =
   | "Skardu Valley"
-  | "Skardu & Hunza" | "Hunza Valley" | "Minimarg Astor Valley" | "Fairy Meadows Nanga Base Camp" | "Murree Patriata Galiyat" | "Murree Ayubia Nathiagali" | "Naran Kaghan & Babusar Top" | "Neelum Valley Kashmir" | "Neelum Taobat Arang Kel" | "Swat Kalam & Malam Jabba" | "Islamabad" | "Kalash Valley & Chitral" | "Kumrat and Katora Lake";
+  | "Skardu & Hunza" | "Hunza Valley" | "Minimarg Astor Valley" | "Fairy Meadows Nanga Base Camp" | "Murree Patriata Galiyat" | "Murree Ayubia Nathiagali" | "Naran Kaghan & Babusar Top" | "Neelum Valley Kashmir" | "Ratti Gali Lake" | "Swat Kalam & Malam Jabba" | "Islamabad" | "Kalash Valley & Chitral" | "Kumrat and Katora Lake";
 
 
 export type PackageType = "Couple" | "Family" | "Group" | "City Tour" | "Private";
@@ -1437,7 +1437,8 @@ export const tours: Tour[] = [
       "/images/tours/Picture4.jpg",
     ],
     "categories": [
-      "Deluxe"
+      "Deluxe",
+      
     ],
     "packageTypes": [
       "Couple",
@@ -4029,7 +4030,7 @@ export const tours: Tour[] = [
   "id": "3_days_trip_to_ratti_gali_lake",
   "name": "3 Days Trip to Ratti Gali Lake",
   "location": "Ratti Gali Lake",
-  "region": "Neelum Taobat Arang Kel",
+  "region": "Ratti Gali Lake",
   "duration": 3,
   "description": "Experience the breathtaking beauty of Ratti Gali Lake over a 3-day journey through the scenic Neelum Valley. Enjoy a blend of adventure and relaxation with guided treks, local exploration, and cozy bonfire nights.",
   "image": "/images/tours/ratti_gali_lake_1.jpg",

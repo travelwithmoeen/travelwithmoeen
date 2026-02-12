@@ -109,17 +109,34 @@ export function Footer() {
           <div>
             <h3 className="text-white font-bold text-lg mb-6">Contact Us</h3>
             <ul className="space-y-4">
-              <li className="flex items-start gap-3">
-                <MapPin size={20} className="text-amber-400 mt-0.5 flex-shrink-0" />
-                <span>Office # 3, 2nd Floor, Shalimar Plaza, F-10 Markaz, Islamabad</span>
+              <li>
+                <a
+                  href="https://www.google.com/maps/search/?api=1&query=Office+3+2nd+Floor+Shalimar+Plaza+F-10+Markaz+Islamabad"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-start gap-3 hover:text-amber-400 transition-colors"
+                >
+                  <MapPin size={20} className="text-amber-400 mt-0.5 flex-shrink-0" />
+                  <span>Office # 3, 2nd Floor, Shalimar Plaza, F-10 Markaz, Islamabad</span>
+                </a>
               </li>
-              <li className="flex items-center gap-3">
-                <Phone size={20} className="text-amber-400 flex-shrink-0" />
-                <span>+92 333 9981177</span>
+              <li>
+                <a
+                  href="tel:+923339981177"
+                  className="flex items-center gap-3 hover:text-amber-400 transition-colors"
+                >
+                  <Phone size={20} className="text-amber-400 flex-shrink-0" />
+                  <span>+92 333 9981177</span>
+                </a>
               </li>
-              <li className="flex items-center gap-3">
-                <Mail size={20} className="text-amber-400 flex-shrink-0" />
-                <span>info@travelwithmoeen.com</span>
+              <li>
+                <a
+                  href="mailto:info@travelwithmoeen.com"
+                  className="flex items-center gap-3 hover:text-amber-400 transition-colors"
+                >
+                  <Mail size={20} className="text-amber-400 flex-shrink-0" />
+                  <span>info@travelwithmoeen.com</span>
+                </a>
               </li>
             </ul>
           </div>

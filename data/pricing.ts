@@ -35,7 +35,7 @@ export type AirDestination = "Skardu Valley" | "Hunza Valley" | "Skardu & Hunza"
 
 export type Destination = RoadDestination | AirDestination;
 
-export type VehicleType = "Coaster 5c" | "Coaster 4c" | "Grand Cabin" | "Honda BRV" | "Gli Car";
+export type VehicleType = "Coaster 5c" | "Coaster 4c" | "Grand Cabin" | "Honda BRV" | "Gli Car" | "Parado";
 
 export interface VehicleRate {
     daily_rent: number;
@@ -63,7 +63,7 @@ export const roadDestinations: RoadDestination[] = [
 // testing purposes
 // ---- Air Destinations ----
 export const airDestinations: AirDestination[] = [
-    "Hunza Valley", "Minimarg Astor Valley", "Fairy Meadows Nanga Base Camp", "Skardu & Hunza",
+   "Skardu Valley", "Hunza Valley", "Minimarg Astor Valley", "Fairy Meadows Nanga Base Camp", "Skardu & Hunza",
 ];
 
 // ---- Vehicle Types ----
@@ -394,7 +394,7 @@ export const airHotelPricing: Record<AirDestination, Record<HotelCategory, Hotel
 
 export const vehiclePricing: Record<
     string,
-    Record<string, Record<VehicleType, VehicleRate>>
+    Record<string, Partial<Record<VehicleType, VehicleRate>>>
 > = {
     Departure_Islamabad: {
         "Skardu Valley": {
@@ -1439,6 +1439,164 @@ export const vehiclePricing: Record<
 }
 };
 
+export const vehiclePricingByAir: Record<
+    string,
+    Partial<Record<VehicleType, VehicleRate>>
+> = {
+  "Skardu Valley": {
+      "Parado": {
+      "daily_rent": 8000,
+      "toll": 2500,
+      "fuel": 7000,
+      "seats": 5,
+      "per_day_total": 17500
+    },
+    "Coaster 4c": {
+      "daily_rent": 16000,
+      "toll": 2500,
+      "fuel": 17000,
+      "seats": 25,
+      "per_day_total": 35500
+    },
+    "Grand Cabin": {
+      "daily_rent": 12000,
+      "toll": 2500,
+      "fuel": 12000,
+      "seats": 12,
+      "per_day_total": 26500
+    },
+    "Gli Car": {
+      "daily_rent": 7000,
+      "toll": 2500,
+      "fuel": 8000,
+      "seats": 4,
+      "per_day_total": 17500
+    }
+  },
+  "Hunza Valley": {
+    "Parado": {
+      "daily_rent": 8000,
+      "toll": 2500,
+      "fuel": 7000,
+      "seats": 5,
+      "per_day_total": 17500
+    },
+    "Coaster 4c": {
+      "daily_rent": 16000,
+      "toll": 2500,
+      "fuel": 17000,
+      "seats": 25,
+      "per_day_total": 35500
+    },
+    "Grand Cabin": {
+      "daily_rent": 12000,
+      "toll": 2500,
+      "fuel": 12000,
+      "seats": 12,
+      "per_day_total": 26500
+    },
+    "Gli Car": {
+      "daily_rent": 7000,
+      "toll": 2500,
+      "fuel": 8000,
+      "seats": 4,
+      "per_day_total": 17500
+    }
+  },
+  "Minimarg Astor Valley": {
+    "Parado": {
+      "daily_rent": 8000,
+      "toll": 2500,
+      "fuel": 7000,
+      "seats": 5,
+      "per_day_total": 17500
+    },
+    "Coaster 4c": {
+      "daily_rent": 16000,
+      "toll": 2500,
+      "fuel": 17000,
+      "seats": 25,
+      "per_day_total": 35500
+    },
+    "Grand Cabin": {
+      "daily_rent": 12000,
+      "toll": 2500,
+      "fuel": 12000,
+      "seats": 12,
+      "per_day_total": 26500
+    },
+    "Gli Car": {
+      "daily_rent": 7000,
+      "toll": 2500,
+      "fuel": 8000,
+      "seats": 4,
+      "per_day_total": 17500
+    }
+  },
+  "Fairy Meadows Nanga Base Camp": {
+    "Parado": {
+      "daily_rent": 8000,
+      "toll": 2500,
+      "fuel": 7000,
+      "seats": 5,
+      "per_day_total": 17500
+    },
+    "Coaster 4c": {
+      "daily_rent": 16000,
+      "toll": 2500,
+      "fuel": 17000,
+      "seats": 25,
+      "per_day_total": 35500
+    },
+    "Grand Cabin": {
+      "daily_rent": 12000,
+      "toll": 2500,
+      "fuel": 12000,
+      "seats": 12,
+      "per_day_total": 26500
+    },
+    "Gli Car": {
+      "daily_rent": 7000,
+      "toll": 2500,
+      "fuel": 8000,
+      "seats": 4,
+      "per_day_total": 17500
+    }
+  },
+  "Skardu & Hunza": {
+    "Parado": {
+      "daily_rent": 8000,
+      "toll": 2500,
+      "fuel": 7000,
+      "seats": 5,
+      "per_day_total": 17500
+    },
+    "Coaster 4c": {
+      "daily_rent": 16000,
+      "toll": 2500,
+      "fuel": 17000,
+      "seats": 25,
+      "per_day_total": 35500
+    },
+    "Grand Cabin": {
+      "daily_rent": 12000,
+      "toll": 2500,
+      "fuel": 12000,
+      "seats": 12,
+      "per_day_total": 26500
+    },
+    "Gli Car": {
+      "daily_rent": 7000,
+      "toll": 2500,
+      "fuel": 8000,
+      "seats": 4,
+      "per_day_total": 17500
+    }
+  }
+}
+
+
+
 
 // ---- By-Air Fixed Extras ----
 export const byAirExtras: Record<string, number> = {
@@ -1482,15 +1640,23 @@ export const roadOnlyAddOns: AddOn[] = [
 export const profitMargin = 0.20; // 20%
 
 // ---- Vehicle Filtering by Seats ----
-export function getAvailableVehicles(departure: string, destination: string, travelers: number): { type: VehicleType; rate: VehicleRate }[] {
-    const departureKey = `Departure_${departure}`;
-    const departureVehicles = vehiclePricing[departureKey];
-    if (!departureVehicles) return [];
-    const destVehicles = departureVehicles[destination];
-    if (!destVehicles) return [];
-    return (Object.entries(destVehicles) as [VehicleType, VehicleRate][])
-        .filter(([, rate]) => rate.seats >= travelers)
-        .map(([type, rate]) => ({ type, rate }));
+export function getAvailableVehicles(departure: string, destination: string, travelers: number, transportMode: "By Road" | "By Air" = "By Road"): { type: VehicleType; rate: VehicleRate }[] {
+    if (transportMode === "By Air") {
+        const destVehicles = vehiclePricingByAir[destination];
+        if (!destVehicles) return [];
+        return (Object.entries(destVehicles) as [VehicleType, VehicleRate][])
+            .filter(([, rate]) => rate.seats >= travelers)
+            .map(([type, rate]) => ({ type, rate }));
+    } else {
+        const departureKey = `Departure_${departure}`;
+        const departureVehicles = vehiclePricing[departureKey];
+        if (!departureVehicles) return [];
+        const destVehicles = departureVehicles[destination];
+        if (!destVehicles) return [];
+        return (Object.entries(destVehicles) as [VehicleType, VehicleRate][])
+            .filter(([, rate]) => rate.seats >= travelers)
+            .map(([type, rate]) => ({ type, rate }));
+    }
 }
 
 // ---- Price Calculation ----
@@ -1525,21 +1691,17 @@ export function calculateTripPrice(params: {
 } {
     const { transportMode, destination, hotelCategory, vehicleType, days, travelers, roomType, selectedAddOns, departure } = params;
 
-    // For By Air mode, use traveler type counts; for By Road, use travelers
+    // Use traveler type counts for both By Road and By Air
     const adultCount = params.adults ?? travelers;
     const childCount = params.children ?? 0;
     const infantLapCount = params.infantLap ?? 0;
     const infantOwnSeatCount = params.infantOwnSeat ?? 0;
 
     // Total people for add-ons (includes everyone)
-    const totalPeople = transportMode === "By Air"
-        ? adultCount + childCount + infantLapCount + infantOwnSeatCount
-        : travelers;
+    const totalPeople = adultCount + childCount + infantLapCount + infantOwnSeatCount;
 
     // Seats needed for rooms (infant lap doesn't need seat/room space)
-    const seatsForRooms = transportMode === "By Air"
-        ? adultCount + childCount + infantOwnSeatCount
-        : travelers;
+    const seatsForRooms = adultCount + childCount + infantOwnSeatCount;
 
     // Hotel cost
     const hotelData = transportMode === "By Air"
@@ -1547,16 +1709,22 @@ export function calculateTripPrice(params: {
         : (roadHotelPricing as any)[destination];
     const hotelRate = hotelData?.[hotelCategory];
     const nightlyRate = roomType === "twin" ? (hotelRate?.twin_rate || 10000) : (hotelRate?.triple_rate || 12000);
-    const nights = Math.max(days - 1, 1);
+    const nights = days > 1 ? days - 1 : 0;
     const roomsNeeded = roomType === "twin" ? Math.ceil(seatsForRooms / 2) : Math.ceil(seatsForRooms / 3);
     const hotelTotal = nightlyRate * nights * roomsNeeded;
 
     // Vehicle cost
     // cost_per_day = rent + fuel, total = (cost_per_day * days) + toll (toll is one-time)
-    const departureKey = `Departure_${departure}`;
-    const departureVehicles = vehiclePricing[departureKey];
-    const vehicleData = departureVehicles?.[destination];
-    const vehicle = vehicleData?.[vehicleType];
+    let vehicle: VehicleRate | undefined;
+    if (transportMode === "By Air") {
+        const destVehicles = vehiclePricingByAir[destination];
+        vehicle = destVehicles?.[vehicleType];
+    } else {
+        const departureKey = `Departure_${departure}`;
+        const departureVehicles = vehiclePricing[departureKey];
+        const vehicleData = departureVehicles?.[destination];
+        vehicle = vehicleData?.[vehicleType];
+    }
     const dailyRent = vehicle?.daily_rent || 14000;
     const fuel = vehicle?.fuel || 10000;
     const toll = vehicle?.toll || 4000;
@@ -1565,7 +1733,7 @@ export function calculateTripPrice(params: {
 
     // Air ticket & departure surcharge
     let airTicketTotal = 0;
-    let departureSurcharge = 0;
+    const departureSurcharge = 0;
     let adultTicketTotal = 0;
     let childTicketTotal = 0;
     let infantLapTotal = 0;
@@ -1587,10 +1755,6 @@ export function calculateTripPrice(params: {
         infantOwnSeatTotal = infantOwnSeatPrice * infantOwnSeatCount;
 
         airTicketTotal = adultTicketTotal + childTicketTotal + infantLapTotal + infantOwnSeatTotal;
-    } else {
-        if (departure === "Lahore") {
-            departureSurcharge = lahoreSurcharge;
-        }
     }
 
     // Add-ons cost (check both common and road-only add-ons)

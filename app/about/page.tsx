@@ -734,12 +734,15 @@ const About = () => {
           </motion.div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-            <motion.div
+            <motion.a
+              href="https://www.google.com/maps/search/?api=1&query=Office+3+2nd+Floor+Shalimar+Plaza+F-10+Markaz+Islamabad"
+              target="_blank"
+              rel="noopener noreferrer"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              className="bg-card p-6 rounded-2xl shadow-travel border border-border text-center"
+              className="bg-card p-6 rounded-2xl shadow-travel border border-border text-center cursor-pointer hover:shadow-lg transition-shadow"
             >
               <div className="w-12 h-12 rounded-xl bg-gradient-gold flex items-center justify-center mx-auto mb-4">
                 <MapPin className="w-6 h-6 text-primary" />
@@ -748,28 +751,30 @@ const About = () => {
               <p className="text-muted-foreground text-sm">
                 Office # 3, 2nd Floor, Shalimar Plaza, F-10 Markaz, Islamabad
               </p>
-            </motion.div>
+            </motion.a>
 
-            <motion.div
+            <motion.a
+              href="tel:+923339981177"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="bg-card p-6 rounded-2xl shadow-travel border border-border text-center"
+              className="bg-card p-6 rounded-2xl shadow-travel border border-border text-center cursor-pointer hover:shadow-lg transition-shadow"
             >
               <div className="w-12 h-12 rounded-xl bg-gradient-gold flex items-center justify-center mx-auto mb-4">
                 <Phone className="w-6 h-6 text-primary" />
               </div>
               <h4 className="font-semibold text-primary mb-2">Phone</h4>
               <p className="text-muted-foreground text-sm">+92 333 9981177</p>
-            </motion.div>
+            </motion.a>
 
-            <motion.div
+            <motion.a
+              href="mailto:info@travelwithmoeen.com"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.3 }}
-              className="bg-card p-6 rounded-2xl shadow-travel border border-border text-center"
+              className="bg-card p-6 rounded-2xl shadow-travel border border-border text-center cursor-pointer hover:shadow-lg transition-shadow"
             >
               <div className="w-12 h-12 rounded-xl bg-gradient-gold flex items-center justify-center mx-auto mb-4">
                 <Mail className="w-6 h-6 text-primary" />
@@ -778,14 +783,17 @@ const About = () => {
               <p className="text-muted-foreground text-sm">
                 info@travelwithmoeen.com
               </p>
-            </motion.div>
+            </motion.a>
 
-            <motion.div
+            <motion.a
+              href="https://travelwithmoeen.com"
+              target="_blank"
+              rel="noopener noreferrer"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.4 }}
-              className="bg-card p-6 rounded-2xl shadow-travel border border-border text-center"
+              className="bg-card p-6 rounded-2xl shadow-travel border border-border text-center cursor-pointer hover:shadow-lg transition-shadow"
             >
               <div className="w-12 h-12 rounded-xl bg-gradient-gold flex items-center justify-center mx-auto mb-4">
                 <Globe className="w-6 h-6 text-primary" />
@@ -794,7 +802,7 @@ const About = () => {
               <p className="text-muted-foreground text-sm">
                 travelwithmoeen.com
               </p>
-            </motion.div>
+            </motion.a>
           </div>
 
           {/* Stats & Credentials */}

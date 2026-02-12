@@ -211,8 +211,21 @@ export default function TourDetails() {
                         </ul>
 
                         {/* CTA */}
-                        <Button className="w-full">
-                          Book Now
+                        <Button className="w-full" asChild>
+                          <a
+                            href={`https://wa.me/923339981177?text=${encodeURIComponent(
+                              `Hi, I'm interested in booking:\n\n` +
+                              `*Tour:* ${tour.name}\n` +
+                              `*Package:* ${pkg.category}\n` +
+                              `*Hotel:* ${pkg.features[0]}\n` +
+                              `*Price:* ${pkg.price.toLocaleString()} PKR\n\n` +
+                              `Please provide more details.`
+                            )}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            Book Now
+                          </a>
                         </Button>
                       </div>
                     </TabsContent>
