@@ -523,8 +523,7 @@ const About = () => {
                 Meaningful?
               </h2>
               <p className="text-muted-foreground">
-                Lorem ipsum dolor sit amet consectetur adipiscing elit mauris
-                interdum.
+             Redefining quality tourism through expert guidance, transparent pricing, and unforgettable global destinations.
               </p>
 
               {/* Feature List */}

@@ -18,16 +18,19 @@ const contactInfo = [
     icon: MapPin,
     title: "Our Office",
     details: ["Office # 3, 2nd Floor, Shalimar Plaza, F-10 Markaz, Islamabad", ],
+     href:"https://www.google.com/maps/search/?api=1&query=Office+3+2nd+Floor+Shalimar+Plaza+F-10+Markaz+Islamabad",
   },
   {
     icon: Phone,
     title: "Phone",
     details: ["+92 333 9981177"],
+    href: "https://wa.me/923339981177",
   },
   {
     icon: Mail,
     title: "Email",
     details: ["info@travelwithmoeen.com"],
+     href:"mailto:info@travelwithmoeen.com"
   },
   {
     icon: Clock,
@@ -195,9 +198,21 @@ const Contact = () => {
                   </div>
                   <h3 className="font-semibold text-slate-800 mb-2 text-sm">{item.title}</h3>
                   {item.details.map((detail, i) => (
-                    <p key={i} className="text-xs text-slate-500">
-                      {detail}
-                    </p>
+                    item.href ? (
+                      <a
+                        href={item.href}
+                        key={i}
+                        target={item.href.startsWith('http') ? '_blank' : undefined}
+                        rel={item.href.startsWith('http') ? 'noopener noreferrer' : undefined}
+                        className="text-xs text-slate-500 hover:text-amber-600 transition-colors block"
+                      >
+                        {detail}
+                      </a>
+                    ) : (
+                      <p key={i} className="text-xs text-slate-500">
+                        {detail}
+                      </p>
+                    )
                   ))}
                 </motion.div>
               ))}
