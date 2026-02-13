@@ -767,7 +767,7 @@ export const vehiclePricing: Record<
                 "per_day_total": 16500
             }
         },
-        "Swat": {
+        "Swat Kalam & Malam Jabba": {
             "Coaster 5c": {
                 "daily_rent": 17000,
                 "toll": 6000,
@@ -1288,7 +1288,7 @@ export const vehiclePricing: Record<
       "per_day_total": 18500
     }
   },
-  "Swat": {
+  "Swat Kalam & Malam Jabba": {
     "Coaster 5c": {
       "daily_rent": 17000,
       "toll": 5000,
