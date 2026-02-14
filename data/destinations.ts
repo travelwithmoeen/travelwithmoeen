@@ -2,6 +2,7 @@ export interface DestinationSection {
   heading?: string;
   body: string;
   image?: string;
+    highlight?: string[]; // Optional array of sentences to highlight in the body text
 }
 
 export interface Destination {
@@ -12,31 +13,52 @@ export interface Destination {
   location?: string;
   listingNumber: number;
   content: DestinationSection[];
+
 }
 
 export const destinations: Destination[] = [
   {
     title: "Skardu Valley",
     slug: "skardu-valley",
-    excerpt: "Gateway to some of the world's highest peaks, featuring crystal-clear lakes and ancient fortresses.",
+    excerpt: "Located in the heart of Gilgit-Baltistan, Skardu Valley is a spectacular high-altitude destination and the gateway to some of the world’s most formidable peaks, including the legendary K2. Known as “Little Tibet”, the valley blends dramatic mountain scenery with rich Tibetan-influenced culture. It lies at 2,500 metres (8,200 ft) where the Indus River meets the Shigar River.",
     bannerImage: "https://images.unsplash.com/photo-1586348943529-beaae6c28db9?w=800&q=80",
     location: "Gilgit-Baltistan, Pakistan",
     listingNumber: 1,
     content: [
-      {
-        heading: "The Land of Giants",
-        body: "Skardu Valley is a breathtaking destination nestled in the Karakoram Range of northern Pakistan. Known as the gateway to K2, the world's second-highest peak, this valley offers unparalleled natural beauty with its turquoise lakes, ancient rock formations, and snow-capped mountains that seem to touch the sky.",
-        image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80"
-      },
-      {
-        heading: "Shangrila Resort",
-        body: "Often called 'Heaven on Earth,' Shangrila Resort sits on the shores of Lower Kachura Lake. The resort's unique architecture, combined with the emerald waters of the lake and the surrounding apple orchards, creates a paradise that has captivated travelers for decades.",
-        image: "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800&q=80"
-      },
-      {
-        heading: "Skardu Fort",
-        body: "Perched on a rocky hill overlooking the town, Skardu Fort (Kharpocho Fort) offers panoramic views of the Indus River and the surrounding mountains. This 16th-century fortress tells tales of ancient Balti rulers and provides a perfect vantage point to witness the valley's grandeur."
-      }
+    
+ {
+  "heading": "Highlights",
+  "body": "",
+  "highlight": [
+    "Lower Kachura (Shangrila) Lake – Iconic heart-shaped lake",
+    "Katpana & Sarfaranga Cold Deserts – Snow-dusted sand dunes",
+    "Upper Kachura Lake – Crystal-clear alpine beauty",
+    "Kharpocho Fort – Historic views over Skardu city",
+    "Deosai Plains – Wildflowers & Himalayan Brown Bear",
+    "Manthoka Waterfall – 180-ft natural spectacle"
+  ],
+  "image": ""
+},
+
+ {
+  "heading": "Travel Info",
+  "body": "",
+  "highlight": [
+    "Best Time: April–October",
+    "By Air: 45-minute flight from Islamabad with views of Nanga Parbat",
+    "By Road: 18–24 hours via the Karakoram Highway"
+  ],
+  "image": ""
+}
+
+,
+{
+  "heading": "Things to Do",
+  "body": "Trekking (K2 Base Camp), paragliding, sandboarding, boating, photography, and regulated trophy hunting.",
+  "highlight": [],
+  "image": ""
+}
+
     ]
   },
   {

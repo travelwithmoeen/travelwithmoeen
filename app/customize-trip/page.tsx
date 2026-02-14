@@ -36,8 +36,8 @@ const tripCategories = [
 ];
 
 const tripTypes = ["Adventure", "Family", "Honeymoon"];
-const hotelTypes = ["Best available (4, 5 star)", "3 Star"];
-const roomTypes = ["Master Bed", "Twin Beds"];
+const hotelTypes = ["Deluxe", "Premier Deluxe", "Executive", "Luxury", "Ultra Luxury"];
+const roomTypes = ["Master Bed", "Twin Beds","Triple bed"];
 const roomCounts = ["1", "2", "3+"];
 
 export default function CustomizeTrip() {
