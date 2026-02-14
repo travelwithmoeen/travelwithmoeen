@@ -24,6 +24,13 @@ export function DestinationContent({ sections }: DestinationContentProps) {
               />
             </div>
           )}
+          {section.highlight && section.highlight.length > 0 && (
+            <ul className="list-disc list-inside space-y-2 pl-4 text-foreground/90 marker:text-primary">
+              {section.highlight.map((item, idx) => (
+                <li key={idx} className="pl-2">{item}</li>
+              ))}
+            </ul>
+          )}
         </div>
       ))}
     </div>

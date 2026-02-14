@@ -29,12 +29,7 @@ export default function DestinationDetail() {
 
       <div className="container mx-auto px-4 py-8">
         {/* Back Button */}
-        <Button asChild  className="mb-6 border border-navy hover:bg-navy hover:text-white">
-          <Link href="/destinations">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Destinations
-          </Link>
-        </Button>
+      
 
         {isLoading ? (
           <DestinationDetailSkeleton />
