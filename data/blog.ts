@@ -592,7 +592,7 @@ export const blogs: Blog[] = [
 
     author: "Tahib Hussain",
     date: "2026-02-09",
-    coverImage:  "/images/Blogs/TouristAttractions/Picture1.jpg",
+    coverImage: "/images/Blogs/TouristAttractions/Picture1.jpg",
     content: [
       {
         body: "Northern Pakistan is where the world’s three greatest mountain ranges—the Himalayas, Karakorams, and Hindu Kush—collide. This 2026 guide covers the best places to visit, from cultural heartlands to the Roof of the World.I understand. You want deep, substantial information that doesn't just skim the surface but acts as a complete travel encyclopedia for these 20 spots. I have significantly expanded each section to include Historical Context, Detailed Itineraries, Budget Breakdowns, and Cultural Nuances.",
@@ -606,7 +606,7 @@ export const blogs: Blog[] = [
           "2026 Budget: High-end (Luxus/Serena) is 35k–50k PKR/night; Budget guest houses are 8k–12k PKR.",
           "Don't Miss: The Eagle’s Nest at sunset to see seven peaks above 7,000m simultaneously, including Rakaposhi and Ladyfinger."
         ],
-        "image":  "/images/Blogs/TouristAttractions/Picture1.jpg",
+        "image": "/images/Blogs/TouristAttractions/Picture1.jpg",
       },
 
 
@@ -631,7 +631,7 @@ export const blogs: Blog[] = [
           "2026 Budget: Hut stays range from 10k to 18k PKR per night.",
           "Don't Miss: The trek to Beyal Camp, just 2 hours further, for a more raw and silent mountain experience."
         ],
-        "image":  "/images/Blogs/TouristAttractions/Picture3.jpg",
+        "image": "/images/Blogs/TouristAttractions/Picture3.jpg",
       }
       ,
       {
@@ -643,7 +643,7 @@ export const blogs: Blog[] = [
           "2026 Budget: 10k–25k PKR per day depending on hotel quality.",
           "Don't Miss: A stop at Lulusar Lake, the largest natural lake in the province, located just before Babusar Top."
         ],
-        "image":  "",
+        "image": "",
       }
 
       ,
@@ -656,7 +656,7 @@ export const blogs: Blog[] = [
           "2026 Budget: 12k–25k PKR per day.",
           "Don't Miss: The Butkara Stupa near Mingora to see the archaeological heart of the valley."
         ],
-        "image":  "/images/Blogs/TouristAttractions/Picture4.jpg",
+        "image": "/images/Blogs/TouristAttractions/Picture4.jpg",
       }
       ,
       {
@@ -668,7 +668,7 @@ export const blogs: Blog[] = [
           "2026 Budget: 8k–15k PKR per day.",
           "Don't Miss: The Kalasha Museum in Bumburet, which provides deep insight into their history and DNA."
         ],
-        "image":  "/images/Blogs/TouristAttractions/Picture5.jpg",
+        "image": "/images/Blogs/TouristAttractions/Picture5.jpg",
       },
 
       {
@@ -680,7 +680,7 @@ export const blogs: Blog[] = [
           "2026 Budget: 7k–15k PKR per day.",
           "Don't Miss: Taobat, the last village of the valley, where the landscape opens up into massive flower-filled meadows."
         ],
-        "image":  "/images/Blogs/TouristAttractions/Picture6.jpg",
+        "image": "/images/Blogs/TouristAttractions/Picture6.jpg",
       }
 
       ,
@@ -693,7 +693,7 @@ export const blogs: Blog[] = [
           "2026 Budget: Jeep hire is 18k–25k PKR; Camping is 5k–8k PKR.",
           "Don't Miss: Fishing for Golden Trout in the icy streams of Bara Pani (permit required)."
         ],
-        "image":  "/images/Blogs/TouristAttractions/Picture7.png",
+        "image": "/images/Blogs/TouristAttractions/Picture7.png",
       }
       ,
       {
@@ -705,7 +705,7 @@ export const blogs: Blog[] = [
           "2026 Budget: 15k–50k PKR (depending on whether you stay at a luxury resort).",
           "Don't Miss: A sunset boat ride to the Passu Cones viewpoint."
         ],
-        "image":  "/images/Blogs/TouristAttractions/Picture8.jpg",
+        "image": "/images/Blogs/TouristAttractions/Picture8.jpg",
       }
       ,
       {
@@ -717,7 +717,7 @@ export const blogs: Blog[] = [
           "2026 Budget: 8k–12k PKR (Jeep/Car fuel from Hunza).",
           "Don't Miss: Spotting Ibex grazing on the cliffsides as you approach the top."
         ],
-        "image":  "/images/Blogs/TouristAttractions/Picture9.jpg",
+        "image": "/images/Blogs/TouristAttractions/Picture9.jpg",
       }
 
       ,
@@ -730,7 +730,7 @@ export const blogs: Blog[] = [
           "2026 Budget: 8k–14k PKR per day.",
           "Don't Miss: The view of Chongra Peak at dawn."
         ],
-        "image":  "/images/Blogs/TouristAttractions/Picture10.jpg",
+        "image": "/images/Blogs/TouristAttractions/Picture10.jpg",
       }
       ,
       {
@@ -742,7 +742,7 @@ export const blogs: Blog[] = [
           "2026 Budget: 10k–15k PKR for a day trip.",
           "Don't Miss: Satrangi Lake, the most famous of the lakes, where the colors are most vivid."
         ],
-        "image":  "/images/Blogs/TouristAttractions/Picture11.jpg",
+        "image": "/images/Blogs/TouristAttractions/Picture11.jpg",
       }
       ,
       {
@@ -766,7 +766,7 @@ export const blogs: Blog[] = [
           "2026 Budget: 8k–12k PKR per day.",
           "Don't Miss: The Kumrat Waterfall, which drops from a massive height into a misty pool."
         ],
-        "image":  "/images/Blogs/TouristAttractions/Picture13.jpg",
+        "image": "/images/Blogs/TouristAttractions/Picture13.jpg",
       }
       ,
       {
@@ -778,7 +778,7 @@ export const blogs: Blog[] = [
           "2026 Budget: 10k–30k PKR.",
           "Don't Miss: A sunrise hike to Mushkpuri Top (2,800 m) for a view of the Kashmir valley."
         ],
-        "image":  "/images/Blogs/TouristAttractions/Picture14.jpg",
+        "image": "/images/Blogs/TouristAttractions/Picture14.jpg",
       }
 
       , {
@@ -793,130 +793,130 @@ export const blogs: Blog[] = [
         "image": "/images/Blogs/TouristAttractions/Picture15.jpg",
       }
       ,
-{
-  "heading": "🏞️ 17. Minimarg & Domail: The Hidden Eden",
-  "body": "Minimarg is a secret valley located near the border, accessible only via the high Burzil Pass. It is often described as the most beautiful place in Pakistan that nobody visits.",
-  "highlight": [
-    "The Experience: The Rainbow Lake in Domail is the highlight—a perfectly clear lake surrounded by wild meadows.",
-    "Logistics & Planning: Requires military clearance (CNIC/ID is mandatory). You must hire a 4x4 from Chillam Chowki.",
-    "2026 Budget: 15k–20k PKR (including the expensive Jeep ride).",
-    "Don't Miss: The ascent to Burzil Pass (13,808 ft), which offers a view of the ancient trading route to Srinagar."
-  ],
-  "image":  "/images/Blogs/TouristAttractions/Picture16.jpg",
-}
-,
-{
-  "heading": "❤️ 18. Shangrila Resort: The Signature of Skardu",
-  "body": "Also known as Lower Kachura Lake, this is a private resort built around a heart-shaped lake. It was the first resort in the region, established in 1983.",
-  "highlight": [
-    "The Experience: The red-roofed cottages and the converted DC-3 aircraft restaurant are iconic. It is a manicured paradise, perfect for honeymooners.",
-    "Logistics & Planning: 20 minutes from Skardu.",
-    "2026 Budget: 25k–45k PKR per night.",
-    "Don't Miss: A boat ride in the Heart-Shaped Lake at sunset."
-  ],
-  "image": "/images/Blogs/TouristAttractions/Picture17.jpg",
-}
-,
-{
-  "heading": "🛣️ 19. The Karakoram Highway (KKH): The 8th Wonder",
-  "body": "The KKH is not just a road; it is the backbone of Northern Pakistan. It traces the ancient Silk Road and was built by over 24,000 workers over 20 years.",
-  "highlight": [
-    "The Experience: Driving on the KKH is a tour in itself. You pass through the junction of the three world-greatest mountain ranges (Himalayas, Karakorams, and Hindu Kush) and see 8th-century Buddhist rock carvings.",
-    "Planning Tip: The best stretch is the Raikot to Hunza section, where the mountains literally hang over the road.",
-    "Don't Miss: The Kargah Buddha, a 7th-century rock carving just outside Gilgit."
-  ],
-  "image":"/images/Blogs/TouristAttractions/Picture18.jpg",
-}
-,
-    {
-  "heading": "⛰️ 20. Haramosh Katwal Valley: The Trekker’s Secret",
-  "body": "Haramosh is a wild, untouched valley for those who want to avoid the crowds of Fairy Meadows. It features the spectacular Kutwal Lake.",
-  "highlight": [
-    "The Experience: It is a strenuous trek through rocky terrain and pine forests, ending at a turquoise lake at the base of Haramosh Peak (7,409 m).",
-    "Logistics & Planning: Start from Sassi village (near Gilgit). Requires 2 days of trekking and 4x4 Jeeps.",
-    "2026 Budget: 12k–18k PKR per day (including guide and porters).",
-    "Don't Miss: The reflection of Laila Peak in the waters of Kutwal Lake."
-  ],
-  "image": "/images/Blogs/TouristAttractions/Picture19.jpg",
-}
-,{
-  "heading": "🏔️ The 2026 Traveler’s Encyclopedia: Northern Pakistan - Best Time to Visit",
-  "body": "The \"best\" time depends entirely on the type of soul-searching you are doing. Northern Pakistan follows a distinct four-season cycle:",
-  "highlight": [
-    "Spring (March – May): This is the Blossom Season. Valleys like Hunza and Skardu are blanketed in pink and white apricot, cherry, and almond blossoms. Temperatures are mild (10°C to 25°C), but high passes like Babusar or Deosai remain closed due to snow.",
-    "Summer (June – August): The Peak Adventure Season. All roads are open, including the high-altitude passes. It is the best time for trekking (K2 Base Camp, Fairy Meadows) and escaping the 40°C heat of Islamabad.",
-    "Autumn (September – October): The Golden Season. The poplars and fruit trees turn fiery orange and gold. The air is crisp, the skies are sapphire blue, and the crowds thin out.",
-    "Winter (November – February): For the Hardy Explorer. Expect heavy snow, frozen lakes (like Attabad), and sub-zero temperatures. Ideal for skiing in Malam Jabba or seeing a silent, white Hunza."
-  ],
-  "image": ""
-}
-,
-{
-  "heading": "🎒 Essential Packing for Northern Pakistan",
-  "body": "The weather can change from a sunburn-inducing afternoon to a freezing night in just three hours. You must layer.",
-  "highlight": [
-    "The Three-Layer Rule: 1. Base: Moisture-wicking t-shirts (synthetic, not cotton). 2. Mid: A heavy fleece or wool sweater. 3. Outer: A windproof and waterproof down jacket.",
-    "Footwear: Broken-in waterproof hiking boots are mandatory. Pack a pair of lightweight sneakers for evenings at the hotel.",
-    "Protection: High-SPF sunscreen and polarized sunglasses (the mountain sun is 3× stronger at altitude).",
-    "Electronics: A high-capacity power bank (20,000mAh+) because electricity in remote valleys like Kumrat or Fairy Meadows can be intermittent.",
-    "Health Kit: Bring 'Diamox' for altitude sickness, rehydration salts (ORS), and charcoal tablets for 'traveler’s stomach.'"
-  ],
-  "image": ""
-}
-,
-{
-  "heading": "🛡️ Safety & Cultural Considerations",
-  "body": "Pakistan is incredibly welcoming, but navigating it safely requires a blend of common sense and cultural awareness.",
-  "highlight": [],
-  "image": ""
-}
-,
-{
-  "heading": "🏺 Cultural Sensitivity",
-  "body": "",
-  "highlight": [
-    "Dress Modestly: This is a conservative region. Both men and women should avoid shorts. Women are encouraged to wear loose-fitting clothes that cover the chest, arms, and legs. Carrying a light scarf (Dupatta) is helpful when entering mosques or traditional homes.",
-    "Photography: Always ask for permission before photographing people, especially women. Photographing military installations, bridges, or airports is strictly prohibited and can lead to legal trouble.",
-    "Social Graces: If a local invites you for tea, it is a genuine gesture of hospitality. It is polite to accept, even for ten minutes, but never offer money in return for a home-cooked meal—it can be seen as offensive."
-  ],
-  "image": ""
-}
-,
-{
-  "heading": "🌍 Responsible Tourism",
-  "body": "",
-  "highlight": [
-    "Waste Management: Plastic pollution is a growing crisis in the North. Carry your own reusable water bottle and never leave trash on a trail. 'Pack it in, pack it out.'",
-    "Support Local: Buy handicrafts directly from village artisans and stay in locally-run guest houses to ensure your money stays in the community."
-  ],
-  "image": ""
-},
-{
-  "heading": "Safety First",
-  "body": "While Northern Pakistan is safe, the terrain is not. Glacial melts, landslides, and thin oxygen are real risks. Traveling with an expert ensures you have someone who knows the \"mood\" of the mountains.",
-  "highlight": [],
-  "image": ""
-}
+      {
+        "heading": "🏞️ 17. Minimarg & Domail: The Hidden Eden",
+        "body": "Minimarg is a secret valley located near the border, accessible only via the high Burzil Pass. It is often described as the most beautiful place in Pakistan that nobody visits.",
+        "highlight": [
+          "The Experience: The Rainbow Lake in Domail is the highlight—a perfectly clear lake surrounded by wild meadows.",
+          "Logistics & Planning: Requires military clearance (CNIC/ID is mandatory). You must hire a 4x4 from Chillam Chowki.",
+          "2026 Budget: 15k–20k PKR (including the expensive Jeep ride).",
+          "Don't Miss: The ascent to Burzil Pass (13,808 ft), which offers a view of the ancient trading route to Srinagar."
+        ],
+        "image": "/images/Blogs/TouristAttractions/Picture16.jpg",
+      }
+      ,
+      {
+        "heading": "❤️ 18. Shangrila Resort: The Signature of Skardu",
+        "body": "Also known as Lower Kachura Lake, this is a private resort built around a heart-shaped lake. It was the first resort in the region, established in 1983.",
+        "highlight": [
+          "The Experience: The red-roofed cottages and the converted DC-3 aircraft restaurant are iconic. It is a manicured paradise, perfect for honeymooners.",
+          "Logistics & Planning: 20 minutes from Skardu.",
+          "2026 Budget: 25k–45k PKR per night.",
+          "Don't Miss: A boat ride in the Heart-Shaped Lake at sunset."
+        ],
+        "image": "/images/Blogs/TouristAttractions/Picture17.jpg",
+      }
+      ,
+      {
+        "heading": "🛣️ 19. The Karakoram Highway (KKH): The 8th Wonder",
+        "body": "The KKH is not just a road; it is the backbone of Northern Pakistan. It traces the ancient Silk Road and was built by over 24,000 workers over 20 years.",
+        "highlight": [
+          "The Experience: Driving on the KKH is a tour in itself. You pass through the junction of the three world-greatest mountain ranges (Himalayas, Karakorams, and Hindu Kush) and see 8th-century Buddhist rock carvings.",
+          "Planning Tip: The best stretch is the Raikot to Hunza section, where the mountains literally hang over the road.",
+          "Don't Miss: The Kargah Buddha, a 7th-century rock carving just outside Gilgit."
+        ],
+        "image": "/images/Blogs/TouristAttractions/Picture18.jpg",
+      }
+      ,
+      {
+        "heading": "⛰️ 20. Haramosh Katwal Valley: The Trekker’s Secret",
+        "body": "Haramosh is a wild, untouched valley for those who want to avoid the crowds of Fairy Meadows. It features the spectacular Kutwal Lake.",
+        "highlight": [
+          "The Experience: It is a strenuous trek through rocky terrain and pine forests, ending at a turquoise lake at the base of Haramosh Peak (7,409 m).",
+          "Logistics & Planning: Start from Sassi village (near Gilgit). Requires 2 days of trekking and 4x4 Jeeps.",
+          "2026 Budget: 12k–18k PKR per day (including guide and porters).",
+          "Don't Miss: The reflection of Laila Peak in the waters of Kutwal Lake."
+        ],
+        "image": "/images/Blogs/TouristAttractions/Picture19.jpg",
+      }
+      , {
+        "heading": "🏔️ The 2026 Traveler’s Encyclopedia: Northern Pakistan - Best Time to Visit",
+        "body": "The \"best\" time depends entirely on the type of soul-searching you are doing. Northern Pakistan follows a distinct four-season cycle:",
+        "highlight": [
+          "Spring (March – May): This is the Blossom Season. Valleys like Hunza and Skardu are blanketed in pink and white apricot, cherry, and almond blossoms. Temperatures are mild (10°C to 25°C), but high passes like Babusar or Deosai remain closed due to snow.",
+          "Summer (June – August): The Peak Adventure Season. All roads are open, including the high-altitude passes. It is the best time for trekking (K2 Base Camp, Fairy Meadows) and escaping the 40°C heat of Islamabad.",
+          "Autumn (September – October): The Golden Season. The poplars and fruit trees turn fiery orange and gold. The air is crisp, the skies are sapphire blue, and the crowds thin out.",
+          "Winter (November – February): For the Hardy Explorer. Expect heavy snow, frozen lakes (like Attabad), and sub-zero temperatures. Ideal for skiing in Malam Jabba or seeing a silent, white Hunza."
+        ],
+        "image": ""
+      }
+      ,
+      {
+        "heading": "🎒 Essential Packing for Northern Pakistan",
+        "body": "The weather can change from a sunburn-inducing afternoon to a freezing night in just three hours. You must layer.",
+        "highlight": [
+          "The Three-Layer Rule: 1. Base: Moisture-wicking t-shirts (synthetic, not cotton). 2. Mid: A heavy fleece or wool sweater. 3. Outer: A windproof and waterproof down jacket.",
+          "Footwear: Broken-in waterproof hiking boots are mandatory. Pack a pair of lightweight sneakers for evenings at the hotel.",
+          "Protection: High-SPF sunscreen and polarized sunglasses (the mountain sun is 3× stronger at altitude).",
+          "Electronics: A high-capacity power bank (20,000mAh+) because electricity in remote valleys like Kumrat or Fairy Meadows can be intermittent.",
+          "Health Kit: Bring 'Diamox' for altitude sickness, rehydration salts (ORS), and charcoal tablets for 'traveler’s stomach.'"
+        ],
+        "image": ""
+      }
+      ,
+      {
+        "heading": "🛡️ Safety & Cultural Considerations",
+        "body": "Pakistan is incredibly welcoming, but navigating it safely requires a blend of common sense and cultural awareness.",
+        "highlight": [],
+        "image": ""
+      }
+      ,
+      {
+        "heading": "🏺 Cultural Sensitivity",
+        "body": "",
+        "highlight": [
+          "Dress Modestly: This is a conservative region. Both men and women should avoid shorts. Women are encouraged to wear loose-fitting clothes that cover the chest, arms, and legs. Carrying a light scarf (Dupatta) is helpful when entering mosques or traditional homes.",
+          "Photography: Always ask for permission before photographing people, especially women. Photographing military installations, bridges, or airports is strictly prohibited and can lead to legal trouble.",
+          "Social Graces: If a local invites you for tea, it is a genuine gesture of hospitality. It is polite to accept, even for ten minutes, but never offer money in return for a home-cooked meal—it can be seen as offensive."
+        ],
+        "image": ""
+      }
+      ,
+      {
+        "heading": "🌍 Responsible Tourism",
+        "body": "",
+        "highlight": [
+          "Waste Management: Plastic pollution is a growing crisis in the North. Carry your own reusable water bottle and never leave trash on a trail. 'Pack it in, pack it out.'",
+          "Support Local: Buy handicrafts directly from village artisans and stay in locally-run guest houses to ensure your money stays in the community."
+        ],
+        "image": ""
+      },
+      {
+        "heading": "Safety First",
+        "body": "While Northern Pakistan is safe, the terrain is not. Glacial melts, landslides, and thin oxygen are real risks. Traveling with an expert ensures you have someone who knows the \"mood\" of the mountains.",
+        "highlight": [],
+        "image": ""
+      }
 
-,
-{
-  "heading": "Hassle-Free Logistics",
-  "body": "Booking Jeeps, navigating military check-posts, and finding the best trout spots can be exhausting. An organized tour handles:",
-  "highlight": [
-    "Jeep Unions: They handle the fixed-rate negotiations.",
-    "Security Permits: Essential for areas like Neelum or Minimarg.",
-    "Local Knowledge: Knowing exactly when the blossoms will peak or the snow will clear."
-  ],
-  "image": ""
-}
-,
-{
-  "heading": "",
-  "body": "Would you like me to create a specific 10-day itinerary that connects 5 of these spots together?",
-  "highlight": [
-      ],
-  "image": ""
-}
+      ,
+      {
+        "heading": "Hassle-Free Logistics",
+        "body": "Booking Jeeps, navigating military check-posts, and finding the best trout spots can be exhausting. An organized tour handles:",
+        "highlight": [
+          "Jeep Unions: They handle the fixed-rate negotiations.",
+          "Security Permits: Essential for areas like Neelum or Minimarg.",
+          "Local Knowledge: Knowing exactly when the blossoms will peak or the snow will clear."
+        ],
+        "image": ""
+      }
+      ,
+      {
+        "heading": "",
+        "body": "Would you like me to create a specific 10-day itinerary that connects 5 of these spots together?",
+        "highlight": [
+        ],
+        "image": ""
+      }
 
     ]
   },
@@ -925,10 +925,9 @@ export const blogs: Blog[] = [
     title: "Pakistan Key National Symbols of Pakistan: Identity, Heritage, and Pride",
     slug: "key-national-symbols-of-pakistan-identity-heritage-and-pride",
     excerpt: "Every nation is defined not only by its borders but by the symbols that unite its people. Pakistan’s national symbols reflect its ideology, natural beauty, cultural depth, and collective aspirations. From the language spoken in poetry to the mountains that touch the sky, these symbols tell the story of a nation founded on faith, resilience, and hope.",
-
     author: "Tahib Hussain",
     date: "2026-02-09",
-    coverImage: "/images/Blogs/National_symbols/Picture1.jpg",
+    coverImage: "/images/Blogs/National_Symbols/Picture1.jpg",
     content: [
       {
         body: "Every nation is defined not only by its borders but by the symbols that unite its people. Pakistan’s national symbols reflect its ideology, natural beauty, cultural depth, and collective aspirations. From the language spoken in poetry to the mountains that touch the sky, these symbols tell the story of a nation founded on faith, resilience, and hope.This blog explores the key national symbols of Pakistan, explaining their historical roots, cultural meaning, and modern relevance.",

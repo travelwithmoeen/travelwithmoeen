@@ -19,7 +19,8 @@ import { Input } from "@/components/ui/input";
 import {
   roadDestinations, airDestinations, hotelCategories,
   optionalAddOns, calculateTripPrice, getAvailableVehicles,
-  roadDepartures, airDepartures,
+  roadDepartures, airDepartures, getMinimumDays,
+  isGuideCompulsory, getRecommendedVehicle,
   type HotelCategory, type VehicleType,
 } from "@/data/pricing";
 import { tours } from "@/data/tours";
@@ -39,7 +40,7 @@ export function PackageCalculator() {
   const [children, setChildren] = useState<number>(0);
   const [infantLap, setInfantLap] = useState<number>(0);
   const [infantOwnSeat, setInfantOwnSeat] = useState<number>(0);
-  const [hotelCategory, setHotelCategory] = useState<HotelCategory>("Deluxe (Lower)");
+  const [hotelCategory, setHotelCategory] = useState<HotelCategory>("Deluxe");
   const [vehicleType, setVehicleType] = useState<VehicleType>("Honda BRV");
   const [roomType, setRoomType] = useState<RoomType>("twin");
   // Default: welcome_pack, entry_tickets, arrival_breakfast are always included (not shown to user)
@@ -61,18 +62,47 @@ export function PackageCalculator() {
     return getAvailableVehicles(departure, selectedDestination, totalSeatsNeeded, transportMode);
   }, [departure, selectedDestination, totalSeatsNeeded, transportMode]);
 
-  // Auto-select first valid vehicle when list changes
-  useEffect(() => {
-    if (availableVehicles.length > 0 && !availableVehicles.find((v) => v.type === vehicleType)) {
-      setVehicleType(availableVehicles[0].type);
+  // Get minimum days for selected destination
+  const minimumDays = useMemo(() => {
+    if (!selectedDestination) return 2;
+    return getMinimumDays(selectedDestination, transportMode);
+  }, [selectedDestination, transportMode]);
+
+  // Check if guide is compulsory for current vehicle
+  const guideRequired = useMemo(() => isGuideCompulsory(vehicleType), [vehicleType]);
+
+  // Handle destination change - also sets minimum days and recommended vehicle
+  const handleDestinationChange = (dest: string) => {
+    setSelectedDestination(dest);
+    const minDays = getMinimumDays(dest, transportMode);
+    if (days < minDays) {
+      setDays(minDays);
     }
-  }, [availableVehicles, vehicleType]);
+    // Auto-select recommended vehicle
+    const recommended = getRecommendedVehicle(totalSeatsNeeded, transportMode);
+    const available = getAvailableVehicles(departure, dest, totalSeatsNeeded, transportMode);
+    if (available.find((v) => v.type === recommended)) {
+      setVehicleType(recommended);
+    } else if (available.length > 0) {
+      setVehicleType(available[0].type);
+    }
+  };
+
+  // Handle vehicle change - enforce guide for Coaster
+  const handleVehicleChange = (vehicle: VehicleType) => {
+    setVehicleType(vehicle);
+    // If Coaster selected, ensure guide is included
+    if (isGuideCompulsory(vehicle) && !selectedAddOns.includes("guide")) {
+      setSelectedAddOns((prev) => [...prev, "guide"]);
+    }
+  };
 
   // Reset destination & departure when transport mode changes
   const handleTransportChange = (mode: TransportMode) => {
     setTransportMode(mode);
     setSelectedDestination("");
     setDeparture("Islamabad");
+    setDays(2);
     // Set default add-ons based on transport mode
     if (mode === "By Air") {
       setSelectedAddOns(["welcome_pack", "entry_tickets", "arrival_breakfast"]);
@@ -104,6 +134,10 @@ export function PackageCalculator() {
   }, [transportMode, selectedDestination]);
 
   const toggleAddOn = (id: string) => {
+    // Prevent removing guide if it's compulsory for current vehicle
+    if (id === "guide" && guideRequired && selectedAddOns.includes("guide")) {
+      return; // Can't remove guide for Coaster vehicles
+    }
     setSelectedAddOns((prev) =>
       prev.includes(id) ? prev.filter((a) => a !== id) : [...prev, id]
     );
@@ -194,7 +228,7 @@ export function PackageCalculator() {
                       <label className="mb-3 block text-xs font-semibold uppercase tracking-wide text-navy">
                         3. Destination
                       </label>
-                      <Select value={selectedDestination} onValueChange={setSelectedDestination}>
+                      <Select value={selectedDestination} onValueChange={handleDestinationChange}>
                         <SelectTrigger className="h-11 w-full">
                           <SelectValue placeholder="Select destination" />
                         </SelectTrigger>
@@ -290,12 +324,17 @@ export function PackageCalculator() {
                     <div>
                       <label className="mb-3 block text-xs font-semibold uppercase tracking-wide text-navy">
                         <Calendar className="mr-1 inline h-3.5 w-3.5" /> 9. Duration ({days} Days)
+                        {selectedDestination && (
+                          <span className="ml-2 text-[10px] font-normal text-muted-foreground">
+                            (Min: {minimumDays} days)
+                          </span>
+                        )}
                       </label>
                       <div className="flex items-center gap-4 pt-2">
                         <Slider
                           value={[days]}
-                          onValueChange={([val]) => setDays(val)}
-                          min={1}
+                          onValueChange={([val]) => setDays(Math.max(val, minimumDays))}
+                          min={minimumDays}
                           max={15}
                           step={1}
                           className="flex-1"
@@ -308,10 +347,15 @@ export function PackageCalculator() {
                     <div>
                       <label className="mb-3 block text-xs font-semibold uppercase tracking-wide text-navy">
                         <Car className="mr-1 inline h-3.5 w-3.5" /> 10. Vehicle Type
+                        {guideRequired && (
+                          <span className="ml-2 text-[10px] font-normal text-primary">
+                            (Guide compulsory)
+                          </span>
+                        )}
                       </label>
                       <Select
                         value={vehicleType}
-                        onValueChange={(v) => setVehicleType(v as VehicleType)}
+                        onValueChange={(v) => handleVehicleChange(v as VehicleType)}
                         disabled={availableVehicles.length === 0}
                       >
                         <SelectTrigger className="h-11 w-full">
@@ -357,20 +401,26 @@ export function PackageCalculator() {
                     </label>
                     <div className="flex flex-wrap gap-2">
                       {/* Only show Guide and Meals as toggleable options */}
-                      {toggleableAddOns.map((addon) => (
-                        <Button
-                          key={addon.id}
-                          variant="outline"
-                          className={cn(
-                            "gap-2",
-                            selectedAddOns.includes(addon.id) && "border-navy bg-navy/10 text-navy"
-                          )}
-                          onClick={() => toggleAddOn(addon.id)}
-                        >
-                          {selectedAddOns.includes(addon.id) ? <Check className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-                          {addon.name}
-                        </Button>
-                      ))}
+                      {toggleableAddOns.map((addon) => {
+                        const isGuideAndRequired = addon.id === "guide" && guideRequired;
+                        return (
+                          <Button
+                            key={addon.id}
+                            variant="outline"
+                            className={cn(
+                              "gap-2",
+                              selectedAddOns.includes(addon.id) && "border-navy bg-navy/10 text-navy",
+                              isGuideAndRequired && "cursor-not-allowed opacity-70"
+                            )}
+                            onClick={() => toggleAddOn(addon.id)}
+                            disabled={isGuideAndRequired}
+                          >
+                            {selectedAddOns.includes(addon.id) ? <Check className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                            {addon.name}
+                            {isGuideAndRequired && " (Required)"}
+                          </Button>
+                        );
+                      })}
                     </div>
                     {transportMode === "By Air" && (
                       <p className="mt-2 text-xs text-muted-foreground">
@@ -412,7 +462,7 @@ export function PackageCalculator() {
                       </motion.div>
 
                       {/* Breakdown */}
-                      {/* <div className="mb-4 space-y-2 rounded-xl bg-background p-4 text-sm">
+                      <div className="mb-4 space-y-2 rounded-xl bg-background p-4 text-sm">
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">Hotel ({days > 1 ? days - 1 : 0} nights)</span>
                           <span className="font-medium text-navy">PKR {formatPrice(pricing.hotelTotal)}</span>
@@ -474,7 +524,7 @@ export function PackageCalculator() {
                           <span className="text-navy">Grand Total</span>
                           <span className="text-gold">PKR {formatPrice(pricing.grandTotal)}</span>
                         </div>
-                      </div> */}
+                      </div>
                     </>
                   ) : (
                     <div className="mb-4 rounded-2xl bg-navy/50 p-8 text-center">

@@ -1,6 +1,7 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useState, useEffect, useRef } from "react";
+import { motion, useInView } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -58,6 +59,52 @@ import vision1 from "@/public/images/moeen/vision1.jpg";
 import vision2 from "@/public/images/moeen/vision2.jpg";
 import vision3 from "@/public/images/moeen/vision3.jpg";
 import { SocialMediaSection } from "@/components/home/SocialMediaSection";
+
+// Counter component for animated stats
+const CounterStat = ({
+  end,
+  suffix = "",
+  label,
+}: {
+  end: number;
+  suffix?: string;
+  label: string;
+}) => {
+  const [count, setCount] = useState(0);
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true });
+
+  useEffect(() => {
+    if (!isInView) return;
+
+    const duration = 2000;
+    const steps = 60;
+    const increment = end / steps;
+    let current = 0;
+
+    const timer = setInterval(() => {
+      current += increment;
+      if (current >= end) {
+        setCount(end);
+        clearInterval(timer);
+      } else {
+        setCount(Math.floor(current));
+      }
+    }, duration / steps);
+
+    return () => clearInterval(timer);
+  }, [isInView, end]);
+
+  return (
+    <div ref={ref}>
+      <p className="text-3xl md:text-4xl font-serif font-bold text-yellow-500">
+        {count}
+        {suffix}
+      </p>
+      <p className="text-primary-foreground/80 mt-2">{label}</p>
+    </div>
+  );
+};
 
 const processSteps = [
   {
@@ -651,7 +698,7 @@ const About = () => {
           >
             <p className="text-gold font-serif italic text-lg mb-2">Our Team</p>
             <h2 className="text-3xl md:text-4xl font-serif font-bold text-primary mb-4">
-              Meet Our Professional Guides
+              Meet Our Professional Teams
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
               Our experienced team brings destinations to life with authentic
@@ -678,7 +725,7 @@ const About = () => {
                     placeholder="blur"
                   />
                   {/* Hover Overlay */}
-                  <div className="absolute inset-0 bg-[#e8ac46]/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                  {/* <div className="absolute inset-0 bg-[#e8ac46]/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                     <div className="flex gap-3">
                       <a
                         href="#"
@@ -699,7 +746,7 @@ const About = () => {
                         <Instagram className="w-5 h-5 text-primary" />
                       </a>
                     </div>
-                  </div>
+                  </div> */}
                 </div>
                 {/* Name Card */}
                 <div className="bg-card rounded-b-2xl p-6 text-center shadow-travel border border-border">
@@ -813,21 +860,10 @@ const About = () => {
             className="bg-[#162a48] from-navy to-navy-dark rounded-2xl p-8 md:p-12"
           >
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center mb-8">
-              {[
-                { number: "50+", label: "Tours" },
-                { number: "10+", label: "Countries" },
-                { number: "40k+", label: "Happy Clients" },
-                { number: "20+", label: "Activities" },
-              ].map((stat, index) => (
-                <div key={index}>
-                  <p className="text-3xl md:text-4xl font-serif font-bold text-yellow-500">
-                    {stat.number}
-                  </p>
-                  <p className="text-primary-foreground/80 mt-2">
-                    {stat.label}
-                  </p>
-                </div>
-              ))}
+              <CounterStat end={50} suffix="+" label="Tours" />
+              <CounterStat end={10} suffix="+" label="Countries" />
+              <CounterStat end={40} suffix="k+" label="Happy Clients" />
+              <CounterStat end={20} suffix="+" label="Activities" />
             </div>
             <div className="text-center border-t border-primary-foreground/20 pt-6">
               <p className="text-primary-foreground/60 text-sm">

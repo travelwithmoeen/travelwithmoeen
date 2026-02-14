@@ -8,11 +8,11 @@ export interface HotelRate {
 }
 
 export type HotelCategory =
-    | "Deluxe (Lower)"
-    | "Deluxe (Upper)"
+    | "Deluxe"
+    | "Premier"
     | "Executive"
-    | "Luxury (Deluxe RM)"
-    | "Luxury (Exec RM)";
+    | "Luxury"
+    | "Ultra Luxury";
 
 export type RoadDestination =
     | "Skardu Valley"
@@ -28,7 +28,6 @@ export type RoadDestination =
     | "Swat Kalam & Malam Jabba"
     | "Islamabad"
     | "Kumrat and Katora Lake"
-     |"Naran"
     | "Kalash Valley & Chitral";
 
 export type AirDestination = "Skardu Valley" | "Hunza Valley" | "Skardu & Hunza" | "Minimarg Astor Valley" | "Fairy Meadows Nanga Base Camp";
@@ -47,11 +46,11 @@ export interface VehicleRate {
 
 // ---- Hotel Categories ----
 export const hotelCategories: HotelCategory[] = [
-    "Deluxe (Lower)",
-    "Deluxe (Upper)",
+    "Deluxe",
+    "Premier",
     "Executive",
-    "Luxury (Deluxe RM)",
-    "Luxury (Exec RM)",
+    "Luxury",
+    "Ultra Luxury",
 ];
 
 // ---- Road Destinations ----
@@ -80,314 +79,500 @@ export const airDepartures: AirDeparture[] = ["Islamabad", "Karachi", "Lahore"];
 
 export const lahoreSurcharge = 15000; // flat per-trip surcharge for Lahore departure
 
-
-
-const premiumHotelRates: Record<HotelCategory, HotelRate> = {
-    "Deluxe (Lower)": { twin_rate: 12000, triple_rate: 15000 },
-    "Deluxe (Upper)": { twin_rate: 15000, triple_rate: 17000 },
-    Executive: { twin_rate: 19000, triple_rate: 22000 },
-    "Luxury (Deluxe RM)": { twin_rate: 30000, triple_rate: 40000 },
-    "Luxury (Exec RM)": { twin_rate: 50000, triple_rate: 60000 },
+// ---- Meal Pricing per Person per Night ----
+export const mealPricingPerNight: Record<HotelCategory, number> = {
+    "Deluxe": 1200,
+    "Premier": 1500,
+    "Executive": 2000,
+    "Luxury": 2500,
+    "Ultra Luxury": 3000,
 };
 
+// ---- Vehicle Selection Rules ----
+// By Road: 1-4 GLI, 5-6 Honda BRV, 6-12 Grand Cabin, 13-25 Coaster
+// By Air: 1-4 GLI, 4-5 Prado, 6-12 Grand Cabin, 13-25 Coaster
+
+export function getRecommendedVehicle(travelers: number, transportMode: "By Road" | "By Air"): VehicleType {
+    if (transportMode === "By Air") {
+        if (travelers <= 4) return "Gli Car";
+        if (travelers <= 5) return "Parado";
+        if (travelers <= 12) return "Grand Cabin";
+        return "Coaster 4c";
+    } else {
+        // By Road
+        if (travelers <= 4) return "Gli Car";
+        if (travelers <= 6) return "Honda BRV";
+        if (travelers <= 12) return "Grand Cabin";
+        if (travelers <= 20) return "Coaster 4c";
+        return "Coaster 5c";
+    }
+}
+
+// ---- Guide Rules ----
+// Guide is compulsory for Coaster vehicles, optional for others
+export function isGuideCompulsory(vehicleType: VehicleType): boolean {
+    return vehicleType === "Coaster 4c" || vehicleType === "Coaster 5c";
+}
+
+// ---- Minimum Days Rules ----
+export const roadMinimumDays: Record<RoadDestination, number> = {
+    "Skardu Valley": 6,
+    "Hunza Valley": 5,
+    "Skardu & Hunza": 8,
+    "Minimarg Astor Valley": 6,
+    "Fairy Meadows Nanga Base Camp": 5,
+    "Naran Kaghan & Babusar Top": 3,
+    "Murree Ayubia Nathiagali": 2,
+    "Murree Patriata Galiyat": 2,
+    "Neelum Valley Kashmir": 3,
+    "Neelum Taobat Arang Kel": 4,
+    "Swat Kalam & Malam Jabba": 3,
+    "Islamabad": 1,
+    "Kumrat and Katora Lake": 4,
+    "Kalash Valley & Chitral": 6,
+};
+
+export const airMinimumDays: Record<AirDestination, number> = {
+    "Skardu Valley": 4,
+    "Hunza Valley": 5,
+    "Skardu & Hunza": 6,
+    "Minimarg Astor Valley": 5,
+    "Fairy Meadows Nanga Base Camp": 5,
+};
+
+// Helper function to get minimum days for a destination
+export function getMinimumDays(destination: string, transportMode: "By Road" | "By Air"): number {
+    if (transportMode === "By Air") {
+        return airMinimumDays[destination as AirDestination] ?? 2;
+    }
+    return roadMinimumDays[destination as RoadDestination] ?? 2;
+}
+
+
+
 export const roadHotelPricing: Record<RoadDestination, Record<HotelCategory, HotelRate>> = {
-    "Skardu Valley": premiumHotelRates,
-    "Hunza Valley": premiumHotelRates,
-    "Skardu & Hunza": {
-        "Deluxe (Lower)": {
-            "twin_rate": 12000,
-            "triple_rate": 15000
-        },
-        "Deluxe (Upper)": {
-            "twin_rate": 13000,
-            "triple_rate": 16000
-        },
-        "Executive": {
-            "twin_rate": 19000,
-            "triple_rate": 22000
-        },
-        "Luxury (Deluxe RM)": {
-            "twin_rate": 24000,
-            "triple_rate": 30000
-        },
-        "Luxury (Exec RM)": {
-            "twin_rate": 30000,
-            "triple_rate": 40000
-        }
+  "Skardu Valley": {
+    "Deluxe": {
+      "twin_rate": 10000,
+      "triple_rate": 13000
     },
-    "Minimarg Astor Valley": {
-        "Deluxe (Lower)": {
-            "twin_rate": 15000,
-            "triple_rate": 17000
-        },
-        "Deluxe (Upper)": {
-            "twin_rate": 19000,
-            "triple_rate": 22000
-        },
-        "Executive": {
-            "twin_rate": 20000,
-            "triple_rate": 23000
-        },
-        "Luxury (Deluxe RM)": {
-            "twin_rate": 30000,
-            "triple_rate": 35000
-        },
-        "Luxury (Exec RM)": {
-            "twin_rate": 35000,
-            "triple_rate": 38000
-        }
+    "Premier": {
+      "twin_rate": 13000,
+      "triple_rate": 15000
     },
-    "Fairy Meadows Nanga Base Camp": {
-        "Deluxe (Lower)": {
-            "twin_rate": 15000,
-            "triple_rate": 17000
-        },
-        "Deluxe (Upper)": {
-            "twin_rate": 16000,
-            "triple_rate": 18000
-        },
-        "Executive": {
-            "twin_rate": 20000,
-            "triple_rate": 23000
-        },
-        "Luxury (Deluxe RM)": {
-            "twin_rate": 30000,
-            "triple_rate": 35000
-        },
-        "Luxury (Exec RM)": {
-            "twin_rate": 32000,
-            "triple_rate": 35000
-        }
+    "Executive": {
+      "twin_rate": 19000,
+      "triple_rate": 22000
     },
-    "Murree Patriata Galiyat": {
-        "Deluxe (Lower)": {
-            "twin_rate": 12000,
-            "triple_rate": 15000
-        },
-        "Deluxe (Upper)": {
-            "twin_rate": 13000,
-            "triple_rate": 16000
-        },
-        "Executive": {
-            "twin_rate": 25000,
-            "triple_rate": 30000
-        },
-        "Luxury (Deluxe RM)": {
-            "twin_rate": 27000,
-            "triple_rate": 33000
-        },
-        "Luxury (Exec RM)": {
-            "twin_rate": 30000,
-            "triple_rate": 36000
-        }
+    "Luxury": {
+      "twin_rate": 30000,
+      "triple_rate": 40000
     },
-    "Murree Ayubia Nathiagali": {
-        "Deluxe (Lower)": {
-            "twin_rate": 15000,
-            "triple_rate": 18000
-        },
-        "Deluxe (Upper)": {
-            "twin_rate": 16000,
-            "triple_rate": 17000
-        },
-        "Executive": {
-            "twin_rate": 22000,
-            "triple_rate": 25000
-        },
-        "Luxury (Deluxe RM)": {
-            "twin_rate": 30000,
-            "triple_rate": 35000
-        },
-        "Luxury (Exec RM)": {
-            "twin_rate": 35000,
-            "triple_rate": 38000
-        }
+    "Ultra Luxury": {
+      "twin_rate": 50000,
+      "triple_rate": 60000
+    }
+  },
+  "Hunza Valley": {
+    "Deluxe": {
+      "twin_rate": 10000,
+      "triple_rate": 13000
     },
-    Naran: {
-        "Deluxe (Lower)": {
-            "twin_rate": 15000,
-            "triple_rate": 18000
-        },
-        "Deluxe (Upper)": {
-            "twin_rate": 19000,
-            "triple_rate": 22000
-        },
-        "Executive": {
-            "twin_rate": 21000,
-            "triple_rate": 23000
-        },
-        "Luxury (Deluxe RM)": {
-            "twin_rate": 23000,
-            "triple_rate": 25000
-        },
-        "Luxury (Exec RM)": {
-            "twin_rate": 25000,
-            "triple_rate": 27000
-        }
+    "Premier": {
+      "twin_rate": 13000,
+      "triple_rate": 15000
     },
-    "Neelum Valley Kashmir": {
-        "Deluxe (Lower)": {
-            "twin_rate": 6000,
-            "triple_rate": 8000
-        },
-        "Deluxe (Upper)": {
-            "twin_rate": 9000,
-            "triple_rate": 12000
-        },
-        "Executive": {
-            "twin_rate": 12000,
-            "triple_rate": 15000
-        },
-        "Luxury (Deluxe RM)": {
-            "twin_rate": 17000,
-            "triple_rate": 20000
-        },
-        "Luxury (Exec RM)": {
-            "twin_rate": 25000,
-            "triple_rate": 30000
-        }
+    "Executive": {
+      "twin_rate": 19000,
+      "triple_rate": 22000
     },
-    "Neelum Taobat Arang Kel": {
-        "Deluxe (Lower)": {
-            "twin_rate": 6000,
-            "triple_rate": 8000
-        },
-        "Deluxe (Upper)": {
-            "twin_rate": 9000,
-            "triple_rate": 12000
-        },
-        "Executive": {
-            "twin_rate": 12000,
-            "triple_rate": 15000
-        },
-        "Luxury (Deluxe RM)": {
-            "twin_rate": 17000,
-            "triple_rate": 20000
-        },
-        "Luxury (Exec RM)": {
-            "twin_rate": 25000,
-            "triple_rate": 30000
-        }
+    "Luxury": {
+      "twin_rate": 30000,
+      "triple_rate": 40000
     },
-    "Swat Kalam & Malam Jabba": {
-        "Deluxe (Lower)": {
-            "twin_rate": 9000,
-            "triple_rate": 12000
-        },
-        "Deluxe (Upper)": {
-            "twin_rate": 12000,
-            "triple_rate": 15000
-        },
-        "Executive": {
-            "twin_rate": 18000,
-            "triple_rate": 21000
-        },
-        "Luxury (Deluxe RM)": {
-            "twin_rate": 22000,
-            "triple_rate": 24000
-        },
-        "Luxury (Exec RM)": {
-            "twin_rate": 25000,
-            "triple_rate": 32000
-        }
+    "Ultra Luxury": {
+      "twin_rate": 50000,
+      "triple_rate": 60000
+    }
+  },
+  "Skardu & Hunza": {
+    "Deluxe": {
+      "twin_rate": 10000,
+      "triple_rate": 13000
     },
-    Islamabad: {
-        "Deluxe (Lower)": {
-            "twin_rate": 15000,
-            "triple_rate": 20000
-        },
-        "Deluxe (Upper)": {
-            "twin_rate": 23000,
-            "triple_rate": 27000
-        },
-        "Executive": {
-            "twin_rate": 35000,
-            "triple_rate": 40000
-        },
-        "Luxury (Deluxe RM)": {
-            "twin_rate": 30000,
-            "triple_rate": 33000
-        },
-        "Luxury (Exec RM)": {
-            "twin_rate": 35000,
-            "triple_rate": 40000
-        }
+    "Premier": {
+      "twin_rate": 13000,
+      "triple_rate": 15000
     },
-    "Naran Kaghan & Babusar Top": {
-        "Deluxe (Lower)": {
-            "twin_rate": 15000,
-            "triple_rate": 18000
-        },
-        "Deluxe (Upper)": {
-            "twin_rate": 19000,
-            "triple_rate": 22000
-        },
-        "Executive": {
-            "twin_rate": 21000,
-            "triple_rate": 23000
-        },
-        "Luxury (Deluxe RM)": {
-            "twin_rate": 23000,
-            "triple_rate": 25000
-        },
-        "Luxury (Exec RM)": {
-            "twin_rate": 25000,
-            "triple_rate": 27000
-        }
+    "Executive": {
+      "twin_rate": 19000,
+      "triple_rate": 22000
     },
-    "Kumrat and Katora Lake": {
-        "Deluxe (Lower)": {
-            "twin_rate": 9000,
-            "triple_rate": 12000
-        },
-        "Deluxe (Upper)": {
-            "twin_rate": 12000,
-            "triple_rate": 15000
-        },
-        "Executive": {
-            "twin_rate": 15000,
-            "triple_rate": 18000
-        },
-        "Luxury (Deluxe RM)": {
-            "twin_rate": 18000,
-            "triple_rate": 21000
-        },
-        "Luxury (Exec RM)": {
-            "twin_rate": 22000,
-            "triple_rate": 25000
-        }
+    "Luxury": {
+      "twin_rate": 30000,
+      "triple_rate": 40000
     },
-    "Kalash Valley & Chitral": {
-        "Deluxe (Lower)": {
-            "twin_rate": 9000,
-            "triple_rate": 12000
-        },
-        "Deluxe (Upper)": {
-            "twin_rate": 12000,
-            "triple_rate": 15000
-        },
-        "Executive": {
-            "twin_rate": 15000,
-            "triple_rate": 18000
-        },
-        "Luxury (Deluxe RM)": {
-            "twin_rate": 18000,
-            "triple_rate": 21000
-        },
-        "Luxury (Exec RM)": {
-            "twin_rate": 22000,
-            "triple_rate": 25000
-        }
+    "Ultra Luxury": {
+      "twin_rate": 50000,
+      "triple_rate": 60000
+    }
+  },
+  "Minimarg Astor Valley": {
+    "Deluxe": {
+      "twin_rate": 10000,
+      "triple_rate": 13000
     },
+    "Premier": {
+      "twin_rate": 13000,
+      "triple_rate": 15000
+    },
+    "Executive": {
+      "twin_rate": 19000,
+      "triple_rate": 22000
+    },
+    "Luxury": {
+      "twin_rate": 30000,
+      "triple_rate": 40000
+    },
+    "Ultra Luxury": {
+      "twin_rate": 50000,
+      "triple_rate": 60000
+    }
+  },
+  "Fairy Meadows Nanga Base Camp": {
+    "Deluxe": {
+      "twin_rate": 15000,
+      "triple_rate": 17000
+    },
+    "Premier": {
+      "twin_rate": 16000,
+      "triple_rate": 18000
+    },
+    "Executive": {
+      "twin_rate": 20000,
+      "triple_rate": 23000
+    },
+    "Luxury": {
+      "twin_rate": 30000,
+      "triple_rate": 35000
+    },
+    "Ultra Luxury": {
+      "twin_rate": 32000,
+      "triple_rate": 37000
+    }
+  },
+  "Murree Patriata Galiyat": {
+    "Deluxe": {
+      "twin_rate": 12000,
+      "triple_rate": 15000
+    },
+    "Premier": {
+      "twin_rate": 13000,
+      "triple_rate": 16000
+    },
+    "Executive": {
+      "twin_rate": 25000,
+      "triple_rate": 30000
+    },
+    "Luxury": {
+      "twin_rate": 27000,
+      "triple_rate": 33000
+    },
+    "Ultra Luxury": {
+      "twin_rate": 30000,
+      "triple_rate": 36000
+    }
+  },
+  "Murree Ayubia Nathiagali": {
+    "Deluxe": {
+      "twin_rate": 15000,
+      "triple_rate": 18000
+    },
+    "Premier": {
+      "twin_rate": 16000,
+      "triple_rate": 17000
+    },
+    "Executive": {
+      "twin_rate": 22000,
+      "triple_rate": 25000
+    },
+    "Luxury": {
+      "twin_rate": 30000,
+      "triple_rate": 35000
+    },
+    "Ultra Luxury": {
+      "twin_rate": 35000,
+      "triple_rate": 38000
+    }
+  },
+  "Naran Kaghan & Babusar Top": {
+    "Deluxe": {
+      "twin_rate": 15000,
+      "triple_rate": 28000
+    },
+    "Premier": {
+      "twin_rate": 19000,
+      "triple_rate": 22000
+    },
+    "Executive": {
+      "twin_rate": 21000,
+      "triple_rate": 23000
+    },
+    "Luxury": {
+      "twin_rate": 23000,
+      "triple_rate": 25000
+    },
+    "Ultra Luxury": {
+      "twin_rate": 25000,
+      "triple_rate": 27000
+    }
+  },
+  "Neelum Valley Kashmir": {
+    "Deluxe": {
+      "twin_rate": 6000,
+      "triple_rate": 8000
+    },
+    "Premier": {
+      "twin_rate": 9000,
+      "triple_rate": 12000
+    },
+    "Executive": {
+      "twin_rate": 12000,
+      "triple_rate": 15000
+    },
+    "Luxury": {
+      "twin_rate": 17000,
+      "triple_rate": 20000
+    },
+    "Ultra Luxury": {
+      "twin_rate": 25000,
+      "triple_rate": 3000
+    }
+  },
+  "Neelum Taobat Arang Kel": {
+    "Deluxe": {
+      "twin_rate": 6000,
+      "triple_rate": 8000
+    },
+    "Premier": {
+      "twin_rate": 9000,
+      "triple_rate": 12000
+    },
+    "Executive": {
+      "twin_rate": 12000,
+      "triple_rate": 15000
+    },
+    "Luxury": {
+      "twin_rate": 17000,
+      "triple_rate": 20000
+    },
+    "Ultra Luxury": {
+      "twin_rate": 25000,
+      "triple_rate": 3000
+    }
+  },
+  "Swat Kalam & Malam Jabba": {
+    "Deluxe": {
+      "twin_rate": 9000,
+      "triple_rate": 12000
+    },
+    "Premier": {
+      "twin_rate": 12000,
+      "triple_rate": 15000
+    },
+    "Executive": {
+      "twin_rate": 18000,
+      "triple_rate": 21000
+    },
+    "Luxury": {
+      "twin_rate": 22000,
+      "triple_rate": 24000
+    },
+    "Ultra Luxury": {
+      "twin_rate": 25000,
+      "triple_rate": 32000
+    }
+  },
+  "Islamabad": {
+    "Deluxe": {
+      "twin_rate": 15000,
+      "triple_rate": 20000
+    },
+    "Premier": {
+      "twin_rate": 23000,
+      "triple_rate": 27000
+    },
+    "Executive": {
+      "twin_rate": 35000,
+      "triple_rate": 40000
+    },
+    "Luxury": {
+      "twin_rate": 30000,
+      "triple_rate": 33000
+    },
+    "Ultra Luxury": {
+      "twin_rate": 35000,
+      "triple_rate": 40000
+    }
+  },
+  "Kalash Valley & Chitral": {
+    "Deluxe": {
+      "twin_rate": 29000,
+      "triple_rate": 32000
+    },
+    "Premier": {
+      "twin_rate": 32000,
+      "triple_rate": 35000
+    },
+    "Executive": {
+      "twin_rate": 35000,
+      "triple_rate": 38000
+    },
+    "Luxury": {
+      "twin_rate": 37000,
+      "triple_rate": 40000
+    },
+    "Ultra Luxury": {
+      "twin_rate": 40000,
+      "triple_rate": 45000
+    }
+  },
+  "Kumrat and Katora Lake": {
+    "Deluxe": {
+      "twin_rate": 13000,
+      "triple_rate": 16000
+    },
+    "Premier": {
+      "twin_rate": 16000,
+      "triple_rate": 19000
+    },
+    "Executive": {
+      "twin_rate": 19000,
+      "triple_rate": 22000
+    },
+    "Luxury": {
+      "twin_rate": 22000,
+      "triple_rate": 25000
+    },
+    "Ultra Luxury": {
+      "twin_rate": 28000,
+      "triple_rate": 31000
+    }
+  }
 };
 
 // ---- Air Hotel Pricing ----
 export const airHotelPricing: Record<AirDestination, Record<HotelCategory, HotelRate>> = {
-    "Skardu Valley": premiumHotelRates,
-    "Hunza Valley": premiumHotelRates,
-    "Skardu & Hunza": premiumHotelRates,
-    "Minimarg Astor Valley": premiumHotelRates,
-    "Fairy Meadows Nanga Base Camp": premiumHotelRates,
+  "Skardu Valley": {
+    "Deluxe": {
+      "twin_rate": 12000,
+      "triple_rate": 15000
+    },
+    "Premier": {
+      "twin_rate": 15000,
+      "triple_rate": 17000
+    },
+    "Executive": {
+      "twin_rate": 19000,
+      "triple_rate": 22000
+    },
+    "Luxury": {
+      "twin_rate": 30000,
+      "triple_rate": 40000
+    },
+    "Ultra Luxury": {
+      "twin_rate": 50000,
+      "triple_rate": 60000
+    }
+  },
+  "Hunza Valley": {
+    "Deluxe": {
+      "twin_rate": 12000,
+      "triple_rate": 15000
+    },
+    "Premier": {
+      "twin_rate": 15000,
+      "triple_rate": 17000
+    },
+    "Executive": {
+      "twin_rate": 19000,
+      "triple_rate": 22000
+    },
+    "Luxury": {
+      "twin_rate": 30000,
+      "triple_rate": 40000
+    },
+    "Ultra Luxury": {
+      "twin_rate": 50000,
+      "triple_rate": 60000
+    }
+  },
+  "Minimarg Astor Valley": {
+    "Deluxe": {
+      "twin_rate": 15000,
+      "triple_rate": 17000
+    },
+    "Premier": {
+      "twin_rate": 19000,
+      "triple_rate": 22000
+    },
+    "Executive": {
+      "twin_rate": 20000,
+      "triple_rate": 23000
+    },
+    "Luxury": {
+      "twin_rate": 30000,
+      "triple_rate": 35000
+    },
+    "Ultra Luxury": {
+      "twin_rate": 35000,
+      "triple_rate": 38000
+    }
+  },
+  "Fairy Meadows Nanga Base Camp": {
+    "Deluxe": {
+      "twin_rate": 15000,
+      "triple_rate": 17000
+    },
+    "Premier": {
+      "twin_rate": 16000,
+      "triple_rate": 18000
+    },
+    "Executive": {
+      "twin_rate": 20000,
+      "triple_rate": 23000
+    },
+    "Luxury": {
+      "twin_rate": 30000,
+      "triple_rate": 35000
+    },
+    "Ultra Luxury": {
+      "twin_rate": 32000,
+      "triple_rate": 37000
+    }
+  },
+  "Skardu & Hunza": {
+    "Deluxe": {
+      "twin_rate": 12000,
+      "triple_rate": 15000
+    },
+    "Premier": {
+      "twin_rate": 15000,
+      "triple_rate": 18000
+    },
+    "Executive": {
+      "twin_rate": 18000,
+      "triple_rate": 22000
+    },
+    "Luxury": {
+      "twin_rate": 24000,
+      "triple_rate": 30000
+    },
+    "Ultra Luxury": {
+      "twin_rate": 30000,
+      "triple_rate": 40000
+    }
+  }
 };
 
 
@@ -397,527 +582,527 @@ export const vehiclePricing: Record<
     Record<string, Partial<Record<VehicleType, VehicleRate>>>
 > = {
     Departure_Islamabad: {
-        "Skardu Valley": {
-            "Coaster 5c": {
-                "daily_rent": 17000,
-                "toll": 6000,
-                "fuel": 16000,
-                "seats": 25,
-                "per_day_total": 39000
-            },
-            "Coaster 4c": {
-                "daily_rent": 16000,
-                "toll": 6000,
-                "fuel": 16000,
-                "seats": 25,
-                "per_day_total": 38000
-            },
-            "Grand Cabin": {
-                "daily_rent": 12000,
-                "toll": 5000,
-                "fuel": 11000,
-                "seats": 12,
-                "per_day_total": 28000
-            },
-            "Honda BRV": {
-                "daily_rent": 9000,
-                "toll": 4000,
-                "fuel": 9000,
-                "seats": 6,
-                "per_day_total": 22000
-            },
-            "Gli Car": {
-                "daily_rent": 7000,
-                "toll": 3500,
-                "fuel": 7000,
-                "seats": 4,
-                "per_day_total": 17500
-            }
-        },
-        "Hunza Valley": {
-            "Coaster 5c": {
-                "daily_rent": 17000,
-                "toll": 6000,
-                "fuel": 17000,
-                "seats": 25,
-                "per_day_total": 40000
-            },
-            "Coaster 4c": {
-                "daily_rent": 16000,
-                "toll": 7000,
-                "fuel": 17000,
-                "seats": 25,
-                "per_day_total": 40000
-            },
-            "Grand Cabin": {
-                "daily_rent": 12000,
-                "toll": 5000,
-                "fuel": 12000,
-                "seats": 12,
-                "per_day_total": 29000
-            },
-            "Honda BRV": {
-                "daily_rent": 9000,
-                "toll": 4000,
-                "fuel": 10000,
-                "seats": 6,
-                "per_day_total": 23000
-            },
-            "Gli Car": {
-                "daily_rent": 7000,
-                "toll": 3500,
-                "fuel": 8000,
-                "seats": 4,
-                "per_day_total": 18500
-            }
-        },
-        "Skardu & Hunza": {
-            "Coaster 5c": {
-                "daily_rent": 17000,
-                "toll": 7000,
-                "fuel": 17000,
-                "seats": 25,
-                "per_day_total": 41000
-            },
-            "Coaster 4c": {
-                "daily_rent": 16000,
-                "toll": 7000,
-                "fuel": 17000,
-                "seats": 25,
-                "per_day_total": 40000
-            },
-            "Grand Cabin": {
-                "daily_rent": 12000,
-                "toll": 5000,
-                "fuel": 12000,
-                "seats": 12,
-                "per_day_total": 29000
-            },
-            "Honda BRV": {
-                "daily_rent": 9000,
-                "toll": 4000,
-                "fuel": 10000,
-                "seats": 6,
-                "per_day_total": 23000
-            },
-            "Gli Car": {
-                "daily_rent": 7000,
-                "toll": 3500,
-                "fuel": 8000,
-                "seats": 4,
-                "per_day_total": 18500
-            }
-        },
-        "Minimarg Astor Valley": {
-            "Coaster 5c": {
-                "daily_rent": 17000,
-                "toll": 6000,
-                "fuel": 17000,
-                "seats": 25,
-                "per_day_total": 40000
-            },
-            "Coaster 4c": {
-                "daily_rent": 16000,
-                "toll": 6000,
-                "fuel": 17000,
-                "seats": 25,
-                "per_day_total": 39000
-            },
-            "Grand Cabin": {
-                "daily_rent": 12000,
-                "toll": 5000,
-                "fuel": 12000,
-                "seats": 12,
-                "per_day_total": 29000
-            },
-            "Honda BRV": {
-                "daily_rent": 9000,
-                "toll": 4000,
-                "fuel": 10000,
-                "seats": 6,
-                "per_day_total": 23000
-            },
-            "Gli Car": {
-                "daily_rent": 7000,
-                "toll": 3500,
-                "fuel": 8000,
-                "seats": 4,
-                "per_day_total": 18500
-            }
-        },
-        "Fairy Meadows Nanga Base Camp": {
-            "Coaster 5c": {
-                "daily_rent": 17000,
-                "toll": 6000,
-                "fuel": 17000,
-                "seats": 25,
-                "per_day_total": 40000
-            },
-            "Coaster 4c": {
-                "daily_rent": 16000,
-                "toll": 6000,
-                "fuel": 17000,
-                "seats": 25,
-                "per_day_total": 39000
-            },
-            "Grand Cabin": {
-                "daily_rent": 12000,
-                "toll": 5000,
-                "fuel": 12000,
-                "seats": 12,
-                "per_day_total": 29000
-            },
-            "Honda BRV": {
-                "daily_rent": 9000,
-                "toll": 4000,
-                "fuel": 10000,
-                "seats": 6,
-                "per_day_total": 23000
-            },
-            "Gli Car": {
-                "daily_rent": 7000,
-                "toll": 3500,
-                "fuel": 8000,
-                "seats": 4,
-                "per_day_total": 18500
-            }
-        },
-        "Murree Patriata Galiyat": {
-            "Coaster 5c": {
-                "daily_rent": 17000,
-                "toll": 6000,
-                "fuel": 15000,
-                "seats": 25,
-                "per_day_total": 38000
-            },
-            "Coaster 4c": {
-                "daily_rent": 16000,
-                "toll": 6000,
-                "fuel": 15000,
-                "seats": 25,
-                "per_day_total": 37000
-            },
-            "Grand Cabin": {
-                "daily_rent": 12000,
-                "toll": 5000,
-                "fuel": 10000,
-                "seats": 12,
-                "per_day_total": 27000
-            },
-            "Honda BRV": {
-                "daily_rent": 9000,
-                "toll": 4000,
-                "fuel": 8000,
-                "seats": 6,
-                "per_day_total": 21000
-            },
-            "Gli Car": {
-                "daily_rent": 7000,
-                "toll": 3500,
-                "fuel": 6000,
-                "seats": 4,
-                "per_day_total": 16500
-            }
-        },
-        "Murree Ayubia Nathiagali": {
-            "Coaster 5c": {
-                "daily_rent": 17000,
-                "toll": 6000,
-                "fuel": 15000,
-                "seats": 25,
-                "per_day_total": 38000
-            },
-            "Coaster 4c": {
-                "daily_rent": 16000,
-                "toll": 6000,
-                "fuel": 1500,
-                "seats": 25,
-                "per_day_total": 23500
-            },
-            "Grand Cabin": {
-                "daily_rent": 12000,
-                "toll": 5000,
-                "fuel": 1000,
-                "seats": 12,
-                "per_day_total": 18000
-            },
-            "Honda BRV": {
-                "daily_rent": 9000,
-                "toll": 4000,
-                "fuel": 8000,
-                "seats": 6,
-                "per_day_total": 21000
-            },
-            "Gli Car": {
-                "daily_rent": 7000,
-                "toll": 3500,
-                "fuel": 6000,
-                "seats": 4,
-                "per_day_total": 16500
-            }
-        },
-        "Naran": {
-            "Coaster 5c": {
-                "daily_rent": 17000,
-                "toll": 6000,
-                "fuel": 15000,
-                "seats": 25,
-                "per_day_total": 38000
-            },
-            "Coaster 4c": {
-                "daily_rent": 16000,
-                "toll": 6000,
-                "fuel": 1500,
-                "seats": 25,
-                "per_day_total": 23500
-            },
-            "Grand Cabin": {
-                "daily_rent": 12000,
-                "toll": 5000,
-                "fuel": 12000,
-                "seats": 12,
-                "per_day_total": 29000
-            },
-            "Honda BRV": {
-                "daily_rent": 9000,
-                "toll": 4000,
-                "fuel": 10000,
-                "seats": 6,
-                "per_day_total": 23000
-            },
-            "Gli Car": {
-                "daily_rent": 7000,
-                "toll": 3500,
-                "fuel": 8000,
-                "seats": 4,
-                "per_day_total": 18500
-            }
-        },
-        "Neelum Valley Kashmir": {
-            "Coaster 5c": {
-                "daily_rent": 17000,
-                "toll": 6000,
-                "fuel": 15000,
-                "seats": 25,
-                "per_day_total": 38000
-            },
-            "Coaster 4c": {
-                "daily_rent": 16000,
-                "toll": 6000,
-                "fuel": 15000,
-                "seats": 25,
-                "per_day_total": 37000
-            },
-            "Grand Cabin": {
-                "daily_rent": 12000,
-                "toll": 5000,
-                "fuel": 11000,
-                "seats": 12,
-                "per_day_total": 28000
-            },
-            "Honda BRV": {
-                "daily_rent": 9000,
-                "toll": 4000,
-                "fuel": 9000,
-                "seats": 6,
-                "per_day_total": 22000
-            },
-            "Gli Car": {
-                "daily_rent": 7000,
-                "toll": 3500,
-                "fuel": 6000,
-                "seats": 4,
-                "per_day_total": 16500
-            }
-        },
-        "Neelum Taobat Arang Kel": {
-            "Coaster 5c": {
-                "daily_rent": 17000,
-                "toll": 6000,
-                "fuel": 15000,
-                "seats": 25,
-                "per_day_total": 38000
-            },
-            "Coaster 4c": {
-                "daily_rent": 16000,
-                "toll": 6000,
-                "fuel": 1500,
-                "seats": 25,
-                "per_day_total": 23500
-            },
-            "Grand Cabin": {
-                "daily_rent": 12000,
-                "toll": 5000,
-                "fuel": 11000,
-                "seats": 12,
-                "per_day_total": 28000
-            },
-            "Honda BRV": {
-                "daily_rent": 9000,
-                "toll": 4000,
-                "fuel": 9000,
-                "seats": 6,
-                "per_day_total": 22000
-            },
-            "Gli Car": {
-                "daily_rent": 7000,
-                "toll": 3500,
-                "fuel": 6000,
-                "seats": 4,
-                "per_day_total": 16500
-            }
-        },
-        "Swat Kalam & Malam Jabba": {
-            "Coaster 5c": {
-                "daily_rent": 17000,
-                "toll": 6000,
-                "fuel": 17000,
-                "seats": 25,
-                "per_day_total": 40000
-            },
-            "Coaster 4c": {
-                "daily_rent": 16000,
-                "toll": 6000,
-                "fuel": 17000,
-                "seats": 25,
-                "per_day_total": 39000
-            },
-            "Grand Cabin": {
-                "daily_rent": 12000,
-                "toll": 5000,
-                "fuel": 12000,
-                "seats": 12,
-                "per_day_total": 29000
-            },
-            "Honda BRV": {
-                "daily_rent": 9000,
-                "toll": 4000,
-                "fuel": 10000,
-                "seats": 6,
-                "per_day_total": 23000
-            },
-            "Gli Car": {
-                "daily_rent": 7000,
-                "toll": 3500,
-                "fuel": 8000,
-                "seats": 4,
-                "per_day_total": 18500
-            }
-        },
-        "Islamabad": {
-            "Coaster 5c": {
-                "daily_rent": 17000,
-                "toll": 2000,
-                "fuel": 8000,
-                "seats": 25,
-                "per_day_total": 27000
-            },
-            "Coaster 4c": {
-                "daily_rent": 16000,
-                "toll": 2000,
-                "fuel": 8000,
-                "seats": 25,
-                "per_day_total": 26000
-            },
-            "Grand Cabin": {
-                "daily_rent": 12000,
-                "toll": 1000,
-                "fuel": 6000,
-                "seats": 12,
-                "per_day_total": 19000
-            },
-            "Honda BRV": {
-                "daily_rent": 9000,
-                "toll": 500,
-                "fuel": 4000,
-                "seats": 6,
-                "per_day_total": 13500
-            },
-            "Gli Car": {
-                "daily_rent": 7000,
-                "toll": 500,
-                "fuel": 3000,
-                "seats": 4,
-                "per_day_total": 10500
-            }
-        },
-        "Kalash Valley & Chitral": {
-            "Coaster 5c": {
-                "daily_rent": 17000,
-                "toll": 6000,
-                "fuel": 17000,
-                "seats": 25,
-                "per_day_total": 40000
-            },
-            "Coaster 4c": {
-                "daily_rent": 16000,
-                "toll": 6000,
-                "fuel": 17000,
-                "seats": 25,
-                "per_day_total": 39000
-            },
-            "Grand Cabin": {
-                "daily_rent": 12000,
-                "toll": 5000,
-                "fuel": 12000,
-                "seats": 12,
-                "per_day_total": 29000
-            },
-            "Honda BRV": {
-                "daily_rent": 9000,
-                "toll": 4000,
-                "fuel": 10000,
-                "seats": 6,
-                "per_day_total": 23000
-            },
-            "Gli Car": {
-                "daily_rent": 7000,
-                "toll": 3500,
-                "fuel": 8000,
-                "seats": 4,
-                "per_day_total": 18500
-            }
-        },
-        "Kumrat and Katora Lake": {
-            "Coaster 5c": {
-                "daily_rent": 17000,
-                "toll": 6000,
-                "fuel": 17000,
-                "seats": 25,
-                "per_day_total": 40000
-            },
-            "Coaster 4c": {
-                "daily_rent": 16000,
-                "toll": 6000,
-                "fuel": 17000,
-                "seats": 25,
-                "per_day_total": 39000
-            },
-            "Grand Cabin": {
-                "daily_rent": 12000,
-                "toll": 5000,
-                "fuel": 12000,
-                "seats": 12,
-                "per_day_total": 29000
-            },
-            "Honda BRV": {
-                "daily_rent": 9000,
-                "toll": 4000,
-                "fuel": 10000,
-                "seats": 6,
-                "per_day_total": 23000
-            },
-            "Gli Car": {
-                "daily_rent": 7000,
-                "toll": 3500,
-                "fuel": 8000,
-                "seats": 4,
-                "per_day_total": 18500
-            }
-        }
+  "Skardu Valley": {
+    "Coaster 5c": {
+      "daily_rent": 17000,
+      "toll": 6000,
+      "fuel": 16000,
+      "seats": 25,
+      "per_day_total": 39000
     },
+    "Coaster 4c": {
+      "daily_rent": 16000,
+      "toll": 6000,
+      "fuel": 16000,
+      "seats": 25,
+      "per_day_total": 38000
+    },
+    "Grand Cabin": {
+      "daily_rent": 12000,
+      "toll": 5000,
+      "fuel": 11000,
+      "seats": 12,
+      "per_day_total": 28000
+    },
+    "Honda BRV": {
+      "daily_rent": 9000,
+      "toll": 4000,
+      "fuel": 9000,
+      "seats": 6,
+      "per_day_total": 22000
+    },
+    "Gli Car": {
+      "daily_rent": 7000,
+      "toll": 3500,
+      "fuel": 7000,
+      "seats": 4,
+      "per_day_total": 17500
+    }
+  },
+  "Hunza Valley": {
+    "Coaster 5c": {
+      "daily_rent": 17000,
+      "toll": 6000,
+      "fuel": 17000,
+      "seats": 25,
+      "per_day_total": 40000
+    },
+    "Coaster 4c": {
+      "daily_rent": 16000,
+      "toll": 7000,
+      "fuel": 17000,
+      "seats": 25,
+      "per_day_total": 40000
+    },
+    "Grand Cabin": {
+      "daily_rent": 12000,
+      "toll": 5000,
+      "fuel": 12000,
+      "seats": 12,
+      "per_day_total": 29000
+    },
+    "Honda BRV": {
+      "daily_rent": 9000,
+      "toll": 4000,
+      "fuel": 10000,
+      "seats": 6,
+      "per_day_total": 23000
+    },
+    "Gli Car": {
+      "daily_rent": 7000,
+      "toll": 3500,
+      "fuel": 8000,
+      "seats": 4,
+      "per_day_total": 18500
+    }
+  },
+  "Skardu & Hunza": {
+    "Coaster 5c": {
+      "daily_rent": 17000,
+      "toll": 7000,
+      "fuel": 17000,
+      "seats": 25,
+      "per_day_total": 41000
+    },
+    "Coaster 4c": {
+      "daily_rent": 16000,
+      "toll": 7000,
+      "fuel": 17000,
+      "seats": 25,
+      "per_day_total": 40000
+    },
+    "Grand Cabin": {
+      "daily_rent": 12000,
+      "toll": 5000,
+      "fuel": 12000,
+      "seats": 12,
+      "per_day_total": 29000
+    },
+    "Honda BRV": {
+      "daily_rent": 9000,
+      "toll": 4000,
+      "fuel": 10000,
+      "seats": 6,
+      "per_day_total": 23000
+    },
+    "Gli Car": {
+      "daily_rent": 7000,
+      "toll": 3500,
+      "fuel": 8000,
+      "seats": 4,
+      "per_day_total": 18500
+    }
+  },
+  "Minimarg Astor Valley": {
+    "Coaster 5c": {
+      "daily_rent": 17000,
+      "toll": 6000,
+      "fuel": 17000,
+      "seats": 25,
+      "per_day_total": 40000
+    },
+    "Coaster 4c": {
+      "daily_rent": 16000,
+      "toll": 6000,
+      "fuel": 17000,
+      "seats": 25,
+      "per_day_total": 39000
+    },
+    "Grand Cabin": {
+      "daily_rent": 12000,
+      "toll": 5000,
+      "fuel": 12000,
+      "seats": 12,
+      "per_day_total": 29000
+    },
+    "Honda BRV": {
+      "daily_rent": 9000,
+      "toll": 4000,
+      "fuel": 10000,
+      "seats": 6,
+      "per_day_total": 23000
+    },
+    "Gli Car": {
+      "daily_rent": 7000,
+      "toll": 3500,
+      "fuel": 8000,
+      "seats": 4,
+      "per_day_total": 18500
+    }
+  },
+  "Fairy Meadows Nanga Base Camp": {
+    "Coaster 5c": {
+      "daily_rent": 17000,
+      "toll": 6000,
+      "fuel": 17000,
+      "seats": 25,
+      "per_day_total": 40000
+    },
+    "Coaster 4c": {
+      "daily_rent": 16000,
+      "toll": 6000,
+      "fuel": 17000,
+      "seats": 25,
+      "per_day_total": 39000
+    },
+    "Grand Cabin": {
+      "daily_rent": 12000,
+      "toll": 5000,
+      "fuel": 12000,
+      "seats": 12,
+      "per_day_total": 29000
+    },
+    "Honda BRV": {
+      "daily_rent": 9000,
+      "toll": 4000,
+      "fuel": 10000,
+      "seats": 6,
+      "per_day_total": 23000
+    },
+    "Gli Car": {
+      "daily_rent": 7000,
+      "toll": 3500,
+      "fuel": 8000,
+      "seats": 4,
+      "per_day_total": 18500
+    }
+  },
+  "Murree Patriata Galiyat": {
+    "Coaster 5c": {
+      "daily_rent": 17000,
+      "toll": 6000,
+      "fuel": 15000,
+      "seats": 25,
+      "per_day_total": 38000
+    },
+    "Coaster 4c": {
+      "daily_rent": 16000,
+      "toll": 6000,
+      "fuel": 15000,
+      "seats": 25,
+      "per_day_total": 37000
+    },
+    "Grand Cabin": {
+      "daily_rent": 12000,
+      "toll": 5000,
+      "fuel": 10000,
+      "seats": 12,
+      "per_day_total": 27000
+    },
+    "Honda BRV": {
+      "daily_rent": 9000,
+      "toll": 4000,
+      "fuel": 8000,
+      "seats": 6,
+      "per_day_total": 21000
+    },
+    "Gli Car": {
+      "daily_rent": 7000,
+      "toll": 3500,
+      "fuel": 6000,
+      "seats": 4,
+      "per_day_total": 16500
+    }
+  },
+  "Murree Ayubia Nathiagali": {
+    "Coaster 5c": {
+      "daily_rent": 17000,
+      "toll": 6000,
+      "fuel": 15000,
+      "seats": 25,
+      "per_day_total": 38000
+    },
+    "Coaster 4c": {
+      "daily_rent": 16000,
+      "toll": 6000,
+      "fuel": 1500,
+      "seats": 25,
+      "per_day_total": 23500
+    },
+    "Grand Cabin": {
+      "daily_rent": 12000,
+      "toll": 5000,
+      "fuel": 1000,
+      "seats": 12,
+      "per_day_total": 18000
+    },
+    "Honda BRV": {
+      "daily_rent": 9000,
+      "toll": 4000,
+      "fuel": 8000,
+      "seats": 6,
+      "per_day_total": 21000
+    },
+    "Gli Car": {
+      "daily_rent": 7000,
+      "toll": 3500,
+      "fuel": 6000,
+      "seats": 4,
+      "per_day_total": 16500
+    }
+  },
+  "Naran Kaghan & Babusar Top": {
+    "Coaster 5c": {
+      "daily_rent": 17000,
+      "toll": 6000,
+      "fuel": 15000,
+      "seats": 25,
+      "per_day_total": 38000
+    },
+    "Coaster 4c": {
+      "daily_rent": 16000,
+      "toll": 6000,
+      "fuel": 1500,
+      "seats": 25,
+      "per_day_total": 23500
+    },
+    "Grand Cabin": {
+      "daily_rent": 12000,
+      "toll": 5000,
+      "fuel": 12000,
+      "seats": 12,
+      "per_day_total": 29000
+    },
+    "Honda BRV": {
+      "daily_rent": 9000,
+      "toll": 4000,
+      "fuel": 10000,
+      "seats": 6,
+      "per_day_total": 23000
+    },
+    "Gli Car": {
+      "daily_rent": 7000,
+      "toll": 3500,
+      "fuel": 8000,
+      "seats": 4,
+      "per_day_total": 18500
+    }
+  },
+  "Neelum Valley Kashmir": {
+    "Coaster 5c": {
+      "daily_rent": 17000,
+      "toll": 6000,
+      "fuel": 15000,
+      "seats": 25,
+      "per_day_total": 38000
+    },
+    "Coaster 4c": {
+      "daily_rent": 16000,
+      "toll": 6000,
+      "fuel": 15000,
+      "seats": 25,
+      "per_day_total": 37000
+    },
+    "Grand Cabin": {
+      "daily_rent": 12000,
+      "toll": 5000,
+      "fuel": 11000,
+      "seats": 12,
+      "per_day_total": 28000
+    },
+    "Honda BRV": {
+      "daily_rent": 9000,
+      "toll": 4000,
+      "fuel": 9000,
+      "seats": 6,
+      "per_day_total": 22000
+    },
+    "Gli Car": {
+      "daily_rent": 7000,
+      "toll": 3500,
+      "fuel": 6000,
+      "seats": 4,
+      "per_day_total": 16500
+    }
+  },
+  "Neelum Taobat Arang Kel": {
+    "Coaster 5c": {
+      "daily_rent": 17000,
+      "toll": 6000,
+      "fuel": 15000,
+      "seats": 25,
+      "per_day_total": 38000
+    },
+    "Coaster 4c": {
+      "daily_rent": 16000,
+      "toll": 6000,
+      "fuel": 1500,
+      "seats": 25,
+      "per_day_total": 23500
+    },
+    "Grand Cabin": {
+      "daily_rent": 12000,
+      "toll": 5000,
+      "fuel": 11000,
+      "seats": 12,
+      "per_day_total": 28000
+    },
+    "Honda BRV": {
+      "daily_rent": 9000,
+      "toll": 4000,
+      "fuel": 9000,
+      "seats": 6,
+      "per_day_total": 22000
+    },
+    "Gli Car": {
+      "daily_rent": 7000,
+      "toll": 3500,
+      "fuel": 6000,
+      "seats": 4,
+      "per_day_total": 16500
+    }
+  },
+  "Swat Kalam & Malam Jabba": {
+    "Coaster 5c": {
+      "daily_rent": 17000,
+      "toll": 6000,
+      "fuel": 17000,
+      "seats": 25,
+      "per_day_total": 40000
+    },
+    "Coaster 4c": {
+      "daily_rent": 16000,
+      "toll": 6000,
+      "fuel": 17000,
+      "seats": 25,
+      "per_day_total": 39000
+    },
+    "Grand Cabin": {
+      "daily_rent": 12000,
+      "toll": 5000,
+      "fuel": 12000,
+      "seats": 12,
+      "per_day_total": 29000
+    },
+    "Honda BRV": {
+      "daily_rent": 9000,
+      "toll": 4000,
+      "fuel": 10000,
+      "seats": 6,
+      "per_day_total": 23000
+    },
+    "Gli Car": {
+      "daily_rent": 7000,
+      "toll": 3500,
+      "fuel": 8000,
+      "seats": 4,
+      "per_day_total": 18500
+    }
+  },
+  "Islamabad": {
+    "Coaster 5c": {
+      "daily_rent": 17000,
+      "toll": 2000,
+      "fuel": 8000,
+      "seats": 25,
+      "per_day_total": 27000
+    },
+    "Coaster 4c": {
+      "daily_rent": 16000,
+      "toll": 2000,
+      "fuel": 8000,
+      "seats": 25,
+      "per_day_total": 26000
+    },
+    "Grand Cabin": {
+      "daily_rent": 12000,
+      "toll": 1000,
+      "fuel": 6000,
+      "seats": 12,
+      "per_day_total": 19000
+    },
+    "Honda BRV": {
+      "daily_rent": 9000,
+      "toll": 500,
+      "fuel": 4000,
+      "seats": 6,
+      "per_day_total": 13500
+    },
+    "Gli Car": {
+      "daily_rent": 7000,
+      "toll": 500,
+      "fuel": 3000,
+      "seats": 4,
+      "per_day_total": 10500
+    }
+  },
+  "Kalash Valley & Chitral": {
+    "Coaster 5c": {
+      "daily_rent": 17000,
+      "toll": 6000,
+      "fuel": 17000,
+      "seats": 25,
+      "per_day_total": 40000
+    },
+    "Coaster 4c": {
+      "daily_rent": 16000,
+      "toll": 6000,
+      "fuel": 17000,
+      "seats": 25,
+      "per_day_total": 39000
+    },
+    "Grand Cabin": {
+      "daily_rent": 12000,
+      "toll": 5000,
+      "fuel": 12000,
+      "seats": 12,
+      "per_day_total": 29000
+    },
+    "Honda BRV": {
+      "daily_rent": 9000,
+      "toll": 4000,
+      "fuel": 10000,
+      "seats": 6,
+      "per_day_total": 23000
+    },
+    "Gli Car": {
+      "daily_rent": 7000,
+      "toll": 3500,
+      "fuel": 8000,
+      "seats": 4,
+      "per_day_total": 18500
+    }
+  },
+  "Kumrat and Katora Lake": {
+    "Coaster 5c": {
+      "daily_rent": 17000,
+      "toll": 6000,
+      "fuel": 17000,
+      "seats": 25,
+      "per_day_total": 40000
+    },
+    "Coaster 4c": {
+      "daily_rent": 16000,
+      "toll": 6000,
+      "fuel": 17000,
+      "seats": 25,
+      "per_day_total": 39000
+    },
+    "Grand Cabin": {
+      "daily_rent": 12000,
+      "toll": 5000,
+      "fuel": 12000,
+      "seats": 12,
+      "per_day_total": 29000
+    },
+    "Honda BRV": {
+      "daily_rent": 9000,
+      "toll": 4000,
+      "fuel": 10000,
+      "seats": 6,
+      "per_day_total": 23000
+    },
+    "Gli Car": {
+      "daily_rent": 7000,
+      "toll": 3500,
+      "fuel": 8000,
+      "seats": 4,
+      "per_day_total": 18500
+    }
+  }
+},
 
-    Departure_Lahore: {
+Departure_Lahore:{
   "Skardu Valley": {
     "Coaster 5c": {
       "daily_rent": 17000,
@@ -1177,7 +1362,7 @@ export const vehiclePricing: Record<
       "per_day_total": 18500
     }
   },
-  "Naran": {
+  "Naran Kaghan & Babusar Top": {
     "Coaster 5c": {
       "daily_rent": 17000,
       "toll": 5000,
@@ -1438,13 +1623,13 @@ export const vehiclePricing: Record<
   }
 }
 };
-
+// vehice pricing by air
 export const vehiclePricingByAir: Record<
     string,
     Partial<Record<VehicleType, VehicleRate>>
 > = {
   "Skardu Valley": {
-      "Parado": {
+    "Parado": {
       "daily_rent": 8000,
       "toll": 2500,
       "fuel": 7000,
@@ -1759,8 +1944,16 @@ export function calculateTripPrice(params: {
 
     // Add-ons cost (check both common and road-only add-ons)
     let addOnsTotal = 0;
+    let mealTotal = 0;
     const allAddOns = [...optionalAddOns, ...roadOnlyAddOns];
     selectedAddOns.forEach((addonId) => {
+        // Special handling for meals - use hotel category pricing and nights
+        if (addonId === "meal") {
+            const mealRate = mealPricingPerNight[hotelCategory] || 1200;
+            mealTotal = mealRate * nights * totalPeople;
+            addOnsTotal += mealTotal;
+            return;
+        }
         const addon = allAddOns.find((a) => a.id === addonId);
         if (addon) {
             switch (addon.unit) {
