@@ -4352,6 +4352,7 @@ export function getCategoryBadgeClass(category: TourCategory): string {
     deluxe_higher: "bg-blue-200 text-blue-900",
     "Deluxe Higher": "bg-blue-200 text-blue-900",
     deluxe_lower: "bg-blue-50 text-blue-700",
+    "Premier Deluxe": "bg-blue-300 text-blue-950",
     // Executive variants
     Executive: "bg-purple-100 text-purple-800",
     executive: "bg-purple-100 text-purple-800",
@@ -4361,6 +4362,7 @@ export function getCategoryBadgeClass(category: TourCategory): string {
     "Luxury Higher": "bg-amber-200 text-amber-900",
     luxury_higher: "bg-amber-200 text-amber-900",
     luxury_lower: "bg-amber-50 text-amber-700",
+    "Ultra Luxury": "bg-amber-300 text-amber-950",
     // Individual types
     Single: "bg-gray-100 text-gray-800",
     Solo: "bg-teal-100 text-teal-800",
