@@ -108,6 +108,7 @@ export default function TourDetails() {
         <TourOverview
           itinerary={tour.itinerary}
           galleryImages={tour.galleryImages}
+          pdf={tour.pdf}
           openItems={openItems}
           onOpenItemsChange={setOpenItems}
         />

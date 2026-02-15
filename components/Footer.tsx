@@ -98,10 +98,10 @@ export function Footer() {
             <h3 className="text-white font-bold text-lg mb-6">Support</h3>
             <ul className="space-y-3">
               <li><Link href="/faq-page" className="hover:text-amber-400 transition-colors">FAQs</Link></li>
-              <li><Link href="/privacy-policy" className="hover:text-amber-400 transition-colors">Privacy Policy</Link></li>
-              <li><Link href="/terms-and-conditions" className="hover:text-amber-400 transition-colors">Terms of Service</Link></li>
-              <li><Link href="/travelers-instructions" className="hover:text-amber-400 transition-colors">Travelers Instructions</Link></li>
-              <li><Link href="/cancellation-policy" className="hover:text-amber-400 transition-colors">Cancellation</Link></li>
+              <li><Link href="/PrivacyPolicy" className="hover:text-amber-400 transition-colors">Privacy Policy</Link></li>
+              <li><Link href="/TermsAndConditions" className="hover:text-amber-400 transition-colors">Terms of Service</Link></li>
+              <li><Link href="/TravelersInstructions" className="hover:text-amber-400 transition-colors">Travelers Instructions</Link></li>
+              <li><Link href="/Cancellation" className="hover:text-amber-400 transition-colors">Cancellation</Link></li>
             </ul>
           </div>
 

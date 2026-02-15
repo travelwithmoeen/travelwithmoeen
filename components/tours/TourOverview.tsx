@@ -1,7 +1,9 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { Download, Eye } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Accordion,
   AccordionContent,
@@ -13,6 +15,7 @@ import type { TourDay } from "@/data/tours";
 interface TourOverviewProps {
   itinerary: TourDay[];
   galleryImages: string[];
+  pdf?: string;
   openItems: string[];
   onOpenItemsChange: (items: string[]) => void;
 }
@@ -20,6 +23,7 @@ interface TourOverviewProps {
 export function TourOverview({
   itinerary,
   galleryImages,
+  pdf,
   openItems,
   onOpenItemsChange
 }: TourOverviewProps) {
@@ -94,8 +98,44 @@ export function TourOverview({
           </Accordion>
         </div>
 
-        {/* Right: Image Gallery */}
+        {/* Right: PDF & Image Gallery */}
         <div className="lg:sticky lg:top-24 lg:self-start">
+          {/* PDF Download Section */}
+          {pdf && (
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+              className="mb-6 rounded-lg bg-navy p-6"
+            >
+              <h3 className="mb-4 text-lg font-semibold text-white">
+                Tour Itinerary PDF
+              </h3>
+              <div className="flex gap-3">
+                <Button
+                  asChild
+                  variant="outline"
+                  className="flex-1 border-white bg-transparent text-white hover:bg-white hover:text-navy"
+                >
+                  <a href={pdf} target="_blank" rel="noopener noreferrer">
+                    <Eye className="mr-2 h-4 w-4" />
+                    View File
+                  </a>
+                </Button>
+                <Button
+                  asChild
+                  className="flex-1 bg-gold text-black hover:bg-gold/90"
+                >
+                  <a href={pdf} download>
+                    <Download className="mr-2 h-4 w-4" />
+                    Download
+                  </a>
+                </Button>
+              </div>
+            </motion.div>
+          )}
+
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             whileInView={{ opacity: 1, x: 0 }}
