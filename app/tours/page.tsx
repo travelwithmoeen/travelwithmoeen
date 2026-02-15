@@ -33,11 +33,16 @@ function ToursContent() {
   // Apply URL query parameters on mount
   useEffect(() => {
     const region = searchParams.get("region");
+    const regions = searchParams.get("regions"); // Support multiple regions (comma-separated)
     const duration = searchParams.get("duration");
     const category = searchParams.get("category");
     const transport = searchParams.get("transport");
 
-    if (region) {
+    if (regions) {
+      // Handle multiple regions from category links
+      const regionList = decodeURIComponent(regions).split(",") as TourRegion[];
+      setSelectedRegions(regionList);
+    } else if (region) {
       setSelectedRegions([region as TourRegion]);
     }
     if (duration) {

@@ -1,3 +1,5 @@
+"use client";
+
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -11,9 +13,16 @@ import type { TourDay } from "@/data/tours";
 interface TourOverviewProps {
   itinerary: TourDay[];
   galleryImages: string[];
+  openItems: string[];
+  onOpenItemsChange: (items: string[]) => void;
 }
 
-export function TourOverview({ itinerary, galleryImages }: TourOverviewProps) {
+export function TourOverview({
+  itinerary,
+  galleryImages,
+  openItems,
+  onOpenItemsChange
+}: TourOverviewProps) {
   return (
     <section className="py-12">
       <motion.div
@@ -30,7 +39,12 @@ export function TourOverview({ itinerary, galleryImages }: TourOverviewProps) {
       <div className="grid gap-8 lg:grid-cols-3">
         {/* Left: Itinerary Content */}
         <div className="lg:col-span-2">
-          <Accordion type="multiple" className="space-y-4">
+          <Accordion
+            type="multiple"
+            className="space-y-4"
+            value={openItems}
+            onValueChange={onOpenItemsChange}
+          >
             {itinerary.map((day, index) => (
               <motion.div
                 key={day.day}
@@ -89,7 +103,7 @@ export function TourOverview({ itinerary, galleryImages }: TourOverviewProps) {
             transition={{ duration: 0.5 }}
             className="space-y-4"
           >
-            <h3 className="mb-4 text-lg font-semibold text-secondary">
+            <h3 className="mb-4 text-lg font-semibold text-navy">
               Tour Gallery
             </h3>
             <div className="grid grid-cols-2 gap-3">

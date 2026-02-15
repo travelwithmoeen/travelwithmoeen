@@ -105,11 +105,11 @@ export default function Gallery() {
                           : "h-60"
                       }`}
                     />
-                    <div className="absolute inset-0 flex items-end bg-gradient-to-t from-secondary/60 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                    {/* <div className="absolute inset-0 flex items-end bg-gradient-to-t from-secondary/60 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100">
                       <p className="p-4 text-sm font-medium text-secondary-foreground">
                         {img.alt}
                       </p>
-                    </div>
+                    </div> */}
                   </div>
                 </motion.div>
               ))}

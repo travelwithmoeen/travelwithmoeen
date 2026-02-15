@@ -1,6 +1,7 @@
 
 export type TourCategory =
   | "Deluxe" | "Deluxe_higher" | "deluxe_higher" | "Deluxe Higher" | "deluxe_lower"
+  | "Premier Deluxe" | "Ultra Luxury"
   | "Executive" | "executive" | "executive_higher"
   | "Luxury" | "Luxury Higher" | "luxury_higher" | "luxury_lower"
   | "Single" | "Solo" | "Couple" | "Family" | "Group" | "Private"
@@ -212,15 +213,17 @@ export const tours: Tour[] = [
     "description": "Experience a 10-day journey through the breathtaking landscapes of Skardu and Hunza Valley, including visits to Deosai National Park and Khunjerab Pass. Enjoy scenic flights, cultural explorations, and stunning natural vistas.",
     "image": "/images/All_Tour_Images/SkarduValley/Picture1.jpg",
     "galleryImages": [
-     "/images/All_Tour_Images/SkarduValley/Picture1.jpg",
+      "/images/All_Tour_Images/SkarduValley/Picture1.jpg",
       "/images/All_Tour_Images/SkarduValley/Picture2.jpg",
       "/images/All_Tour_Images/SkarduValley/Picture8.jpg",
       "/images/All_Tour_Images/SkarduValley/Picture4.jpg",
     ],
     "categories": [
       "Deluxe",
+      "Premier Deluxe",
       "Executive",
-      "Luxury"
+      "Luxury",
+      "Ultra Luxury",
     ],
     "packageTypes": [
       "Couple"
@@ -237,7 +240,7 @@ export const tours: Tour[] = [
         ]
       },
       {
-        "category": "Executive",
+        "category": "Premier Deluxe",
         "price": 600000,
         "features": [
           "Tibet / Hotel Himalaya / Kinara Hotel Skardu",
@@ -261,7 +264,7 @@ export const tours: Tour[] = [
         ]
       },
       {
-        "category": "Luxury",
+        "category": "Ultra Luxury",
         "price": 850000,
         "features": [
           "Shangrila / Himmel by Luxus / Khoj Resorts",
@@ -428,17 +431,19 @@ export const tours: Tour[] = [
     "region": "Skardu & Hunza",
     "duration": 10,
     "description": "Explore the breathtaking landscapes of Hunza and Skardu over a 10-day road trip. Experience the beauty of Khunjerab Pass, Deosai National Park, and the serene lakes and valleys. Enjoy local culture, stunning views, and comfortable accommodations.",
-    "image":  "/images/All_Tour_Images/SkarduValley/Picture22.jpg",
+    "image": "/images/All_Tour_Images/SkarduValley/Picture22.jpg",
     "galleryImages": [
       "/images/All_Tour_Images/SkarduValley/Picture11.jpg",
-       "/images/All_Tour_Images/SkarduValley/Picture12.jpg",
-       "/images/All_Tour_Images/SkarduValley/Picture13.jpg",
+      "/images/All_Tour_Images/SkarduValley/Picture12.jpg",
+      "/images/All_Tour_Images/SkarduValley/Picture13.jpg",
       "/images/All_Tour_Images/SkarduValley/Picture18.webp",
     ],
     "categories": [
       "Deluxe",
+      "Premier Deluxe",
       "Executive",
-      "Luxury"
+      "Luxury",
+      "Ultra Luxury",
     ],
     "packageTypes": [
       "Couple"
@@ -455,7 +460,7 @@ export const tours: Tour[] = [
         ]
       },
       {
-        "category": "Executive",
+        "category": "Premier Deluxe",
         "price": 370000,
         "features": [
           "Indus Hotel Chilas",
@@ -471,7 +476,7 @@ export const tours: Tour[] = [
         ]
       },
       {
-        "category": "luxury_lower",
+        "category": "Luxury",
         "price": 480000,
         "features": [
           "Shangrila Chilas",
@@ -479,7 +484,7 @@ export const tours: Tour[] = [
         ]
       },
       {
-        "category": "luxury_higher",
+        "category": "Ultra Luxury",
         "price": 530000,
         "features": [
           "Shangrila Chilas",
@@ -743,12 +748,12 @@ export const tours: Tour[] = [
     "region": "Murree Patriata Galiyat",
     "duration": 2,
     "description": "Experience the charming beauty and adventure of Murree and Galiyat with a 2-day road trip. Enjoy scenic drives, explore picturesque viewpoints, and engage in optional activities like chair lift rides and hiking. The trip includes a visit to Murree Mall Road, Nathiagali, and Ayubia National Park.",
-    "image":"/images/All_Tour_Images/MurreePatriataGaliyat/Picture1.jpg",
+    "image": "/images/All_Tour_Images/MurreePatriataGaliyat/Picture1.jpg",
     "galleryImages": [
       "/images/All_Tour_Images/MurreePatriataGaliyat/Picture1.jpg",
       "/images/All_Tour_Images/MurreePatriataGaliyat/Picture2.webp",
-     "/images/All_Tour_Images/MurreePatriataGaliyat/Picture3.jpg",
-     "/images/All_Tour_Images/MurreePatriataGaliyat/Picture1.jpg",
+      "/images/All_Tour_Images/MurreePatriataGaliyat/Picture3.jpg",
+      "/images/All_Tour_Images/MurreePatriataGaliyat/Picture1.jpg",
     ],
     "categories": [
       "Deluxe",
@@ -771,7 +776,7 @@ export const tours: Tour[] = [
         ]
       },
       {
-        "category": "executive",
+        "category": "Executive",
         "price": 80000,
         "features": [
           "Felettis Grand",
@@ -837,10 +842,10 @@ export const tours: Tour[] = [
     "description": "Experience a 3-day journey through the scenic Leepa Valley and Ganga Choti in Kashmir. Enjoy breathtaking landscapes, cultural exploration, and adventurous treks, with comfortable accommodations and guided tours.",
     "image": "/images/All_Tour_Images/NeelumValleyKashmir/Picture1.jpg",
     "galleryImages": [
-       "/images/All_Tour_Images/NeelumValleyKashmir/Picture1.jpg",
-    "/images/All_Tour_Images/NeelumValleyKashmir/Picture2.webp",
-       "/images/All_Tour_Images/NeelumValleyKashmir/Picture3.jpg",
-       "/images/All_Tour_Images/NeelumValleyKashmir/Picture4.jpg",
+      "/images/All_Tour_Images/NeelumValleyKashmir/Picture1.jpg",
+      "/images/All_Tour_Images/NeelumValleyKashmir/Picture2.webp",
+      "/images/All_Tour_Images/NeelumValleyKashmir/Picture3.jpg",
+      "/images/All_Tour_Images/NeelumValleyKashmir/Picture4.jpg",
     ],
     "categories": [
       "Deluxe",
@@ -861,7 +866,7 @@ export const tours: Tour[] = [
         ]
       },
       {
-        "category": "executive",
+        "category": "Executive",
         "price": 140000,
         "features": [
           "Hotel O Kohsheen Guest House"
@@ -943,11 +948,11 @@ export const tours: Tour[] = [
     "region": "Murree Ayubia Nathiagali",
     "duration": 3,
     "description": "Explore the charming beauty and adventure of Murree and Ayubia with a 3-day road trip. Enjoy scenic drives, historical sites, and breathtaking views while staying in comfortable accommodations.",
-    "image":  "/images/All_Tour_Images/MurreeAyubiaNathiagali/Picture1.jpg",
+    "image": "/images/All_Tour_Images/MurreeAyubiaNathiagali/Picture1.jpg",
     "galleryImages": [
       "/images/All_Tour_Images/MurreeAyubiaNathiagali/Picture1.jpg",
       "/images/All_Tour_Images/MurreeAyubiaNathiagali/Picture2.webp",
-    "/images/All_Tour_Images/MurreeAyubiaNathiagali/Picture1.jpg",
+      "/images/All_Tour_Images/MurreeAyubiaNathiagali/Picture1.jpg",
       "/images/All_Tour_Images/MurreeAyubiaNathiagali/Picture2.webp",
     ],
     "categories": [
@@ -972,7 +977,7 @@ export const tours: Tour[] = [
         ]
       },
       {
-        "category": "executive",
+        "category": "Executive",
         "price": 140000,
         "features": [
           "Felettis Grand",
@@ -1058,12 +1063,12 @@ export const tours: Tour[] = [
     "region": "Naran Kaghan & Babusar Top",
     "duration": 3,
     "description": "Experience the breathtaking beauty of Naran Kaghan and Babusar Top over a 3-day road trip. Explore the stunning landscapes of Neelum Valley, Shogran Valley, Lulusar Lake, and Babusar Top. Enjoy activities like jeep rides, sightseeing, and optional river rafting, with comfortable accommodations and meals included.",
-    "image":     "/images/All_Tour_Images/NarabKaghan/Picture1.png",
-  
+    "image": "/images/All_Tour_Images/NarabKaghan/Picture1.png",
+
     "galleryImages": [
       "/images/All_Tour_Images/NarabKaghan/Picture2.png",
-     "/images/All_Tour_Images/NarabKaghan/Picture3.png",
-       "/images/All_Tour_Images/NarabKaghan/Picture3.png",
+      "/images/All_Tour_Images/NarabKaghan/Picture3.png",
+      "/images/All_Tour_Images/NarabKaghan/Picture3.png",
       "/images/All_Tour_Images/NarabKaghan/Picture4.png",
     ],
     "categories": [
@@ -1186,12 +1191,12 @@ export const tours: Tour[] = [
     "region": "Neelum Valley Kashmir",
     "duration": 3,
     "description": "Explore the charming beauty of Neelum Valley Kashmir with a scenic road trip. Enjoy breathtaking views, cultural sites, and outdoor activities including hiking and sightseeing. Experience cozy evenings with bonfires and musical nights.",
-    "image":   "/images/All_Tour_Images/NeelumValleyKashmir/Picture5.jpg",
+    "image": "/images/All_Tour_Images/NeelumValleyKashmir/Picture5.jpg",
     "galleryImages": [
-       "/images/All_Tour_Images/NeelumValleyKashmir/Picture5.jpg",
-     "/images/All_Tour_Images/NeelumValleyKashmir/Picture6.jpg",
+      "/images/All_Tour_Images/NeelumValleyKashmir/Picture5.jpg",
+      "/images/All_Tour_Images/NeelumValleyKashmir/Picture6.jpg",
       "/images/All_Tour_Images/NeelumValleyKashmir/Picture7.png",
-       "/images/All_Tour_Images/NeelumValleyKashmir/Picture8.png",
+      "/images/All_Tour_Images/NeelumValleyKashmir/Picture8.png",
     ],
     "categories": [
       "Deluxe",
@@ -1213,40 +1218,40 @@ export const tours: Tour[] = [
         ]
       },
       {
-        "category": "executive",
+        "category": "Premier Deluxe",
         "price": 150000,
         "features": [
           "Green Valley Resort"
         ]
       },
       {
-        "category": "Luxury",
+        "category": "Executive",
         "price": 180000,
         "features": [
           "Hotel Neelum Elites"
         ]
       },
       {
-        "category": "group",
+        "category": "Luxury",
         "price": 24000,
         "features": [
           "03 Persons Sharing Room"
         ]
       },
       {
-        "category": "group",
+        "category": "Ultra Luxury",
         "price": 35000,
         "features": [
           "Solo Single Room"
         ]
       },
-      {
-        "category": "group",
-        "price": 60000,
-        "features": [
-          "Separate Room for Couple"
-        ]
-      }
+      // {
+      //   "category": "group",
+      //   "price": 60000,
+      //   "features": [
+      //     "Separate Room for Couple"
+      //   ]
+      // }
     ],
     "itinerary": [
       {
@@ -1313,12 +1318,12 @@ export const tours: Tour[] = [
     "region": "Swat Kalam & Malam Jabba",
     "duration": 3,
     "description": "Experience a 3-day journey through the scenic landscapes of Swat, Kalam, and Malam Jabba. Enjoy skiing, sightseeing, and exploring historical sites with comfortable accommodations and guided tours.",
-    "image":  "/images/All_Tour_Images/SwatKalamMalamJabba/Picture1.jpg",
+    "image": "/images/All_Tour_Images/SwatKalamMalamJabba/Picture1.jpg",
     "galleryImages": [
       "/images/All_Tour_Images/SwatKalamMalamJabba/Picture1.jpg",
       "/images/All_Tour_Images/SwatKalamMalamJabba/Picture2.webp",
-     "/images/All_Tour_Images/SwatKalamMalamJabba/Picture3.jpg",
-     "/images/All_Tour_Images/SwatKalamMalamJabba/Picture4.webp",
+      "/images/All_Tour_Images/SwatKalamMalamJabba/Picture3.jpg",
+      "/images/All_Tour_Images/SwatKalamMalamJabba/Picture4.webp",
     ],
     "categories": [
       "Deluxe"
@@ -1337,21 +1342,21 @@ export const tours: Tour[] = [
         ]
       },
       {
-        "category": "deluxe_higher",
+        "category": "Premier Deluxe",
         "price": 25000,
         "features": [
           "Twin sharing or Couple"
         ]
       },
       {
-        "category": "deluxe_higher",
+        "category": "Executive",
         "price": 30000,
         "features": [
           "Separate Room (No Sharing)"
         ]
       },
       {
-        "category": "deluxe_higher",
+        "category": "Luxury",
         "price": 10000,
         "features": [
           "Kids (7-10 years)"
@@ -1432,14 +1437,14 @@ export const tours: Tour[] = [
     "description": "Experience a 4-day journey through the scenic Kalash Valley, Chitral, and Bumburet Valley. Enjoy cultural experiences, local festivals, and breathtaking landscapes.",
     "image": "/images/All_Tour_Images/KalashValleyChitral/Picture1.jpg",
     "galleryImages": [
-     "/images/All_Tour_Images/KalashValleyChitral/Picture1.jpg",
+      "/images/All_Tour_Images/KalashValleyChitral/Picture1.jpg",
       "/images/All_Tour_Images/KalashValleyChitral/Picture2.jpg",
-     "/images/All_Tour_Images/KalashValleyChitral/Picture3.jpg",
+      "/images/All_Tour_Images/KalashValleyChitral/Picture3.jpg",
       "/images/All_Tour_Images/KalashValleyChitral/Picture4.jpg",
     ],
     "categories": [
       "Deluxe",
-      
+
     ],
     "packageTypes": [
       "Couple",
@@ -1588,7 +1593,7 @@ export const tours: Tour[] = [
     "galleryImages": [
       "/images/All_Tour_Images/KumratValley/Picture1.png",
       "/images/All_Tour_Images/KumratValley/Picture2.png",
-     "/images/All_Tour_Images/KumratValley/Picture3.png",
+      "/images/All_Tour_Images/KumratValley/Picture3.png",
       "/images/All_Tour_Images/KumratValley/Picture4.png",
     ],
     "categories": [
@@ -1610,21 +1615,21 @@ export const tours: Tour[] = [
         ]
       },
       {
-        "category": "Deluxe",
+        "category":"Premier Deluxe",
         "price": 25000,
         "features": [
           "Twin Sharing or Couple"
         ]
       },
       {
-        "category": "Deluxe",
+        "category": "Executive",
         "price": 90000,
         "features": [
           "Separate Room (No Sharing)"
         ]
       },
       {
-        "category": "Deluxe",
+        "category": "Luxury",
         "price": 20000,
         "features": [
           "Kids (7-10 years)"
@@ -1728,10 +1733,10 @@ export const tours: Tour[] = [
     "description": "Explore the charming beauty and adventure of Murree and Ayubia over a 4-day trip. Enjoy scenic drives, historic sites, nature trails, and vibrant local culture.",
     "image": "/images/All_Tour_Images/MurreeAyubiaNathiagali/Picture1.jpg",
     "galleryImages": [
-     "/images/All_Tour_Images/MurreeAyubiaNathiagali/Picture1.jpg",
-     "/images/All_Tour_Images/MurreeAyubiaNathiagali/Picture2.webp",
-"/images/All_Tour_Images/MurreeAyubiaNathiagali/Picture1.jpg",
-     "/images/All_Tour_Images/MurreeAyubiaNathiagali/Picture2.webp",
+      "/images/All_Tour_Images/MurreeAyubiaNathiagali/Picture1.jpg",
+      "/images/All_Tour_Images/MurreeAyubiaNathiagali/Picture2.webp",
+      "/images/All_Tour_Images/MurreeAyubiaNathiagali/Picture1.jpg",
+      "/images/All_Tour_Images/MurreeAyubiaNathiagali/Picture2.webp",
     ],
     "categories": [
       "Deluxe",
@@ -1753,7 +1758,7 @@ export const tours: Tour[] = [
         ]
       },
       {
-        "category": "executive",
+        "category": "Executive",
         "price": 150000,
         "features": [
           "Felettis Grand",
@@ -1854,7 +1859,7 @@ export const tours: Tour[] = [
       "/images/All_Tour_Images/SwatKalamMalamJabba/Picture1.jpg",
       "/images/All_Tour_Images/SwatKalamMalamJabba/Picture3.jpg",
       "/images/All_Tour_Images/SwatKalamMalamJabba/Picture2.webp",
-     "/images/All_Tour_Images/SwatKalamMalamJabba/Picture4.webp",
+      "/images/All_Tour_Images/SwatKalamMalamJabba/Picture4.webp",
     ],
     "categories": [
       "Deluxe",
@@ -1875,7 +1880,7 @@ export const tours: Tour[] = [
         ]
       },
       {
-        "category": "executive",
+        "category": "Executive",
         "price": 140000,
         "features": [
           "Hotel Home Naran"
@@ -1978,9 +1983,9 @@ export const tours: Tour[] = [
     "image": "/images/All_Tour_Images/NeelumValleyKashmir/Picture3.jpg",
     "galleryImages": [
       "/images/All_Tour_Images/NeelumValleyKashmir/Picture9.jpg",
-     "/images/All_Tour_Images/NeelumValleyKashmir/Picture8.png",
-     "/images/All_Tour_Images/NeelumValleyKashmir/Picture7.png",
-     "/images/All_Tour_Images/NeelumValleyKashmir/Picture1.jpg",
+      "/images/All_Tour_Images/NeelumValleyKashmir/Picture8.png",
+      "/images/All_Tour_Images/NeelumValleyKashmir/Picture7.png",
+      "/images/All_Tour_Images/NeelumValleyKashmir/Picture1.jpg",
     ],
     "categories": [
       "Deluxe",
@@ -2001,7 +2006,7 @@ export const tours: Tour[] = [
         ]
       },
       {
-        "category": "executive",
+        "category": "Executive",
         "price": 170000,
         "features": [
           "Green Valley Resort"
@@ -2095,12 +2100,12 @@ export const tours: Tour[] = [
     "region": "Swat Kalam & Malam Jabba",
     "duration": 4,
     "description": "Experience a 4-day journey through the scenic landscapes of Swat, Kalam, and Malam Jabba. Enjoy skiing, sightseeing, and cultural visits to historical sites. Perfect for families seeking adventure and relaxation.",
-    "image":  "/images/All_Tour_Images/SwatKalamMalamJabba/Picture3.jpg",
+    "image": "/images/All_Tour_Images/SwatKalamMalamJabba/Picture3.jpg",
     "galleryImages": [
-     "/images/All_Tour_Images/SwatKalamMalamJabba/Picture2.webp",
-       "/images/All_Tour_Images/SwatKalamMalamJabba/Picture1.jpg",
-       "/images/All_Tour_Images/SwatKalamMalamJabba/Picture3.jpg",
-        "/images/All_Tour_Images/SwatKalamMalamJabba/Picture4.jpg",
+      "/images/All_Tour_Images/SwatKalamMalamJabba/Picture2.webp",
+      "/images/All_Tour_Images/SwatKalamMalamJabba/Picture1.jpg",
+      "/images/All_Tour_Images/SwatKalamMalamJabba/Picture3.jpg",
+      "/images/All_Tour_Images/SwatKalamMalamJabba/Picture4.jpg",
     ],
     "categories": [
       "Deluxe",
@@ -2122,7 +2127,7 @@ export const tours: Tour[] = [
         ]
       },
       {
-        "category": "executive",
+        "category": "Executive",
         "price": 140000,
         "features": [
           "Maria Hotel Kalam"
@@ -2223,12 +2228,12 @@ export const tours: Tour[] = [
     "region": "Skardu Valley",
     "duration": 4,
     "description": "Experience the breathtaking beauty of Skardu with a 4-day private tour. Explore the serene lakes, majestic waterfalls, and ancient carvings while enjoying luxurious accommodations and scenic flights.",
-    "image":   "/images/All_Tour_Images/SkarduValley/Picture11.jpg",
+    "image": "/images/All_Tour_Images/SkarduValley/Picture11.jpg",
     "galleryImages": [
-     "/images/All_Tour_Images/SkarduValley/Picture11.jpg",
-     "/images/All_Tour_Images/SkarduValley/Picture12.jpg",
+      "/images/All_Tour_Images/SkarduValley/Picture11.jpg",
+      "/images/All_Tour_Images/SkarduValley/Picture12.jpg",
       "/images/All_Tour_Images/SkarduValley/Picture13.jpg",
-     "/images/All_Tour_Images/SkarduValley/Picture9.jpg",
+      "/images/All_Tour_Images/SkarduValley/Picture9.jpg",
     ],
     "categories": [
       "Deluxe",
@@ -2253,7 +2258,7 @@ export const tours: Tour[] = [
         ]
       },
       {
-        "category": "Deluxe Higher",
+        "category": "Premier Deluxe",
         "price": 350000,
         "features": [
           "Tibet",
@@ -2281,7 +2286,7 @@ export const tours: Tour[] = [
         ]
       },
       {
-        "category": "Luxury Higher",
+        "category":  "Ultra Luxury",
         "price": 550000,
         "features": [
           "Shangrila",
@@ -2360,9 +2365,9 @@ export const tours: Tour[] = [
     "image": "/images/All_Tour_Images/MinimargAstor/Picture1.jpg",
     "galleryImages": [
       "/images/All_Tour_Images/MinimargAstor/Picture1.jpg",
-     "/images/All_Tour_Images/MinimargAstor/Picture2.jpg",
+      "/images/All_Tour_Images/MinimargAstor/Picture2.jpg",
       "/images/All_Tour_Images/MinimargAstor/Picture3.jpg",
-     "/images/All_Tour_Images/MinimargAstor/Picture4.jpg",
+      "/images/All_Tour_Images/MinimargAstor/Picture4.jpg",
     ],
     "categories": [
       "Deluxe",
@@ -2384,7 +2389,7 @@ export const tours: Tour[] = [
         ]
       },
       {
-        "category": "executive",
+        "category": "Executive",
         "price": 490000,
         "features": [
           "Khar Hotel Skardu (deluxe room) (1 night)",
@@ -2489,9 +2494,9 @@ export const tours: Tour[] = [
     "region": "Fairy Meadows Nanga Base Camp",
     "duration": 5,
     "description": "Experience the breathtaking beauty of Fairy Meadows and Skardu Valley with a 5-day tour by air. Explore the serene Kachura Lakes, the majestic Nanga Parbat, and the charming Basho Meadows. Enjoy a mix of adventure and relaxation with 4x4 Jeep safaris, trekking, and leisure time at scenic locations.",
-    "image":"/images/All_Tour_Images/FairyMeadows/Picture1.jpg",
+    "image": "/images/All_Tour_Images/FairyMeadows/Picture1.jpg",
     "galleryImages": [
-     "/images/All_Tour_Images/FairyMeadows/Picture2.jpg",
+      "/images/All_Tour_Images/FairyMeadows/Picture2.jpg",
       "/images/All_Tour_Images/FairyMeadows/Picture3.jpg",
       "/images/All_Tour_Images/FairyMeadows/Picture4.png",
       "/images/All_Tour_Images/FairyMeadows/Picture5.png",
@@ -2516,7 +2521,7 @@ export const tours: Tour[] = [
         ]
       },
       {
-        "category": "executive",
+        "category": "Executive",
         "price": 500000,
         "features": [
           "Raikot Sarai Fairy meadows (2 nights)",
@@ -2623,9 +2628,9 @@ export const tours: Tour[] = [
     "image": "/images/All_Tour_Images/SkarduValley/Picture6.jpg",
     "galleryImages": [
       "/images/All_Tour_Images/SkarduValley/Picture6.jpg",
-       "/images/All_Tour_Images/SkarduValley/Picture7.jpg",
-       "/images/All_Tour_Images/SkarduValley/Picture8.jpg",
-       "/images/All_Tour_Images/SkarduValley/Picture9.jpg",
+      "/images/All_Tour_Images/SkarduValley/Picture7.jpg",
+      "/images/All_Tour_Images/SkarduValley/Picture8.jpg",
+      "/images/All_Tour_Images/SkarduValley/Picture9.jpg",
     ],
     "categories": [
       "Deluxe",
@@ -2641,7 +2646,7 @@ export const tours: Tour[] = [
     "basePrice": 330000,
     "packages": [
       {
-        "category": "deluxe_lower",
+        "category": "Deluxe",
         "price": 330000,
         "features": [
           "Hotel Himalaya",
@@ -2651,7 +2656,7 @@ export const tours: Tour[] = [
         ]
       },
       {
-        "category": "deluxe_higher",
+        "category": "Premier Deluxe",
         "price": 380000,
         "features": [
           "Tibet",
@@ -2662,7 +2667,7 @@ export const tours: Tour[] = [
         ]
       },
       {
-        "category": "executive",
+        "category": "Executive",
         "price": 450000,
         "features": [
           "Khar Resort Skardu",
@@ -2672,7 +2677,7 @@ export const tours: Tour[] = [
         ]
       },
       {
-        "category": "luxury_lower",
+        "category":  "Luxury",
         "price": 510000,
         "features": [
           "Khoj Resorts (Deluxe room)",
@@ -2680,7 +2685,7 @@ export const tours: Tour[] = [
         ]
       },
       {
-        "category": "luxury_higher",
+        "category":  "Ultra Luxury",
         "price": 600000,
         "features": [
           "Shangrila (Executive Room)",
@@ -2770,10 +2775,10 @@ export const tours: Tour[] = [
     "region": "Hunza Valley",
     "duration": 5,
     "description": "Experience a 5-day private tour to the stunning Hunza Valley, traveling by air from Islamabad to Skardu. Explore ancient fortresses, vibrant bazaars, and breathtaking landscapes including the Attabad Lake and Passu Cones. Enjoy comfortable accommodations and private transport throughout your journey.",
-    "image":  "/images/All_Tour_Images/HunzaValley/Picture5.jpg",
+    "image": "/images/All_Tour_Images/HunzaValley/Picture5.jpg",
     "galleryImages": [
-       "/images/All_Tour_Images/HunzaValley/Picture6.webp",
-       "/images/All_Tour_Images/HunzaValley/Picture7.png",
+      "/images/All_Tour_Images/HunzaValley/Picture6.webp",
+      "/images/All_Tour_Images/HunzaValley/Picture7.png",
       "/images/All_Tour_Images/HunzaValley/Picture8.jpg",
       "/images/All_Tour_Images/HunzaValley/Picture9.jpg",
     ],
@@ -2801,7 +2806,7 @@ export const tours: Tour[] = [
         ]
       },
       {
-        "category": "deluxe_higher",
+        "category": "Premier Deluxe",
         "price": 390000,
         "features": [
           "Summit Embassy Hotel",
@@ -2811,7 +2816,7 @@ export const tours: Tour[] = [
         ]
       },
       {
-        "category": "executive",
+        "category": "Executive",
         "price": 470000,
         "features": [
           "Hard Rock Hunza Resort",
@@ -2829,7 +2834,7 @@ export const tours: Tour[] = [
         ]
       },
       {
-        "category": "luxury_higher",
+        "category":  "Ultra Luxury",
         "price": 620000,
         "features": [
           "Best Western",
@@ -2918,9 +2923,9 @@ export const tours: Tour[] = [
     "description": "Experience a 6-day adventure exploring the scenic beauty of Astor Minimarg and Skardu. Enjoy breathtaking views, cultural exchanges, and unforgettable experiences in some of the most beautiful locations in Pakistan.",
     "image": "/images/All_Tour_Images/MinimargAstor/Picture8.jpg",
     "galleryImages": [
-     "/images/All_Tour_Images/MinimargAstor/Picture9.jpg",
+      "/images/All_Tour_Images/MinimargAstor/Picture9.jpg",
       "/images/All_Tour_Images/MinimargAstor/Picture10.jpg",
-     "/images/All_Tour_Images/MinimargAstor/Picture11.jpg",
+      "/images/All_Tour_Images/MinimargAstor/Picture11.jpg",
       "/images/All_Tour_Images/MinimargAstor/Picture12.jpg",
     ],
     "categories": [
@@ -2945,7 +2950,7 @@ export const tours: Tour[] = [
         ]
       },
       {
-        "category": "executive",
+        "category": "Executive",
         "price": 580000,
         "features": [
           "Rama Meadows Camping Side (1 night)",
@@ -3068,12 +3073,12 @@ export const tours: Tour[] = [
     "region": "Hunza Valley",
     "duration": 6,
     "description": "Experience a 6-day journey through the breathtaking landscapes of Hunza Valley and Khunjerab Pass. Enjoy scenic views, historical sites, and cultural experiences while traveling by road.",
-    "image":  "/images/All_Tour_Images/HunzaValley/Picture8.jpg",
+    "image": "/images/All_Tour_Images/HunzaValley/Picture8.jpg",
     "galleryImages": [
       "/images/All_Tour_Images/HunzaValley/Picture9.jpg",
-       "/images/All_Tour_Images/HunzaValley/Picture11.jpg",
+      "/images/All_Tour_Images/HunzaValley/Picture11.jpg",
       "/images/All_Tour_Images/HunzaValley/Picture12.jpg",
-     "/images/All_Tour_Images/HunzaValley/Picture1.jpg",
+      "/images/All_Tour_Images/HunzaValley/Picture1.jpg",
     ],
     "categories": [
       "Deluxe",
@@ -3095,7 +3100,7 @@ export const tours: Tour[] = [
         ]
       },
       {
-        "category": "executive",
+        "category": "Premier Deluxe",
         "price": 310000,
         "features": [
           "Indus Hotel Chilas",
@@ -3103,7 +3108,7 @@ export const tours: Tour[] = [
         ]
       },
       {
-        "category": "executive",
+        "category": "Executive",
         "price": 380000,
         "features": [
           "Grace Continental Child",
@@ -3119,7 +3124,7 @@ export const tours: Tour[] = [
         ]
       },
       {
-        "category": "Luxury",
+        "category":  "Ultra Luxury",
         "price": 500000,
         "features": [
           "Shangrila Chilas",
@@ -3236,12 +3241,12 @@ export const tours: Tour[] = [
     "region": "Skardu & Hunza",
     "duration": 6,
     "description": "Experience the breathtaking beauty of Skardu and Hunza over a 6-day private tour. Enjoy scenic flights, explore ancient fortresses, and witness stunning landscapes including Kachura Lakes, Rakaposhi Viewpoint, and Attabad Lake. Perfect for solo travelers, friends, and families.",
-    "image":  "/images/All_Tour_Images/SkarduValley/Picture2.jpg",
+    "image": "/images/All_Tour_Images/SkarduValley/Picture2.jpg",
     "galleryImages": [
       "/images/All_Tour_Images/SkarduValley/Picture8.jpg",
-       "/images/All_Tour_Images/SkarduValley/Picture2.jpg",
-       "/images/All_Tour_Images/SkarduValley/Picture3.jpg",
-       "/images/All_Tour_Images/SkarduValley/Picture4.jpg",
+      "/images/All_Tour_Images/SkarduValley/Picture2.jpg",
+      "/images/All_Tour_Images/SkarduValley/Picture3.jpg",
+      "/images/All_Tour_Images/SkarduValley/Picture4.jpg",
     ],
     "categories": [
       "Deluxe",
@@ -3265,7 +3270,7 @@ export const tours: Tour[] = [
         ]
       },
       {
-        "category": "executive",
+        "category": "Executive",
         "price": 510000,
         "features": [
           "Khar Resort Skardu / Guman resort / PC Lagacy / Rivage Resort Skardu",
@@ -3273,7 +3278,7 @@ export const tours: Tour[] = [
         ]
       },
       {
-        "category": "luxury_lower",
+        "category":  "Luxury",
         "price": 620000,
         "features": [
           "Khoj Resorts (Deluxe room) or Rivage Resort Skardu (Executive rooms) Skardu",
@@ -3281,7 +3286,7 @@ export const tours: Tour[] = [
         ]
       },
       {
-        "category": "luxury_higher",
+        "category":  "Ultra Luxury",
         "price": 700000,
         "features": [
           "Shangrila (Executive Room) / Himmel by Luxus (Deluxe room) /Khoj Resorts (River view loft villa) (Deluxe room Skardu Hotel)",
@@ -3385,12 +3390,12 @@ export const tours: Tour[] = [
     "region": "Skardu Valley",
     "duration": 6,
     "description": "Experience the breathtaking beauty of Skardu with a 6-day private tour. Enjoy scenic flights, explore serene lakes, majestic waterfalls, high-altitude deserts, and vibrant cultural sites. Perfect for solo travelers, friends, and families.",
-    "image":  "/images/All_Tour_Images/SkarduValley/Picture7.jpg",
+    "image": "/images/All_Tour_Images/SkarduValley/Picture7.jpg",
     "galleryImages": [
       "/images/All_Tour_Images/SkarduValley/Picture8.jpg",
-       "/images/All_Tour_Images/SkarduValley/Picture2.jpg",
-       "/images/All_Tour_Images/SkarduValley/Picture3.jpg",
-       "/images/All_Tour_Images/SkarduValley/Picture4.jpg",
+      "/images/All_Tour_Images/SkarduValley/Picture2.jpg",
+      "/images/All_Tour_Images/SkarduValley/Picture3.jpg",
+      "/images/All_Tour_Images/SkarduValley/Picture4.jpg",
     ],
     "categories": [
       "Deluxe",
@@ -3414,7 +3419,7 @@ export const tours: Tour[] = [
         ]
       },
       {
-        "category": "executive",
+        "category": "Executive",
         "price": 400000,
         "features": [
           "Dera Lamsa Resort Skardu",
@@ -3527,12 +3532,12 @@ export const tours: Tour[] = [
     "region": "Skardu Valley",
     "duration": 7,
     "description": "Experience the breathtaking beauty of Skardu Valley over 7 days, exploring lakes, waterfalls, deserts, forts, and ancient carvings. Enjoy scenic flights, luxurious accommodations, and unforgettable adventures in the heart of nature.",
-    "image":  "/images/All_Tour_Images/SkarduValley/Picture4.jpg",
+    "image": "/images/All_Tour_Images/SkarduValley/Picture4.jpg",
     "galleryImages": [
-   "/images/All_Tour_Images/SkarduValley/Picture8.jpg",
-       "/images/All_Tour_Images/SkarduValley/Picture2.jpg",
-       "/images/All_Tour_Images/SkarduValley/Picture3.jpg",
-       "/images/All_Tour_Images/SkarduValley/Picture4.jpg",
+      "/images/All_Tour_Images/SkarduValley/Picture8.jpg",
+      "/images/All_Tour_Images/SkarduValley/Picture2.jpg",
+      "/images/All_Tour_Images/SkarduValley/Picture3.jpg",
+      "/images/All_Tour_Images/SkarduValley/Picture4.jpg",
     ],
     "categories": [
       "Deluxe",
@@ -3555,7 +3560,7 @@ export const tours: Tour[] = [
         ]
       },
       {
-        "category": "Deluxe_higher",
+        "category":"Premier Deluxe",
         "price": 460000,
         "features": [
           "Tibet",
@@ -3583,7 +3588,7 @@ export const tours: Tour[] = [
         ]
       },
       {
-        "category": "luxury_higher",
+        "category":  "Ultra Luxury",
         "price": 740000,
         "features": [
           "Shangrila",
@@ -3693,12 +3698,12 @@ export const tours: Tour[] = [
     "region": "Skardu Valley",
     "duration": 7,
     "description": "Experience a 7-day road trip to the breathtaking Skardu and Deosai National Park. Enjoy scenic views, explore the serene Shangri-La Resort, visit the stunning Manthoka Waterfall, and discover the high-altitude Sarfaranga Cold Desert. Immerse yourself in the rich culture and natural beauty of the region.",
-    "image":  "/images/All_Tour_Images/SkarduValley/Picture12.jpg",
+    "image": "/images/All_Tour_Images/SkarduValley/Picture12.jpg",
     "galleryImages": [
       "/images/All_Tour_Images/SkarduValley/Picture8.jpg",
-       "/images/All_Tour_Images/SkarduValley/Picture2.jpg",
-       "/images/All_Tour_Images/SkarduValley/Picture3.jpg",
-       "/images/All_Tour_Images/SkarduValley/Picture4.jpg",
+      "/images/All_Tour_Images/SkarduValley/Picture2.jpg",
+      "/images/All_Tour_Images/SkarduValley/Picture3.jpg",
+      "/images/All_Tour_Images/SkarduValley/Picture4.jpg",
     ],
     "categories": [
       "Deluxe",
@@ -3722,7 +3727,7 @@ export const tours: Tour[] = [
         ]
       },
       {
-        "category": "executive",
+        "category": "Premier Deluxe",
         "price": 280000,
         "features": [
           "Indus Hotel Chilas",
@@ -3732,7 +3737,7 @@ export const tours: Tour[] = [
         ]
       },
       {
-        "category": "executive",
+        "category": "Executive",
         "price": 330000,
         "features": [
           "Grace Continental Child",
@@ -3743,7 +3748,7 @@ export const tours: Tour[] = [
         ]
       },
       {
-        "category": "luxury_lower",
+        "category":  "Luxury",
         "price": 380000,
         "features": [
           "Shangrila Chilas",
@@ -3752,7 +3757,7 @@ export const tours: Tour[] = [
         ]
       },
       {
-        "category": "luxury_higher",
+        "category":  "Ultra Luxury",
         "price": 400000,
         "features": [
           "Shangrila Chilas",
@@ -3891,11 +3896,11 @@ export const tours: Tour[] = [
     "region": "Fairy Meadows Nanga Base Camp",
     "duration": 5,
     "description": "Experience a 5-day journey by road to the breathtaking Fairy Meadows and Nanga Parbat Base Camp. Enjoy scenic drives, adventurous treks, and the serene beauty of the mountains.",
-    "image":  "/images/All_Tour_Images/FairyMeadows/Picture9.jpg",
+    "image": "/images/All_Tour_Images/FairyMeadows/Picture9.jpg",
     "galleryImages": [
       "/images/All_Tour_Images/FairyMeadows/Picture6.jpg",
-    "/images/All_Tour_Images/FairyMeadows/Picture7.jpg",
-     "/images/All_Tour_Images/FairyMeadows/Picture8.jpg",
+      "/images/All_Tour_Images/FairyMeadows/Picture7.jpg",
+      "/images/All_Tour_Images/FairyMeadows/Picture8.jpg",
       "/images/All_Tour_Images/FairyMeadows/Picture9.jpg",
     ],
     "categories": [
@@ -3919,7 +3924,7 @@ export const tours: Tour[] = [
         ]
       },
       {
-        "category": "executive",
+        "category": "Executive",
         "price": 250000,
         "features": [
           "Tarangfa Hotel Chilas",
@@ -4027,131 +4032,131 @@ export const tours: Tour[] = [
     "featured": false
   },
 
-{
-  "id": "3_days_trip_to_ratti_gali_lake",
-  "name": "3 Days Trip to Ratti Gali Lake",
-  "location": "Ratti Gali Lake",
-  "region": "Ratti Gali Lake",
-  "duration": 3,
-  "description": "Experience the breathtaking beauty of Ratti Gali Lake over a 3-day journey through the scenic Neelum Valley. Enjoy a blend of adventure and relaxation with guided treks, local exploration, and cozy bonfire nights.",
-  "image": "/images/All_Tour_Images/RattiGaliLake/Picture1.jpg",
-  "galleryImages": [
-   "/images/All_Tour_Images/RattiGaliLake/Picture1.jpg",
-   "/images/All_Tour_Images/RattiGaliLake/Picture2.png",
-    "/images/All_Tour_Images/RattiGaliLake/Picture3.jpg",
-    "/images/All_Tour_Images/RattiGaliLake/Picture1.jpg",
-  ],
-  "categories": [
-    "Deluxe",
-    "Executive",
-    "Luxury"
-  ],
-  "packageTypes": [
-    "Couple"
-  ],
-  "transport": "By Road",
-  "basePrice": 150000,
-  "packages": [
-    {
-      "category": "Deluxe",
-      "price": 150000,
-      "features": [
-        "Neelum Cinaar Resort",
-        "Ratti Gali Camping Side"
-      ]
-    },
-    {
-      "category": "Executive",
-      "price": 170000,
-      "features": [
-        "Green Valley Resort",
-        "Ratti Gali Camping Side"
-      ]
-    },
-    {
-      "category": "Luxury",
-      "price": 200000,
-      "features": [
-        "Hotel Neelum Elites",
-        "Ratti Gali Camping Side"
-      ]
-    }
-  ],
-  "itinerary": [
-    {
-      "day": 1,
-      "title": "Islamabad to Neelum Valley",
-      "description": "",
-      "highlights": [
-        "05:00 AM – Pick up Islamabad members.",
-        "Murree Motorway Drive—Enjoy a scenic drive through the motorway with a short break at Kohala Bridge for photos.",
-        "Muzaffarabad—Arrive in Muzaffarabad and stop for refreshment and a short break.",
-        "Dhanni Waterfall—Continue the drive towards Keran, pausing at Dhanni Waterfall for sightseeing.",
-        "Visit the Neelum Jhelum Hydropower Project.",
-        "Continue journey along the Neelum Valley road with short scenic stops.",
-        "Arrival at Dowarian—Reach Dowarian by late afternoon.",
-        "Evening walk in the local area to experience village life.",
-        "Relax, and explore the area.",
-        "Evening Activities – Enjoy a cozy bonfire & musical night.",
-        "Overnight Stay—Stay at a hotel in Dowarian/Keran."
-      ]
-    },
-    {
-      "day": 2,
-      "title": "Jeep Safari, Waterfalls, Glacier, and Hiking!",
-      "description": "",
-      "highlights": [
-        "Early Morning (07:00 AM): Breakfast and immediate departure from Dowarian Valley.",
-        "Jeep departure from Dowarian to Ratti Gali Base Camp (approx. 1–1.5 hours on mountainous track).",
-        "Short rest at base camp.",
-        "Guided or self-paced trek to Ratti Gali Lake (30–45 minutes; moderate difficulty).",
-        "Time at Ratti Gali Lake (2–3 hours):",
-        "Sightseeing and photography.",
-        "Walking around the lake.",
-        "Enjoying alpine scenery, glaciers, and wildflowers.",
-        "Return trek to base camp.",
-        "Overnight Stay—Stay at a hotel in Dowarian/Keran. (Subject to the Weather)"
-      ]
-    },
-    {
-      "day": 3,
-      "title": "Departure to Islamabad",
-      "description": "",
-      "highlights": [
-        "08:00 AM Breakfast – Wake up and enjoy breakfast.",
-        "Departure for Islamabad.",
-        "Photography and Sightseeing.",
-        "Jeep ride back to Dowarian.",
-        "Departure from Dowarian.",
-        "Visit Kutton and the famous Kutton Waterfall for scenic beauty.",
-        "Scenic return drive through Neelum Valley.",
-        "Optional short stops at Keran viewpoints or riverside locations (time permitting).",
-        "Lunch in Muzaffarabad (self).",
-        "Continue driving back to Islamabad.",
-        "Arrival in Islamabad by evening (approximately 08:00–09:00 PM).",
-        "Arriving at Islamabad around 08:00 PM (+/- 2 hours).",
-        "End of services with satisfied clients and unforgettable memories!"
-      ]
-    }
-  ],
-  "included": [
-    "Private Transport (GLI CAR New Model)",
-    "Fuel- Toll Tax",
-    "2 Nights’ Accommodation",
-    "3 Breakfasts",
-    "Tour Guide - Jeep"
-  ],
-  "notIncluded": [
-    "Any Kind of Entry/Activity Ticket",
-    "Expenses for Boating - Jeep",
-    "Expenses of Personal Nature",
-    "Horse Ridding / Ski",
-    "Any item not mentioned in services include",
-    "Portage, tips, laundry, telephone charges, transfers, all items of a personal nature, and also food and drinks.",
-    "Anything not specifically mentioned in the ‘What your Tour Price includes’ box."
-  ],
-  "featured": false
-},
+  {
+    "id": "3_days_trip_to_ratti_gali_lake",
+    "name": "3 Days Trip to Ratti Gali Lake",
+    "location": "Ratti Gali Lake",
+    "region": "Ratti Gali Lake",
+    "duration": 3,
+    "description": "Experience the breathtaking beauty of Ratti Gali Lake over a 3-day journey through the scenic Neelum Valley. Enjoy a blend of adventure and relaxation with guided treks, local exploration, and cozy bonfire nights.",
+    "image": "/images/All_Tour_Images/RattiGaliLake/Picture1.jpg",
+    "galleryImages": [
+      "/images/All_Tour_Images/RattiGaliLake/Picture1.jpg",
+      "/images/All_Tour_Images/RattiGaliLake/Picture2.png",
+      "/images/All_Tour_Images/RattiGaliLake/Picture3.jpg",
+      "/images/All_Tour_Images/RattiGaliLake/Picture1.jpg",
+    ],
+    "categories": [
+      "Deluxe",
+      "Executive",
+      "Luxury"
+    ],
+    "packageTypes": [
+      "Couple"
+    ],
+    "transport": "By Road",
+    "basePrice": 150000,
+    "packages": [
+      {
+        "category": "Deluxe",
+        "price": 150000,
+        "features": [
+          "Neelum Cinaar Resort",
+          "Ratti Gali Camping Side"
+        ]
+      },
+      {
+        "category": "Executive",
+        "price": 170000,
+        "features": [
+          "Green Valley Resort",
+          "Ratti Gali Camping Side"
+        ]
+      },
+      {
+        "category": "Luxury",
+        "price": 200000,
+        "features": [
+          "Hotel Neelum Elites",
+          "Ratti Gali Camping Side"
+        ]
+      }
+    ],
+    "itinerary": [
+      {
+        "day": 1,
+        "title": "Islamabad to Neelum Valley",
+        "description": "",
+        "highlights": [
+          "05:00 AM – Pick up Islamabad members.",
+          "Murree Motorway Drive—Enjoy a scenic drive through the motorway with a short break at Kohala Bridge for photos.",
+          "Muzaffarabad—Arrive in Muzaffarabad and stop for refreshment and a short break.",
+          "Dhanni Waterfall—Continue the drive towards Keran, pausing at Dhanni Waterfall for sightseeing.",
+          "Visit the Neelum Jhelum Hydropower Project.",
+          "Continue journey along the Neelum Valley road with short scenic stops.",
+          "Arrival at Dowarian—Reach Dowarian by late afternoon.",
+          "Evening walk in the local area to experience village life.",
+          "Relax, and explore the area.",
+          "Evening Activities – Enjoy a cozy bonfire & musical night.",
+          "Overnight Stay—Stay at a hotel in Dowarian/Keran."
+        ]
+      },
+      {
+        "day": 2,
+        "title": "Jeep Safari, Waterfalls, Glacier, and Hiking!",
+        "description": "",
+        "highlights": [
+          "Early Morning (07:00 AM): Breakfast and immediate departure from Dowarian Valley.",
+          "Jeep departure from Dowarian to Ratti Gali Base Camp (approx. 1–1.5 hours on mountainous track).",
+          "Short rest at base camp.",
+          "Guided or self-paced trek to Ratti Gali Lake (30–45 minutes; moderate difficulty).",
+          "Time at Ratti Gali Lake (2–3 hours):",
+          "Sightseeing and photography.",
+          "Walking around the lake.",
+          "Enjoying alpine scenery, glaciers, and wildflowers.",
+          "Return trek to base camp.",
+          "Overnight Stay—Stay at a hotel in Dowarian/Keran. (Subject to the Weather)"
+        ]
+      },
+      {
+        "day": 3,
+        "title": "Departure to Islamabad",
+        "description": "",
+        "highlights": [
+          "08:00 AM Breakfast – Wake up and enjoy breakfast.",
+          "Departure for Islamabad.",
+          "Photography and Sightseeing.",
+          "Jeep ride back to Dowarian.",
+          "Departure from Dowarian.",
+          "Visit Kutton and the famous Kutton Waterfall for scenic beauty.",
+          "Scenic return drive through Neelum Valley.",
+          "Optional short stops at Keran viewpoints or riverside locations (time permitting).",
+          "Lunch in Muzaffarabad (self).",
+          "Continue driving back to Islamabad.",
+          "Arrival in Islamabad by evening (approximately 08:00–09:00 PM).",
+          "Arriving at Islamabad around 08:00 PM (+/- 2 hours).",
+          "End of services with satisfied clients and unforgettable memories!"
+        ]
+      }
+    ],
+    "included": [
+      "Private Transport (GLI CAR New Model)",
+      "Fuel- Toll Tax",
+      "2 Nights’ Accommodation",
+      "3 Breakfasts",
+      "Tour Guide - Jeep"
+    ],
+    "notIncluded": [
+      "Any Kind of Entry/Activity Ticket",
+      "Expenses for Boating - Jeep",
+      "Expenses of Personal Nature",
+      "Horse Ridding / Ski",
+      "Any item not mentioned in services include",
+      "Portage, tips, laundry, telephone charges, transfers, all items of a personal nature, and also food and drinks.",
+      "Anything not specifically mentioned in the ‘What your Tour Price includes’ box."
+    ],
+    "featured": false
+  },
 
 
 
@@ -4163,7 +4168,7 @@ export const tours: Tour[] = [
     "region": "Skardu & Hunza",
     "duration": 8,
     "description": "Join us for an unforgettable group adventure exploring the stunning landscapes and vibrant culture of Hunza and Skardu. Perfect for solo travelers, friends, and families looking to explore together.",
-    "image":   "/images/All_Tour_Images/HunzaValley/Picture3.jpg",
+    "image": "/images/All_Tour_Images/HunzaValley/Picture3.jpg",
     "galleryImages": [
       "/images/All_Tour_Images/HunzaValley/Picture1.jpg",
       "/images/All_Tour_Images/HunzaValley/Picture2.jpg",
@@ -4192,7 +4197,7 @@ export const tours: Tour[] = [
         ]
       },
       {
-        "category": "executive",
+        "category": "Premier Deluxe",
         "price": 490000,
         "features": [
           "Tibet / Hotel Himalaya (Executive room) / Kinara Hotel Skardu / Qayyam Skardu",
@@ -4200,7 +4205,7 @@ export const tours: Tour[] = [
         ]
       },
       {
-        "category": "executive_higher",
+        "category": "Executive",
         "price": 580000,
         "features": [
           "Khar Resort Skardu / Guman resort / PC Lagacy / Rivage Resort Skardu",
@@ -4216,7 +4221,7 @@ export const tours: Tour[] = [
         ]
       },
       {
-        "category": "luxury_higher",
+        "category":  "Ultra Luxury",
         "price": 800000,
         "features": [
           "Shangrila (Executive Room) / Himmel by Luxus (Deluxe room) /Khoj Resorts (River view loft villa) (Deluxe room Skardu Hotel)",

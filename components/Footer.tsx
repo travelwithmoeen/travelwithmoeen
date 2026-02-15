@@ -17,7 +17,7 @@ export function Footer() {
                 height={40}
                 className="rounded-full"
               />
-              <span className="text-xl font-serif font-bold text-white italic">
+              <span className="text-xl font-serif font-bold text-white ">
                 Travel With Moeen
               </span>
             </Link>
@@ -97,11 +97,11 @@ export function Footer() {
           <div>
             <h3 className="text-white font-bold text-lg mb-6">Support</h3>
             <ul className="space-y-3">
-              <li><a href="#" className="hover:text-amber-400 transition-colors">FAQs</a></li>
-              <li><a href="#" className="hover:text-amber-400 transition-colors">Privacy Policy</a></li>
-              <li><a href="#" className="hover:text-amber-400 transition-colors">Terms of Service</a></li>
-              <li><a href="#" className="hover:text-amber-400 transition-colors">Help Center</a></li>
-              <li><a href="#" className="hover:text-amber-400 transition-colors">Cancellation</a></li>
+              <li><Link href="/faq-page" className="hover:text-amber-400 transition-colors">FAQs</Link></li>
+              <li><Link href="/privacy-policy" className="hover:text-amber-400 transition-colors">Privacy Policy</Link></li>
+              <li><Link href="/terms-and-conditions" className="hover:text-amber-400 transition-colors">Terms of Service</Link></li>
+              <li><Link href="/travelers-instructions" className="hover:text-amber-400 transition-colors">Travelers Instructions</Link></li>
+              <li><Link href="/cancellation-policy" className="hover:text-amber-400 transition-colors">Cancellation</Link></li>
             </ul>
           </div>
 
@@ -122,7 +122,9 @@ export function Footer() {
               </li>
               <li>
                 <a
-                  href="tel:+923339981177"
+                  href="https://wa.me/923339981177"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="flex items-center gap-3 hover:text-amber-400 transition-colors"
                 >
                   <Phone size={20} className="text-amber-400 flex-shrink-0" />

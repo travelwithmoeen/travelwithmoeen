@@ -5,12 +5,38 @@ import { Plane, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 const categories = [
-  { name: "Cultural", icon: true },
-  { name: "Adventure", icon: true },
-  { name: "Nature & wildlife", icon: true },
-  { name: "Historical", icon: false },
-  { name: "Religious", icon: true },
+  {
+    name: "Cultural",
+    icon: true,
+    regions: ["Kalash Valley & Chitral"]
+  },
+  {
+    name: "Adventure",
+    icon: true,
+    regions: ["Swat Kalam & Malam Jabba", "Skardu & Hunza", "Hunza Valley", "Skardu Valley", "Naran Kaghan & Babusar Top"]
+  },
+  {
+    name: "Nature & Wildlife",
+    icon: true,
+    regions: ["Kumrat and Katora Lake", "Minimarg Astor Valley", "Neelum Valley Kashmir"]
+  },
+  {
+    name: "Hiking",
+    icon: false,
+    regions: ["Ratti Gali Lake", "Kumrat and Katora Lake", "Fairy Meadows Nanga Base Camp"]
+  },
+  {
+    name: "City Tour",
+    icon: true,
+    regions: ["Islamabad", "Murree Ayubia Nathiagali", "Murree Patriata Galiyat"]
+  },
 ];
+
+// Helper function to generate tour URL with regions
+const getCategoryUrl = (regions: string[]) => {
+  const regionsParam = encodeURIComponent(regions.join(","));
+  return `/tours?regions=${regionsParam}`;
+};
 
 export function TourCategories() {
   return (
@@ -59,100 +85,113 @@ export function TourCategories() {
           viewport={{ once: true }}
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-16 gap-y-12 mb-16 max-w-5xl mx-auto"
         >
-          {/* Row 1: Cultural, Adventure, Nature & wildlife */}
-          <motion.div
-            whileHover={{ x: 10 }}
-            className="flex items-center gap-4 cursor-pointer group"
-          >
-            {categories[0].icon && (
-              <Plane className="text-white/70 group-hover:text-white transition-colors" size={24} />
-            )}
-            <h3 
-              className="text-white font-normal border-b-2 border-white pb-1 group-hover:text-[#ffc861] group-hover:border-[#ffc861] transition-all"
-              style={{ 
-                fontFamily: 'var(--font-philosopher)',
-                fontSize: '2.25rem',
-                lineHeight: '1.2',
-              }}
-            >
-              {categories[0].name}
-            </h3>
-          </motion.div>
-
-          <motion.div
-            whileHover={{ x: 10 }}
-            className="flex items-center gap-4 cursor-pointer group"
-          >
-            {categories[1].icon && (
-              <Plane className="text-white/70 group-hover:text-white transition-colors" size={24} />
-            )}
-            <h3 
-              className="text-white font-normal border-b-2 border-white pb-1 group-hover:text-[#ffc861] group-hover:border-[#ffc861] transition-all"
-              style={{ 
-                fontFamily: 'var(--font-philosopher)',
-                fontSize: '2.25rem',
-                lineHeight: '1.2',
-              }}
-            >
-              {categories[1].name}
-            </h3>
-          </motion.div>
-
-          <motion.div
-            whileHover={{ x: 10 }}
-            className="flex items-center gap-4 cursor-pointer group"
-          >
-            {categories[2].icon && (
-              <Plane className="text-white/70 group-hover:text-white transition-colors" size={24} />
-            )}
-            <h3 
-              className="text-white font-normal border-b-2 border-white pb-1 group-hover:text-[#ffc861] group-hover:border-[#ffc861] transition-all"
-              style={{ 
-                fontFamily: 'var(--font-philosopher)',
-                fontSize: '2.25rem',
-                lineHeight: '1.2',
-              }}
-            >
-              {categories[2].name}
-            </h3>
-          </motion.div>
-
-          {/* Row 2: Historical, Religious - Centered */}
-          <div className="lg:col-start-1 lg:col-span-3 flex justify-center gap-16 flex-wrap">
+          {/* Row 1: Cultural, Adventure, Nature & Wildlife */}
+          <Link href={getCategoryUrl(categories[0].regions)}>
             <motion.div
               whileHover={{ x: 10 }}
               className="flex items-center gap-4 cursor-pointer group"
             >
-              <h3 
-                className="text-white font-normal border-b-2 border-white pb-1 group-hover:text-[#ffc861] group-hover:border-[#ffc861] transition-all"
-                style={{ 
-                  fontFamily: 'var(--font-philosopher)',
-                  fontSize: '2.25rem',
-                  lineHeight: '1.2',
-                }}
-              >
-                {categories[3].name}
-              </h3>
-            </motion.div>
-
-            <motion.div
-              whileHover={{ x: 10 }}
-              className="flex items-center gap-4 cursor-pointer group"
-            >
-              {categories[4].icon && (
+              {categories[0].icon && (
                 <Plane className="text-white/70 group-hover:text-white transition-colors" size={24} />
               )}
-              <h3 
+              <h3
                 className="text-white font-normal border-b-2 border-white pb-1 group-hover:text-[#ffc861] group-hover:border-[#ffc861] transition-all"
-                style={{ 
+                style={{
                   fontFamily: 'var(--font-philosopher)',
                   fontSize: '2.25rem',
                   lineHeight: '1.2',
                 }}
               >
-                {categories[4].name}
+                {categories[0].name}
               </h3>
             </motion.div>
+          </Link>
+
+          <Link href={getCategoryUrl(categories[1].regions)}>
+            <motion.div
+              whileHover={{ x: 10 }}
+              className="flex items-center gap-4 cursor-pointer group"
+            >
+              {categories[1].icon && (
+                <Plane className="text-white/70 group-hover:text-white transition-colors" size={24} />
+              )}
+              <h3
+                className="text-white font-normal border-b-2 border-white pb-1 group-hover:text-[#ffc861] group-hover:border-[#ffc861] transition-all"
+                style={{
+                  fontFamily: 'var(--font-philosopher)',
+                  fontSize: '2.25rem',
+                  lineHeight: '1.2',
+                }}
+              >
+                {categories[1].name}
+              </h3>
+            </motion.div>
+          </Link>
+
+          <Link href={getCategoryUrl(categories[2].regions)}>
+            <motion.div
+              whileHover={{ x: 10 }}
+              className="flex items-center gap-4 cursor-pointer group"
+            >
+              {categories[2].icon && (
+                <Plane className="text-white/70 group-hover:text-white transition-colors" size={24} />
+              )}
+              <h3
+                className="text-white font-normal border-b-2 border-white pb-1 group-hover:text-[#ffc861] group-hover:border-[#ffc861] transition-all"
+                style={{
+                  fontFamily: 'var(--font-philosopher)',
+                  fontSize: '2.25rem',
+                  lineHeight: '1.2',
+                }}
+              >
+                {categories[2].name}
+              </h3>
+            </motion.div>
+          </Link>
+
+          {/* Row 2: Hiking, City Tour - Centered */}
+          <div className="lg:col-start-1 lg:col-span-3 flex justify-center gap-16 flex-wrap">
+            <Link href={getCategoryUrl(categories[3].regions)}>
+              <motion.div
+                whileHover={{ x: 10 }}
+                className="flex items-center gap-4 cursor-pointer group"
+              >
+                {categories[3].icon && (
+                  <Plane className="text-white/70 group-hover:text-white transition-colors" size={24} />
+                )}
+                <h3
+                  className="text-white font-normal border-b-2 border-white pb-1 group-hover:text-[#ffc861] group-hover:border-[#ffc861] transition-all"
+                  style={{
+                    fontFamily: 'var(--font-philosopher)',
+                    fontSize: '2.25rem',
+                    lineHeight: '1.2',
+                  }}
+                >
+                  {categories[3].name}
+                </h3>
+              </motion.div>
+            </Link>
+
+            <Link href={getCategoryUrl(categories[4].regions)}>
+              <motion.div
+                whileHover={{ x: 10 }}
+                className="flex items-center gap-4 cursor-pointer group"
+              >
+                {categories[4].icon && (
+                  <Plane className="text-white/70 group-hover:text-white transition-colors" size={24} />
+                )}
+                <h3
+                  className="text-white font-normal border-b-2 border-white pb-1 group-hover:text-[#ffc861] group-hover:border-[#ffc861] transition-all"
+                  style={{
+                    fontFamily: 'var(--font-philosopher)',
+                    fontSize: '2.25rem',
+                    lineHeight: '1.2',
+                  }}
+                >
+                  {categories[4].name}
+                </h3>
+              </motion.div>
+            </Link>
           </div>
         </motion.div>
 

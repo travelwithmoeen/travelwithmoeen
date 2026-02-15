@@ -16,7 +16,7 @@ const cards: CardData[] = [
   {
     id: 1,
     image: '/images/Picture7.jpg',
-    title: 'Honeymoon',
+    title: 'Jeep Safari',
     rotation: -15,
   },
   {

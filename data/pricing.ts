@@ -71,10 +71,10 @@ export const vehicleTypes: VehicleType[] = [
 ];
 
 // ---- Departure Cities ----
-export type RoadDeparture = "Islamabad" | "Lahore";
+export type RoadDeparture = "Islamabad" | "Lahore" | "Karachi";
 export type AirDeparture = "Islamabad" | "Karachi" | "Lahore";
 
-export const roadDepartures: RoadDeparture[] = ["Islamabad", "Lahore"];
+export const roadDepartures: RoadDeparture[] = ["Islamabad", "Lahore", "Karachi"];
 export const airDepartures: AirDeparture[] = ["Islamabad", "Karachi", "Lahore"];
 
 export const lahoreSurcharge = 15000; // flat per-trip surcharge for Lahore departure

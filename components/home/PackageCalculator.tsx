@@ -1,6 +1,7 @@
 "use client";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import  Link  from "next/link";
+import { PackagePopup } from "./PackagePopup";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Bus, Plane, Search, Phone, Pencil, Plus, Check,
@@ -31,6 +32,7 @@ type TransportMode = "By Road" | "By Air";
 type RoomType = "twin" | "triple";
 
 export function PackageCalculator() {
+  const sectionRef = useRef<HTMLElement>(null);
   const [transportMode, setTransportMode] = useState<TransportMode>("By Road");
   const [departure, setDeparture] = useState<string>("Islamabad");
   const [selectedDestination, setSelectedDestination] = useState<string>("");
@@ -146,7 +148,14 @@ export function PackageCalculator() {
   const formatPrice = (price: number) => new Intl.NumberFormat("en-PK").format(price);
 
   return (
-    <section className="bg-muted/30 py-16 md:py-24">
+    <section ref={sectionRef} className="bg-muted/30 py-16 md:py-24">
+      {/* Scroll-triggered WhatsApp Popup */}
+      <PackagePopup
+        triggerRef={sectionRef}
+        imageSrc="/images/Picture1.jpg"
+        whatsappNumber="923339981177"
+        whatsappMessage="Hi, I am interested in your tour packages. Please share more details."
+      />
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -207,21 +216,25 @@ export function PackageCalculator() {
                         <Navigation className="mr-1 inline h-3.5 w-3.5" /> 2. Departure City
                       </label>
                       <div className="flex gap-2">
-                        {departures.map((city) => (
-                          <Button
-                            key={city}
-                            variant={departure === city ? "navy" : "outline"}
-                            className="flex-1"
-                            onClick={() => setDeparture(city)}
-                          >
-                            {city}
-                          </Button>
-                        ))}
+                        {departures.map((city) => {
+                          const isDisabled = transportMode === "By Road" && city === "Karachi";
+                          return (
+                            <Button
+                              key={city}
+                              variant={departure === city ? "navy" : "outline"}
+                              className={cn("flex-1", isDisabled && "opacity-50 cursor-not-allowed")}
+                              onClick={() => !isDisabled && setDeparture(city)}
+                              disabled={isDisabled}
+                            >
+                              {city}
+                            </Button>
+                          );
+                        })}
                       </div>
-                      {transportMode === "By Air" && departure === "Karachi" && (
-                        <p className="mt-1.5 text-xs text-primary"></p>
+                      {transportMode === "By Road" && (
+                        <p className="mt-1.5 text-xs text-muted-foreground">Karachi departure not available for road trips</p>
                       )}
-                                          </div>
+                    </div>
 
                     {/* 3. Destination */}
                     <div>

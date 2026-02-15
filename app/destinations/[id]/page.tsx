@@ -6,7 +6,7 @@ import { DestinationContent } from "@/components/destinations/DestinationContent
 import { DestinationDetailSkeleton } from "@/components/destinations/DestinationDetailSkeleton";
 import { Button } from "@/components/ui/button";
 import { getDestinationBySlug } from "@/data/destinations";
-import { ArrowLeft, MapPin } from "lucide-react";
+import { MapPin } from "lucide-react";
 
 export default function DestinationDetail() {
   const { id } = useParams<{ id: string }>();
@@ -16,21 +16,15 @@ export default function DestinationDetail() {
 
   // Simulate loading for skeleton demonstration
   useEffect(() => {
-    setIsLoading(true);
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 1200);
     return () => clearTimeout(timer);
-  }, [id]);
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
-    
-
       <div className="container mx-auto px-4 py-8">
-        {/* Back Button */}
-      
-
         {isLoading ? (
           <DestinationDetailSkeleton />
         ) : destination ? (
@@ -71,7 +65,7 @@ export default function DestinationDetail() {
               <p className="mb-4 text-secondary-foreground/80">
                 Browse our curated tours to this amazing destination.
               </p>
-              <Button asChild >
+              <Button asChild>
                 <Link href="/tours">View Tours</Link>
               </Button>
             </div>
@@ -84,7 +78,7 @@ export default function DestinationDetail() {
             <p className="mb-6 text-muted-foreground">
               The destination you're looking for doesn't exist or has been removed.
             </p>
-            <Button asChild >
+            <Button asChild>
               <Link href="/destinations">Back to Destinations</Link>
             </Button>
           </div>

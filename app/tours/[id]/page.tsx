@@ -1,6 +1,7 @@
 "use client";
 
-import  Link  from "next/link";
+import { useState } from "react";
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { ArrowLeft, Clock, MapPin, Check, X } from "lucide-react";
 
@@ -15,11 +16,25 @@ import { cn } from "@/lib/utils";
 export default function TourDetails() {
   const { id } = useParams<{ id: string }>();
   const tour = tours.find((t) => t.id === id);
+  const [openItems, setOpenItems] = useState<string[]>([]);
+
+  const expandAll = () => {
+    if (tour) {
+      setOpenItems(tour.itinerary.map((day) => `day-${day.day}`));
+    }
+  };
+
+  const collapseAll = () => {
+    setOpenItems([]);
+  };
+
+  const allExpanded = tour
+    ? openItems.length === tour.itinerary.length
+    : false;
 
   if (!tour) {
     return (
       <div className="min-h-screen bg-[#faf9f5]">
- 
         <div className="container mx-auto px-4 py-16 text-center">
           <h1 className="mb-4 text-2xl font-bold text-secondary">
             Tour Not Found
@@ -27,7 +42,7 @@ export default function TourDetails() {
           <p className="mb-8 text-muted-foreground">
             The tour you're looking for doesn't exist.
           </p>
-          <Button asChild >
+          <Button asChild>
             <Link href="/tours">Browse All Tours</Link>
           </Button>
         </div>
@@ -37,8 +52,6 @@ export default function TourDetails() {
 
   return (
     <div className="min-h-screen bg-[#faf9f5]">
-
-
       {/* Hero Image */}
       <div className="relative h-64 overflow-hidden md:h-96">
         <img
@@ -79,35 +92,37 @@ export default function TourDetails() {
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
         {/* Back Button */}
-        <Button asChild  className="mb-6 text-navy border border-navy bg-white hover:bg-navy hover:text-white">
+        <Button
+          asChild
+          className="mb-6 text-navy border border-navy bg-white hover:bg-navy hover:text-white"
+        >
           <Link href="/tours">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Tours
           </Link>
         </Button>
 
-        {/* Tour Overview Section */}
-        <TourOverview 
-          itinerary={tour.itinerary} 
-          galleryImages={tour.galleryImages} 
-        />
+      
 
+        {/* Tour Overview Section */}
+        <TourOverview
+          itinerary={tour.itinerary}
+          galleryImages={tour.galleryImages}
+          openItems={openItems}
+          onOpenItemsChange={setOpenItems}
+        />
+  {/* Expand All Button */}
+        <div className="mb-6 flex justify-center">
+          <Button
+            onClick={allExpanded ? collapseAll : expandAll}
+            className="rounded-full px-8"
+          >
+            {allExpanded ? "Collapse All Sections" : "Expand All Sections"}
+          </Button>
+        </div>
         <div className="grid gap-8 lg:grid-cols-3">
           {/* Left Column - Details */}
           <div className="lg:col-span-2">
-            {/* Description */}
-            {/* <Card className="mb-8">
-              <CardHeader>
-                <CardTitle className="accent-underline pb-2">
-                  About This Tour
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="leading-relaxed text-muted-foreground">
-                  {tour.description}
-                </p>
-              </CardContent>
-            </Card> */}
             {/* Included / Not Included */}
             <div className="grid gap-6 md:grid-cols-2">
               <Card>
@@ -153,6 +168,8 @@ export default function TourDetails() {
                   </ul>
                 </CardContent>
               </Card>
+                {/* Expand All Button */}
+    
             </div>
           </div>
 
@@ -169,12 +186,12 @@ export default function TourDetails() {
                   defaultValue={tour.packages[0].category}
                   className="w-full"
                 >
-                  <TabsList className="mb-6 grid w-full grid-cols-3 h-auto p-1 bg-muted ">
+                  <TabsList className="mb-6 flex w-full h-auto p-2 gap-1  ">
                     {tour.packages.map((pkg) => (
                       <TabsTrigger
                         key={pkg.category}
                         value={pkg.category}
-                        className="py-2.5 text-sm font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm"
+                        className="flex-1 py-2.5 px-2 text-xs font-medium rounded-full whitespace-nowrap data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm"
                       >
                         {pkg.category}
                       </TabsTrigger>
@@ -182,7 +199,11 @@ export default function TourDetails() {
                   </TabsList>
 
                   {tour.packages.map((pkg) => (
-                    <TabsContent key={pkg.category} value={pkg.category} className="mt-0">
+                    <TabsContent
+                      key={pkg.category}
+                      value={pkg.category}
+                      className="mt-0"
+                    >
                       <div className="space-y-4">
                         {/* Price */}
                         <div className="text-center py-4 bg-muted/30 rounded-lg">
@@ -193,7 +214,7 @@ export default function TourDetails() {
                             {pkg.price.toLocaleString()}.PKR
                           </p>
                           <span className="text-sm text-muted-foreground">
-                           For 2 Persons
+                            For 2 Persons
                           </span>
                         </div>
 
@@ -215,11 +236,11 @@ export default function TourDetails() {
                           <a
                             href={`https://wa.me/923339981177?text=${encodeURIComponent(
                               `Hi, I'm interested in booking:\n\n` +
-                              `*Tour:* ${tour.name}\n` +
-                              `*Package:* ${pkg.category}\n` +
-                              `*Hotel:* ${pkg.features[0]}\n` +
-                              `*Price:* ${pkg.price.toLocaleString()} PKR\n\n` +
-                              `Please provide more details.`
+                                `*Tour:* ${tour.name}\n` +
+                                `*Package:* ${pkg.category}\n` +
+                                `*Hotel:* ${pkg.features[0]}\n` +
+                                `*Price:* ${pkg.price.toLocaleString()} PKR\n\n` +
+                                `Please provide more details.`
                             )}`}
                             target="_blank"
                             rel="noopener noreferrer"

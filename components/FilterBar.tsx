@@ -251,7 +251,7 @@ export function FilterBar() {
             {/* Search Button */}
             <button
               onClick={handleSearch}
-              className="flex items-center justify-center gap-2 bg-blue-800 hover:bg-blue-900 text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/50 whitespace-nowrap min-w-[160px]"
+              className="flex items-center justify-center gap-2 bg-navy hover:bg-navy/90 text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/50 whitespace-nowrap min-w-[160px]"
             >
               <span>Search Here</span>
               <Search size={20} />
