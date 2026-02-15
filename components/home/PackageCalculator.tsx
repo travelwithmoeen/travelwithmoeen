@@ -147,6 +147,42 @@ export function PackageCalculator() {
 
   const formatPrice = (price: number) => new Intl.NumberFormat("en-PK").format(price);
 
+  const handleWhatsAppClick = () => {
+    const addOnNames = selectedAddOns
+      .map((id) => optionalAddOns.find((a) => a.id === id)?.name)
+      .filter(Boolean)
+      .join(", ");
+
+    const message = `Hi, I'm interested in booking a tour with the following details:
+
+*Transport Mode:* ${transportMode}
+*Departure City:* ${departure}
+*Destination:* ${selectedDestination || "Not selected"}
+*Duration:* ${days} Days
+*Hotel Category:* ${hotelCategory}
+*Vehicle Type:* ${vehicleType}
+*Room Type:* ${roomType === "twin" ? "Twin (2 Pax)" : "Triple (3 Pax)"}
+
+*Travelers:*
+- Adults (12+): ${adults}
+- Children (2-11 yrs): ${children}
+- Infant (Lap): ${infantLap}
+- Infant (Own Seat): ${infantOwnSeat}
+- Total Travelers: ${totalTravelers}
+
+*Add-ons:* ${addOnNames || "None"}
+
+${pricing ? `*Estimated Cost:*
+- Grand Total: PKR ${formatPrice(pricing.grandTotal)}
+- Per Person: PKR ${formatPrice(pricing.perPerson)}` : "*Estimated Cost:* Not calculated (please select a destination)"}
+
+Please confirm availability and provide more details.`;
+
+    const encodedMessage = encodeURIComponent(message);
+    const whatsappUrl = `https://wa.me/923339981177?text=${encodedMessage}`;
+    window.open(whatsappUrl, "_blank");
+  };
+
   return (
     <section ref={sectionRef} className="bg-muted/30 py-16 md:py-24">
       {/* Scroll-triggered WhatsApp Popup */}
@@ -553,8 +589,12 @@ export function PackageCalculator() {
                     <Button asChild variant="outline-navy" size="lg" className="w-full gap-2">
                       <Link href="/customize-trip"><Pencil className="h-4 w-4" /> Customize Your Trip</Link>
                     </Button>
-                    <Button size="lg" className="w-full gap-2 bg-[hsl(160,84%,39%)] text-white hover:bg-[hsl(160,84%,35%)]">
-                      <Phone className="h-4 w-4" /> Book Via WhatsApp
+                    <Button
+                      size="lg"
+                      className="w-full gap-2 bg-[hsl(160,84%,39%)] text-white hover:bg-[hsl(160,84%,35%)]"
+                      onClick={handleWhatsAppClick}
+                    >
+                      <Phone className="h-4 w-4" /> Book a Talk to us
                     </Button>
                   </div>
                 </div>

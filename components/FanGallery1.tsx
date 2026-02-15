@@ -15,25 +15,25 @@ interface CardData {
 const cards: CardData[] = [
   {
     id: 1,
-    image: '/images/Picture7.jpg',
+    image: '/images/slider/JeepSafari.webp',
     title: 'Jeep Safari',
     rotation: -15,
   },
   {
     id: 2,
-    image: '/images/Picture8.jpg',
+    image: '/images/slider/NatureWildlife.webp',
     title: 'Nature & Wildlife',
     rotation: -7,
   },
   {
     id: 3,
-    image: '/images/Picture9.jpg',
+    image: '/images/slider/Adventure.webp',
     title: 'Adventure',
     rotation: 0,
   },
   {
     id: 4,
-    image: '/images/Picture11.jpg',
+    image: '/images/slider/Hiking.webp',
     title: 'Hiking',
     rotation: 7,
   },

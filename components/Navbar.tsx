@@ -35,7 +35,8 @@ const Navbar = () => {
         <div className="mx-auto max-w-7xl flex items-center justify-between text-sm">
           <div className="flex items-center gap-6">
             <a
-              href="tel:+92 333 9981177"
+               href="https://wa.me/923339981177"
+                  target="_blank"
               className="flex items-center gap-2 hover:text-gold transition-colors"
             >
               <Phone className="h-4 w-4" />
