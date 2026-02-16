@@ -59,31 +59,33 @@ export default function TourDetails() {
           alt={tour.name}
           className="h-full w-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-navy-dark/70 via-navy-dark/50 to-background" />
-        <div className="absolute inset-x-0 bottom-0 p-6 text-secondary-foreground">
+        <div className="" />
+        <div className="absolute inset-x-0 bottom-0 p-6">
           <div className="container mx-auto">
-            <div className="mb-2 flex flex-wrap gap-2">
-              {tour.categories.map((category) => (
-                <Badge
-                  key={category}
-                  className={cn("text-xs", getCategoryBadgeClass(category))}
-                >
-                  {category}
-                </Badge>
-              ))}
-            </div>
-            <h1 className="mb-2 text-3xl font-bold text-white md:text-4xl">
-              {tour.name}
-            </h1>
-            <div className="flex flex-wrap items-center gap-4 text-sm text-secondary-foreground/80">
-              <span className="flex items-center gap-1 text-white">
-                <MapPin className="h-4 w-4 text-white" />
-                {tour.location}
-              </span>
-              <span className="flex items-center gap-1 text-white">
-                <Clock className="h-4 w-4 text-white" />
-                {tour.duration} {tour.duration === 1 ? "Day" : "Days"}
-              </span>
+            <div className="inline-block rounded-lg bg-white/85 px-5 py-4 backdrop-blur-sm">
+              <div className="mb-2 flex flex-wrap gap-2">
+                {tour.categories.map((category) => (
+                  <Badge
+                    key={category}
+                    className={cn("text-xs", getCategoryBadgeClass(category))}
+                  >
+                    {category}
+                  </Badge>
+                ))}
+              </div>
+              <h1 className="mb-2 text-3xl font-bold text-navy md:text-4xl">
+                {tour.name}
+              </h1>
+              <div className="flex flex-wrap items-center gap-4 text-sm">
+                <span className="flex items-center gap-1 text-navy">
+                  <MapPin className="h-4 w-4 text-navy" />
+                  {tour.location}
+                </span>
+                <span className="flex items-center gap-1 text-navy">
+                  <Clock className="h-4 w-4 text-navy" />
+                  {tour.duration} {tour.duration === 1 ? "Day" : "Days"}
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -109,6 +111,7 @@ export default function TourDetails() {
           itinerary={tour.itinerary}
           galleryImages={tour.galleryImages}
           pdf={tour.pdf}
+          code={tour.code}
           openItems={openItems}
           onOpenItemsChange={setOpenItems}
         />

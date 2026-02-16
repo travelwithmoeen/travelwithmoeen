@@ -16,6 +16,7 @@ interface TourOverviewProps {
   itinerary: TourDay[];
   galleryImages: string[];
   pdf?: string;
+  code?: string;
   openItems: string[];
   onOpenItemsChange: (items: string[]) => void;
 }
@@ -24,6 +25,7 @@ export function TourOverview({
   itinerary,
   galleryImages,
   pdf,
+  code,
   openItems,
   onOpenItemsChange
 }: TourOverviewProps) {
@@ -35,9 +37,14 @@ export function TourOverview({
         viewport={{ once: true }}
         transition={{ duration: 0.5 }}
       >
-        <h2 className="gold-underline mb-8 pb-2 text-2xl font-bold text-navy md:text-3xl">
+        <h2 className="gold-underline pb-2 text-2xl font-bold text-navy md:text-3xl">
           Tour Overview
         </h2>
+        {code && (
+          <p className="mt-2 mb-8 text-sm font-medium text-navy">
+            Package Code: {code}
+          </p>
+        )}
       </motion.div>
 
       <div className="grid gap-8 lg:grid-cols-3">

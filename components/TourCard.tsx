@@ -18,7 +18,7 @@ export function TourCard({ tour, view }: TourCardProps) {
   return (
     <Card
       className={cn(
-        "tour-card group overflow-hidden",
+        "tour-card group overflow-hidden h-full",
         isGrid ? "flex flex-col" : "flex flex-col md:flex-row"
       )}
     >
@@ -39,13 +39,18 @@ export function TourCard({ tour, view }: TourCardProps) {
             Featured
           </Badge>
         )}
+        {tour.code && (
+          <span className="absolute right-3 top-3 rounded bg-navy px-2 py-1 text-xs font-bold text-white">
+            {tour.code}
+          </span>
+        )}
       </div>
 
       {/* Content */}
       <div className="flex flex-1 flex-col">
         <CardHeader className={cn(isGrid ? "pb-2" : "pb-2")}>
           {/* Categories */}
-          <div className="mb-2 flex flex-wrap gap-1.5 text-navy">
+          <div className="mb-2 flex min-h-[28px] flex-wrap gap-1.5 text-navy">
             {tour.categories.map((category) => (
               <Badge
                 key={category}
@@ -58,7 +63,7 @@ export function TourCard({ tour, view }: TourCardProps) {
           </div>
 
           {/* Title */}
-          <h3 className="line-clamp-2 text-lg font-bold leading-tight text-navy">
+          <h3 className="line-clamp-2 min-h-[3rem] text-lg font-bold leading-tight text-navy">
             {tour.name}
           </h3>
 
@@ -76,7 +81,7 @@ export function TourCard({ tour, view }: TourCardProps) {
         </CardHeader>
 
         <CardContent className={cn("flex-1", isGrid ? "pb-2" : "pb-2")}>
-          <p className="line-clamp-2 text-sm text-muted-foreground">
+          <p className="line-clamp-2 min-h-[2.5rem] text-sm text-muted-foreground">
             {tour.description}
           </p>
         </CardContent>

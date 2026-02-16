@@ -37,6 +37,7 @@ export interface Tour {
   description: string;
   image: string;
   pdf: string;
+  code : string;
   galleryImages: string[];
   categories: TourCategory[];
   packageTypes: PackageType[];
@@ -57,6 +58,7 @@ export const tours: Tour[] = [
     "name": "1 Day By Road Trip to Islamabad",
     "location": "Islamabad Capital Territory",
     "region": "Islamabad",
+    "code": "101",
     "duration": 1,
     "description": "Explore the charming beauty and adventure of Islamabad with visits to iconic landmarks such as Faisal Mosque, Pakistan Monument, and Shakarparian. Enjoy a dining experience at Monal with breathtaking views, explore cultural heritage at Lok Virsa Museum, and end the day with shopping and local cuisine at Jinnah Super Market and F-10 Markaz.",
    "image": "/images/All_Tour_Images/Islamabad/Picture1.jpeg",
@@ -132,6 +134,7 @@ export const tours: Tour[] = [
     "location": "Murree and Patriata",
     "region": "Murree Patriata Galiyat",
     "duration": 1,
+     "code": "111",
     "description": "Enjoy a scenic day trip from Islamabad to Murree and Patriata, featuring visits to Mall Road, Pindi Point, and a cable car ride in Patriata. Experience the local culture, food, and shopping, with private transport included.",
     "image": "/images/All_Tour_Images/MurreePatriataGaliyat/Picture1.jpg",
       "pdf": "/images/pdf/1_day_by_road_trip_to_islamabad.pdf",
@@ -213,6 +216,7 @@ export const tours: Tour[] = [
     "location": "Deosai National Park",
     "region": "Skardu & Hunza",
     "duration": 10,
+      "code": "254",
       "pdf": "/images/pdf/10_days_by_air_trip_to_skardu_hunza_valley_couple.pdf",
     "description": "Experience a 10-day journey through the breathtaking landscapes of Skardu and Hunza Valley, including visits to Deosai National Park and Khunjerab Pass. Enjoy scenic flights, cultural explorations, and stunning natural vistas.",
     "image": "/images/All_Tour_Images/SkarduValley/Picture1.jpg",
@@ -435,6 +439,7 @@ export const tours: Tour[] = [
     "location": "Islamabad Capital Territory",
     "region": "Islamabad",
     "duration": 2,
+     "code": "102",
       "pdf": "/images/pdf/1_day_by_road_trip_to_islamabad.pdf",
     "description": "Explore the charming beauty and adventure of Islamabad over two days. Visit iconic landmarks, enjoy local cuisine, and experience the vibrant culture and nightlife of the city.",
     "image": "/images/All_Tour_Images/Islamabad/Picture2.jpeg",
@@ -525,6 +530,7 @@ export const tours: Tour[] = [
     "location": "Murree and Galiyat",
     "region": "Murree Patriata Galiyat",
     "duration": 2,
+     "code": "112",
       "pdf": "/images/pdf/1_day_by_road_trip_to_islamabad.pdf",
     "description": "Experience the charming beauty and adventure of Murree and Galiyat with a 2-day road trip. Enjoy scenic drives, explore picturesque viewpoints, and engage in optional activities like chair lift rides and hiking. The trip includes a visit to Murree Mall Road, Nathiagali, and Ayubia National Park.",
     "image": "/images/All_Tour_Images/MurreePatriataGaliyat/Picture1.jpg",
@@ -618,6 +624,7 @@ export const tours: Tour[] = [
     "location": "Leepa Valley",
     "region": "Neelum Valley Kashmir",
     "duration": 3,
+     "code": "131",
       "pdf": "/images/pdf/1_day_by_road_trip_to_islamabad.pdf",
     "description": "Experience a 3-day journey through the scenic Leepa Valley and Ganga Choti in Kashmir. Enjoy breathtaking landscapes, cultural exploration, and adventurous treks, with comfortable accommodations and guided tours.",
     "image": "/images/All_Tour_Images/NeelumValleyKashmir/Picture1.jpg",
@@ -723,7 +730,8 @@ export const tours: Tour[] = [
   },
   {
     "id": "3_days_by_road_trip_to_murre_and_ayubia",
-    "name": "3 Days By Road Trip to Murre and Ayubia",
+    "name": "3 Days By Road Trip to Murree and Ayubia",
+     "code": "113",
     "location": "Murree and Ayubia",
     "region": "Murree Ayubia Nathiagali",
       "pdf": "/images/pdf/1_day_by_road_trip_to_islamabad.pdf",
@@ -844,6 +852,7 @@ export const tours: Tour[] = [
     "region": "Naran Kaghan & Babusar Top",
       "pdf": "/images/pdf/1_day_by_road_trip_to_islamabad.pdf",
     "duration": 3,
+    "code": "221",
     "description": "Experience the breathtaking beauty of Naran Kaghan and Babusar Top over a 3-day road trip. Explore the stunning landscapes of Neelum Valley, Shogran Valley, Lulusar Lake, and Babusar Top. Enjoy activities like jeep rides, sightseeing, and optional river rafting, with comfortable accommodations and meals included.",
     "image": "/images/All_Tour_Images/NarabKaghan/Picture1.png",
 
@@ -873,7 +882,7 @@ export const tours: Tour[] = [
         ]
       },
       {
-        "category": "executive",
+        "category": "Executive",
         "price": 150000,
         "features": [
           "Executive hotel accommodation"
@@ -886,27 +895,27 @@ export const tours: Tour[] = [
           "Luxury hotel accommodation"
         ]
       },
-      {
-        "category": "group_single",
-        "price": 24000,
-        "features": [
-          "Single room for 3 persons sharing"
-        ]
-      },
-      {
-        "category": "group_solo",
-        "price": 35000,
-        "features": [
-          "Solo single room"
-        ]
-      },
-      {
-        "category": "group_couple",
-        "price": 60000,
-        "features": [
-          "Separate room for couple"
-        ]
-      }
+      // {
+      //   "category": "Ultra Luxury",
+      //   "price": 24000,
+      //   "features": [
+      //     "Single room for 3 persons sharing"
+      //   ]
+      // },
+      // {
+      //   "category": "group_solo",
+      //   "price": 35000,
+      //   "features": [
+      //     "Solo single room"
+      //   ]
+      // },
+      // {
+      //   "category": "group_couple",
+      //   "price": 60000,
+      //   "features": [
+      //     "Separate room for couple"
+      //   ]
+      // }
     ],
     "itinerary": [
       {
@@ -972,6 +981,7 @@ export const tours: Tour[] = [
     "location": "Neelum Valley",
     "region": "Neelum Valley Kashmir",
     "duration": 3,
+     "code": "132",
       "pdf": "/images/pdf/1_day_by_road_trip_to_islamabad.pdf",
     "description": "Explore the charming beauty of Neelum Valley Kashmir with a scenic road trip. Enjoy breathtaking views, cultural sites, and outdoor activities including hiking and sightseeing. Experience cozy evenings with bonfires and musical nights.",
     "image": "/images/All_Tour_Images/NeelumValleyKashmir/Picture5.jpg",
@@ -1100,6 +1110,7 @@ export const tours: Tour[] = [
     "location": "Swat Kalam Malam Jabba",
     "region": "Swat Kalam & Malam Jabba",
     "duration": 3,
+      "code": "141",
       "pdf": "/images/pdf/1_day_by_road_trip_to_islamabad.pdf",
     "description": "Experience a 3-day journey through the scenic landscapes of Swat, Kalam, and Malam Jabba. Enjoy skiing, sightseeing, and exploring historical sites with comfortable accommodations and guided tours.",
     "image": "/images/All_Tour_Images/SwatKalamMalamJabba/Picture1.jpg",
@@ -1218,6 +1229,7 @@ export const tours: Tour[] = [
     "location": "Kalash Valley",
     "region": "Kalash Valley & Chitral",
     "duration": 4,
+      "code": "151",
       "pdf": "/images/pdf/1_day_by_road_trip_to_islamabad.pdf",
     "description": "Experience a 4-day journey through the scenic Kalash Valley, Chitral, and Bumburet Valley. Enjoy cultural experiences, local festivals, and breathtaking landscapes.",
     "image": "/images/All_Tour_Images/KalashValleyChitral/Picture1.jpg",
@@ -1247,21 +1259,21 @@ export const tours: Tour[] = [
         ]
       },
       {
-        "category": "Deluxe",
+        "category": "Premier",
         "price": 25000,
         "features": [
           "Twin Sharing or Couple"
         ]
       },
       {
-        "category": "Deluxe",
+        "category": "Executive",
         "price": 90000,
         "features": [
           "Separate Room (No Sharing)"
         ]
       },
       {
-        "category": "Deluxe",
+        "category": "Luxury",
         "price": 55000,
         "features": [
           "Kids (7-10 years)"
@@ -1373,6 +1385,7 @@ export const tours: Tour[] = [
     "location": "Kumrat Valley",
     "region": "Kumrat and Katora Lake",
     "duration": 4,
+      "code": "161",
       "pdf": "/images/pdf/4_days_by_road_trip_to_kumrat_valley_katora_lake.pdf",
     "description": "Experience a 4-day adventure through the scenic Kumrat Valley and Katora Lake. Enjoy a comfortable journey from Islamabad, explore the Deodar Forest, Panjkora River, and the breathtaking Jahaz Banda Meadows. Trek to the stunning Katora Lake and enjoy overnight stays in camps and hotels.",
     "image": "/images/All_Tour_Images/KumratValley/Picture3.png",
@@ -1516,6 +1529,7 @@ export const tours: Tour[] = [
     "location": "Murree and Ayubia",
     "region": "Murree Ayubia Nathiagali",
     "duration": 4,
+     "code": "114",
       "pdf": "/images/pdf/4_days_by_road_trip_to_murree_and_ayubia.pdf",
     "description": "Explore the charming beauty and adventure of Murree and Ayubia over a 4-day trip. Enjoy scenic drives, historic sites, nature trails, and vibrant local culture.",
     "image": "/images/All_Tour_Images/MurreeAyubiaNathiagali/Picture1.jpg",
@@ -1640,6 +1654,7 @@ export const tours: Tour[] = [
     "location": "Babusar Top",
     "region": "Naran Kaghan & Babusar Top",
     "duration": 4,
+     "code": "222",
       "pdf": "/images/pdf/1_day_by_road_trip_to_islamabad.pdf",
     "description": "Experience a 4-day journey through the scenic Naran Kaghan Valley and Babusar Top, exploring breathtaking landscapes, serene lakes, and vibrant local culture. Enjoy private transport, comfortable accommodations, and a variety of activities including hiking, boating, and sightseeing.",
     "image": "/images/All_Tour_Images/SwatKalamMalamJabba/Picture3.jpg",
@@ -1767,6 +1782,7 @@ export const tours: Tour[] = [
     "location": "Neelum Valley",
     "region": "Neelum Valley Kashmir",
     "duration": 4,
+      "code": "133",
       "pdf": "/images/pdf/1_day_by_road_trip_to_islamabad.pdf",
     "description": "Experience the breathtaking beauty of Neelum Valley in Kashmir with a 4-day road trip. Enjoy scenic drives, explore serene villages, and immerse yourself in the natural wonders of Taobat, Arang Kel, and more. This package offers a perfect blend of adventure and relaxation, with cozy accommodations and memorable activities.",
     "image": "/images/All_Tour_Images/NeelumValleyKashmir/Picture3.jpg",
@@ -1888,6 +1904,7 @@ export const tours: Tour[] = [
     "location": "Swat Kalam Malam Jabba",
     "region": "Swat Kalam & Malam Jabba",
     "duration": 4,
+      "code": "142",
       "pdf": "/images/pdf/1_day_by_road_trip_to_islamabad.pdf",
     "description": "Experience a 4-day journey through the scenic landscapes of Swat, Kalam, and Malam Jabba. Enjoy skiing, sightseeing, and cultural visits to historical sites. Perfect for families seeking adventure and relaxation.",
     "image": "/images/All_Tour_Images/SwatKalamMalamJabba/Picture3.jpg",
@@ -2017,6 +2034,7 @@ export const tours: Tour[] = [
     "location": "Skardu Valley",
     "region": "Skardu Valley",
     "duration": 4,
+      "code": "221",
       "pdf": "/images/pdf/1_day_by_road_trip_to_islamabad.pdf",
     "description": "Experience the breathtaking beauty of Skardu with a 4-day private tour. Explore the serene lakes, majestic waterfalls, and ancient carvings while enjoying luxurious accommodations and scenic flights.",
     "image": "/images/All_Tour_Images/SkarduValley/Picture11.jpg",
@@ -2152,6 +2170,7 @@ export const tours: Tour[] = [
     "location": "Astor Minimarg",
     "region": "Minimarg Astor Valley",
     "duration": 5,
+      "code": "202",
       "pdf": "/images/pdf/1_day_by_road_trip_to_islamabad.pdf",
     "description": "Join us for an unforgettable group adventure exploring the scenic beauty of Astor Minimarg and Skardu. Perfect for solo travelers, friends, and families looking to explore together. Experience the majestic mountains, historic forts, and unparalleled hospitality of Baltistan.",
     "image": "/images/All_Tour_Images/MinimargAstor/Picture1.jpg",
@@ -2285,6 +2304,7 @@ export const tours: Tour[] = [
     "location": "Fairy Meadows",
     "region": "Fairy Meadows Nanga Base Camp",
     "duration": 5,
+      "code": "211",
       "pdf": "/images/pdf/1_day_by_road_trip_to_islamabad.pdf",
     "description": "Experience the breathtaking beauty of Fairy Meadows and Skardu Valley with a 5-day tour by air. Explore the serene Kachura Lakes, the majestic Nanga Parbat, and the charming Basho Meadows. Enjoy a mix of adventure and relaxation with 4x4 Jeep safaris, trekking, and leisure time at scenic locations.",
     "image": "/images/All_Tour_Images/FairyMeadows/Picture1.jpg",
@@ -2417,6 +2437,7 @@ export const tours: Tour[] = [
     "location": "Skardu Valley",
     "region": "Skardu Valley",
     "duration": 5,
+      "code": "222",
       "pdf": "/images/pdf/1_day_by_road_trip_to_islamabad.pdf",
     "description": "Join us for an unforgettable group adventure in Skardu, exploring the serene beauty of Kachura Lakes, the majestic Manthoka Waterfall, the cultural richness of Shigar Valley, and the lush Basho Meadows. Perfect for solo travelers, friends, and families looking to explore together.",
     "image": "/images/All_Tour_Images/SkarduValley/Picture6.jpg",
@@ -2568,6 +2589,7 @@ export const tours: Tour[] = [
     "location": "Hunza Valley",
     "region": "Hunza Valley",
     "duration": 5,
+      "code": "241",
       "pdf": "/images/pdf/1_day_by_road_trip_to_islamabad.pdf",
     "description": "Experience a 5-day private tour to the stunning Hunza Valley, traveling by air from Islamabad to Skardu. Explore ancient fortresses, vibrant bazaars, and breathtaking landscapes including the Attabad Lake and Passu Cones. Enjoy comfortable accommodations and private transport throughout your journey.",
     "image": "/images/All_Tour_Images/HunzaValley/Picture5.jpg",
@@ -2715,6 +2737,7 @@ export const tours: Tour[] = [
     "location": "Astor Minimarg",
     "region": "Minimarg Astor Valley",
     "duration": 6,
+     "code": "171",
      
     "description": "Experience a 6-day adventure exploring the scenic beauty of Astor Minimarg and Skardu. Enjoy breathtaking views, cultural exchanges, and unforgettable experiences in some of the most beautiful locations in Pakistan.",
      "pdf": "/images/pdf/1_day_by_road_trip_to_islamabad.pdf",
@@ -2869,6 +2892,7 @@ export const tours: Tour[] = [
     "location": "Hunza Valley",
     "region": "Hunza Valley",
     "duration": 6,
+      "code": "182",
       "pdf": "/images/pdf/1_day_by_road_trip_to_islamabad.pdf",
     "description": "Experience a 6-day journey through the breathtaking landscapes of Hunza Valley and Khunjerab Pass. Enjoy scenic views, historical sites, and cultural experiences while traveling by road.",
     "image": "/images/All_Tour_Images/HunzaValley/Picture8.jpg",
@@ -3038,6 +3062,7 @@ export const tours: Tour[] = [
     "location": "Skardu and Hunza",
     "region": "Skardu & Hunza",
     "duration": 6,
+      "code": "151",
       "pdf": "/images/pdf/1_day_by_road_trip_to_islamabad.pdf",
     "description": "Experience the breathtaking beauty of Skardu and Hunza over a 6-day private tour. Enjoy scenic flights, explore ancient fortresses, and witness stunning landscapes including Kachura Lakes, Rakaposhi Viewpoint, and Attabad Lake. Perfect for solo travelers, friends, and families.",
     "image": "/images/All_Tour_Images/SkarduValley/Picture2.jpg",
@@ -3188,6 +3213,7 @@ export const tours: Tour[] = [
     "location": "Skardu Valley",
     "region": "Skardu Valley",
     "duration": 6,
+      "code": "223",
       "pdf": "/images/pdf/1_day_by_road_trip_to_islamabad.pdf",
     "description": "Experience the breathtaking beauty of Skardu with a 6-day private tour. Enjoy scenic flights, explore serene lakes, majestic waterfalls, high-altitude deserts, and vibrant cultural sites. Perfect for solo travelers, friends, and families.",
     "image": "/images/All_Tour_Images/SkarduValley/Picture7.jpg",
@@ -3331,6 +3357,7 @@ export const tours: Tour[] = [
     "location": "Skardu Valley",
     "region": "Skardu Valley",
     "duration": 7,
+      "code": "224",
       "pdf": "/images/pdf/1_day_by_road_trip_to_islamabad.pdf",
     "description": "Experience the breathtaking beauty of Skardu Valley over 7 days, exploring lakes, waterfalls, deserts, forts, and ancient carvings. Enjoy scenic flights, luxurious accommodations, and unforgettable adventures in the heart of nature.",
     "image": "/images/All_Tour_Images/SkarduValley/Picture4.jpg",
@@ -3498,6 +3525,7 @@ export const tours: Tour[] = [
     "location": "Skardu ",
     "region": "Skardu Valley",
     "duration": 7,
+     "code": "172",
       "pdf": "/images/pdf/1_day_by_road_trip_to_islamabad.pdf",
     "description": "Experience a 7-day road trip to the breathtaking Skardu and Deosai National Park. Enjoy scenic views, explore the serene Shangri-La Resort, visit the stunning Manthoka Waterfall, and discover the high-altitude Sarfaranga Cold Desert. Immerse yourself in the rich culture and natural beauty of the region.",
     "image": "/images/All_Tour_Images/SkarduValley/Picture12.jpg",
@@ -3697,6 +3725,7 @@ export const tours: Tour[] = [
     "location": "Nanga Parbat",
     "region": "Fairy Meadows Nanga Base Camp",
     "duration": 5,
+      "code": "191",
       "pdf": "/images/pdf/1_day_by_road_trip_to_islamabad.pdf",
     "description": "Experience a 5-day journey by road to the breathtaking Fairy Meadows and Nanga Parbat Base Camp. Enjoy scenic drives, adventurous treks, and the serene beauty of the mountains.",
     "image": "/images/All_Tour_Images/FairyMeadows/Picture9.jpg",
@@ -3842,6 +3871,7 @@ export const tours: Tour[] = [
     "region": "Ratti Gali Lake",
       "pdf": "/images/pdf/1_day_by_road_trip_to_islamabad.pdf",
     "duration": 3,
+      "code": "201",
     "description": "Experience the breathtaking beauty of Ratti Gali Lake over a 3-day journey through the scenic Neelum Valley. Enjoy a blend of adventure and relaxation with guided treks, local exploration, and cozy bonfire nights.",
     "image": "/images/All_Tour_Images/RattiGaliLake/Picture1.jpg",
     "galleryImages": [
@@ -3972,6 +4002,7 @@ export const tours: Tour[] = [
     "region": "Skardu & Hunza",
       "pdf": "/images/pdf/1_day_by_road_trip_to_islamabad.pdf",
     "duration": 8,
+      "code": "252",
     "description": "Join us for an unforgettable group adventure exploring the stunning landscapes and vibrant culture of Hunza and Skardu. Perfect for solo travelers, friends, and families looking to explore together.",
     "image": "/images/All_Tour_Images/HunzaValley/Picture3.jpg",
     "galleryImages": [
@@ -4153,6 +4184,7 @@ export const tours: Tour[] = [
   "location": "Minimarg, Astor, Skardu",
   "region": "Minimarg Astor Valley",
   "duration": 6,
+    "code": "192",
   "description": "Experience a 6-day adventure through the stunning landscapes of Minimarg, Astor, and Skardu. This road trip offers breathtaking views, cultural exploration, and the natural beauty of Northern Pakistan, including visits to Rama Meadows, Deosai National Park, and the famous Rainbow Lake.",
    "pdf": "/images/pdf/1_day_by_road_trip_to_islamabad.pdf",
     "image": "/images/All_Tour_Images/MinimargAstor/Picture12.jpg",
@@ -4314,6 +4346,7 @@ export const tours: Tour[] = [
     "location": "Hunza and Skardu",
     "region": "Skardu & Hunza",
     "duration": 10,
+    "code": "200",
       "pdf": "/images/pdf/1_day_by_road_trip_to_islamabad.pdf",
     "description": "Explore the breathtaking landscapes of Hunza and Skardu over a 10-day road trip. Experience the beauty of Khunjerab Pass, Deosai National Park, and the serene lakes and valleys. Enjoy local culture, stunning views, and comfortable accommodations.",
     "image": "/images/All_Tour_Images/SkarduValley/Picture22.jpg",
