@@ -698,7 +698,7 @@ const About = () => {
           >
             <p className="text-gold font-serif italic text-lg mb-2">Our Team</p>
             <h2 className="text-3xl md:text-4xl font-serif font-bold text-primary mb-4">
-              Meet Our Professional Teams
+              Meet Our Professional Team
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
               Our experienced team brings destinations to life with authentic

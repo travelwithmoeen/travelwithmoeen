@@ -594,7 +594,7 @@ Please confirm availability and provide more details.`;
                       className="w-full gap-2 bg-[hsl(160,84%,39%)] text-white hover:bg-[hsl(160,84%,35%)]"
                       onClick={handleWhatsAppClick}
                     >
-                      <Phone className="h-4 w-4" /> Book a Talk to us
+                      <Phone className="h-4 w-4" /> Book or Talk to us
                     </Button>
                   </div>
                 </div>
