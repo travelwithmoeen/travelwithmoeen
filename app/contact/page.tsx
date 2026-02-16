@@ -76,11 +76,32 @@ const Contact = () => {
 
   return (
     <div className="min-h-screen bg-[#faf9f5]">
-      <PageBanner
+      {/* <PageBanner
         title="Contact Us"
         subtitle="We'd love to hear from you. Get in touch with our team."
         backgroundImage={"images/contact-hero.jpg"}
-      />
+      /> */}
+
+
+                  <section className="relative bg-navy py-20 text-center text-white">
+                    <div className="bg-navy" />
+                    <motion.div
+                      className="container relative mx-auto px-4"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5 }}
+                    >
+                      <span className="mb-3 inline-block rounded-full bg-gold/90 px-4 py-1.5 text-sm font-semibold text-white">
+                       Contact information
+                      </span>
+                      <h1 className="text-3xl font-bold text-white md:text-5xl">
+                       Contact Us
+                      </h1>
+                      <p className="mx-auto mt-4 max-w-2xl text-white/70">
+                        We'd love to hear from you. Get in touch with our team.
+                      </p>
+                    </motion.div>
+                  </section>
       <PageContainer>
         <div className="grid lg:grid-cols-2 gap-12">
           {/* Contact Form */}

@@ -84,7 +84,7 @@ export function TourCard({ tour, view }: TourCardProps) {
         <CardFooter className="flex items-center justify-between border-t border-border pt-4">
           {/* Price */}
           <div>
-            <span className="text-xs text-muted-foreground">From</span>
+            {/* <span className="text-xs text-muted-foreground">From</span> */}
             <p className="text-xl font-bold text-primary">
               {tour.basePrice.toLocaleString()} PKR
             </p>

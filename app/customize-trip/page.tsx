@@ -29,16 +29,24 @@ const locationData = {
 };
 
 const tripCategories = [
-  { value: "Family", label: "By Family" },
+  { value: "Family", label: "Family" },
+  { value: "Solo", label: "Solo" },
   { value: "Honeymoon", label: "Couple Honeymoon" },
-  { value: "Corporate", label: "Corporate Trip" },
+  { value: "Corporate", label: "Corporate" },
   { value: "Education", label: "University, School or College" },
 ];
 
-const tripTypes = ["Adventure", "Family", "Honeymoon"];
-const hotelTypes = ["Deluxe", "Premier Deluxe", "Executive", "Luxury", "Ultra Luxury"];
+const tripTypes = [
+  "Adventure",
+  "Sightseeing",
+  "Hiking and Trekking",
+  "Food & Cultural",
+  "Honeymoon",
+  "Safari",
+  "Adventure + Sightseeing"
+];
+const hotelTypes = ["Deluxe", "Premier", "Executive", "Luxury", "Ultra Luxury"];
 const roomTypes = ["Master Bed", "Twin Beds","Triple bed"];
-const roomCounts = ["1", "2", "3+"];
 
 export default function CustomizeTrip() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -59,9 +67,9 @@ export default function CustomizeTrip() {
     adults: 2,
     children: 0,
     selectedLocations: [] as string[],
-    hotelType: "Best available (4, 5 star)",
+    hotelType: "Deluxe",
     roomType: "Master Bed",
-    numRooms: "1",
+    numRooms: 1,
     requirements: "",
   });
 
@@ -135,8 +143,8 @@ export default function CustomizeTrip() {
         tripType: "Adventure", depDatePk: "", retDatePk: "",
         arrDateForeign: "", retDateForeign: "", duration: 9,
         adults: 2, children: 0, selectedLocations: [],
-        hotelType: "Best available (4, 5 star)", roomType: "Master Bed",
-        numRooms: "1", requirements: "",
+        hotelType: "Deluxe", roomType: "Master Bed",
+        numRooms: 1, requirements: "",
       });
     } catch (error) {
       console.error("EmailJS Error:", error);
@@ -235,7 +243,7 @@ export default function CustomizeTrip() {
                       Trip Type <span className="text-destructive">*</span>
                     </Label>
                     <Select value={form.tripType} onValueChange={(v) => update("tripType", v)}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
                       <SelectContent>
                         {tripTypes.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
                       </SelectContent>
@@ -327,7 +335,7 @@ export default function CustomizeTrip() {
                       <Hotel className="mr-1 inline h-3.5 w-3.5" /> Prefer Hotel Type
                     </Label>
                     <Select value={form.hotelType} onValueChange={(v) => update("hotelType", v)}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
                       <SelectContent>
                         {hotelTypes.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
                       </SelectContent>
@@ -338,23 +346,20 @@ export default function CustomizeTrip() {
                       <BedDouble className="mr-1 inline h-3.5 w-3.5" /> Room Type
                     </Label>
                     <Select value={form.roomType} onValueChange={(v) => update("roomType", v)}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
                       <SelectContent>
                         {roomTypes.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs font-medium text-foreground">
-                      <DoorOpen className="mr-1 inline h-3.5 w-3.5" /> No of Rooms
-                    </Label>
-                    <Select value={form.numRooms} onValueChange={(v) => update("numRooms", v)}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        {roomCounts.map((n) => <SelectItem key={n} value={n}>{n}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  <SliderField
+                    label="No of Rooms"
+                    icon={<DoorOpen className="h-4 w-4" />}
+                    value={form.numRooms}
+                    min={1}
+                    max={20}
+                    onChange={(v) => update("numRooms", v)}
+                  />
                 </div>
 
                 {/* Additional Requirements */}

@@ -19,11 +19,33 @@ export default function Gallery() {
   return (
     <div className="min-h-screen bg-background">
     
-  <PageBanner
+  {/* <PageBanner
         title="Our Gallery"
         subtitle="Browse through memories captured on our private and group tours across Northern Pakistan."
         backgroundImage={'images/gallery-hero.jpg'}
-      />
+      /> */}
+
+   <section className="relative bg-navy py-20 text-center text-white">
+                    <div className="bg-navy" />
+                    <motion.div
+                      className="container relative mx-auto px-4"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5 }}
+                    >
+                      <span className="mb-3 inline-block rounded-full bg-gold/90 px-4 py-1.5 text-sm font-semibold text-white">
+                       Our Memory
+                      </span>
+                      <h1 className="text-3xl font-bold text-white md:text-5xl">
+                      Our Gallery
+                      </h1>
+                      <p className="mx-auto mt-4 max-w-2xl text-white/70">
+                        Browse through memories captured on our private and group tours across Northern Pakistan.
+                      </p>
+                    </motion.div>
+                  </section>
+
+
       {/* Hero */}
       {/* <section className="bg-secondary px-4 py-16 text-center">
         <motion.div

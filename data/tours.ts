@@ -1,7 +1,7 @@
 
 export type TourCategory =
   | "Deluxe" | "Deluxe_higher" | "deluxe_higher" | "Deluxe Higher" | "deluxe_lower"
-  | "Premier Deluxe" | "Ultra Luxury"
+  | "Premier" | "Ultra Luxury"
   | "Executive" | "executive" | "executive_higher"
   | "Luxury" | "Luxury Higher" | "luxury_higher" | "luxury_lower"
   | "Single" | "Solo" | "Couple" | "Family" | "Group" | "Private"
@@ -210,7 +210,7 @@ export const tours: Tour[] = [
   {
     "id": "10_days_by_air_trip_to_skardu_hunza_valley_couple",
     "name": "10 Days By Air Trip to Skardu & Hunza Valley (Couple)",
-    "location": "Deosai National Park - Khunjerab Pass",
+    "location": "Deosai National Park",
     "region": "Skardu & Hunza",
     "duration": 10,
       "pdf": "/images/pdf/10_days_by_air_trip_to_skardu_hunza_valley_couple.pdf",
@@ -224,7 +224,7 @@ export const tours: Tour[] = [
     ],
     "categories": [
       "Deluxe",
-      "Premier Deluxe",
+      "Premier",
       "Executive",
       "Luxury",
       "Ultra Luxury",
@@ -244,7 +244,7 @@ export const tours: Tour[] = [
         ]
       },
       {
-        "category": "Premier Deluxe",
+        "category": "Premier",
         "price": 600000,
         "features": [
           "Tibet / Hotel Himalaya / Kinara Hotel Skardu",
@@ -428,235 +428,7 @@ export const tours: Tour[] = [
     ],
     "featured": false
   },
-  {
-    "id": "10_days_by_road_trip_to_hunza_and_skardu_couple",
-    "name": "10 Days By Road Trip to Hunza and Skardu (Couple)",
-    "location": "Hunza and Skardu",
-    "region": "Skardu & Hunza",
-    "duration": 10,
-      "pdf": "/images/pdf/1_day_by_road_trip_to_islamabad.pdf",
-    "description": "Explore the breathtaking landscapes of Hunza and Skardu over a 10-day road trip. Experience the beauty of Khunjerab Pass, Deosai National Park, and the serene lakes and valleys. Enjoy local culture, stunning views, and comfortable accommodations.",
-    "image": "/images/All_Tour_Images/SkarduValley/Picture22.jpg",
-    "galleryImages": [
-      "/images/All_Tour_Images/SkarduValley/Picture11.jpg",
-      "/images/All_Tour_Images/SkarduValley/Picture12.jpg",
-      "/images/All_Tour_Images/SkarduValley/Picture13.jpg",
-      "/images/All_Tour_Images/SkarduValley/Picture18.webp",
-    ],
-    "categories": [
-      "Deluxe",
-      "Premier Deluxe",
-      "Executive",
-      "Luxury",
-      "Ultra Luxury",
-    ],
-    "packageTypes": [
-      "Couple"
-    ],
-    "transport": "By Road",
-    "basePrice": 325000,
-    "packages": [
-      {
-        "category": "Deluxe",
-        "price": 325000,
-        "features": [
-          "Tarangfa Hotel Chilas",
-          "Hotel Himalaya / Al Noor Starlet Hotel / Dirleh Resort (Deluxe room)"
-        ]
-      },
-      {
-        "category": "Premier Deluxe",
-        "price": 370000,
-        "features": [
-          "Indus Hotel Chilas",
-          "Tibet / Hotel Himalaya (Executive room) / Summit Hotel Skardu"
-        ]
-      },
-      {
-        "category": "Executive",
-        "price": 430000,
-        "features": [
-          "Grace Continental Child",
-          "Khar Resort Skardu / Guman resort / Qayyam Skardu / Rivage Resort Skardu"
-        ]
-      },
-      {
-        "category": "Luxury",
-        "price": 480000,
-        "features": [
-          "Shangrila Chilas",
-          "Khoj Resorts (Deluxe room) or Rivage Resort Skardu (Executive rooms)"
-        ]
-      },
-      {
-        "category": "Ultra Luxury",
-        "price": 530000,
-        "features": [
-          "Shangrila Chilas",
-          "Shangrila (Executive Room) / Himmel by Luxus (Deluxe Room) / Khoj Resorts (River view loft villa)"
-        ]
-      }
-    ],
-    "itinerary": [
-      {
-        "day": 1,
-        "title": "Islamabad to Chillas",
-        "description": "",
-        "highlights": [
-          "Journey to Chillas 04:00 AM (Islamabad Pickup)",
-          "Travel along the Hazara Motorway—head towards Balakot along the Karakoram Highway (KKH)",
-          "Breakfast at Balakot—Stop for breakfast and refreshments",
-          "Sightseeing & Scenic Stops – Short stops for scenic views, waterfalls, and the Kaghan Valley",
-          "Lunch at Besal—Relax and have lunch (self-service)",
-          "Visit Lulusar Lake and Babusar Top",
-          "Arrival at Chilas—Reach Chilas by 7:00 PM",
-          "Overnight Stay – Settle in for a restful night in Chilas"
-        ]
-      },
-      {
-        "day": 2,
-        "title": "Chilas to Skardu & Junction",
-        "description": "",
-        "highlights": [
-          "Morning: Enjoy a buffet breakfast at the resort",
-          "Start travel for Skardu",
-          "Visit Nanga Parbat View Point",
-          "Junction Point of Three Mountain Ranges (Himalayas, Karakoram, and Hindu Kush)",
-          "Key Stop: Astak Nala, confluence of three mountains",
-          "Evening: Enjoy leisure time and stunning sunset views",
-          "Overnight stay in a hotel"
-        ]
-      },
-      {
-        "day": 3,
-        "title": "Waterfalls, Rock, and Deserts",
-        "description": "",
-        "highlights": [
-          "Morning: Enjoy a buffet breakfast at the resort",
-          "Depart for a scenic drive to the magnificent Manthoka Waterfall",
-          "En route: Experience the Sarfaranga Cold Desert at dusk, a high-altitude desert with stunning dunes",
-          "Visit Shigar Fort (a one-of-a-kind heritage boutique hotel situated within a peaceful natural setting)",
-          "Seek refuge and find adventure in a 400-year-old fort",
-          "Visit Blind Lake (Jarba Zhou) is a stunning, tranquil lake in Shigar Valley",
-          "Overnight stay at a Shigar"
-        ]
-      },
-      {
-        "day": 4,
-        "title": "Valley, Lakes and Boating",
-        "description": "",
-        "highlights": [
-          "Morning: Enjoy a buffet breakfast at the resort",
-          "Departure: Arrive back in Skardu",
-          "Visit the serene Shangri-La Resort (Lower Kachura Lake)",
-          "Upper Kachura Lake, followed by an exploration of the hidden Soq Valley",
-          "Evening: Enjoy leisure time and stunning sunset views",
-          "Visit the Skardu Bazaar for local handicrafts, dry fruits, and Balti souvenirs",
-          "Overnight stay in a hotel in Skardu"
-        ]
-      },
-      {
-        "day": 5,
-        "title": "Roof of the World and Sadpara Lake",
-        "description": "",
-        "highlights": [
-          "Morning: Enjoy a buffet breakfast at the resort",
-          "Depart for Deosai National Park, one of the highest plateaus in the world, called the Roof of the World",
-          "Visit Sadpara Lake Photography and Sightseeing",
-          "Explore the stunning landscapes, meadows, and wildlife of Deosai",
-          "Visit Bara Pani and Kala Pani",
-          "Visit Sheosar Lake, an alpine lake situated at the western end of Deosai National Park",
-          "Evening: Enjoy leisure time, stunning sunset views, and back to the hotel",
-          "Overnight stay in a hotel"
-        ]
-      },
-      {
-        "day": 6,
-        "title": "Skardu to Hunza Road Journey (KKH)",
-        "description": "",
-        "highlights": [
-          "Morning: Enjoy a final buffet breakfast at the resort",
-          "Check out early leave for long travel to Hunza",
-          "Road Transit: Drive from Skardu to Karimabad, Hunza",
-          "The drive is along the Skardu Road, merging onto the Karakoram Highway (KKH)",
-          "Key Stop: Astak Nala, confluence of three mountains",
-          "Stop at the Rakaposhi Viewpoint near Gilgit for lunch with a spectacular close-up view of the 7,788 m peak",
-          "Evening: Arrive in Karimabad, check into your hotel, and rest and relax",
-          "Overnight stay at a hotel"
-        ]
-      },
-      {
-        "day": 7,
-        "title": "Hunza Exploration Offers Stunning Karakoram",
-        "description": "",
-        "highlights": [
-          "Morning: Enjoy a buffet breakfast at the resort",
-          "Immerse yourself in the region's history by visiting the two ancient fortresses: the 900-year-old Altit Fort and the 700-year-old Baltit Fort",
-          "Afternoon: Explore the Karimabad Bazaar for local souvenirs, traditional shawls, and organic Hunzai products (like dried apricots and apricot oil)",
-          "Sunset: Drive up to Duikar (Eagle's Nest) for a breathtaking sunset panorama over the surrounding peaks, including Ultar Sar and Ladyfinger",
-          "Overnight stay in a hotel"
-        ]
-      },
-      {
-        "day": 8,
-        "title": "Hunza History & Sunset Panorama",
-        "description": "",
-        "highlights": [
-          "Morning: Enjoy a buffet breakfast at the resort",
-          "Full-Day Excursion: Drive north into Upper Hunza/Gojal Valley",
-          "Key Stops: Visit the stunning Attabad Lake (the mesmerizing turquoise color is beautiful)",
-          "Continue north to the dramatic, jagged Passu Cones and the nearby thrilling Hussaini Suspension Bridge",
-          "Optional: If time and conditions permit, you can drive further north towards Sost (the last town before the Chinese border)",
-          "Note: A full-day trip to Khunjerab Pass",
-          "Overnight stay at Hunza"
-        ]
-      },
-      {
-        "day": 9,
-        "title": "Hunza to Naran Road Journey through Karakoram",
-        "description": "",
-        "highlights": [
-          "Morning: Enjoy a buffet breakfast at the resort",
-          "Back To Islamabad",
-          "Short stay in Nanga Parbat View Point, Mountain Junction Point",
-          "Short at Babusar Top",
-          "Arrival in Naran and transfer to the hotel",
-          "Dinner 9:00 pm",
-          "Overnight stay in Naran Valley"
-        ]
-      },
-      {
-        "day": 10,
-        "title": "Departure to Islamabad",
-        "description": "",
-        "highlights": [
-          "Morning: Enjoy a final buffet breakfast at the resort",
-          "Travel to Jheel Saif-ul-Malook via jeeps",
-          "Visit Jheel Saif-ul-Malook (if we have time)",
-          "Sightseeing & Photography: Jheel Saif-ul-malook",
-          "Return to Islamabad: Arrival around 08:30 PM",
-          "End of our services with satisfied clients"
-        ]
-      }
-    ],
-    "included": [
-      "Private Transport (GLI Car New Model)",
-      "9 Nights’ Accommodation",
-      "Fuel- Toll Tax",
-      "9 Breakfast",
-      "Toll-Tax-Challan"
-    ],
-    "notIncluded": [
-      "Any Kind of Entry/Activity Ticket",
-      "Expenses for Boating",
-      "Jeep Expenses of Personal Nature",
-      "Horse Riding / Ski-Rafting",
-      "Any item not mentioned in services include",
-      "Portage, tips, laundry, telephone charges, transfers, all items of a personal nature, and also food and drinks",
-      "Travel insurance"
-    ],
-    "featured": false
-  },
+
   {
     "id": "2_days_by_road_trip_islamabad_city_tour",
     "name": "2 Days By Road Trip Islamabad City Tour",
@@ -843,7 +615,7 @@ export const tours: Tour[] = [
   {
     "id": "3_days_by_road_trip_to_leepa_valley_and_ganga_choti_kashmir_couple",
     "name": "3 Days By Road Trip to Leepa Valley and Ganga Choti, Kashmir (Couple)",
-    "location": "Leepa Valley and Ganga Choti",
+    "location": "Leepa Valley",
     "region": "Neelum Valley Kashmir",
     "duration": 3,
       "pdf": "/images/pdf/1_day_by_road_trip_to_islamabad.pdf",
@@ -1068,7 +840,7 @@ export const tours: Tour[] = [
   {
     "id": "3_days_by_road_trip_to_naran_kaghan_and_babusar_top",
     "name": "3 Days By Road Trip to Naran Kaghan and Babusar Top",
-    "location": "Naran Kaghan and Babusar Top",
+    "location": "Naran Kaghan",
     "region": "Naran Kaghan & Babusar Top",
       "pdf": "/images/pdf/1_day_by_road_trip_to_islamabad.pdf",
     "duration": 3,
@@ -1229,7 +1001,7 @@ export const tours: Tour[] = [
         ]
       },
       {
-        "category": "Premier Deluxe",
+        "category": "Premier",
         "price": 150000,
         "features": [
           "Green Valley Resort"
@@ -1354,7 +1126,7 @@ export const tours: Tour[] = [
         ]
       },
       {
-        "category": "Premier Deluxe",
+        "category": "Premier",
         "price": 25000,
         "features": [
           "Twin sharing or Couple"
@@ -1598,7 +1370,7 @@ export const tours: Tour[] = [
   {
     "id": "4_days_by_road_trip_to_kumrat_valley_katora_lake",
     "name": "4 Days By Road Trip to Kumrat Valley & Katora Lake",
-    "location": "Kumrat Valley & Katora Lake",
+    "location": "Kumrat Valley",
     "region": "Kumrat and Katora Lake",
     "duration": 4,
       "pdf": "/images/pdf/4_days_by_road_trip_to_kumrat_valley_katora_lake.pdf",
@@ -1629,7 +1401,7 @@ export const tours: Tour[] = [
         ]
       },
       {
-        "category":"Premier Deluxe",
+        "category":"Premier",
         "price": 25000,
         "features": [
           "Twin Sharing or Couple"
@@ -2277,7 +2049,7 @@ export const tours: Tour[] = [
         ]
       },
       {
-        "category": "Premier Deluxe",
+        "category": "Premier",
         "price": 350000,
         "features": [
           "Tibet",
@@ -2377,7 +2149,7 @@ export const tours: Tour[] = [
   {
     "id": "5_days_by_air_trip_to_astor_minimarg_and_skardu_couple",
     "name": "5 Days By Air Trip to Astor Minimarg and Skardu (Couple)",
-    "location": "Astor Minimarg and Skardu",
+    "location": "Astor Minimarg",
     "region": "Minimarg Astor Valley",
     "duration": 5,
       "pdf": "/images/pdf/1_day_by_road_trip_to_islamabad.pdf",
@@ -2510,7 +2282,7 @@ export const tours: Tour[] = [
   {
     "id": "5_days_by_air_trip_to_fairy_meadows_skardu_valley",
     "name": "5 Days By Air Trip to Fairy Meadows + Skardu Valley",
-    "location": "Fairy Meadows and Skardu Valley",
+    "location": "Fairy Meadows",
     "region": "Fairy Meadows Nanga Base Camp",
     "duration": 5,
       "pdf": "/images/pdf/1_day_by_road_trip_to_islamabad.pdf",
@@ -2678,7 +2450,7 @@ export const tours: Tour[] = [
         ]
       },
       {
-        "category": "Premier Deluxe",
+        "category": "Premier",
         "price": 380000,
         "features": [
           "Tibet",
@@ -2829,7 +2601,7 @@ export const tours: Tour[] = [
         ]
       },
       {
-        "category": "Premier Deluxe",
+        "category": "Premier",
         "price": 390000,
         "features": [
           "Summit Embassy Hotel",
@@ -2940,11 +2712,12 @@ export const tours: Tour[] = [
   {
     "id": "6_days_by_air_trip_to_astor_minimarg_and_skardu_couple",
     "name": "6 Days By Air Trip to Astor Minimarg and Skardu",
-    "location": "Astor Minimarg and Skardu",
+    "location": "Astor Minimarg",
     "region": "Minimarg Astor Valley",
     "duration": 6,
-      "pdf": "/images/pdf/1_day_by_road_trip_to_islamabad.pdf",
+     
     "description": "Experience a 6-day adventure exploring the scenic beauty of Astor Minimarg and Skardu. Enjoy breathtaking views, cultural exchanges, and unforgettable experiences in some of the most beautiful locations in Pakistan.",
+     "pdf": "/images/pdf/1_day_by_road_trip_to_islamabad.pdf",
     "image": "/images/All_Tour_Images/MinimargAstor/Picture8.jpg",
     "galleryImages": [
       "/images/All_Tour_Images/MinimargAstor/Picture9.jpg",
@@ -3125,7 +2898,7 @@ export const tours: Tour[] = [
         ]
       },
       {
-        "category": "Premier Deluxe",
+        "category": "Premier",
         "price": 310000,
         "features": [
           "Indus Hotel Chilas",
@@ -3588,7 +3361,7 @@ export const tours: Tour[] = [
         ]
       },
       {
-        "category":"Premier Deluxe",
+        "category":"Premier",
         "price": 460000,
         "features": [
           "Tibet",
@@ -3717,12 +3490,12 @@ export const tours: Tour[] = [
       "Personal Expenses, Entry Tickets, Recreation, Boating, jeeps etc.",
       "Any items not mentioned in the services"
     ],
-    "featured": true
+    "featured": false
   },
   {
     "id": "7_days_by_road_trip_to_skardu_and_deosai_national_park_couple",
     "name": "7 Days By Road Trip to Skardu and Deosai National Park",
-    "location": "Skardu and Deosai National Park",
+    "location": "Skardu ",
     "region": "Skardu Valley",
     "duration": 7,
       "pdf": "/images/pdf/1_day_by_road_trip_to_islamabad.pdf",
@@ -3756,7 +3529,7 @@ export const tours: Tour[] = [
         ]
       },
       {
-        "category": "Premier Deluxe",
+        "category": "Premier",
         "price": 280000,
         "features": [
           "Indus Hotel Chilas",
@@ -3921,7 +3694,7 @@ export const tours: Tour[] = [
   {
     "id": "5_days_by_road_trip_to_fairy_meadows_nanga_parbat_base_camp",
     "name": "5 Days By Road Trip to Fairy Meadows Nanga Parbat Base Camp",
-    "location": "Fairy Meadows, Nanga Parbat",
+    "location": "Nanga Parbat",
     "region": "Fairy Meadows Nanga Base Camp",
     "duration": 5,
       "pdf": "/images/pdf/1_day_by_road_trip_to_islamabad.pdf",
@@ -4229,7 +4002,7 @@ export const tours: Tour[] = [
         ]
       },
       {
-        "category": "Premier Deluxe",
+        "category": "Premier",
         "price": 490000,
         "features": [
           "Tibet / Hotel Himalaya (Executive room) / Kinara Hotel Skardu / Qayyam Skardu",
@@ -4373,7 +4146,397 @@ export const tours: Tour[] = [
       "Any items not mentioned in the services."
     ],
     "featured": true
-  }
+  },
+  {
+  "id": "6_days_by_road_trip_to_minimarg_astor_and_skardu_couple",
+  "name": "6 Days By Road Trip to Minimarg Astor and Skardu (Couple)",
+  "location": "Minimarg, Astor, Skardu",
+  "region": "Minimarg Astor Valley",
+  "duration": 6,
+  "description": "Experience a 6-day adventure through the stunning landscapes of Minimarg, Astor, and Skardu. This road trip offers breathtaking views, cultural exploration, and the natural beauty of Northern Pakistan, including visits to Rama Meadows, Deosai National Park, and the famous Rainbow Lake.",
+   "pdf": "/images/pdf/1_day_by_road_trip_to_islamabad.pdf",
+    "image": "/images/All_Tour_Images/MinimargAstor/Picture12.jpg",
+    "galleryImages": [
+      "/images/All_Tour_Images/MinimargAstor/Picture9.jpg",
+      "/images/All_Tour_Images/MinimargAstor/Picture10.jpg",
+      "/images/All_Tour_Images/MinimargAstor/Picture11.jpg",
+      "/images/All_Tour_Images/MinimargAstor/Picture12.jpg",
+    ],
+  "categories": [
+    "Deluxe",
+    "Executive",
+    "Luxury"
+  ],
+  "packageTypes": [
+    "Couple"
+  ],
+  "transport": "By Road",
+  "basePrice": 290000,
+  "packages": [
+    {
+      "category": "Deluxe",
+      "price": 290000,
+      "features": [
+        "Tarangfa Lodges Chilas or Indus Hotel (1 night)",
+        "Rama Meadows Camping Site (1 night)",
+        "Minimarg Camping Side (1 night)",
+        "Tarishing Camping Side (1 night)",
+        "Hotel Home Naran (1 night)"
+      ]
+    },
+    {
+      "category": "Executive",
+      "price": 350000,
+      "features": [
+        "Shangrila Hotel Chilas (1 night)",
+        "Rama Meadows Camping Site (1 night)",
+        "Minimarg Camping Side (1 night)",
+        "Tarishing Camping Side (1 night)",
+        "Mulberry Lodge Astore / Northern Retreat by Hotel Demanchi (1 night)"
+      ]
+    },
+    {
+      "category": "Luxury",
+      "price": 4200000,
+      "features": [
+        "Shangrila Hotel Chilas (1 night)",
+        "Rama Meadows Camping Site (1 night)",
+        "Minimarg Camping Side (1 night)",
+        "Tarishing Camping Side (1 night)",
+        "Mulberry Lodge Astore / Swiss Rock Hotel & Resort Naran (2 nights)"
+      ]
+    }
+  ],
+  "itinerary": [
+    {
+      "day": 1,
+      "title": "Islamabad to Chilas",
+       "description": "Begin your journey from Islamabad and travel through scenic routes to Chilas, passing through the beautiful Hazara Motorway and Karakoram Highway.",
+      "highlights": [
+        "Journey to Chillas 04:00 AM (Islamabad Pickup)",
+        "Travel along the Hazara Motorway—head towards Balakot along the Karakoram Highway",
+        "Breakfast at Balakot—Stop for breakfast and refreshments",
+        "Sightseeing & Scenic Stops – Short stops for scenic views, waterfalls, and the Kaghan Valley",
+        "Lunch at Besal—Relax and have lunch (self-service)",
+        "Visit Lulusar Lake and Babusar Top",
+        "Arrival at Chilas—Reach Chilas by 7:00 PM",
+        "Overnight Stay – Settle in for a restful night in Chilas"
+      ]
+    },
+    {
+      "day": 2,
+      "title": "Roof of the World and Rama Meadows",
+       "description": "",
+      "highlights": [
+        "Breakfast at Skardu Valley",
+        "Transfer to the Nanga Parbat region",
+        "Arrive at Astor Valley",
+        "Switch from your main vehicle to a local 4x4 Jeep for the adventurous ride to Rama Meadows",
+        "Move to Rama Meadows & Rama Lake",
+        "Visit the beautiful Rama Lake and spend some time exploring the area",
+        "Night Stay: at the Camping in Rama"
+      ]
+    },
+    {
+      "day": 3,
+      "title": "Tarishing & Sunset Panorama",
+       "description": "",
+      "highlights": [
+        "Morning: Enjoy an open-air breakfast at the Rama Meadows",
+        "Move to Tarishing, Rupal Face of Nanga Parbat",
+        "Explore local life: wooden houses, terraced fields, and warm hospitality",
+        "Short hike to nearby ridges for breathtaking views of the Rupal Face of Nanga Parbat",
+        "Depart for Deosai National Park, one of the highest plateaus in the world",
+        "Visit Shausar Lake",
+        "Night Stay at Chilam Chowki"
+      ]
+    },
+    {
+      "day": 4,
+      "title": "Rainbow Lakes and the Indian Border",
+       "description": "",
+      "highlights": [
+        "Breakfast at Chilam Chowki",
+        "Depart for Minimarg, the last village of Pakistan before the Indian border",
+        "Move to Burzil Top & Minimarg Domail",
+        "Visit the village and explore its unique culture and way of life",
+        "Head towards the stunning views of the surrounding mountains",
+        "Visit the famous Rainbow Lake of Minimarg",
+        "Return to Chilim for a night or stay at the Minimarg Camping Site"
+      ]
+    },
+    {
+      "day": 5,
+      "title": "Domail, Deosai Park then Astor",
+         "description": "",
+      "highlights": [
+        "Breakfast at Chilim",
+        "Depart for Islamabad via the Babusar, passing through the beautiful valleys and scenic landscape",
+        "Short Stay at Babusar Top",
+        "Arrival in Naran and transfer to the hotel",
+        "Dinner 9:00 pm",
+        "Overnight stay in Naran Valley"
+      ]
+    },
+    {
+      "day": 6,
+      "title": "Departure to Islamabad",
+         "description": "",
+      "highlights": [
+        "Morning: Enjoy a final buffet breakfast at the resort",
+        "Travel to Jheel Saif-ul-Malook via jeeps",
+        "Visit Jheel Saif-ul-Malook (if we have time)",
+        "Sightseeing & Photography: Jheel Saif-ul-malook",
+        "Return to Islamabad: Arrival around 08:30 PM",
+        "End of our services with satisfied clients"
+      ]
+    }
+  ],
+  "included": [
+    "Air Tickets both Sides (With Window Seat-One way)",
+    "Private Transport (Car New Model) (1 Vehicle)",
+    "Fuel - Toll Tax, and Entry Tickets",
+    "5 Nights’ Accommodation",
+    "5 Breakfast - Jeep - Guide"
+  ],
+  "notIncluded": [
+    "Lunch & Dinner",
+    "Personal Expenses, Recreation, Boating, jeeps etc.",
+    "Any items not mentioned in the services",
+    "Portage, tips, laundry, telephone charges, transfers, all items of a personal nature, and also food and drinks",
+    "Anything not specifically mentioned in the ‘What your Tour Price includes’ box"
+  ],
+  "featured": true
+},
+  {
+    "id": "10_days_by_road_trip_to_hunza_and_skardu_couple",
+    "name": "10 Days By Road Trip to Hunza and Skardu (Couple)",
+    "location": "Hunza and Skardu",
+    "region": "Skardu & Hunza",
+    "duration": 10,
+      "pdf": "/images/pdf/1_day_by_road_trip_to_islamabad.pdf",
+    "description": "Explore the breathtaking landscapes of Hunza and Skardu over a 10-day road trip. Experience the beauty of Khunjerab Pass, Deosai National Park, and the serene lakes and valleys. Enjoy local culture, stunning views, and comfortable accommodations.",
+    "image": "/images/All_Tour_Images/SkarduValley/Picture22.jpg",
+    "galleryImages": [
+      "/images/All_Tour_Images/SkarduValley/Picture11.jpg",
+      "/images/All_Tour_Images/SkarduValley/Picture12.jpg",
+      "/images/All_Tour_Images/SkarduValley/Picture13.jpg",
+      "/images/All_Tour_Images/SkarduValley/Picture18.webp",
+    ],
+    "categories": [
+      "Deluxe",
+      "Premier",
+      "Executive",
+      "Luxury",
+      "Ultra Luxury",
+    ],
+    "packageTypes": [
+      "Couple"
+    ],
+    "transport": "By Road",
+    "basePrice": 325000,
+    "packages": [
+      {
+        "category": "Deluxe",
+        "price": 325000,
+        "features": [
+          "Tarangfa Hotel Chilas",
+          "Hotel Himalaya / Al Noor Starlet Hotel / Dirleh Resort (Deluxe room)"
+        ]
+      },
+      {
+        "category": "Premier",
+        "price": 370000,
+        "features": [
+          "Indus Hotel Chilas",
+          "Tibet / Hotel Himalaya (Executive room) / Summit Hotel Skardu"
+        ]
+      },
+      {
+        "category": "Executive",
+        "price": 430000,
+        "features": [
+          "Grace Continental Child",
+          "Khar Resort Skardu / Guman resort / Qayyam Skardu / Rivage Resort Skardu"
+        ]
+      },
+      {
+        "category": "Luxury",
+        "price": 480000,
+        "features": [
+          "Shangrila Chilas",
+          "Khoj Resorts (Deluxe room) or Rivage Resort Skardu (Executive rooms)"
+        ]
+      },
+      {
+        "category": "Ultra Luxury",
+        "price": 530000,
+        "features": [
+          "Shangrila Chilas",
+          "Shangrila (Executive Room) / Himmel by Luxus (Deluxe Room) / Khoj Resorts (River view loft villa)"
+        ]
+      }
+    ],
+    "itinerary": [
+      {
+        "day": 1,
+        "title": "Islamabad to Chillas",
+        "description": "",
+        "highlights": [
+          "Journey to Chillas 04:00 AM (Islamabad Pickup)",
+          "Travel along the Hazara Motorway—head towards Balakot along the Karakoram Highway (KKH)",
+          "Breakfast at Balakot—Stop for breakfast and refreshments",
+          "Sightseeing & Scenic Stops – Short stops for scenic views, waterfalls, and the Kaghan Valley",
+          "Lunch at Besal—Relax and have lunch (self-service)",
+          "Visit Lulusar Lake and Babusar Top",
+          "Arrival at Chilas—Reach Chilas by 7:00 PM",
+          "Overnight Stay – Settle in for a restful night in Chilas"
+        ]
+      },
+      {
+        "day": 2,
+        "title": "Chilas to Skardu & Junction",
+        "description": "",
+        "highlights": [
+          "Morning: Enjoy a buffet breakfast at the resort",
+          "Start travel for Skardu",
+          "Visit Nanga Parbat View Point",
+          "Junction Point of Three Mountain Ranges (Himalayas, Karakoram, and Hindu Kush)",
+          "Key Stop: Astak Nala, confluence of three mountains",
+          "Evening: Enjoy leisure time and stunning sunset views",
+          "Overnight stay in a hotel"
+        ]
+      },
+      {
+        "day": 3,
+        "title": "Waterfalls, Rock, and Deserts",
+        "description": "",
+        "highlights": [
+          "Morning: Enjoy a buffet breakfast at the resort",
+          "Depart for a scenic drive to the magnificent Manthoka Waterfall",
+          "En route: Experience the Sarfaranga Cold Desert at dusk, a high-altitude desert with stunning dunes",
+          "Visit Shigar Fort (a one-of-a-kind heritage boutique hotel situated within a peaceful natural setting)",
+          "Seek refuge and find adventure in a 400-year-old fort",
+          "Visit Blind Lake (Jarba Zhou) is a stunning, tranquil lake in Shigar Valley",
+          "Overnight stay at a Shigar"
+        ]
+      },
+      {
+        "day": 4,
+        "title": "Valley, Lakes and Boating",
+        "description": "",
+        "highlights": [
+          "Morning: Enjoy a buffet breakfast at the resort",
+          "Departure: Arrive back in Skardu",
+          "Visit the serene Shangri-La Resort (Lower Kachura Lake)",
+          "Upper Kachura Lake, followed by an exploration of the hidden Soq Valley",
+          "Evening: Enjoy leisure time and stunning sunset views",
+          "Visit the Skardu Bazaar for local handicrafts, dry fruits, and Balti souvenirs",
+          "Overnight stay in a hotel in Skardu"
+        ]
+      },
+      {
+        "day": 5,
+        "title": "Roof of the World and Sadpara Lake",
+        "description": "",
+        "highlights": [
+          "Morning: Enjoy a buffet breakfast at the resort",
+          "Depart for Deosai National Park, one of the highest plateaus in the world, called the Roof of the World",
+          "Visit Sadpara Lake Photography and Sightseeing",
+          "Explore the stunning landscapes, meadows, and wildlife of Deosai",
+          "Visit Bara Pani and Kala Pani",
+          "Visit Sheosar Lake, an alpine lake situated at the western end of Deosai National Park",
+          "Evening: Enjoy leisure time, stunning sunset views, and back to the hotel",
+          "Overnight stay in a hotel"
+        ]
+      },
+      {
+        "day": 6,
+        "title": "Skardu to Hunza Road Journey (KKH)",
+        "description": "",
+        "highlights": [
+          "Morning: Enjoy a final buffet breakfast at the resort",
+          "Check out early leave for long travel to Hunza",
+          "Road Transit: Drive from Skardu to Karimabad, Hunza",
+          "The drive is along the Skardu Road, merging onto the Karakoram Highway (KKH)",
+          "Key Stop: Astak Nala, confluence of three mountains",
+          "Stop at the Rakaposhi Viewpoint near Gilgit for lunch with a spectacular close-up view of the 7,788 m peak",
+          "Evening: Arrive in Karimabad, check into your hotel, and rest and relax",
+          "Overnight stay at a hotel"
+        ]
+      },
+      {
+        "day": 7,
+        "title": "Hunza Exploration Offers Stunning Karakoram",
+        "description": "",
+        "highlights": [
+          "Morning: Enjoy a buffet breakfast at the resort",
+          "Immerse yourself in the region's history by visiting the two ancient fortresses: the 900-year-old Altit Fort and the 700-year-old Baltit Fort",
+          "Afternoon: Explore the Karimabad Bazaar for local souvenirs, traditional shawls, and organic Hunzai products (like dried apricots and apricot oil)",
+          "Sunset: Drive up to Duikar (Eagle's Nest) for a breathtaking sunset panorama over the surrounding peaks, including Ultar Sar and Ladyfinger",
+          "Overnight stay in a hotel"
+        ]
+      },
+      {
+        "day": 8,
+        "title": "Hunza History & Sunset Panorama",
+        "description": "",
+        "highlights": [
+          "Morning: Enjoy a buffet breakfast at the resort",
+          "Full-Day Excursion: Drive north into Upper Hunza/Gojal Valley",
+          "Key Stops: Visit the stunning Attabad Lake (the mesmerizing turquoise color is beautiful)",
+          "Continue north to the dramatic, jagged Passu Cones and the nearby thrilling Hussaini Suspension Bridge",
+          "Optional: If time and conditions permit, you can drive further north towards Sost (the last town before the Chinese border)",
+          "Note: A full-day trip to Khunjerab Pass",
+          "Overnight stay at Hunza"
+        ]
+      },
+      {
+        "day": 9,
+        "title": "Hunza to Naran Road Journey through Karakoram",
+        "description": "",
+        "highlights": [
+          "Morning: Enjoy a buffet breakfast at the resort",
+          "Back To Islamabad",
+          "Short stay in Nanga Parbat View Point, Mountain Junction Point",
+          "Short at Babusar Top",
+          "Arrival in Naran and transfer to the hotel",
+          "Dinner 9:00 pm",
+          "Overnight stay in Naran Valley"
+        ]
+      },
+      {
+        "day": 10,
+        "title": "Departure to Islamabad",
+        "description": "",
+        "highlights": [
+          "Morning: Enjoy a final buffet breakfast at the resort",
+          "Travel to Jheel Saif-ul-Malook via jeeps",
+          "Visit Jheel Saif-ul-Malook (if we have time)",
+          "Sightseeing & Photography: Jheel Saif-ul-malook",
+          "Return to Islamabad: Arrival around 08:30 PM",
+          "End of our services with satisfied clients"
+        ]
+      }
+    ],
+    "included": [
+      "Private Transport (GLI Car New Model)",
+      "9 Nights’ Accommodation",
+      "Fuel- Toll Tax",
+      "9 Breakfast",
+      "Toll-Tax-Challan"
+    ],
+    "notIncluded": [
+      "Any Kind of Entry/Activity Ticket",
+      "Expenses for Boating",
+      "Jeep Expenses of Personal Nature",
+      "Horse Riding / Ski-Rafting",
+      "Any item not mentioned in services include",
+      "Portage, tips, laundry, telephone charges, transfers, all items of a personal nature, and also food and drinks",
+      "Travel insurance"
+    ],
+    "featured": false
+  },
 ];
 
 export function getCategoryBadgeClass(category: TourCategory): string {
@@ -4384,7 +4547,7 @@ export function getCategoryBadgeClass(category: TourCategory): string {
     deluxe_higher: "bg-blue-200 text-blue-900",
     "Deluxe Higher": "bg-blue-200 text-blue-900",
     deluxe_lower: "bg-blue-50 text-blue-700",
-    "Premier Deluxe": "bg-blue-300 text-blue-950",
+    "Premier": "bg-blue-300 text-blue-950",
     // Executive variants
     Executive: "bg-purple-100 text-purple-800",
     executive: "bg-purple-100 text-purple-800",

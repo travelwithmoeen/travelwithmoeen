@@ -8,7 +8,7 @@ import { tours, Tour, TourCategory, TourRegion, TransportType } from "@/data/tou
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-
+import { motion, AnimatePresence } from "framer-motion";
 const ITEMS_PER_PAGE = 12;
 
 function ToursContent() {
@@ -176,15 +176,33 @@ function ToursContent() {
     
 
       {/* Hero Section */}
-      <section className="bg-secondary px-4 py-12 text-center">
+      {/* <section className="bg-secondary px-4 py-12 text-center">
         <h1 className="mb-2 text-3xl font-bold text-secondary-foreground md:text-4xl">
           Explore Our Tours
         </h1>
         <p className="mx-auto max-w-2xl text-secondary-foreground/80">
           Discover extraordinary destinations with our curated collection of premium tours
         </p>
+      </section> */}
+    <section className="relative bg-navy py-12 text-center text-white">
+        <div className="bg-navy" />
+        <motion.div
+          className="container relative mx-auto px-4"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <span className="mb-3 inline-block rounded-full bg-gold/90 px-4 py-1.5 text-sm font-semibold text-white">
+            Tours
+          </span>
+          <h1 className="text-3xl font-bold text-white md:text-5xl">
+            Explore Our Tours
+          </h1>
+          <p className="mx-auto mt-4 max-w-2xl text-white/70">
+             Discover extraordinary destinations with our curated collection of premium tours
+          </p>
+        </motion.div>
       </section>
-
       {/* Main Content */}
       <div className="container mx-auto flex items-start px-4 py-8 gap-0">
         {/* Filter Sidebar */}

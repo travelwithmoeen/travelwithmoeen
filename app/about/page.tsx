@@ -216,11 +216,31 @@ const About = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* <Navbar /> */}
-      <PageBanner
+      {/* <PageBanner
         title="About Us"
         subtitle="Quality Tourism Promoter Since 2020"
-        backgroundImage={"images/contact-hero.jpg"}
-      />
+        backgroundImage={"images/team/About_us.webp"}
+      /> */}
+          {/* Hero */}
+            <section className="relative bg-navy py-20 text-center text-white">
+              <div className="bg-navy" />
+              <motion.div
+                className="container relative mx-auto px-4"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                <span className="mb-3 inline-block rounded-full bg-gold/90 px-4 py-1.5 text-sm font-semibold text-white">
+                 Our information
+                </span>
+                <h1 className="text-3xl font-bold text-white md:text-5xl">
+                   About Us
+                </h1>
+                <p className="mx-auto mt-4 max-w-2xl text-white/70">
+                  Quality Tourism Promoter Since 2020.
+                </p>
+              </motion.div>
+            </section>
 
       {/* Section: Expertly Crafted Travel Experiences */}
       <section className="py-20 px-4 bg-[#f7f6f2]">
