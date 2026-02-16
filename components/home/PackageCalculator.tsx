@@ -1,11 +1,22 @@
 "use client";
 import { useState, useMemo, useEffect, useRef } from "react";
-import  Link  from "next/link";
+import Link from "next/link";
 import { PackagePopup } from "./PackagePopup";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Bus, Plane, Search, Phone, Pencil, Plus, Check,
-  Hotel, Car, Users, Calendar, MapPin, Navigation,
+  Bus,
+  Plane,
+  Search,
+  Phone,
+  Pencil,
+  Plus,
+  Check,
+  Hotel,
+  Car,
+  Users,
+  Calendar,
+  MapPin,
+  Navigation,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,16 +24,28 @@ import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
 import { Separator } from "@/components/ui/separator";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import {
-  roadDestinations, airDestinations, hotelCategories,
-  optionalAddOns, calculateTripPrice, getAvailableVehicles,
-  roadDepartures, airDepartures, getMinimumDays,
-  isGuideCompulsory, getRecommendedVehicle,
-  type HotelCategory, type VehicleType,
+  roadDestinations,
+  airDestinations,
+  hotelCategories,
+  optionalAddOns,
+  calculateTripPrice,
+  getAvailableVehicles,
+  roadDepartures,
+  airDepartures,
+  getMinimumDays,
+  isGuideCompulsory,
+  getRecommendedVehicle,
+  type HotelCategory,
+  type VehicleType,
 } from "@/data/pricing";
 import { tours } from "@/data/tours";
 import { TourCard } from "@/components/TourCard";
@@ -49,8 +72,10 @@ export function PackageCalculator() {
   const [selectedAddOns, setSelectedAddOns] = useState<string[]>([]);
   const [showMatchingTours, setShowMatchingTours] = useState(false);
 
-  const destinations = transportMode === "By Air" ? airDestinations : roadDestinations;
-  const departures = transportMode === "By Air" ? airDepartures : roadDepartures;
+  const destinations =
+    transportMode === "By Air" ? airDestinations : roadDestinations;
+  const departures =
+    transportMode === "By Air" ? airDepartures : roadDepartures;
 
   // Calculate total seats needed (infant lap doesn't need seat)
   const totalSeatsNeeded = adults + children + infantOwnSeat;
@@ -61,7 +86,12 @@ export function PackageCalculator() {
   // Available vehicles filtered by seat capacity
   const availableVehicles = useMemo(() => {
     if (!selectedDestination) return [];
-    return getAvailableVehicles(departure, selectedDestination, totalSeatsNeeded, transportMode);
+    return getAvailableVehicles(
+      departure,
+      selectedDestination,
+      totalSeatsNeeded,
+      transportMode,
+    );
   }, [departure, selectedDestination, totalSeatsNeeded, transportMode]);
 
   // Get minimum days for selected destination
@@ -71,7 +101,10 @@ export function PackageCalculator() {
   }, [selectedDestination, transportMode]);
 
   // Check if guide is compulsory for current vehicle
-  const guideRequired = useMemo(() => isGuideCompulsory(vehicleType), [vehicleType]);
+  const guideRequired = useMemo(
+    () => isGuideCompulsory(vehicleType),
+    [vehicleType],
+  );
 
   // Handle destination change - also sets minimum days and recommended vehicle
   const handleDestinationChange = (dest: string) => {
@@ -82,7 +115,12 @@ export function PackageCalculator() {
     }
     // Auto-select recommended vehicle
     const recommended = getRecommendedVehicle(totalSeatsNeeded, transportMode);
-    const available = getAvailableVehicles(departure, dest, totalSeatsNeeded, transportMode);
+    const available = getAvailableVehicles(
+      departure,
+      dest,
+      totalSeatsNeeded,
+      transportMode,
+    );
     if (available.find((v) => v.type === recommended)) {
       setVehicleType(recommended);
     } else if (available.length > 0) {
@@ -115,22 +153,48 @@ export function PackageCalculator() {
 
   // Add-ons that users can toggle (shown in UI) - only Guide and Meals
   const toggleableAddOns = optionalAddOns.filter(
-    (addon) => addon.id === "guide" || addon.id === "meal"
+    (addon) => addon.id === "guide" || addon.id === "meal",
   );
 
   const pricing = useMemo(() => {
     if (!selectedDestination) return null;
     return calculateTripPrice({
-      transportMode, destination: selectedDestination, hotelCategory,
-      vehicleType, days, travelers: totalSeatsNeeded, roomType, selectedAddOns, departure,
-      adults, children, infantLap, infantOwnSeat,
+      transportMode,
+      destination: selectedDestination,
+      hotelCategory,
+      vehicleType,
+      days,
+      travelers: totalSeatsNeeded,
+      roomType,
+      selectedAddOns,
+      departure,
+      adults,
+      children,
+      infantLap,
+      infantOwnSeat,
     });
-  }, [transportMode, selectedDestination, hotelCategory, vehicleType, days, totalSeatsNeeded, roomType, selectedAddOns, departure, adults, children, infantLap, infantOwnSeat]);
+  }, [
+    transportMode,
+    selectedDestination,
+    hotelCategory,
+    vehicleType,
+    days,
+    totalSeatsNeeded,
+    roomType,
+    selectedAddOns,
+    departure,
+    adults,
+    children,
+    infantLap,
+    infantOwnSeat,
+  ]);
 
   const matchingTours = useMemo(() => {
     return tours.filter((tour) => {
       const matchTransport = tour.transport === transportMode;
-      const matchDest = !selectedDestination || tour.location.toLowerCase().includes(selectedDestination.toLowerCase());
+      const matchDest =
+        !selectedDestination ||
+        tour.location.toLowerCase().includes(selectedDestination.toLowerCase());
       return matchTransport && matchDest;
     });
   }, [transportMode, selectedDestination]);
@@ -141,11 +205,12 @@ export function PackageCalculator() {
       return; // Can't remove guide for Coaster vehicles
     }
     setSelectedAddOns((prev) =>
-      prev.includes(id) ? prev.filter((a) => a !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((a) => a !== id) : [...prev, id],
     );
   };
 
-  const formatPrice = (price: number) => new Intl.NumberFormat("en-PK").format(price);
+  const formatPrice = (price: number) =>
+    new Intl.NumberFormat("en-PK").format(price);
 
   const handleWhatsAppClick = () => {
     const addOnNames = selectedAddOns
@@ -172,9 +237,13 @@ export function PackageCalculator() {
 
 *Add-ons:* ${addOnNames || "None"}
 
-${pricing ? `*Estimated Cost:*
+${
+  pricing
+    ? `*Estimated Cost:*
 - Grand Total: PKR ${formatPrice(pricing.grandTotal)}
-- Per Person: PKR ${formatPrice(pricing.perPerson)}` : "*Estimated Cost:* Not calculated (please select a destination)"}
+- Per Person: PKR ${formatPrice(pricing.perPerson)}`
+    : "*Estimated Cost:* Not calculated (please select a destination)"
+}
 
 Please confirm availability and provide more details.`;
 
@@ -201,7 +270,9 @@ Please confirm availability and provide more details.`;
           className="mb-10 text-center"
         >
           <Badge className="mb-4 bg-gold text-navy">Plan Your Trip</Badge>
-          <h2 className="text-3xl font-bold text-navy md:text-4xl">Package Builder</h2>
+          <h2 className="text-3xl font-bold text-navy md:text-4xl">
+            Package Builder
+          </h2>
           <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">
             Customize your perfect trip and get an instant price estimate
           </p>
@@ -222,7 +293,9 @@ Please confirm availability and provide more details.`;
                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gold/20">
                       <MapPin className="h-5 w-5 text-gold" />
                     </div>
-                    <h3 className="text-xl font-bold text-navy">Package Builder</h3>
+                    <h3 className="text-xl font-bold text-navy">
+                      Package Builder
+                    </h3>
                   </div>
 
                   <div className="grid gap-6 md:grid-cols-2">
@@ -232,33 +305,46 @@ Please confirm availability and provide more details.`;
                         1. Transport Mode
                       </label>
                       <div className="flex gap-2">
-                        {(["By Road", "By Air"] as TransportMode[]).map((mode) => (
-                          <Button
-                            key={mode}
-                            variant={transportMode === mode ? "navy" : "outline"}
-                            className="flex-1 gap-2"
-                            onClick={() => handleTransportChange(mode)}
-                          >
-                            {mode === "By Road" ? <Bus className="h-4 w-4" /> : <Plane className="h-4 w-4" />}
-                            {mode}
-                          </Button>
-                        ))}
+                        {(["By Road", "By Air"] as TransportMode[]).map(
+                          (mode) => (
+                            <Button
+                              key={mode}
+                              variant={
+                                transportMode === mode ? "navy" : "outline"
+                              }
+                              className="flex-1 gap-2"
+                              onClick={() => handleTransportChange(mode)}
+                            >
+                              {mode === "By Road" ? (
+                                <Bus className="h-4 w-4" />
+                              ) : (
+                                <Plane className="h-4 w-4" />
+                              )}
+                              {mode}
+                            </Button>
+                          ),
+                        )}
                       </div>
                     </div>
 
                     {/* 2. Departure City */}
                     <div>
                       <label className="mb-3 block text-xs font-semibold uppercase tracking-wide text-navy">
-                        <Navigation className="mr-1 inline h-3.5 w-3.5" /> 2. Departure City
+                        <Navigation className="mr-1 inline h-3.5 w-3.5" /> 2.
+                        Departure City
                       </label>
                       <div className="flex gap-2">
                         {departures.map((city) => {
-                          const isDisabled = transportMode === "By Road" && city === "Karachi";
+                          const isDisabled =
+                            transportMode === "By Road" && city === "Karachi";
                           return (
                             <Button
                               key={city}
                               variant={departure === city ? "navy" : "outline"}
-                              className={cn("flex-1", isDisabled && "opacity-50 cursor-not-allowed")}
+                              className={cn(
+                                "flex-1",
+                                isDisabled && "opacity-50 cursor-not-allowed",
+                              )}
                               onClick={() => !isDisabled && setDeparture(city)}
                               disabled={isDisabled}
                             >
@@ -268,7 +354,9 @@ Please confirm availability and provide more details.`;
                         })}
                       </div>
                       {transportMode === "By Road" && (
-                        <p className="mt-1.5 text-xs text-muted-foreground">Karachi departure not available for road trips</p>
+                        <p className="mt-1.5 text-xs text-muted-foreground">
+                          Karachi departure not available for road trips
+                        </p>
                       )}
                     </div>
 
@@ -277,13 +365,18 @@ Please confirm availability and provide more details.`;
                       <label className="mb-3 block text-xs font-semibold uppercase tracking-wide text-navy">
                         3. Destination
                       </label>
-                      <Select value={selectedDestination} onValueChange={handleDestinationChange}>
+                      <Select
+                        value={selectedDestination}
+                        onValueChange={handleDestinationChange}
+                      >
                         <SelectTrigger className="h-11 w-full">
                           <SelectValue placeholder="Select destination" />
                         </SelectTrigger>
                         <SelectContent>
                           {destinations.map((dest) => (
-                            <SelectItem key={dest} value={dest}>{dest}</SelectItem>
+                            <SelectItem key={dest} value={dest}>
+                              {dest}
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -292,22 +385,30 @@ Please confirm availability and provide more details.`;
                     {/* 4. Hotel Category */}
                     <div>
                       <label className="mb-3 block text-xs font-semibold uppercase tracking-wide text-navy">
-                        <Hotel className="mr-1 inline h-3.5 w-3.5" /> 4. Hotel Category
+                        <Hotel className="mr-1 inline h-3.5 w-3.5" /> 4. Hotel
+                        Category
                       </label>
-                      <Select value={hotelCategory} onValueChange={(v) => setHotelCategory(v as HotelCategory)}>
+                      <Select
+                        value={hotelCategory}
+                        onValueChange={(v) =>
+                          setHotelCategory(v as HotelCategory)
+                        }
+                      >
                         <SelectTrigger className="h-11 w-full">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
                           {hotelCategories.map((cat) => (
-                            <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                            <SelectItem key={cat} value={cat}>
+                              {cat}
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     </div>
 
                     {/* 5. Travelers - Same breakdown for both By Air and By Road */}
-                    <div>
+                    {/* <div>
                       <label className="mb-3 block text-xs font-semibold uppercase tracking-wide text-navy">
                         <Users className="mr-1 inline h-3.5 w-3.5" /> 5. Adults (12+)
                       </label>
@@ -319,8 +420,110 @@ Please confirm availability and provide more details.`;
                         onChange={(e) => setAdults(Math.max(1, parseInt(e.target.value) || 1))}
                         className="h-11"
                       />
-                    </div>
+                    </div> */}
+                    {/* 5. Adults */}
                     <div>
+                      <label className="mb-3 block text-xs font-semibold uppercase tracking-wide text-navy">
+                        <Users className="mr-1 inline h-3.5 w-3.5" /> 5. Adults
+                        (12+) ({adults})
+                      </label>
+                      <div className="flex items-center gap-4 pt-2">
+                        <Slider
+                          value={[adults]}
+                          onValueChange={([val]) => setAdults(Math.max(1, val))}
+                          min={1}
+                          max={25}
+                          step={1}
+                          className="flex-1"
+                        />
+                        <span className="w-8 text-center font-semibold text-navy">
+                          {adults}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* 6. Children */}
+                    <div>
+                      <label className="mb-3 block text-xs font-semibold uppercase tracking-wide text-navy">
+                        6. Children (2-11 yrs) ({children})
+                      </label>
+                      <div className="flex items-center gap-4 pt-2">
+                        <Slider
+                          value={[children]}
+                          onValueChange={([val]) =>
+                            setChildren(Math.max(0, val))
+                          }
+                          min={0}
+                          max={25}
+                          step={1}
+                          className="flex-1"
+                        />
+                        <span className="w-8 text-center font-semibold text-navy">
+                          {children}
+                        </span>
+                      </div>
+                      {transportMode === "By Air" && (
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          75% of adult fare
+                        </p>
+                      )}
+                    </div>
+
+                    {/* 7. Infant (Lap) */}
+                    <div>
+                      <label className="mb-3 block text-xs font-semibold uppercase tracking-wide text-navy">
+                        7. Infant (Lap) ({infantLap})
+                      </label>
+                      <div className="flex items-center gap-4 pt-2">
+                        <Slider
+                          value={[infantLap]}
+                          onValueChange={([val]) =>
+                            setInfantLap(Math.max(0, val))
+                          }
+                          min={0}
+                          max={10}
+                          step={1}
+                          className="flex-1"
+                        />
+                        <span className="w-8 text-center font-semibold text-navy">
+                          {infantLap}
+                        </span>
+                      </div>
+                      {transportMode === "By Air" && (
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          PKR 1,000 fixed, no seat
+                        </p>
+                      )}
+                    </div>
+
+                    {/* 8. Infant (Own Seat) */}
+                    <div>
+                      <label className="mb-3 block text-xs font-semibold uppercase tracking-wide text-navy">
+                        8. Infant (Own Seat) ({infantOwnSeat})
+                      </label>
+                      <div className="flex items-center gap-4 pt-2">
+                        <Slider
+                          value={[infantOwnSeat]}
+                          onValueChange={([val]) =>
+                            setInfantOwnSeat(Math.max(0, val))
+                          }
+                          min={0}
+                          max={10}
+                          step={1}
+                          className="flex-1"
+                        />
+                        <span className="w-8 text-center font-semibold text-navy">
+                          {infantOwnSeat}
+                        </span>
+                      </div>
+                      {transportMode === "By Air" && (
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          PKR 5,000 fixed, 1 seat
+                        </p>
+                      )}
+                    </div>
+
+                    {/* <div>
                       <label className="mb-3 block text-xs font-semibold uppercase tracking-wide text-navy">
                         6. Children (2-11 yrs)
                       </label>
@@ -329,11 +532,17 @@ Please confirm availability and provide more details.`;
                         min={0}
                         max={25}
                         value={children}
-                        onChange={(e) => setChildren(Math.max(0, parseInt(e.target.value) || 0))}
+                        onChange={(e) =>
+                          setChildren(
+                            Math.max(0, parseInt(e.target.value) || 0),
+                          )
+                        }
                         className="h-11"
                       />
                       {transportMode === "By Air" && (
-                        <p className="mt-1 text-xs text-muted-foreground">75% of adult fare</p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          75% of adult fare
+                        </p>
                       )}
                     </div>
                     <div>
@@ -345,11 +554,17 @@ Please confirm availability and provide more details.`;
                         min={0}
                         max={10}
                         value={infantLap}
-                        onChange={(e) => setInfantLap(Math.max(0, parseInt(e.target.value) || 0))}
+                        onChange={(e) =>
+                          setInfantLap(
+                            Math.max(0, parseInt(e.target.value) || 0),
+                          )
+                        }
                         className="h-11"
                       />
                       {transportMode === "By Air" && (
-                        <p className="mt-1 text-xs text-muted-foreground">PKR 1,000 fixed, no seat</p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          PKR 1,000 fixed, no seat
+                        </p>
                       )}
                     </div>
                     <div>
@@ -361,18 +576,25 @@ Please confirm availability and provide more details.`;
                         min={0}
                         max={10}
                         value={infantOwnSeat}
-                        onChange={(e) => setInfantOwnSeat(Math.max(0, parseInt(e.target.value) || 0))}
+                        onChange={(e) =>
+                          setInfantOwnSeat(
+                            Math.max(0, parseInt(e.target.value) || 0),
+                          )
+                        }
                         className="h-11"
                       />
                       {transportMode === "By Air" && (
-                        <p className="mt-1 text-xs text-muted-foreground">PKR 5,000 fixed, 1 seat</p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          PKR 5,000 fixed, 1 seat
+                        </p>
                       )}
-                    </div>
+                    </div> */}
 
                     {/* Days */}
                     <div>
                       <label className="mb-3 block text-xs font-semibold uppercase tracking-wide text-navy">
-                        <Calendar className="mr-1 inline h-3.5 w-3.5" /> 9. Duration ({days} Days)
+                        <Calendar className="mr-1 inline h-3.5 w-3.5" /> 9.
+                        Duration ({days} Days)
                         {selectedDestination && (
                           <span className="ml-2 text-[10px] font-normal text-muted-foreground">
                             (Min: {minimumDays} days)
@@ -382,20 +604,25 @@ Please confirm availability and provide more details.`;
                       <div className="flex items-center gap-4 pt-2">
                         <Slider
                           value={[days]}
-                          onValueChange={([val]) => setDays(Math.max(val, minimumDays))}
+                          onValueChange={([val]) =>
+                            setDays(Math.max(val, minimumDays))
+                          }
                           min={minimumDays}
                           max={15}
                           step={1}
                           className="flex-1"
                         />
-                        <span className="w-8 text-center font-semibold text-navy">{days}</span>
+                        <span className="w-8 text-center font-semibold text-navy">
+                          {days}
+                        </span>
                       </div>
                     </div>
 
-                     {/* Vehicle Type (filtered by seats) */}
+                    {/* Vehicle Type (filtered by seats) */}
                     <div>
                       <label className="mb-3 block text-xs font-semibold uppercase tracking-wide text-navy">
-                        <Car className="mr-1 inline h-3.5 w-3.5" /> 10. Vehicle Type
+                        <Car className="mr-1 inline h-3.5 w-3.5" /> 10. Vehicle
+                        Type
                         {guideRequired && (
                           <span className="ml-2 text-[10px] font-normal text-primary">
                             (Guide compulsory)
@@ -404,11 +631,19 @@ Please confirm availability and provide more details.`;
                       </label>
                       <Select
                         value={vehicleType}
-                        onValueChange={(v) => handleVehicleChange(v as VehicleType)}
+                        onValueChange={(v) =>
+                          handleVehicleChange(v as VehicleType)
+                        }
                         disabled={availableVehicles.length === 0}
                       >
                         <SelectTrigger className="h-11 w-full">
-                          <SelectValue placeholder={availableVehicles.length === 0 ? "Select destination first" : undefined} />
+                          <SelectValue
+                            placeholder={
+                              availableVehicles.length === 0
+                                ? "Select destination first"
+                                : undefined
+                            }
+                          />
                         </SelectTrigger>
                         <SelectContent>
                           {availableVehicles.map(({ type, rate }) => (
@@ -418,9 +653,12 @@ Please confirm availability and provide more details.`;
                           ))}
                         </SelectContent>
                       </Select>
-                      {selectedDestination && availableVehicles.length === 0 && (
-                        <p className="mt-1.5 text-xs text-destructive">No vehicle fits {totalSeatsNeeded} travelers</p>
-                      )}
+                      {selectedDestination &&
+                        availableVehicles.length === 0 && (
+                          <p className="mt-1.5 text-xs text-destructive">
+                            No vehicle fits {totalSeatsNeeded} travelers
+                          </p>
+                        )}
                     </div>
                   </div>
 
@@ -451,20 +689,27 @@ Please confirm availability and provide more details.`;
                     <div className="flex flex-wrap gap-2">
                       {/* Only show Guide and Meals as toggleable options */}
                       {toggleableAddOns.map((addon) => {
-                        const isGuideAndRequired = addon.id === "guide" && guideRequired;
+                        const isGuideAndRequired =
+                          addon.id === "guide" && guideRequired;
                         return (
                           <Button
                             key={addon.id}
                             variant="outline"
                             className={cn(
                               "gap-2",
-                              selectedAddOns.includes(addon.id) && "border-navy bg-navy/10 text-navy",
-                              isGuideAndRequired && "cursor-not-allowed opacity-70"
+                              selectedAddOns.includes(addon.id) &&
+                                "border-navy bg-navy/10 text-navy",
+                              isGuideAndRequired &&
+                                "cursor-not-allowed opacity-70",
                             )}
                             onClick={() => toggleAddOn(addon.id)}
                             disabled={isGuideAndRequired}
                           >
-                            {selectedAddOns.includes(addon.id) ? <Check className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                            {selectedAddOns.includes(addon.id) ? (
+                              <Check className="h-4 w-4" />
+                            ) : (
+                              <Plus className="h-4 w-4" />
+                            )}
                             {addon.name}
                             {isGuideAndRequired && " (Required)"}
                           </Button>
@@ -473,7 +718,8 @@ Please confirm availability and provide more details.`;
                     </div>
                     {transportMode === "By Air" && (
                       <p className="mt-2 text-xs text-muted-foreground">
-                        * Welcome Pack, Entry Tickets & Arrival Breakfast included
+                        * Welcome Pack, Entry Tickets & Arrival Breakfast
+                        included
                       </p>
                     )}
                   </div>
@@ -502,7 +748,8 @@ Please confirm availability and provide more details.`;
                             PKR {formatPrice(pricing.grandTotal)}
                           </p>
                           <p className="mt-1 text-sm text-gold/80">
-                            Total for {totalTravelers} traveler{totalTravelers > 1 ? "s" : ""}
+                            Total for {totalTravelers} traveler
+                            {totalTravelers > 1 ? "s" : ""}
                           </p>
                           <p className="mt-1 text-lg font-semibold text-gold/90">
                             PKR {formatPrice(pricing.perPerson)} / person
@@ -513,81 +760,139 @@ Please confirm availability and provide more details.`;
                       {/* Breakdown */}
                       <div className="mb-4 space-y-2 rounded-xl bg-background p-4 text-sm">
                         <div className="flex justify-between">
-                          <span className="text-muted-foreground">Hotel ({days > 1 ? days - 1 : 0} nights)</span>
-                          <span className="font-medium text-navy">PKR {formatPrice(pricing.hotelTotal)}</span>
+                          <span className="text-muted-foreground">
+                            Hotel ({days > 1 ? days - 1 : 0} nights)
+                          </span>
+                          <span className="font-medium text-navy">
+                            PKR {formatPrice(pricing.hotelTotal)}
+                          </span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-muted-foreground">Vehicle ({days} days)</span>
-                          <span className="font-medium text-navy">PKR {formatPrice(pricing.vehicleTotal)}</span>
+                          <span className="text-muted-foreground">
+                            Vehicle ({days} days)
+                          </span>
+                          <span className="font-medium text-navy">
+                            PKR {formatPrice(pricing.vehicleTotal)}
+                          </span>
                         </div>
                         {pricing.airTicketTotal > 0 && (
                           <>
                             <div className="flex justify-between">
-                              <span className="text-muted-foreground">Air Tickets</span>
-                              <span className="font-medium text-navy">PKR {formatPrice(pricing.airTicketTotal)}</span>
+                              <span className="text-muted-foreground">
+                                Air Tickets
+                              </span>
+                              <span className="font-medium text-navy">
+                                PKR {formatPrice(pricing.airTicketTotal)}
+                              </span>
                             </div>
                             {transportMode === "By Air" && (
                               <div className="ml-4 space-y-1 text-xs">
-                                {adults > 0 && pricing.adultTicketTotal && pricing.adultTicketTotal > 0 && (
-                                  <div className="flex justify-between text-muted-foreground">
-                                    <span>Adults ({adults})</span>
-                                    <span>PKR {formatPrice(pricing.adultTicketTotal)}</span>
-                                  </div>
-                                )}
-                                {children > 0 && pricing.childTicketTotal && pricing.childTicketTotal > 0 && (
-                                  <div className="flex justify-between text-muted-foreground">
-                                    <span>Children ({children}) @ 75%</span>
-                                    <span>PKR {formatPrice(pricing.childTicketTotal)}</span>
-                                  </div>
-                                )}
-                                {infantLap > 0 && pricing.infantLapTotal && pricing.infantLapTotal > 0 && (
-                                  <div className="flex justify-between text-muted-foreground">
-                                    <span>Infant Lap ({infantLap})</span>
-                                    <span>PKR {formatPrice(pricing.infantLapTotal)}</span>
-                                  </div>
-                                )}
-                                {infantOwnSeat > 0 && pricing.infantOwnSeatTotal && pricing.infantOwnSeatTotal > 0 && (
-                                  <div className="flex justify-between text-muted-foreground">
-                                    <span>Infant Seat ({infantOwnSeat})</span>
-                                    <span>PKR {formatPrice(pricing.infantOwnSeatTotal)}</span>
-                                  </div>
-                                )}
+                                {adults > 0 &&
+                                  pricing.adultTicketTotal &&
+                                  pricing.adultTicketTotal > 0 && (
+                                    <div className="flex justify-between text-muted-foreground">
+                                      <span>Adults ({adults})</span>
+                                      <span>
+                                        PKR{" "}
+                                        {formatPrice(pricing.adultTicketTotal)}
+                                      </span>
+                                    </div>
+                                  )}
+                                {children > 0 &&
+                                  pricing.childTicketTotal &&
+                                  pricing.childTicketTotal > 0 && (
+                                    <div className="flex justify-between text-muted-foreground">
+                                      <span>Children ({children}) @ 75%</span>
+                                      <span>
+                                        PKR{" "}
+                                        {formatPrice(pricing.childTicketTotal)}
+                                      </span>
+                                    </div>
+                                  )}
+                                {infantLap > 0 &&
+                                  pricing.infantLapTotal &&
+                                  pricing.infantLapTotal > 0 && (
+                                    <div className="flex justify-between text-muted-foreground">
+                                      <span>Infant Lap ({infantLap})</span>
+                                      <span>
+                                        PKR{" "}
+                                        {formatPrice(pricing.infantLapTotal)}
+                                      </span>
+                                    </div>
+                                  )}
+                                {infantOwnSeat > 0 &&
+                                  pricing.infantOwnSeatTotal &&
+                                  pricing.infantOwnSeatTotal > 0 && (
+                                    <div className="flex justify-between text-muted-foreground">
+                                      <span>Infant Seat ({infantOwnSeat})</span>
+                                      <span>
+                                        PKR{" "}
+                                        {formatPrice(
+                                          pricing.infantOwnSeatTotal,
+                                        )}
+                                      </span>
+                                    </div>
+                                  )}
                               </div>
                             )}
                           </>
                         )}
                         {pricing.departureSurcharge > 0 && (
                           <div className="flex justify-between">
-                            <span className="text-muted-foreground">Departure Surcharge</span>
-                            <span className="font-medium text-navy">PKR {formatPrice(pricing.departureSurcharge)}</span>
+                            <span className="text-muted-foreground">
+                              Departure Surcharge
+                            </span>
+                            <span className="font-medium text-navy">
+                              PKR {formatPrice(pricing.departureSurcharge)}
+                            </span>
                           </div>
                         )}
                         {pricing.addOnsTotal > 0 && (
                           <div className="flex justify-between">
-                            <span className="text-muted-foreground">Add-ons</span>
-                            <span className="font-medium text-navy">PKR {formatPrice(pricing.addOnsTotal)}</span>
+                            <span className="text-muted-foreground">
+                              Add-ons
+                            </span>
+                            <span className="font-medium text-navy">
+                              PKR {formatPrice(pricing.addOnsTotal)}
+                            </span>
                           </div>
                         )}
                         <Separator />
                         <div className="flex justify-between font-bold">
                           <span className="text-navy">Grand Total</span>
-                          <span className="text-gold">PKR {formatPrice(pricing.grandTotal)}</span>
+                          <span className="text-gold">
+                            PKR {formatPrice(pricing.grandTotal)}
+                          </span>
                         </div>
                       </div>
                     </>
                   ) : (
                     <div className="mb-4 rounded-2xl bg-navy/50 p-8 text-center">
                       <MapPin className="mx-auto mb-2 h-8 w-8 text-white/50" />
-                      <p className="text-sm text-white/70">Select a destination to see pricing</p>
+                      <p className="text-sm text-white/70">
+                        Select a destination to see pricing
+                      </p>
                     </div>
                   )}
 
                   <div className="mt-auto space-y-3">
-                    <Button variant="gold" size="lg" className="w-full gap-2" onClick={() => setShowMatchingTours(true)}>
+                    <Button
+                      variant="gold"
+                      size="lg"
+                      className="w-full gap-2"
+                      onClick={() => setShowMatchingTours(true)}
+                    >
                       <Search className="h-4 w-4" /> View Matching Tours
                     </Button>
-                    <Button asChild variant="outline-navy" size="lg" className="w-full gap-2">
-                      <Link href="/customize-trip"><Pencil className="h-4 w-4" /> Customize Your Trip</Link>
+                    <Button
+                      asChild
+                      variant="outline-navy"
+                      size="lg"
+                      className="w-full gap-2"
+                    >
+                      <Link href="/customize-trip">
+                        <Pencil className="h-4 w-4" /> Customize Your Trip
+                      </Link>
                     </Button>
                     <Button
                       size="lg"
@@ -617,7 +922,13 @@ Please confirm availability and provide more details.`;
                 <h3 className="text-2xl font-bold text-navy">
                   Matching Tours ({matchingTours.length})
                 </h3>
-                <Button variant="ghost" size="sm" onClick={() => setShowMatchingTours(false)}>Hide</Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowMatchingTours(false)}
+                >
+                  Hide
+                </Button>
               </div>
               {matchingTours.length > 0 ? (
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -634,7 +945,10 @@ Please confirm availability and provide more details.`;
                 </div>
               ) : (
                 <Card className="p-8 text-center">
-                  <p className="text-muted-foreground">No tours match your current selection. Try adjusting your filters.</p>
+                  <p className="text-muted-foreground">
+                    No tours match your current selection. Try adjusting your
+                    filters.
+                  </p>
                 </Card>
               )}
             </motion.div>
