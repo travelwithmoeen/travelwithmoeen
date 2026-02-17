@@ -46,7 +46,106 @@ const tripTypes = [
   "Adventure + Sightseeing"
 ];
 const hotelTypes = ["Deluxe", "Premier", "Executive", "Luxury", "Ultra Luxury"];
-const roomTypes = ["Master Bed", "Twin Beds","Triple bed"];
+const roomTypes = ["Master Bed", "Twin Beds", "Triple bed"];
+
+// Main departure cities in Pakistan
+const departureCities = [
+  "Islamabad",
+  "Lahore",
+  "Karachi",
+  "Peshawar",
+  "Multan",
+  "Faisalabad",
+  "Rawalpindi",
+  "Other",
+];
+
+// Country codes for WhatsApp
+const countryCodes = [
+  { code: "+92", country: "Pakistan" },
+  { code: "+1", country: "USA/Canada" },
+  { code: "+44", country: "UK" },
+  { code: "+971", country: "UAE" },
+  { code: "+966", country: "Saudi Arabia" },
+  { code: "+974", country: "Qatar" },
+  { code: "+973", country: "Bahrain" },
+  { code: "+965", country: "Kuwait" },
+  { code: "+968", country: "Oman" },
+  { code: "+61", country: "Australia" },
+  { code: "+49", country: "Germany" },
+  { code: "+33", country: "France" },
+  { code: "+39", country: "Italy" },
+  { code: "+34", country: "Spain" },
+  { code: "+86", country: "China" },
+  { code: "+91", country: "India" },
+  { code: "+90", country: "Turkey" },
+  { code: "+60", country: "Malaysia" },
+  { code: "+65", country: "Singapore" },
+  { code: "+81", country: "Japan" },
+];
+
+// Countries list for Nationality
+const countries = [
+  "Pakistan",
+  "United States",
+  "United Kingdom",
+  "United Arab Emirates",
+  "Saudi Arabia",
+  "Qatar",
+  "Bahrain",
+  "Kuwait",
+  "Oman",
+  "Canada",
+  "Australia",
+  "Germany",
+  "France",
+  "Italy",
+  "Spain",
+  "Netherlands",
+  "Belgium",
+  "Switzerland",
+  "Austria",
+  "Sweden",
+  "Norway",
+  "Denmark",
+  "Finland",
+  "Ireland",
+  "Poland",
+  "Portugal",
+  "Greece",
+  "Czech Republic",
+  "Hungary",
+  "Romania",
+  "China",
+  "India",
+  "Bangladesh",
+  "Sri Lanka",
+  "Nepal",
+  "Afghanistan",
+  "Iran",
+  "Turkey",
+  "Malaysia",
+  "Singapore",
+  "Indonesia",
+  "Thailand",
+  "Vietnam",
+  "Philippines",
+  "Japan",
+  "South Korea",
+  "Russia",
+  "Ukraine",
+  "South Africa",
+  "Egypt",
+  "Morocco",
+  "Nigeria",
+  "Kenya",
+  "Brazil",
+  "Mexico",
+  "Argentina",
+  "Colombia",
+  "Chile",
+  "New Zealand",
+];
 
 export default function CustomizeTrip() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -55,9 +154,11 @@ export default function CustomizeTrip() {
     tripCategory: "",
     fullName: "",
     email: "",
+    whatsappCode: "+92",
     whatsapp: "",
-    passportCountry: "",
+    nationality: "Pakistan",
     departureCity: "Islamabad",
+    departureCityOther: "",
     tripType: "Adventure",
     depDatePk: "",
     retDatePk: "",
@@ -91,8 +192,9 @@ export default function CustomizeTrip() {
       toast.error("Name Required", { description: "Please enter your full name." });
       return;
     }
-    if (!form.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
-      toast.error("Valid Email Required", { description: "Please enter a valid email address." });
+    // Email is optional, but if provided must be valid
+    if (form.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+      toast.error("Invalid Email", { description: "Please enter a valid email address or leave it empty." });
       return;
     }
     if (form.selectedLocations.length === 0) {
@@ -103,17 +205,18 @@ export default function CustomizeTrip() {
     setIsSubmitting(true);
 
     try {
+      const actualDepartureCity = form.departureCity === "Other" ? form.departureCityOther : form.departureCity;
       const templateParams = {
         from_name: form.fullName,
-        from_email: form.email,
+        from_email: form.email || "Not provided",
         message: `Custom Trip Request:
 - Trip Mode: By ${form.tripMode}
 - Category: ${form.tripCategory || "Not specified"}
 - Name: ${form.fullName}
-- Email: ${form.email}
-- WhatsApp: ${form.whatsapp || "N/A"}
-- Passport Country: ${form.passportCountry || "N/A"}
-- Departure City: ${form.departureCity}
+- Email: ${form.email || "Not provided"}
+- WhatsApp: ${form.whatsapp ? `${form.whatsappCode} ${form.whatsapp}` : "N/A"}
+- Nationality: ${form.nationality}
+- Departure City: ${actualDepartureCity}
 - Trip Type: ${form.tripType}
 - Departure Date (PK): ${form.depDatePk || "N/A"}
 - Return Date (PK): ${form.retDatePk || "N/A"}
@@ -139,7 +242,8 @@ export default function CustomizeTrip() {
 
       setForm({
         tripMode: "Air", tripCategory: "", fullName: "", email: "",
-        whatsapp: "", passportCountry: "", departureCity: "Islamabad",
+        whatsappCode: "+92", whatsapp: "", nationality: "Pakistan",
+        departureCity: "Islamabad", departureCityOther: "",
         tripType: "Adventure", depDatePk: "", retDatePk: "",
         arrDateForeign: "", retDateForeign: "", duration: 9,
         adults: 2, children: 0, selectedLocations: [],
@@ -220,12 +324,65 @@ export default function CustomizeTrip() {
                 <div className="grid gap-5 md:grid-cols-2">
                   <InputField label="Full Name" required icon={<User className="h-4 w-4" />}
                     value={form.fullName} onChange={(v) => update("fullName", v)} />
-                  <InputField label="Email ID" required type="email" icon={<Mail className="h-4 w-4" />}
+                  <InputField label="Email ID" type="email" icon={<Mail className="h-4 w-4" />}
                     value={form.email} onChange={(v) => update("email", v)} />
-                  <InputField label="WhatsApp Number" required icon={<Phone className="h-4 w-4" />}
-                    value={form.whatsapp} onChange={(v) => update("whatsapp", v)} />
-                  <InputField label="Country of Passport" required icon={<Globe className="h-4 w-4" />}
-                    value={form.passportCountry} onChange={(v) => update("passportCountry", v)} />
+
+                  {/* WhatsApp with Country Code */}
+                  <div className="space-y-2">
+                    <Label className="text-xs font-medium text-foreground">
+                      WhatsApp Number <span className="text-destructive">*</span>
+                    </Label>
+                    <div className="flex gap-2">
+                      <Select value={form.whatsappCode} onValueChange={(v) => update("whatsappCode", v)}>
+                        <SelectTrigger className="w-[120px] shrink-0">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {countryCodes.map((c) => (
+                            <SelectItem key={c.code} value={c.code}>
+                              {c.code} {c.country}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <div className="relative flex-1">
+                        <Input
+                          type="tel"
+                          value={form.whatsapp}
+                          onChange={(e) => update("whatsapp", e.target.value)}
+                          placeholder="3001234567"
+                          className="pr-10"
+                        />
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-navy">
+                          <Phone className="h-4 w-4" />
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Nationality Dropdown */}
+                  <div className="space-y-2">
+                    <Label className="text-xs font-medium text-foreground">
+                      Nationality <span className="text-destructive">*</span>
+                    </Label>
+                    <div className="relative">
+                      <Select value={form.nationality} onValueChange={(v) => update("nationality", v)}>
+                        <SelectTrigger className="w-full pr-10">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {countries.map((country) => (
+                            <SelectItem key={country} value={country}>
+                              {country}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <span className="pointer-events-none absolute right-10 top-1/2 -translate-y-1/2 text-navy">
+                        <Globe className="h-4 w-4" />
+                      </span>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Section: About Your Tour */}
@@ -236,8 +393,38 @@ export default function CustomizeTrip() {
                 </div>
 
                 <div className="grid gap-5 md:grid-cols-3">
-                  <InputField label="Departure City" icon={<MapPin className="h-4 w-4" />}
-                    value={form.departureCity} onChange={(v) => update("departureCity", v)} />
+                  {/* Departure City Dropdown */}
+                  <div className="space-y-2">
+                    <Label className="text-xs font-medium text-foreground">
+                      Departure City <span className="text-destructive">*</span>
+                    </Label>
+                    <div className="relative">
+                      <Select value={form.departureCity} onValueChange={(v) => update("departureCity", v)}>
+                        <SelectTrigger className="w-full pr-10">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {departureCities.map((city) => (
+                            <SelectItem key={city} value={city}>
+                              {city}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <span className="pointer-events-none absolute right-10 top-1/2 -translate-y-1/2 text-navy">
+                        <MapPin className="h-4 w-4" />
+                      </span>
+                    </div>
+                    {form.departureCity === "Other" && (
+                      <Input
+                        type="text"
+                        placeholder="Enter your city"
+                        value={form.departureCityOther}
+                        onChange={(e) => update("departureCityOther", e.target.value)}
+                        className="mt-2"
+                      />
+                    )}
+                  </div>
                   <div className="space-y-2">
                     <Label className="text-xs font-medium text-foreground">
                       Trip Type <span className="text-destructive">*</span>

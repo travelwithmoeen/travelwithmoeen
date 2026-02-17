@@ -240,6 +240,7 @@ export default function TourDetails() {
                           <a
                             href={`https://wa.me/923339981177?text=${encodeURIComponent(
                               `Hi, I'm interested in booking:\n\n` +
+                                `*Package Code:* ${tour.code}\n` +
                                 `*Tour:* ${tour.name}\n` +
                                 `*Package:* ${pkg.category}\n` +
                                 `*Hotel:* ${pkg.features[0]}\n` +
