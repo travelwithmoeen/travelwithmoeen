@@ -44,8 +44,12 @@ import {
   getMinimumDays,
   isGuideCompulsory,
   getRecommendedVehicle,
+  roadHotelPricing,
+  airHotelPricing,
   type HotelCategory,
   type VehicleType,
+  type RoadDestination,
+  type AirDestination,
 } from "@/data/pricing";
 import { tours } from "@/data/tours";
 import { TourCard } from "@/components/TourCard";
@@ -211,6 +215,17 @@ export function PackageCalculator() {
 
   const formatPrice = (price: number) =>
     new Intl.NumberFormat("en-PK").format(price);
+
+  // Get hotel name for the selected category and destination
+  const hotelName = useMemo(() => {
+    if (!selectedDestination) return null;
+    const hotelData =
+      transportMode === "By Air"
+        ? airHotelPricing[selectedDestination as AirDestination]
+        : roadHotelPricing[selectedDestination as RoadDestination];
+    if (!hotelData || !hotelData[hotelCategory]) return null;
+    return hotelData[hotelCategory].hotel_name || null;
+  }, [selectedDestination, hotelCategory, transportMode]);
 
   const handleWhatsAppClick = () => {
     const addOnNames = selectedAddOns
@@ -865,6 +880,23 @@ Please confirm availability and provide more details.`;
                           </span>
                         </div>
                       </div>
+
+                      {/* Hotel Name Display */}
+                      {hotelName && (
+                        <div className="mb-4 rounded-xl bg-navy/5 p-4">
+                          <div className="flex items-start gap-2">
+                            <Hotel className="mt-0.5 h-4 w-4 shrink-0 text-gold" />
+                            <div>
+                              <p className="text-xs font-semibold uppercase tracking-wide text-navy">
+                                {hotelCategory} Hotels
+                              </p>
+                              <p className="mt-1 text-sm text-muted-foreground whitespace-pre-line">
+                                {hotelName}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </>
                   ) : (
                     <div className="mb-4 rounded-2xl bg-navy/50 p-8 text-center">

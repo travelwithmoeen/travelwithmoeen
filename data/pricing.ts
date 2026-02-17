@@ -5,6 +5,7 @@
 export interface HotelRate {
     twin_rate: number;
     triple_rate: number;
+    hotel_name?: string; // Optional field to store hotel name for reference
 }
 
 export type HotelCategory =
@@ -154,426 +155,521 @@ export const roadHotelPricing: Record<RoadDestination, Record<HotelCategory, Hot
   "Skardu Valley": {
     "Deluxe": {
       "twin_rate": 10000,
-      "triple_rate": 13000
+      "triple_rate": 13000,
+      "hotel_name": "Tarangfa Lodges Chilas or Indus Hotel / Hotel Himalaya / Al Noor Starlet Hotel / Dirleh Resort / (Deluxe room) / Demanchi Naran Valley"
     },
     "Premier": {
       "twin_rate": 13000,
-      "triple_rate": 15000
+      "triple_rate": 15000,
+      "hotel_name": "Grace Continental Chilas / Tibet / Hotel Himalaya (Executive room)  / Qayyam Skardu / Hotel Home Naran"
     },
     "Executive": {
       "twin_rate": 19000,
-      "triple_rate": 22000
+      "triple_rate": 22000,
+      "hotel_name": "Grace Continental Chilas  / Khar Resort  Skardu / Guman resort / PC Lagacy/ Rivage Resort Skardu / The Sarai Hotel & Resort Naran"
     },
     "Luxury": {
       "twin_rate": 30000,
-      "triple_rate": 40000
+      "triple_rate": 40000,
+      "hotel_name": "Shangrila Hotel Chilas /  Khoj Resorts (Deluxe room) or Rivage Resort Skardu (Executive rooms) / Northern Retreat by Hotel Demanchi"
     },
     "Ultra Luxury": {
       "twin_rate": 50000,
-      "triple_rate": 60000
+      "triple_rate": 60000,
+      "hotel_name": "Shangrila Hotel Chilas / Shangrila (Executive Room) / Himmel by Luxus (Deluxe room) /Khoj Resorts (River view loft villa) / Swiss Rock Hotel & Resort"
     }
   },
   "Hunza Valley": {
     "Deluxe": {
       "twin_rate": 10000,
-      "triple_rate": 13000
+      "triple_rate": 13000,
+      "hotel_name": "Tarangfa Lodges Chilas or Indus Hotel / Shaheen Resort Hunza (SRH)  / Hunza Blossom In / Karakuram Hotel / Hotel Himalaya (Deluxe room Hunza ) / Demanchi Hotel Naran"
     },
     "Premier": {
       "twin_rate": 13000,
-      "triple_rate": 15000
+      "triple_rate": 15000,
+      "hotel_name": "Grace Continental Chilas / Qayam Resort Hunza / Roomy Dastan/ Hunza  Qayyam Skardu (Skardu) / Hotel Home Naran"
     },
     "Executive": {
       "twin_rate": 19000,
-      "triple_rate": 22000
+      "triple_rate": 22000,
+      "hotel_name": "Grace Continental Chilas / Hard Rock Hunza Resort / Best Western/ Villas Roomy Resort / Khar Resort Hunza / The Sarai Hotel & Resort Naran"
     },
     "Luxury": {
       "twin_rate": 30000,
-      "triple_rate": 40000
+      "triple_rate": 40000,
+      "hotel_name": "Shangrila Hotel Chilas / Horizon Resort Attabad Lake (Deluxe room) or Offto Resort Hunza / Northern Retreat by Hotel Demanchi"
     },
     "Ultra Luxury": {
       "twin_rate": 50000,
-      "triple_rate": 60000
+      "triple_rate": 60000,
+      "hotel_name": "Shangrila Hotel Chilas / Best Western / Darbar Hotel / Hunza Serena Hotel  (Hunza)/ PC Skardu (Deluxe room Hunza Hotel ) / Swiss Rock Hotel & Resort Naran"
     }
   },
   "Skardu & Hunza": {
     "Deluxe": {
       "twin_rate": 10000,
-      "triple_rate": 13000
+      "triple_rate": 13000,
+      "hotel_name": "Tarangfa Lodges Chilas or Indus Hotel / Dirleh Resort Skardu/ Qayyam Skardu /Mulbery Resort Hunza / Roomy Dastan Hunza / Demanchi Hotel Naran"
     },
     "Premier": {
       "twin_rate": 13000,
-      "triple_rate": 15000
+      "triple_rate": 15000,
+      "hotel_name": "Grace Continental Chilas / Summit Embassy Hotel  / Qayyam Skardu  /Qayam Resort Hunza / Roomy Dastan Hunza / Hotel Home Naran"
     },
     "Executive": {
       "twin_rate": 19000,
-      "triple_rate": 22000
+      "triple_rate": 22000,
+      "hotel_name": "Grace Continental Chilas / Khar Resort  Skardu / Guman resort / PC Lagacy/ Rivage Resort Skardu  \nHard Rock Hunza Resort / Villas Roomy Resort Hunza / The Sarai Hotel & Resort Naran"
     },
     "Luxury": {
       "twin_rate": 30000,
-      "triple_rate": 40000
+      "triple_rate": 40000,
+      "hotel_name": "Shangrila Hotel Chilas / Khoj Resorts (Deluxe room) or Rivage Resort Skardu (Executive rooms)  Skardu \nHorizon Resort Attabad Lake (Deluxe room) or Offto Resort Hunza / Northern Retreat by Hotel Demanchi"
     },
     "Ultra Luxury": {
       "twin_rate": 50000,
-      "triple_rate": 60000
+      "triple_rate": 60000,
+      "hotel_name": "Shangrila Hotel Chilas / Shangrila (Executive Room) / Himmel by Luxus (Deluxe room) /Khoj Resorts (River view loft villa) (Deluxe room Skardu Hotel )\nBest Western / Darbar Hotel / Hunza Serena Hotel  (Deluxe room Hunza Hotel )/ Swiss Rock Hotel & Resort Naran"
     }
   },
   "Minimarg Astor Valley": {
     "Deluxe": {
       "twin_rate": 10000,
-      "triple_rate": 13000
+      "triple_rate": 13000,
+      "hotel_name": "Tarangfa Lodges Chilas or Indus Hotel / Minimarg Camping Side \nBenazir Palace Hotel & Restaurant Gorikot Astore / Demanchi Hotel"
     },
     "Premier": {
       "twin_rate": 13000,
-      "triple_rate": 15000
+      "triple_rate": 15000,
+      "hotel_name": "Grace Continental Chilas / Minimarg Camping Side \nWazir Guest House Rama Astore / Hotel Home Naran"
     },
     "Executive": {
       "twin_rate": 19000,
-      "triple_rate": 22000
+      "triple_rate": 22000,
+      "hotel_name": "Grace Continental Chilas / Khar Hotel Skardu (deluxe room) \nMinimarg Camping Side \nWazir Guest House Rama Astore / The Sarai Hotel & Resort Naran"
     },
     "Luxury": {
       "twin_rate": 30000,
-      "triple_rate": 40000
+      "triple_rate": 40000,
+      "hotel_name": "Shangrila Hotel Chilas / Minimarg Army Camping Side \n Mulberry Lodge Astore / Northern Retreat by Hotel Demanchi"
     },
     "Ultra Luxury": {
       "twin_rate": 50000,
-      "triple_rate": 60000
+      "triple_rate": 60000,
+      "hotel_name": "Shangrila Hotel Chilas / Minimarg Army Camping Side \n Mulberry Lodge Astore / Swiss Rock Hotel & Resort Naran"
     }
   },
   "Fairy Meadows Nanga Base Camp": {
     "Deluxe": {
       "twin_rate": 15000,
-      "triple_rate": 17000
+      "triple_rate": 17000,
+      "hotel_name": "Tarangfa Hotel Chilas or Indus Hotel / Fairy Meadows View  Camping Side / Demanchi Naran Valley"
     },
     "Premier": {
       "twin_rate": 16000,
-      "triple_rate": 18000
+      "triple_rate": 18000,
+      "hotel_name": "Grace Continental Chilas (deluxe room) /Fairy Meadows View Camping Side / Hotel Home Naran"
     },
     "Executive": {
       "twin_rate": 20000,
-      "triple_rate": 23000
+      "triple_rate": 23000,
+      "hotel_name": "Grace Continental Chilas / Raikot Sarai fairy meadows  / Grace Continental Chilas  / The Sarai Hotel & Resort Naran"
     },
     "Luxury": {
       "twin_rate": 30000,
-      "triple_rate": 35000
+      "triple_rate": 35000,
+      "hotel_name": "Shangrila Hotel Chilas/ Raikot Sarai fairy meadows / Northern Retreat by Hotel Demanchi"
     },
     "Ultra Luxury": {
       "twin_rate": 32000,
-      "triple_rate": 37000
+      "triple_rate": 37000,
+      "hotel_name": "Shangrila Hotel Chilas / Raikot Sarai fairy meadows / Swiss Rock Hotel & Resort Naran"
     }
   },
   "Murree Patriata Galiyat": {
     "Deluxe": {
       "twin_rate": 12000,
-      "triple_rate": 15000
+      "triple_rate": 15000,
+      "hotel_name": "Grand Taj hotel / The Cloud Xpress"
     },
     "Premier": {
       "twin_rate": 13000,
-      "triple_rate": 16000
+      "triple_rate": 16000,
+      "hotel_name": "Umda hotel / The Cloud Xpress"
     },
     "Executive": {
       "twin_rate": 25000,
-      "triple_rate": 30000
+      "triple_rate": 30000,
+      "hotel_name": "Khattak  lodges Murree/ Shangrila Hotel Murree for \nHotel Summer Retreat"
     },
     "Luxury": {
       "twin_rate": 27000,
-      "triple_rate": 33000
+      "triple_rate": 33000,
+      "hotel_name": "Roomy lodges Murree / Shangrila Hotel Murree for \nHotel Summer Retreat"
     },
     "Ultra Luxury": {
       "twin_rate": 30000,
-      "triple_rate": 36000
+      "triple_rate": 36000,
+      "hotel_name": "Felettis Grand / Shangrila Hotel Murree for \nHotel Summer Retreat"
     }
   },
   "Murree Ayubia Nathiagali": {
     "Deluxe": {
       "twin_rate": 15000,
-      "triple_rate": 18000
+      "triple_rate": 18000,
+      "hotel_name": "Hotel One Mall Road / Crown Inn Hotel"
     },
     "Premier": {
       "twin_rate": 16000,
-      "triple_rate": 17000
+      "triple_rate": 17000,
+      "hotel_name": "Umda hotel/ Crown Inn Hotel"
     },
     "Executive": {
       "twin_rate": 22000,
-      "triple_rate": 25000
+      "triple_rate": 25000,
+      "hotel_name": "Felettis Grand / Shanrila Hotel Murree"
     },
     "Luxury": {
       "twin_rate": 30000,
-      "triple_rate": 35000
+      "triple_rate": 35000,
+      "hotel_name": "Fiora Hotel / PC Bhurban Murree"
     },
     "Ultra Luxury": {
       "twin_rate": 35000,
-      "triple_rate": 38000
+      "triple_rate": 38000,
+      "hotel_name": "Double Tree by Hilton / Alpine Resort Nathiagali"
     }
   },
   "Naran Kaghan & Babusar Top": {
     "Deluxe": {
       "twin_rate": 15000,
-      "triple_rate": 28000
+      "triple_rate": 28000,
+      "hotel_name": "Demanchi hotel Naran"
     },
     "Premier": {
       "twin_rate": 19000,
-      "triple_rate": 22000
+      "triple_rate": 22000,
+      "hotel_name": "Millienium Hotel Naran"
     },
     "Executive": {
       "twin_rate": 21000,
-      "triple_rate": 23000
+      "triple_rate": 23000,
+      "hotel_name": "Home Naran"
     },
     "Luxury": {
       "twin_rate": 23000,
-      "triple_rate": 25000
+      "triple_rate": 25000,
+      "hotel_name": "Heritage hotel Naran / Northern Retreat by Hotel Demanchi"
     },
     "Ultra Luxury": {
       "twin_rate": 25000,
-      "triple_rate": 27000
+      "triple_rate": 27000,
+      "hotel_name": "The Sarai Hotel & Resort Naran / Northern Retreat by Hotel Demanchi"
     }
   },
   "Neelum Valley Kashmir": {
     "Deluxe": {
       "twin_rate": 6000,
-      "triple_rate": 8000
+      "triple_rate": 8000,
+      "hotel_name": "Neelum Cinaar Resort"
     },
     "Premier": {
       "twin_rate": 9000,
-      "triple_rate": 12000
+      "triple_rate": 12000,
+      "hotel_name": "Green Valley Resort"
     },
     "Executive": {
       "twin_rate": 12000,
-      "triple_rate": 15000
+      "triple_rate": 15000,
+      "hotel_name": "Hotel Neelum Elites"
     },
     "Luxury": {
       "twin_rate": 17000,
-      "triple_rate": 20000
+      "triple_rate": 20000,
+      "hotel_name": "Wanderlust Chapter 1"
     },
     "Ultra Luxury": {
       "twin_rate": 25000,
-      "triple_rate": 3000
+      "triple_rate": 3000,
+      "hotel_name": "Roameo Resort"
     }
   },
   "Neelum Taobat Arang Kel": {
     "Deluxe": {
       "twin_rate": 6000,
-      "triple_rate": 8000
+      "triple_rate": 8000,
+      "hotel_name": "Neelum Cinaar Resort"
     },
     "Premier": {
       "twin_rate": 9000,
-      "triple_rate": 12000
+      "triple_rate": 12000,
+      "hotel_name": "Green Valley Resort"
     },
     "Executive": {
       "twin_rate": 12000,
-      "triple_rate": 15000
+      "triple_rate": 15000,
+      "hotel_name": "Hotel Neelum Elites"
     },
     "Luxury": {
       "twin_rate": 17000,
-      "triple_rate": 20000
+      "triple_rate": 20000,
+      "hotel_name": "Wanderlust Chapter 1"
     },
     "Ultra Luxury": {
       "twin_rate": 25000,
-      "triple_rate": 3000
+      "triple_rate": 3000,
+      "hotel_name": "Roameo Resort"
     }
   },
   "Swat Kalam & Malam Jabba": {
     "Deluxe": {
       "twin_rate": 9000,
-      "triple_rate": 12000
+      "triple_rate": 12000,
+      "hotel_name": "Demanchi hotel Kalam or Equivalent"
     },
     "Premier": {
       "twin_rate": 12000,
-      "triple_rate": 15000
+      "triple_rate": 15000,
+      "hotel_name": "Hotel One Kalam"
     },
     "Executive": {
       "twin_rate": 18000,
-      "triple_rate": 21000
+      "triple_rate": 21000,
+      "hotel_name": "Maria Hotel Kalam"
     },
     "Luxury": {
       "twin_rate": 22000,
-      "triple_rate": 24000
+      "triple_rate": 24000,
+      "hotel_name": "The Jungle in resort"
     },
     "Ultra Luxury": {
       "twin_rate": 25000,
-      "triple_rate": 32000
+      "triple_rate": 32000,
+      "hotel_name": "(Zen Luxus Kalam or Walnut Heights by Roomy, Kalam)"
     }
   },
   "Islamabad": {
     "Deluxe": {
       "twin_rate": 15000,
-      "triple_rate": 20000
+      "triple_rate": 20000,
+      "hotel_name": "Roomy Signature / Grand Islamabad"
     },
     "Premier": {
       "twin_rate": 23000,
-      "triple_rate": 27000
+      "triple_rate": 27000,
+      "hotel_name": "Canadian Inn Hotel"
     },
     "Executive": {
       "twin_rate": 35000,
-      "triple_rate": 40000
+      "triple_rate": 40000,
+      "hotel_name": "Serena Hotel / Hotel Hill view Islamabad"
     },
     "Luxury": {
       "twin_rate": 30000,
-      "triple_rate": 33000
+      "triple_rate": 33000,
+      "hotel_name": "Sintra Hotel / Ramada Hotel/IFQ Hotel and Resort"
     },
     "Ultra Luxury": {
       "twin_rate": 35000,
-      "triple_rate": 40000
+      "triple_rate": 40000,
+      "hotel_name": "Islamabad Marriot Hotel"
     }
   },
   "Kalash Valley & Chitral": {
     "Deluxe": {
       "twin_rate": 29000,
-      "triple_rate": 32000
+      "triple_rate": 32000,
+      "hotel_name": "Height Away Cottage/Mountain Inn Chitral"
     },
     "Premier": {
       "twin_rate": 32000,
-      "triple_rate": 35000
+      "triple_rate": 35000,
+      "hotel_name": "Town Inn Guest House/Chinar Inn"
     },
     "Executive": {
       "twin_rate": 35000,
-      "triple_rate": 38000
+      "triple_rate": 38000,
+      "hotel_name": "Legendary hotel Chitral/Tirch Mir View Hotel"
     },
     "Luxury": {
       "twin_rate": 37000,
-      "triple_rate": 40000
+      "triple_rate": 40000,
+      "hotel_name": "Hindkush Sarai Chitral/Pamir Riverside Inn Chitral"
     },
     "Ultra Luxury": {
       "twin_rate": 40000,
-      "triple_rate": 45000
+      "triple_rate": 45000,
+      "hotel_name": "Ayun Fort Inn/Hindukash Heights"
     }
   },
   "Kumrat and Katora Lake": {
     "Deluxe": {
       "twin_rate": 13000,
-      "triple_rate": 16000
+      "triple_rate": 16000,
+      "hotel_name": "Kumrat valley resort"
     },
     "Premier": {
       "twin_rate": 16000,
-      "triple_rate": 19000
+      "triple_rate": 19000,
+      "hotel_name": "Hotel Green hill"
     },
     "Executive": {
       "twin_rate": 19000,
-      "triple_rate": 22000
+      "triple_rate": 22000,
+      "hotel_name": "Panjkora Resort/ Latitude resort"
     },
     "Luxury": {
       "twin_rate": 22000,
-      "triple_rate": 25000
+      "triple_rate": 25000,
+      "hotel_name": "Valhalla Resort/Celine Resorts Kumrat"
     },
     "Ultra Luxury": {
       "twin_rate": 28000,
-      "triple_rate": 31000
+      "triple_rate": 31000,
+      "hotel_name": "Kumrat Glamping Resort/The WoodPeckers"
     }
   }
-};
-
+}
 // ---- Air Hotel Pricing ----
-export const airHotelPricing: Record<AirDestination, Record<HotelCategory, HotelRate>> = {
+export const airHotelPricing: Record<AirDestination, Record<HotelCategory, HotelRate>> =
+{
   "Skardu Valley": {
     "Deluxe": {
       "twin_rate": 12000,
-      "triple_rate": 15000
+      "triple_rate": 15000,
+      "hotel_name": "Hotel Himalaya / Al Noor Starlet Hotel / Dirleh Resort / (Deluxe room)"
     },
     "Premier": {
       "twin_rate": 15000,
-      "triple_rate": 17000
+      "triple_rate": 17000,
+      "hotel_name": "Tibet / Hotel Himalaya (Executive room) / Kinara Hotel Skardu / Qayyam Skardu"
     },
     "Executive": {
       "twin_rate": 19000,
-      "triple_rate": 22000
+      "triple_rate": 22000,
+      "hotel_name": "Khar Resort  Skardu / Guman resort / PC Lagacy/ Rivage Resort Skardu"
     },
     "Luxury": {
       "twin_rate": 30000,
-      "triple_rate": 40000
+      "triple_rate": 40000,
+      "hotel_name": "Khoj Resorts (Deluxe room) or Rivage Resort Skardu (Executive rooms)"
     },
     "Ultra Luxury": {
       "twin_rate": 50000,
-      "triple_rate": 60000
+      "triple_rate": 60000,
+      "hotel_name": "Shangrila (Executive Room) / Himmel by Luxus (Deluxe room) /Khoj Resorts (River view loft villa)"
     }
   },
   "Hunza Valley": {
     "Deluxe": {
       "twin_rate": 12000,
-      "triple_rate": 15000
+      "triple_rate": 15000,
+      "hotel_name": "Shaheen Resort Hunza (SRH)  / Hunza Blossom In / Karakuram Hotel / Hotel Himalaya (1 Night) (Deluxe room Hunza )"
     },
     "Premier": {
       "twin_rate": 15000,
-      "triple_rate": 17000
+      "triple_rate": 17000,
+      "hotel_name": "Qayam Resort Hunza / Roomy Dastan/ Hunza 1 Night Qayyam Skardu (Skardu)"
     },
     "Executive": {
       "twin_rate": 19000,
-      "triple_rate": 22000
+      "triple_rate": 22000,
+      "hotel_name": "Hard Rock Hunza Resort / Best Western/ Villas Roomy Resort / Khar Resort Hunza"
     },
     "Luxury": {
       "twin_rate": 30000,
-      "triple_rate": 40000
+      "triple_rate": 40000,
+      "hotel_name": "Horizon Resort Attabad Lake (Deluxe room) or Offto Resort Hunza"
     },
     "Ultra Luxury": {
       "twin_rate": 50000,
-      "triple_rate": 60000
+      "triple_rate": 60000,
+      "hotel_name": "Best Western / Darbar Hotel / Hunza Serena Hotel  (Hunza)/ PC Skardu for 1 night  (Deluxe room Hunza Hotel )"
     }
   },
   "Minimarg Astor Valley": {
     "Deluxe": {
       "twin_rate": 15000,
-      "triple_rate": 17000
+      "triple_rate": 17000,
+      "hotel_name": "Minimarg Camping Side (2 nights)\nQayyam Hotel Skardu (deluxe room) (2 nights)"
     },
     "Premier": {
       "twin_rate": 19000,
-      "triple_rate": 22000
+      "triple_rate": 22000,
+      "hotel_name": "Minimarg Camping Side (2 nights)\nKhar Resort  Skardu  (deluxe room) (2 nights)"
     },
     "Executive": {
       "twin_rate": 20000,
-      "triple_rate": 23000
+      "triple_rate": 23000,
+      "hotel_name": "Khar Hotel Skardu (deluxe room) (1night)\nMinimarg Camping Side (2 nights)\nKhoj resort Skardu (deluxe room) (1night)"
     },
     "Luxury": {
       "twin_rate": 30000,
-      "triple_rate": 35000
+      "triple_rate": 35000,
+      "hotel_name": "Minimarg Army Camping Side (2 nights)\nKhoj Resorts (deluxe room) (2 night)"
     },
     "Ultra Luxury": {
       "twin_rate": 35000,
-      "triple_rate": 38000
+      "triple_rate": 38000,
+      "hotel_name": "Minimarg Army Camping Side (2 nights)\nKhoj Resorts (River Edge Loft Hummok Villa (RELHV)) (2 night)"
     }
   },
   "Fairy Meadows Nanga Base Camp": {
     "Deluxe": {
       "twin_rate": 15000,
-      "triple_rate": 17000
+      "triple_rate": 17000,
+      "hotel_name": "Snow land (deluxe room) (2 nights)/Fairy Meadows View Camping Side (2 nights)"
     },
     "Premier": {
       "twin_rate": 16000,
-      "triple_rate": 18000
+      "triple_rate": 18000,
+      "hotel_name": "Al Noor Starlet Hotel (deluxe room) (2 nights)/Fairy Meadows View Camping Side (2 nights)"
     },
     "Executive": {
       "twin_rate": 20000,
-      "triple_rate": 23000
+      "triple_rate": 23000,
+      "hotel_name": "Raikot Sarai fairy meadows (2 nights)\nKinara Hotel Skardu (deluxe room) (2 nights)\nQayam Hotel Skardu (deluxe room)"
     },
     "Luxury": {
       "twin_rate": 30000,
-      "triple_rate": 35000
+      "triple_rate": 35000,
+      "hotel_name": "Raikot Sarai fairy meadows (2 nights)\nKhoj Resorts (deluxe room) (2 night)"
     },
     "Ultra Luxury": {
       "twin_rate": 32000,
-      "triple_rate": 37000
+      "triple_rate": 37000,
+      "hotel_name": "Raikot Sarai fairy meadows (2 nights)\nKhoj Resorts (River Edge Loft Hummok Villa (RELHV)) (2 night)"
     }
   },
   "Skardu & Hunza": {
     "Deluxe": {
       "twin_rate": 12000,
-      "triple_rate": 15000
+      "triple_rate": 15000,
+      "hotel_name": "Hotel Himalaya / Al Noor Starlet Hotel / Dirleh Resort / (Deluxe room Skardu ) \n Shaheen Resort Hunza(SRH)  / Hunza Blossom In / (Deluxe room Hunza )"
     },
     "Premier": {
       "twin_rate": 15000,
-      "triple_rate": 18000
+      "triple_rate": 18000,
+      "hotel_name": "Tibet / Hotel Himalaya / Kinara Hotel Skardu / Qayyam Skardu\nQayam Resort Hunza / Roomy Dastan Hunza"
     },
     "Executive": {
       "twin_rate": 18000,
-      "triple_rate": 22000
+      "triple_rate": 22000,
+      "hotel_name": "Khar Resort  Skardu / Guman resort / PC Lagacy/ Rivage Resort Skardu  \nHard Rock Hunza Resort / Villas Roomy Resort Hunza"
     },
     "Luxury": {
       "twin_rate": 24000,
-      "triple_rate": 30000
+      "triple_rate": 30000,
+      "hotel_name": "Khoj Resorts (Deluxe room) or Rivage Resort Skardu (Executive rooms)  Skardu \nHorizon Resort Attabad Lake (Deluxe room) or Offto Resort Hunza"
     },
     "Ultra Luxury": {
       "twin_rate": 30000,
-      "triple_rate": 40000
+      "triple_rate": 40000,
+      "hotel_name": "Shangrila (Executive Room) / Himmel by Luxus (Deluxe room) /Khoj Resorts (River view loft villa) (Deluxe room Skardu Hotel )\nBest Western / Darbar Hotel / Hunza Serena Hotel  (Deluxe room Hunza Hotel )"
     }
   }
-};
+}
 
 
 
