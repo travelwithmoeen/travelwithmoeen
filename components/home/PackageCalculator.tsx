@@ -151,9 +151,21 @@ export function PackageCalculator() {
     if (mode === "By Air") {
       setSelectedAddOns(["welcome_pack", "entry_tickets", "arrival_breakfast"]);
     } else {
-      setSelectedAddOns([]);
+      // By Road: include arrival_breakfast if days > 1 (default is 2)
+      setSelectedAddOns(["arrival_breakfast"]);
     }
   };
+
+  // Auto-manage arrival_breakfast for By Road based on days
+  useEffect(() => {
+    if (transportMode === "By Road") {
+      if (days > 1 && !selectedAddOns.includes("arrival_breakfast")) {
+        setSelectedAddOns((prev) => [...prev, "arrival_breakfast"]);
+      } else if (days <= 1 && selectedAddOns.includes("arrival_breakfast")) {
+        setSelectedAddOns((prev) => prev.filter((a) => a !== "arrival_breakfast"));
+      }
+    }
+  }, [days, transportMode]);
 
   // Add-ons that users can toggle (shown in UI) - only Guide and Meals
   const toggleableAddOns = optionalAddOns.filter(
@@ -737,6 +749,11 @@ Please confirm availability and provide more details.`;
                         included
                       </p>
                     )}
+                    {transportMode === "By Road" && days > 1 && (
+                      <p className="mt-2 text-xs text-muted-foreground">
+                        * Arrival Breakfast (PKR 500/person) included for trips &gt; 1 day
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -862,13 +879,24 @@ Please confirm availability and provide more details.`;
                             </span>
                           </div>
                         )}
-                        {pricing.addOnsTotal > 0 && (
+                        {pricing.arrivalBreakfastTotal > 0 && (
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">
-                              Add-ons
+                              Arrival Breakfast ({totalTravelers} x PKR 500)
                             </span>
                             <span className="font-medium text-navy">
-                              PKR {formatPrice(pricing.addOnsTotal)}
+                              PKR {formatPrice(pricing.arrivalBreakfastTotal)}
+                            </span>
+                          </div>
+                        )}
+                        {selectedAddOns.some(id => id !== "arrival_breakfast") &&
+                         pricing.addOnsTotal - pricing.arrivalBreakfastTotal > 0 && (
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">
+                              Other Add-ons
+                            </span>
+                            <span className="font-medium text-navy">
+                              PKR {formatPrice(pricing.addOnsTotal - pricing.arrivalBreakfastTotal)}
                             </span>
                           </div>
                         )}

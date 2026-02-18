@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { ArrowLeft, Clock, MapPin, Check, X } from "lucide-react";
@@ -9,14 +9,53 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { tours, getCategoryBadgeClass } from "@/data/tours";
+import { tours, getCategoryBadgeClass, TourCategory } from "@/data/tours";
 import { TourOverview } from "@/components/tours/TourOverview";
 import { cn } from "@/lib/utils";
+import { calculatePackagePrice, getVehicleDisplayName } from "@/lib/calculatePackagePrice";
+import { HotelCategory } from "@/data/pricing";
+
+// All hotel categories to show on every tour
+const ALL_HOTEL_CATEGORIES: HotelCategory[] = [
+  "Deluxe",
+  "Premier",
+  "Executive",
+  "Luxury",
+  "Ultra Luxury",
+];
 
 export default function TourDetails() {
   const { id } = useParams<{ id: string }>();
   const tour = tours.find((t) => t.id === id);
   const [openItems, setOpenItems] = useState<string[]>([]);
+
+  // Calculate dynamic prices for ALL hotel categories
+  const packagePrices = useMemo(() => {
+    if (!tour) return {};
+
+    const prices: Record<string, { price: number; vehicleType: string; hotelName?: string }> = {};
+
+    // Calculate price for each hotel category
+    ALL_HOTEL_CATEGORIES.forEach((category) => {
+      const result = calculatePackagePrice(
+        tour.region,
+        category as TourCategory,
+        tour.duration,
+        tour.transport,
+        "Islamabad"
+      );
+
+      if (result) {
+        prices[category] = {
+          price: result.totalForTwo,
+          vehicleType: getVehicleDisplayName(result.vehicleType),
+          hotelName: result.hotelName,
+        };
+      }
+    });
+
+    return prices;
+  }, [tour]);
 
   const expandAll = () => {
     if (tour) {
@@ -187,75 +226,83 @@ export default function TourDetails() {
               </CardHeader>
               <CardContent>
                 <Tabs
-                  defaultValue={tour.packages[0].category}
+                  defaultValue="Deluxe"
                   className="w-full"
                 >
-                  <TabsList className="mb-6 flex w-full h-auto p-2 gap-1  ">
-                    {tour.packages.map((pkg) => (
+                  <TabsList className="mb-6 flex w-full h-auto p-2 gap-1">
+                    {ALL_HOTEL_CATEGORIES.map((category) => (
                       <TabsTrigger
-                        key={pkg.category}
-                        value={pkg.category}
+                        key={category}
+                        value={category}
                         className="flex-1 py-2.5 px-2 text-xs font-medium rounded-full whitespace-nowrap data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm"
                       >
-                        {pkg.category}
+                        {category}
                       </TabsTrigger>
                     ))}
                   </TabsList>
 
-                  {tour.packages.map((pkg) => (
-                    <TabsContent
-                      key={pkg.category}
-                      value={pkg.category}
-                      className="mt-0"
-                    >
-                      <div className="space-y-4">
-                        {/* Price */}
-                        <div className="text-center py-4 bg-muted/30 rounded-lg">
-                          <span className="text-sm text-muted-foreground">
-                            Starting from
-                          </span>
-                          <p className="text-3xl font-bold text-primary my-1">
-                            {pkg.price.toLocaleString()}.PKR
-                          </p>
-                          <span className="text-sm text-muted-foreground">
-                            For 2 Persons
-                          </span>
-                        </div>
+                  {ALL_HOTEL_CATEGORIES.map((category) => {
+                    const priceData = packagePrices[category];
+                    const displayPrice = priceData?.price || 0;
+                    const vehicleType = priceData?.vehicleType || "GLI Car New Model";
+                    const hotelName = priceData?.hotelName || "";
 
-                        {/* Features */}
-                        <ul className="space-y-2 border-t border-border pt-4">
-                          {pkg.features.map((feature, i) => (
-                            <li
-                              key={i}
-                              className="flex items-start gap-2 text-sm"
-                            >
+                    return (
+                      <TabsContent
+                        key={category}
+                        value={category}
+                        className="mt-0"
+                      >
+                        <div className="space-y-4">
+                          {/* Price */}
+                          <div className="text-center py-4 bg-muted/30 rounded-lg">
+                            <span className="text-sm text-muted-foreground">
+                              Starting from
+                            </span>
+                            <p className="text-3xl font-bold text-primary my-1">
+                              {displayPrice.toLocaleString()}.PKR
+                            </p>
+                            <span className="text-sm text-muted-foreground">
+                              For 2 Persons
+                            </span>
+                          </div>
+
+                          {/* Features */}
+                          <ul className="space-y-2 border-t border-border pt-4">
+                            <li className="flex items-start gap-2 text-sm">
                               <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
-                              {feature}
+                              Private Transport ({vehicleType})
                             </li>
-                          ))}
-                        </ul>
+                            {hotelName && (
+                              <li className="flex items-start gap-2 text-sm">
+                                <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
+                                {hotelName}
+                              </li>
+                            )}
+                          </ul>
 
-                        {/* CTA */}
-                        <Button className="w-full" asChild>
-                          <a
-                            href={`https://wa.me/923339981177?text=${encodeURIComponent(
-                              `Hi, I'm interested in booking:\n\n` +
-                                `*Package Code:* ${tour.code}\n` +
-                                `*Tour:* ${tour.name}\n` +
-                                `*Package:* ${pkg.category}\n` +
-                                `*Hotel:* ${pkg.features[0]}\n` +
-                                `*Price:* ${pkg.price.toLocaleString()} PKR\n\n` +
-                                `Please provide more details.`
-                            )}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            Book Now
-                          </a>
-                        </Button>
-                      </div>
-                    </TabsContent>
-                  ))}
+                          {/* CTA */}
+                          <Button className="w-full" asChild>
+                            <a
+                              href={`https://wa.me/923339981177?text=${encodeURIComponent(
+                                `Hi, I'm interested in booking:\n\n` +
+                                  `*Package Code:* ${tour.code}\n` +
+                                  `*Tour:* ${tour.name}\n` +
+                                  `*Package:* ${category}\n` +
+                                  `*Hotel:* ${hotelName}\n` +
+                                  `*Price:* ${displayPrice.toLocaleString()} PKR\n\n` +
+                                  `Please provide more details.`
+                              )}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              Book Now
+                            </a>
+                          </Button>
+                        </div>
+                      </TabsContent>
+                    );
+                  })}
                 </Tabs>
               </CardContent>
             </Card>

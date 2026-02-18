@@ -29,7 +29,8 @@ export type RoadDestination =
     | "Swat Kalam & Malam Jabba"
     | "Islamabad"
     | "Kumrat and Katora Lake"
-    | "Kalash Valley & Chitral";
+    | "Kalash Valley & Chitral"
+    | "Ratti Gali Lake";
 
 export type AirDestination = "Skardu Valley" | "Hunza Valley" | "Skardu & Hunza" | "Minimarg Astor Valley" | "Fairy Meadows Nanga Base Camp";
 
@@ -59,6 +60,7 @@ export const roadDestinations: RoadDestination[] = [
     "Skardu Valley", "Hunza Valley", "Skardu & Hunza", "Minimarg Astor Valley", "Fairy Meadows Nanga Base Camp",
     "Naran Kaghan & Babusar Top", "Murree Ayubia Nathiagali", "Neelum Valley Kashmir",
     "Neelum Taobat Arang Kel", "Swat Kalam & Malam Jabba", "Islamabad", "Kumrat and Katora Lake", "Kalash Valley & Chitral",
+    "Ratti Gali Lake",
 ];
 // testing purposes
 // ---- Air Destinations ----
@@ -131,6 +133,7 @@ export const roadMinimumDays: Record<RoadDestination, number> = {
     "Islamabad": 1,
     "Kumrat and Katora Lake": 4,
     "Kalash Valley & Chitral": 6,
+    "Ratti Gali Lake": 3,
 };
 
 export const airMinimumDays: Record<AirDestination, number> = {
@@ -528,6 +531,33 @@ export const roadHotelPricing: Record<RoadDestination, Record<HotelCategory, Hot
       "twin_rate": 28000,
       "triple_rate": 31000,
       "hotel_name": "Kumrat Glamping Resort/The WoodPeckers"
+    }
+  },
+  "Ratti Gali Lake": {
+    "Deluxe": {
+      "twin_rate": 8000,
+      "triple_rate": 10000,
+      "hotel_name": "Camping at Ratti Gali / Local Guest House"
+    },
+    "Premier": {
+      "twin_rate": 10000,
+      "triple_rate": 12000,
+      "hotel_name": "Guest House Ratti Gali / Neelum Inn"
+    },
+    "Executive": {
+      "twin_rate": 14000,
+      "triple_rate": 16000,
+      "hotel_name": "Hotel Neelum Elites / Wanderlust Neelum"
+    },
+    "Luxury": {
+      "twin_rate": 18000,
+      "triple_rate": 21000,
+      "hotel_name": "Wanderlust Chapter 1 / Ratti Gali Camp"
+    },
+    "Ultra Luxury": {
+      "twin_rate": 25000,
+      "triple_rate": 28000,
+      "hotel_name": "Roameo Resort / Premium Camping"
     }
   }
 }
@@ -1961,6 +1991,7 @@ export function calculateTripPrice(params: {
     vehicleTotal: number;
     airTicketTotal: number;
     addOnsTotal: number;
+    arrivalBreakfastTotal: number;
     departureSurcharge: number;
     grandTotal: number;
     perPerson: number;
@@ -2041,6 +2072,7 @@ export function calculateTripPrice(params: {
     // Add-ons cost (check both common and road-only add-ons)
     let addOnsTotal = 0;
     let mealTotal = 0;
+    let arrivalBreakfastTotal = 0;
     const allAddOns = [...optionalAddOns, ...roadOnlyAddOns];
     selectedAddOns.forEach((addonId) => {
         // Special handling for meals - use hotel category pricing and nights
@@ -2048,6 +2080,12 @@ export function calculateTripPrice(params: {
             const mealRate = mealPricingPerNight[hotelCategory] || 1200;
             mealTotal = mealRate * nights * totalPeople;
             addOnsTotal += mealTotal;
+            return;
+        }
+        // Special handling for arrival_breakfast - track separately
+        if (addonId === "arrival_breakfast") {
+            arrivalBreakfastTotal = 500 * totalPeople; // 500 per person
+            addOnsTotal += arrivalBreakfastTotal;
             return;
         }
         const addon = allAddOns.find((a) => a.id === addonId);
@@ -2067,7 +2105,7 @@ export function calculateTripPrice(params: {
     const perPerson = totalPeople > 0 ? Math.round(grandTotal / totalPeople) : 0;
 
     return {
-        hotelTotal, vehicleTotal, airTicketTotal, addOnsTotal, departureSurcharge, grandTotal, perPerson,
+        hotelTotal, vehicleTotal, airTicketTotal, addOnsTotal, arrivalBreakfastTotal, departureSurcharge, grandTotal, perPerson,
         adultTicketTotal, childTicketTotal, infantLapTotal, infantOwnSeatTotal
     };
 }

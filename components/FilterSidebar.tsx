@@ -79,6 +79,7 @@ export default function FilterSidebar({
     "Islamabad",
     "Kalash Valley & Chitral",
     "Kumrat and Katora Lake",
+    "Ratti Gali Lake",
   ];
 
   const airRegions: TourRegion[] = [

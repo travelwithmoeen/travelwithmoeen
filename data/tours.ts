@@ -852,7 +852,7 @@ export const tours: Tour[] = [
     "region": "Naran Kaghan & Babusar Top",
     "pdf": "/images/pdf/byroadtrips/3_days_by_road_trip_to_naran_kaghan_and_babusar_top.pdf",
     "duration": 3,
-    "code": "221",
+    "code": "121",
     "description": "Experience the breathtaking beauty of Naran Kaghan and Babusar Top over a 3-day road trip. Explore the stunning landscapes of Neelum Valley, Shogran Valley, Lulusar Lake, and Babusar Top. Enjoy activities like jeep rides, sightseeing, and optional river rafting, with comfortable accommodations and meals included.",
     "image": "/images/All_Tour_Images/NarabKaghan/Picture1.png",
 
@@ -1654,7 +1654,7 @@ export const tours: Tour[] = [
     "location": "Babusar Top",
     "region": "Naran Kaghan & Babusar Top",
     "duration": 4,
-    "code": "222",
+    "code": "122",
     "pdf": "/images/pdf/byroadtrips/4_days_by_road_trip_to_naran_kaghan_and_babusar_top_(couple).pdf",
     "description": "Experience a 4-day journey through the scenic Naran Kaghan Valley and Babusar Top, exploring breathtaking landscapes, serene lakes, and vibrant local culture. Enjoy private transport, comfortable accommodations, and a variety of activities including hiking, boating, and sightseeing.",
     "image": "/images/All_Tour_Images/SwatKalamMalamJabba/Picture3.jpg",
@@ -2737,7 +2737,7 @@ export const tours: Tour[] = [
     "location": "Astor Minimarg",
     "region": "Minimarg Astor Valley",
     "duration": 6,
-    "code": "171",
+    "code": "203",
 
     "description": "Experience a 6-day adventure exploring the scenic beauty of Astor Minimarg and Skardu. Enjoy breathtaking views, cultural exchanges, and unforgettable experiences in some of the most beautiful locations in Pakistan.",
     "pdf": "/images/pdf/byairtrips/6_days_by_air_trip_to_astor_minimarg_and_skardu_(couple).pdf",
@@ -4185,7 +4185,7 @@ export const tours: Tour[] = [
     "location": "Minimarg, Astor, Skardu",
     "region": "Minimarg Astor Valley",
     "duration": 6,
-    "code": "192",
+    "code": "171",
     "description": "Experience a 6-day adventure through the stunning landscapes of Minimarg, Astor, and Skardu. This road trip offers breathtaking views, cultural exploration, and the natural beauty of Northern Pakistan, including visits to Rama Meadows, Deosai National Park, and the famous Rainbow Lake.",
      "pdf": "/images/pdf/byairtrips/6_days_by_air_trip_to_astor_minimarg_and_skardu_(couple).pdf",
 
