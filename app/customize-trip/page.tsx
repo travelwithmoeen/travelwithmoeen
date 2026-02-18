@@ -53,10 +53,6 @@ const departureCities = [
   "Islamabad",
   "Lahore",
   "Karachi",
-  "Peshawar",
-  "Multan",
-  "Faisalabad",
-  "Rawalpindi",
   "Other",
 ];
 
