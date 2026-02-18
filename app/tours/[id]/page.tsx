@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { ArrowLeft, Clock, MapPin, Check, X } from "lucide-react";
+import { ArrowLeft, Clock, MapPin, Check, X, ExternalLink } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -132,16 +132,31 @@ export default function TourDetails() {
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
-        {/* Back Button */}
-        <Button
-          asChild
-          className="mb-6 text-navy border border-navy bg-white hover:bg-navy hover:text-white"
-        >
-          <Link href="/tours">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Tours
-          </Link>
-        </Button>
+        {/* Back Button & View Template Button */}
+        <div className="mb-6 flex gap-4">
+          <Button
+            asChild
+            className="text-navy border border-navy bg-white hover:bg-navy hover:text-white"
+          >
+            <Link href="/tours">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Tours
+            </Link>
+          </Button>
+          <Button
+            asChild
+            className="bg-primary text-white hover:bg-primary/90"
+          >
+            <a
+              href={`/tours/${id}/template`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <ExternalLink className="mr-2 h-4 w-4" />
+              View Template
+            </a>
+          </Button>
+        </div>
 
       
 
