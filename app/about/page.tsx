@@ -52,7 +52,7 @@ import teamGuide3 from "@/public/images/team/Rizwan_Ahmad_Video_Editor.webp";
 import teamGuide4 from "@/public/images/team/Sawaira_Fatima_Admin_Log_officer.webp";
 import teamGuide5 from "@/public/images/team/TALIB_HUSSAIN_ARAPA_Tour_Manager.webp";
 import teamGuide6 from "@/public/images/team/Rizwan_Ahmad_Finance_Manager.webp";
-import Logo from "@/public/images/twm-logo.webp"
+import Logo from "@/public/images/twm-logo.webp";
 import Profile from "@/public/images/moeen/profile.jpg";
 import RoundImage from "@/public/images/Picture14.jpg";
 import vision1 from "@/public/images/moeen/vision1.jpg";
@@ -221,41 +221,41 @@ const About = () => {
         subtitle="Quality Tourism Promoter Since 2020"
         backgroundImage={"images/team/About_us.webp"}
       /> */}
-          {/* Hero */}
-            <section className="relative bg-navy py-20 text-center text-white">
-              <div className="bg-navy" />
-              <motion.div
-                className="container relative mx-auto px-4"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-              >
-                <span className="mb-3 inline-block rounded-full bg-gold/90 px-4 py-1.5 text-sm font-semibold text-white">
-                 Our information
-                </span>
-                <h1 className="text-3xl font-bold text-white md:text-5xl">
-                   About Us
-                </h1>
-                <p className="mx-auto mt-4 max-w-2xl text-white/70">
-                  Quality Tourism Promoter Since 2020.
-                </p>
-              </motion.div>
-            </section>
+      {/* Hero */}
+      <section className="relative bg-navy py-20 text-center text-white">
+        <div className="bg-navy" />
+        <motion.div
+          className="container relative mx-auto px-4"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <span className="mb-3 inline-block rounded-full bg-gold/90 px-4 py-1.5 text-sm font-semibold text-white">
+            Our information
+          </span>
+          <h1 className="text-3xl font-bold text-white md:text-5xl">
+            About Us
+          </h1>
+          <p className="mx-auto mt-4 max-w-2xl text-white/70">
+            Quality Tourism Promoter Since 2020.
+          </p>
+        </motion.div>
+      </section>
 
       {/* Section: Expertly Crafted Travel Experiences */}
       <section className="py-20 px-4 bg-[#f7f6f2]">
         <div className="max-w-[1200px] mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="grid lg:grid-cols-2 gap-4 items-start">
             {/* Left: Overlapping Images */}
             <motion.div
               initial={{ opacity: 0, x: -30 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
-              className="relative h-[500px]"
+              className="relative"
             >
               {/* Background rectangular image */}
-              <div className="absolute top-0 left-0 w-[70%] h-[80%] rounded-3xl overflow-hidden shadow-xl z-10">
+              <div className="relative w-full aspect-[4/5] max-w-[400px] rounded-3xl overflow-hidden shadow-xl">
                 <Image
                   src={Profile}
                   alt="Temple destination"
@@ -264,19 +264,6 @@ const About = () => {
                   placeholder="blur"
                 />
               </div>
-
-              {/* Overlapping circular image */}
-              {/* <div className="absolute bottom-8 right-0 lg:bottom-0 lg:right-[-40px] w-48 h-48 lg:w-56 lg:h-56 rounded-full overflow-hidden   z-20">
-                <div className="relative w-full h-full">
-                  <Image
-                    src={Logo}
-                    alt="Travel with Moeen Logo"
-                    fill
-                    className="object-contain"
-                    placeholder="blur"
-                  />
-                </div>
-              </div> */}
             </motion.div>
 
             {/* Right: Content */}
@@ -287,16 +274,30 @@ const About = () => {
               transition={{ duration: 0.6 }}
               className="space-y-8"
             >
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-serif">
+              <h2 className="text-2xl md:text-4xl lg:text-4xl font-serif">
                 <span className="font-bold">About Us </span> Travel with Moeen
               </h2>
 
-              <p className="text-muted-foreground leading-relaxed">
-                Welcome to Travel with Moeen, a premier travel management
-                company dedicated to redefining quality tourism in Pakistan and
-                abroad. Founded on the principles of authenticity and
-                professional excellence, we provide meticulously curated travel
-                experiences for individuals, families, and corporate entities.
+              <p className="text-muted-foreground leading-relaxed text-justify">
+                Welcome to Travel with Moeen, Travel with Moeen (TWM) is found
+                by Mr Moeen Akhtar who’s mission is to promote quality travel
+                and tourism. Mr Moeen initiated this journey with travel content
+                creation to not only promote Pakistan tourism but has also
+                travelled to several countries and has shared his experience
+                through different social media platforms.
+                <br /> Travel content shared through Travel with Moeen platforms
+                reach million’s of people every month and is widely appreciated
+                by follower’s because of it’s authenticity and accuracy.
+                <br /> With mission in mind to promote quality tourism, Mr Moeen
+                Akhtar found travel with Moeen as a travel and tourism company
+                and has been organizing Domestic as well as international trips.
+                To promote quality tourism, as the company is highly trusted
+                therefore every tour is given attention and is taken
+                professionally to maintain quality and excellence with
+                transparency to give premier experience to our guest.
+                <br /> Travel and tours are arranged for solo, couples,
+                families, groups and corporate as per requirements and the key
+                factor of success for TWM is attention to details for each tour.
               </p>
 
               {/* Features */}
@@ -311,7 +312,8 @@ const About = () => {
                     </h4>
                     <p className="text-muted-foreground text-sm">
                       Our experienced team ensures your trip is stress-free,
-                      safe, and well-planned.
+                      safe, and well-planned and for each travel a dedicated
+                      travel expert looks after the travel and complete tour.
                     </p>
                   </div>
                 </div>
@@ -405,16 +407,28 @@ const About = () => {
               <h2 className="text-3xl md:text-4xl font-serif font-bold text-primary mb-6">
                 The Visionary Behind the Brand
               </h2>
-              <p className="text-muted-foreground leading-relaxed mb-8">
+              <p className="text-muted-foreground leading-relaxed mb-8 text-justify">
                 Moeen Akhtar, the founder of Travel with Moeen, brings a unique
                 blend of corporate discipline and a passion for exploration.
                 Originally from Dera Ismail Khan, Moeen relocated to Islamabad
-                in 2009 after earning his MBA. Before transitioning into
+                in 2009 after earning his MBA.<br /> Before transitioning into
                 entrepreneurship in 2016, he spent years serving in high-stakes
                 environments for prestigious international organizations,
-                including INGOs, USAID, and the United Nations. This background
-                in international standards and logistical precision is the
-                backbone of the "Quality Tourism" we deliver today.
+                including INGOs, USAID, and the United Nations and has extensive
+                experience in Administration, Logistics and Management. This
+                background in international standards and logistical precision
+                is the backbone of the "Quality Tourism" we deliver today. <br /> As Mr
+                Moeen is highly and widely appreciated by follower’s for
+                authentic travel and tourism content which is shared through
+                different social media platforms and has also been broadcasted
+                National Television. <br />
+                As the foundation of Travel with Moeen is
+                in trust and confidence by the viewer therefore Travel with
+                Moeen as a travel and tourism company is also found on the same
+                foundation so that the guest trusting the TWM for their travel
+                needs enjoy premium and hassle free travel and tourism. A
+                dedicated team is available round the clock and Mr Moeen Akhtar
+                also keep track of each guest travelling with TWM
               </p>
 
               {/* Vision & Mission */}
@@ -428,8 +442,7 @@ const About = () => {
                       Our Vision
                     </h3>
                     <p className="text-muted-foreground text-sm">
-                      To become the leading luxury tour company in Pakistan for
-                      group, family, couple, and corporate tours.
+                      To become the leading quality travel and tourism promoter company in Pakistan.
                     </p>
                   </div>
                 </div>
@@ -443,9 +456,7 @@ const About = () => {
                       Our Mission
                     </h3>
                     <p className="text-muted-foreground text-sm">
-                      To provide the finest luxury tours in Pakistan, making
-                      comfort the priority while delivering high-quality
-                      hospitality services.
+                      To provide the finest quality of services for travel and tourism in Pakistan and for international tours, making comfort the priority while delivering high-quality hospitality services.
                     </p>
                   </div>
                 </div>
@@ -479,7 +490,9 @@ const About = () => {
               We Complete Every Step Carefully
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              From your first inquiry to your final destination, we apply corporate standards and logistical precision to ensure a seamless travel experience.
+              From your first inquiry to your final destination, we apply
+              corporate standards and logistical precision to ensure a seamless
+              travel experience.
             </p>
           </motion.div>
 
@@ -590,7 +603,8 @@ const About = () => {
                 Meaningful?
               </h2>
               <p className="text-muted-foreground">
-             Redefining quality tourism through expert guidance, transparent pricing, and unforgettable global destinations.
+                Redefining quality tourism through expert guidance, transparent
+                pricing, and unforgettable global destinations.
               </p>
 
               {/* Feature List */}
@@ -704,7 +718,6 @@ const About = () => {
       </section>
 
       {/* Section 3: Why Choose Us (Dark Background) */}
-   
 
       {/* Section 4: Our Team */}
       <section className="py-20 px-4">
@@ -942,7 +955,7 @@ const About = () => {
           </motion.div>
         </div>
       </section>
-              <SocialMediaSection/>
+      <SocialMediaSection />
       {/* <Footer /> */}
     </div>
   );
