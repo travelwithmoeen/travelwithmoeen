@@ -275,7 +275,7 @@ const About = () => {
               className="space-y-8"
             >
               <h2 className="text-2xl md:text-4xl lg:text-4xl font-serif">
-                <span className="font-bold">About Us </span> Travel with Moeen
+                <span className="font-bold">About Us | </span> Travel with Moeen
               </h2>
 
               <p className="text-muted-foreground leading-relaxed text-justify">
