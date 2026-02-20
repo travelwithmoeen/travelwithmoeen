@@ -143,7 +143,7 @@ export default function TourDetails() {
               Back to Tours
             </Link>
           </Button>
-          <Button
+          {/* <Button
             asChild
             className="bg-primary text-white hover:bg-primary/90"
           >
@@ -155,7 +155,7 @@ export default function TourDetails() {
               <ExternalLink className="mr-2 h-4 w-4" />
               View Template
             </a>
-          </Button>
+          </Button> */}
         </div>
 
       
@@ -168,6 +168,7 @@ export default function TourDetails() {
           code={tour.code}
           openItems={openItems}
           onOpenItemsChange={setOpenItems}
+          id={tour.id}
         />
   {/* Expand All Button */}
         <div className="mb-6 flex justify-center">

@@ -17,6 +17,7 @@ interface TourOverviewProps {
   galleryImages: string[];
   pdf?: string;
   code?: string;
+  id?: string;
   openItems: string[];
   onOpenItemsChange: (items: string[]) => void;
 }
@@ -27,7 +28,9 @@ export function TourOverview({
   pdf,
   code,
   openItems,
-  onOpenItemsChange
+  onOpenItemsChange,
+  id
+
 }: TourOverviewProps) {
   return (
     <section className="py-12">
@@ -125,12 +128,12 @@ export function TourOverview({
                   variant="outline"
                   className="flex-1 border-white bg-transparent text-white hover:bg-white hover:text-navy"
                 >
-                  <a href={pdf} target="_blank" rel="noopener noreferrer">
+                  <a href={`/tours/${id}/template`} target="_blank" rel="noopener noreferrer">
                     <Eye className="mr-2 h-4 w-4" />
                     View File
                   </a>
                 </Button>
-                <Button
+                {/* <Button
                   asChild
                   className="flex-1 bg-gold text-black hover:bg-gold/90"
                 >
@@ -138,7 +141,7 @@ export function TourOverview({
                     <Download className="mr-2 h-4 w-4" />
                     Download
                   </a>
-                </Button>
+                </Button> */}
               </div>
             </motion.div>
           )}
