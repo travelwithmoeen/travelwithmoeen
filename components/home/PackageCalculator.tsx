@@ -902,7 +902,7 @@ Please confirm availability and provide more details.`;
                         {pricing.lahoreChallanTotal > 0 && (
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">
-                              Lahore Challan ({days} x PKR 5,000)
+                              Lahore Challan
                             </span>
                             <span className="font-medium text-navy">
                               PKR {formatPrice(pricing.lahoreChallanTotal)}
