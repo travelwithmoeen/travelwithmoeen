@@ -946,9 +946,8 @@ Please confirm availability and provide more details.`;
 
                   <div className="mt-auto space-y-3">
                     <Button
-                      variant="gold"
-                      size="lg"
-                      className="w-full gap-2"
+                   size="lg"
+                      className="w-full gap-2 bg-[hsl(160,84%,39%)] text-white hover:bg-[hsl(160,84%,35%)]"
                       onClick={() => setShowMatchingTours(true)}
                     >
                       <Search className="h-4 w-4" /> View Matching Tours
@@ -965,7 +964,9 @@ Please confirm availability and provide more details.`;
                     </Button>
                     <Button
                       size="lg"
-                      className="w-full gap-2 bg-[hsl(160,84%,39%)] text-white hover:bg-[hsl(160,84%,35%)]"
+                       variant="gold"
+                     
+                      className="w-full gap-2 "
                       onClick={handleWhatsAppClick}
                     >
                       <Phone className="h-4 w-4" /> Book or Talk to us
