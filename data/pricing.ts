@@ -2001,8 +2001,8 @@ export function calculateTripPrice(params: {
     const nightlyRate = roomType === "twin" ? (hotelRate?.twin_rate || 10000) : (hotelRate?.triple_rate || 12000);
     const nights = days > 1 ? days - 1 : 0;
     // Room calculation: 1 room for 2 adults + 2 children + 1 infant, 2 rooms for 2 adults + 3 children + 1 infant
-    // Max 4 people per room (adults + children + infantOwnSeat, infant on lap doesn't count)
-    const roomsNeeded = Math.ceil(seatsForRooms / 4);
+    // Max 5 people per room (all travelers including infants)
+    const roomsNeeded = Math.ceil(totalPeople / 5);
     const hotelTotal = nightlyRate * nights * roomsNeeded;
 
     // Vehicle cost
