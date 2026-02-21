@@ -80,7 +80,7 @@ const countryCodes = [
   { code: "+81", country: "Japan" },
 ];
 
-// test Countries list for Nationality
+//  Countries list for Nationality
 const countries = [
   "Pakistan",
   "United States",
