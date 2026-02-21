@@ -71,6 +71,11 @@ export default function TourDetails() {
     ? openItems.length === tour.itinerary.length
     : false;
 
+  // Filter categories: For 1-day tours, only show Deluxe
+  const displayCategories = tour?.duration === 1
+    ? ALL_HOTEL_CATEGORIES.filter(cat => cat === "Deluxe")
+    : ALL_HOTEL_CATEGORIES;
+
   if (!tour) {
     return (
       <div className="min-h-screen bg-[#faf9f5]">
@@ -246,7 +251,7 @@ export default function TourDetails() {
                   className="w-full"
                 >
                   <TabsList className="mb-6 flex w-full h-auto p-2 gap-1">
-                    {ALL_HOTEL_CATEGORIES.map((category) => (
+                    {displayCategories.map((category) => (
                       <TabsTrigger
                         key={category}
                         value={category}
@@ -257,7 +262,7 @@ export default function TourDetails() {
                     ))}
                   </TabsList>
 
-                  {ALL_HOTEL_CATEGORIES.map((category) => {
+                  {displayCategories.map((category) => {
                     const priceData = packagePrices[category];
                     const displayPrice = priceData?.price || 0;
                     const vehicleType = priceData?.vehicleType || "GLI Car New Model";

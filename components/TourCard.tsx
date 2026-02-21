@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tour, getCategoryBadgeClass } from "@/data/tours";
 import { cn } from "@/lib/utils";
-import next from "next";
+import { calculatePackagePrice } from "@/lib/calculatePackagePrice";
 
 interface TourCardProps {
   tour: Tour;
@@ -14,6 +14,16 @@ interface TourCardProps {
 
 export function TourCard({ tour, view }: TourCardProps) {
   const isGrid = view === "grid";
+
+  // Calculate Deluxe price dynamically
+  const deluxePrice = calculatePackagePrice(
+    tour.region,
+    "Deluxe",
+    tour.duration,
+    tour.transport,
+    "Islamabad"
+  );
+  const displayPrice = deluxePrice?.totalForTwo || tour.basePrice;
 
   return (
     <Card
@@ -91,7 +101,7 @@ export function TourCard({ tour, view }: TourCardProps) {
           <div>
             {/* <span className="text-xs text-muted-foreground">From</span> */}
             <p className="text-xl font-bold text-primary">
-              {tour.basePrice.toLocaleString()} PKR
+              {displayPrice.toLocaleString()} PKR
             </p>
           </div>
 

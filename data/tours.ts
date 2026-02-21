@@ -189,7 +189,7 @@ export const tours: Tour[] = [
       }
     ],
     "included": [
-      "Private Transport (Grand Cabin New Model)",
+      "Private Transport (GLI Car New Model)",
       "Fuel",
       "Toll Tax",
       "Guide"
@@ -216,7 +216,7 @@ export const tours: Tour[] = [
     "location": "Deosai National Park",
     "region": "Skardu & Hunza",
     "duration": 10,
-    "code": "254",
+    "code": "253",
     "pdf": "/images/pdf/byairtrips/10_days_by_air_trip_to_skardu_&_hunza_valley_(couple).pdf",
     "description": "Experience a 10-day journey through the breathtaking landscapes of Skardu and Hunza Valley, including visits to Deosai National Park and Khunjerab Pass. Enjoy scenic flights, cultural explorations, and stunning natural vistas.",
     "image": "/images/All_Tour_Images/SkarduValley/Picture1.jpg",
@@ -711,7 +711,7 @@ export const tours: Tour[] = [
       }
     ],
     "included": [
-      "Private Transport (Coater 5C New Model)",
+      "Private Transport (GLI Car New Model)",
       "Fuel- Toll Tax",
       "2 Nights’ Accommodation",
       "3 Breakfasts",
@@ -960,7 +960,7 @@ export const tours: Tour[] = [
       }
     ],
     "included": [
-      "Private Transport (Coaster 5C New Model)",
+      "Private Transport (GLI Car New Model)",
       "Fuel- Toll Tax",
       "2 Nights’ Accommodation",
       "3 Breakfast – 2 Dinners",
@@ -1089,7 +1089,7 @@ export const tours: Tour[] = [
       }
     ],
     "included": [
-      "Private Transport (Coaster 5C New Model)",
+      "Private Transport (GLI Car New Model)",
       "Fuel- Toll Tax",
       "2 Nights’ Accommodation",
       "3 Breakfast – 2 Dinners",
@@ -1206,7 +1206,8 @@ export const tours: Tour[] = [
       }
     ],
     "included": [
-      "Private Transport (Coater 5C New Model)",
+      "Private Transport (GLI Car New Model)",
+
       "Fuel- Toll Tax",
       "2 Nights’ Accommodation",
       "3 Breakfasts",
@@ -1359,7 +1360,7 @@ export const tours: Tour[] = [
       }
     ],
     "included": [
-      "Private Transport (Coaster 5C New Model)",
+      "Private Transport (GLI Car New Model)",
       "Fuel",
       "Toll Tax",
       "3 Nights’ Accommodation",
@@ -1498,7 +1499,7 @@ export const tours: Tour[] = [
       }
     ],
     "included": [
-      "Private Transport (Coaster 5C New Model)",
+      "Private Transport (GLI Car New Model)",
       "Fuel",
       "Toll Tax",
       "3 Nights’ Accommodation",
@@ -3062,7 +3063,7 @@ export const tours: Tour[] = [
     "location": "Skardu and Hunza",
     "region": "Skardu & Hunza",
     "duration": 6,
-    "code": "151",
+    "code": "251",
     "pdf": "/images/pdf/byairtrips/6_days_trip_to_1_day_skardu_and_5_days_hunza_(by_air)_-_private_tour.pdf",
     "description": "Experience the breathtaking beauty of Skardu and Hunza over a 6-day private tour. Enjoy scenic flights, explore ancient fortresses, and witness stunning landscapes including Kachura Lakes, Rakaposhi Viewpoint, and Attabad Lake. Perfect for solo travelers, friends, and families.",
     "image": "/images/All_Tour_Images/SkarduValley/Picture2.jpg",

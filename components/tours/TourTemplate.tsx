@@ -35,6 +35,10 @@ type Tour = {
 export default function TourTemplate({ tour }: { tour: Tour }) {
   const [isDownloading, setIsDownloading] = useState(false);
 
+  // Get Deluxe price from packages (first package is Deluxe)
+  const deluxePackage = tour.packages.find(pkg => pkg.category === "Deluxe");
+  const displayPrice = deluxePackage?.price || tour.basePrice;
+
   const handleDownloadPDF = async () => {
     setIsDownloading(true);
 
@@ -78,7 +82,7 @@ export default function TourTemplate({ tour }: { tour: Tour }) {
       doc.text(`${tour.location} | ${tour.duration} Days | ${tour.transport}`, pageWidth / 2, 47, { align: "center" });
       doc.setFontSize(12);
       doc.setFont("helvetica", "bold");
-      doc.text(`Starting From PKR ${tour.basePrice.toLocaleString()}`, pageWidth / 2, 53, { align: "center" });
+      doc.text(`Starting From PKR ${displayPrice.toLocaleString()}`, pageWidth / 2, 53, { align: "center" });
 
       y = 65;
 
@@ -287,7 +291,7 @@ export default function TourTemplate({ tour }: { tour: Tour }) {
         <div className="bg-[#f5a81a] text-[#1c395b] py-4 text-center">
           <h2 className="text-2xl font-bold">{tour.name}</h2>
           <p className="mt-1">{tour.location} | {tour.duration} Days | {tour.transport}</p>
-          <p className="mt-1 font-bold text-lg">Starting From PKR {tour.basePrice.toLocaleString()}</p>
+          <p className="mt-1 font-bold text-lg">Starting From PKR {displayPrice.toLocaleString()}</p>
         </div>
 
         <div className="bg-white p-6 shadow-lg rounded-b-lg">
