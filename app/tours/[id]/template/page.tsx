@@ -19,11 +19,16 @@ export default function TourTemplatePage() {
   const { id } = useParams<{ id: string }>();
   const tour = tours.find((t) => t.id === id);
 
-  // Calculate dynamic prices for ALL hotel categories
+  // Filter categories: For 1-day tours, only show Deluxe
+  const displayCategories = tour?.duration === 1
+    ? ALL_HOTEL_CATEGORIES.filter(cat => cat === "Deluxe")
+    : ALL_HOTEL_CATEGORIES;
+
+  // Calculate dynamic prices for filtered hotel categories
   const packages = useMemo(() => {
     if (!tour) return [];
 
-    return ALL_HOTEL_CATEGORIES.map((category) => {
+    return displayCategories.map((category) => {
       const result = calculatePackagePrice(
         tour.region,
         category,
@@ -49,7 +54,7 @@ export default function TourTemplatePage() {
         features: ["Contact for pricing"],
       };
     });
-  }, [tour]);
+  }, [tour, displayCategories]);
 
   if (!tour) {
     return (

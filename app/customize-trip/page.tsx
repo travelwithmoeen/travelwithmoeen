@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import {
   Plane, Car, Mail, User, Phone, Globe, MapPin, Calendar,
@@ -181,6 +181,22 @@ export default function CustomizeTrip() {
         : [...form.selectedLocations, loc]
     );
 
+  // Filter departure cities based on trip mode - Karachi only available for Air trips
+  const filteredDepartureCities = useMemo(() => {
+    if (form.tripMode === "Road") {
+      return departureCities.filter(city => city !== "Karachi");
+    }
+    return departureCities;
+  }, [form.tripMode]);
+
+  // Handle trip mode change - reset departure city if Karachi was selected and switching to Road
+  const handleTripModeChange = (mode: "Air" | "Road") => {
+    update("tripMode", mode);
+    if (mode === "Road" && form.departureCity === "Karachi") {
+      update("departureCity", "Islamabad");
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -285,7 +301,7 @@ export default function CustomizeTrip() {
                       <button
                         key={mode}
                         type="button"
-                        onClick={() => update("tripMode", mode)}
+                        onClick={() => handleTripModeChange(mode)}
                         className={cn(
                           "flex flex-1 items-center justify-center gap-2 border-r border-foreground py-3 text-sm font-bold transition-colors last:border-r-0",
                           form.tripMode === mode
@@ -400,7 +416,7 @@ export default function CustomizeTrip() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {departureCities.map((city) => (
+                          {filteredDepartureCities.map((city) => (
                             <SelectItem key={city} value={city}>
                               {city}
                             </SelectItem>
