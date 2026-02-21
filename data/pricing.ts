@@ -81,6 +81,7 @@ export const roadDepartures: RoadDeparture[] = ["Islamabad", "Lahore", "Karachi"
 export const airDepartures: AirDeparture[] = ["Islamabad", "Karachi", "Lahore"];
 
 export const lahoreSurcharge = 15000; // flat per-trip surcharge for Lahore departure
+export const lahoreChallanPerDay = 5000; // Lahore challan: 5000 per day if trip > 3 days
 
 // ---- Meal Pricing per Person per Night ----
 export const mealPricingPerNight: Record<HotelCategory, number> = {
@@ -1969,6 +1970,7 @@ export function calculateTripPrice(params: {
     addOnsTotal: number;
     arrivalBreakfastTotal: number;
     departureSurcharge: number;
+    lahoreChallanTotal: number;
     grandTotal: number;
     perPerson: number;
     // Breakdown for By Air traveler types
@@ -1998,7 +2000,9 @@ export function calculateTripPrice(params: {
     const hotelRate = hotelData?.[hotelCategory];
     const nightlyRate = roomType === "twin" ? (hotelRate?.twin_rate || 10000) : (hotelRate?.triple_rate || 12000);
     const nights = days > 1 ? days - 1 : 0;
-    const roomsNeeded = roomType === "twin" ? Math.ceil(seatsForRooms / 2) : Math.ceil(seatsForRooms / 3);
+    // Room calculation: 1 room for 2 adults + 2 children + 1 infant, 2 rooms for 2 adults + 3 children + 1 infant
+    // Max 4 people per room (adults + children + infantOwnSeat, infant on lap doesn't count)
+    const roomsNeeded = Math.ceil(seatsForRooms / 4);
     const hotelTotal = nightlyRate * nights * roomsNeeded;
 
     // Vehicle cost
@@ -2075,13 +2079,19 @@ export function calculateTripPrice(params: {
         }
     });
 
-    const subtotal = hotelTotal + vehicleTotal + airTicketTotal + addOnsTotal + departureSurcharge;
+    // Lahore Challan: 5000 per day if departure is Lahore AND trip > 3 days
+    let lahoreChallanTotal = 0;
+    if (departure === "Lahore" && days > 3) {
+        lahoreChallanTotal = lahoreChallanPerDay * days;
+    }
+
+    const subtotal = hotelTotal + vehicleTotal + airTicketTotal + addOnsTotal + departureSurcharge + lahoreChallanTotal;
     const profitAmount = Math.round(subtotal * profitMargin);
     const grandTotal = subtotal + profitAmount;
     const perPerson = totalPeople > 0 ? Math.round(grandTotal / totalPeople) : 0;
 
     return {
-        hotelTotal, vehicleTotal, airTicketTotal, addOnsTotal, arrivalBreakfastTotal, departureSurcharge, grandTotal, perPerson,
+        hotelTotal, vehicleTotal, airTicketTotal, addOnsTotal, arrivalBreakfastTotal, departureSurcharge, lahoreChallanTotal, grandTotal, perPerson,
         adultTicketTotal, childTicketTotal, infantLapTotal, infantOwnSeatTotal
     };
 }
