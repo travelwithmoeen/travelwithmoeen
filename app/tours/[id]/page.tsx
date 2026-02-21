@@ -175,7 +175,7 @@ export default function TourDetails() {
           onOpenItemsChange={setOpenItems}
           id={tour.id}
         />
-  {/* Expand All Button */}
+  {/* Expand All Button testing */}
         <div className="mb-6 flex justify-center">
           <Button
             onClick={allExpanded ? collapseAll : expandAll}
