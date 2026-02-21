@@ -2079,13 +2079,9 @@ export function calculateTripPrice(params: {
         }
     });
 
-    // Lahore Challan: 5000 flat (one-time) if departure is Lahore AND trip > 3 days
-    let lahoreChallanTotal = 0;
-    if (departure === "Lahore" && days > 3) {
-        lahoreChallanTotal = lahoreChallanPerDay;
-    }
+    const lahoreChallanTotal = 0;
 
-    const subtotal = hotelTotal + vehicleTotal + airTicketTotal + addOnsTotal + departureSurcharge + lahoreChallanTotal;
+    const subtotal = hotelTotal + vehicleTotal + airTicketTotal + addOnsTotal + departureSurcharge;
     const profitAmount = Math.round(subtotal * profitMargin);
     const grandTotal = subtotal + profitAmount;
     const perPerson = totalPeople > 0 ? Math.round(grandTotal / totalPeople) : 0;

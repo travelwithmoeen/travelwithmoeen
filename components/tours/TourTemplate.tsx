@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 
 interface TourPackage {
   category: string;
@@ -32,12 +33,82 @@ type Tour = {
   notIncluded: string[];
 };
 
+// Terms and Conditions Data
+const termsAndConditions = {
+  paymentProcedure: {
+    title: "Payment Procedure",
+    content: "50% advance payment is required in order to proceed with confirmation of services; the remaining 50% is due 15 days before departure."
+  },
+  paymentModes: {
+    title: "Payment Modes",
+    cashPayment: {
+      title: "Payment in Cash (Office)",
+      address: "Travel with Moeen, Office No. 3 Shalimar Plaza, F-10 Markaz, Islamabad Pakistan",
+      timing: "9 am to 6 pm",
+      location: "https://maps.app.goo.gl/ec3UEPbGTTq8jkrH8"
+    },
+    onlinePayment: {
+      title: "Payment Online in Company Account",
+      accountTitle: "Travel with Moeen Private Limited",
+      accountNo: "1010554099",
+      branchCode: "0035",
+      iban: "PK31ALFH0035001010554099",
+      bank: "Bank Al Falah",
+      branchAddress: "1-B, Awan Arcade, Jinnah Avenue, Blue Area, Islamabad, Pakistan"
+    }
+  },
+  cancellationPolicy: {
+    title: "Cancellation Policy",
+    points: [
+      "The amount will be returned after deduction of due service charges for airlines, hotels, transportation, etc.",
+      "50% cancellation charges if cancelled 15 days before departure.",
+      "70% charges if cancelled 3 days before departure.",
+      "No refund after commencement of tour.",
+      "Any sunk cost not mentioned above will be deducted.",
+      "The refund amount will be processed in 7 working days."
+    ]
+  },
+  priceNotInclude: {
+    title: "The Price Does NOT Include",
+    items: [
+      "Portage",
+      "Tips",
+      "Laundry",
+      "Telephone charges",
+      "Transfers",
+      "All items of a personal nature"
+    ]
+  }
+};
+
 export default function TourTemplate({ tour }: { tour: Tour }) {
   const [isDownloading, setIsDownloading] = useState(false);
 
   // Get Deluxe price from packages (first package is Deluxe)
   const deluxePackage = tour.packages.find(pkg => pkg.category === "Deluxe");
   const displayPrice = deluxePackage?.price || tour.basePrice;
+
+  // Helper function to load image as base64
+  const loadImageAsBase64 = (url: string): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const img = new window.Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.drawImage(img, 0, 0);
+          resolve(canvas.toDataURL("image/png"));
+        } else {
+          reject(new Error("Could not get canvas context"));
+        }
+      };
+      img.onerror = reject;
+      img.src = url;
+    });
+  };
 
   const handleDownloadPDF = async () => {
     setIsDownloading(true);
@@ -59,32 +130,55 @@ export default function TourTemplate({ tour }: { tour: Tour }) {
         }
       };
 
+      // Load logo image
+      let logoBase64: string | null = null;
+      try {
+        logoBase64 = await loadImageAsBase64("/images/twm-logo.webp");
+      } catch (err) {
+        console.warn("Could not load logo for PDF:", err);
+      }
+
       // Header
       doc.setFillColor(28, 57, 91);
-      doc.rect(0, 0, pageWidth, 30, "F");
+      doc.rect(0, 0, pageWidth, 35, "F");
+
+      // Calculate centered position for logo + text block
+      const logoSize = 20;
+      const gapBetween = 5;
+      const textWidth = 58; // Approximate width of "Travel with Moeen" text
+      const totalBlockWidth = logoSize + gapBetween + textWidth;
+      const blockStartX = (pageWidth - totalBlockWidth) / 2;
+
+      // Add logo if available (centered with text)
+      if (logoBase64) {
+        doc.addImage(logoBase64, "PNG", blockStartX, 7, logoSize, logoSize);
+      }
+
+      // Position text next to logo
+      const textX = logoBase64 ? blockStartX + logoSize + gapBetween : pageWidth / 2;
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(22);
       doc.setFont("helvetica", "bold");
-      doc.text("Travel with Moeen", pageWidth / 2, 15, { align: "center" });
+      doc.text("Travel with Moeen", textX, 16, { align: logoBase64 ? "left" : "center" });
       doc.setFontSize(10);
       doc.setTextColor(245, 168, 26);
-      doc.text("Explore the Beauty of Pakistan", pageWidth / 2, 23, { align: "center" });
+      doc.text("Explore the Beauty of Pakistan", textX, 24, { align: logoBase64 ? "left" : "center" });
 
       // Tour Title Section
       doc.setFillColor(245, 168, 26);
-      doc.rect(0, 30, pageWidth, 25, "F");
+      doc.rect(0, 35, pageWidth, 25, "F");
       doc.setTextColor(28, 57, 91);
       doc.setFontSize(18);
       doc.setFont("helvetica", "bold");
-      doc.text(tour.name, pageWidth / 2, 40, { align: "center" });
+      doc.text(tour.name, pageWidth / 2, 45, { align: "center" });
       doc.setFontSize(10);
       doc.setFont("helvetica", "normal");
-      doc.text(`${tour.location} | ${tour.duration} Days | ${tour.transport}`, pageWidth / 2, 47, { align: "center" });
+      doc.text(`${tour.location} | ${tour.duration} Days | ${tour.transport}`, pageWidth / 2, 52, { align: "center" });
       doc.setFontSize(12);
       doc.setFont("helvetica", "bold");
-      doc.text(`Starting From PKR ${displayPrice.toLocaleString()}`, pageWidth / 2, 53, { align: "center" });
+      doc.text(`Starting From PKR ${displayPrice.toLocaleString()}`, pageWidth / 2, 58, { align: "center" });
 
-      y = 65;
+      y = 70;
 
       // Tour Overview
       doc.setTextColor(28, 57, 91);
@@ -239,7 +333,111 @@ export default function TourTemplate({ tour }: { tour: Tour }) {
         y2 += lines.length * 4 + 2;
       });
 
-      y = Math.max(y, y2) + 10;
+      y = Math.max(y, y2) + 15;
+
+      // Terms and Conditions Section
+      checkNewPage(30);
+      doc.setFillColor(249, 249, 249);
+      doc.rect(0, y - 5, pageWidth, 10, "F");
+      doc.setTextColor(28, 57, 91);
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.text("Terms & Conditions", margin, y);
+      doc.setDrawColor(245, 168, 26);
+      doc.line(margin, y + 2, margin + 45, y + 2);
+      y += 12;
+
+      // Payment Procedure
+      checkNewPage(20);
+      doc.setTextColor(28, 57, 91);
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
+      doc.text(termsAndConditions.paymentProcedure.title, margin, y);
+      y += 6;
+      doc.setTextColor(51, 51, 51);
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "normal");
+      const paymentLines = doc.splitTextToSize(termsAndConditions.paymentProcedure.content, contentWidth);
+      doc.text(paymentLines, margin, y);
+      y += paymentLines.length * 4 + 8;
+
+      // Payment Modes
+      checkNewPage(40);
+      doc.setTextColor(28, 57, 91);
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
+      doc.text(termsAndConditions.paymentModes.title, margin, y);
+      y += 8;
+
+      // Cash Payment
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "bold");
+      doc.text(termsAndConditions.paymentModes.cashPayment.title, margin, y);
+      y += 5;
+      doc.setTextColor(51, 51, 51);
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "normal");
+      doc.text(termsAndConditions.paymentModes.cashPayment.address, margin, y);
+      y += 4;
+      doc.text(`(${termsAndConditions.paymentModes.cashPayment.timing})`, margin, y);
+      y += 8;
+
+      // Online Payment
+      checkNewPage(35);
+      doc.setTextColor(28, 57, 91);
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "bold");
+      doc.text(termsAndConditions.paymentModes.onlinePayment.title, margin, y);
+      y += 6;
+      doc.setTextColor(51, 51, 51);
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "normal");
+      doc.text(`Account Title: ${termsAndConditions.paymentModes.onlinePayment.accountTitle}`, margin, y);
+      y += 4;
+      doc.text(`Account No: ${termsAndConditions.paymentModes.onlinePayment.accountNo}`, margin, y);
+      y += 4;
+      doc.text(`Branch Code: ${termsAndConditions.paymentModes.onlinePayment.branchCode}`, margin, y);
+      y += 4;
+      doc.text(`IBAN: ${termsAndConditions.paymentModes.onlinePayment.iban}`, margin, y);
+      y += 4;
+      doc.text(`Bank: ${termsAndConditions.paymentModes.onlinePayment.bank}`, margin, y);
+      y += 4;
+      doc.setFontSize(8);
+      doc.text(termsAndConditions.paymentModes.onlinePayment.branchAddress, margin, y);
+      y += 10;
+
+      // Cancellation Policy
+      checkNewPage(35);
+      doc.setTextColor(28, 57, 91);
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
+      doc.text(termsAndConditions.cancellationPolicy.title, margin, y);
+      y += 6;
+      doc.setTextColor(51, 51, 51);
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "normal");
+      termsAndConditions.cancellationPolicy.points.forEach((point) => {
+        checkNewPage(6);
+        const lines = doc.splitTextToSize(`• ${point}`, contentWidth);
+        doc.text(lines, margin, y);
+        y += lines.length * 4 + 1;
+      });
+      y += 6;
+
+      // Price Not Include
+      checkNewPage(20);
+      doc.setTextColor(28, 57, 91);
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
+      doc.text(termsAndConditions.priceNotInclude.title, margin, y);
+      y += 6;
+      doc.setTextColor(51, 51, 51);
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "normal");
+      const notIncludeText = termsAndConditions.priceNotInclude.items.join(", ") + ", and also any other items not specifically mentioned in the package inclusions.";
+      const notIncludeLines = doc.splitTextToSize(notIncludeText, contentWidth);
+      doc.text(notIncludeLines, margin, y);
+      y += notIncludeLines.length * 4 + 10;
 
       // Footer
       checkNewPage(20);
@@ -284,8 +482,19 @@ export default function TourTemplate({ tour }: { tour: Tour }) {
       {/* Preview Content */}
       <div className="max-w-4xl mx-auto p-6">
         <div className="bg-[#1c395b] text-white py-6 text-center rounded-t-lg">
-          <h1 className="text-3xl font-bold">Travel with Moeen</h1>
-          <p className="text-[#f5a81a] mt-2">Explore the Beauty of Pakistan</p>
+          <div className="flex items-center justify-center gap-4">
+            <Image
+              src="/images/twm-logo.webp"
+              alt="Travel with Moeen Logo"
+              width={90}
+              height={100}
+              className="rounded-full"
+            />
+            <div>
+              <h1 className="text-3xl font-bold">Travel with Moeen</h1>
+              <p className="text-[#f5a81a] mt-1">Explore the Beauty of Pakistan</p>
+            </div>
+          </div>
         </div>
 
         <div className="bg-[#f5a81a] text-[#1c395b] py-4 text-center">
@@ -333,6 +542,73 @@ export default function TourTemplate({ tour }: { tour: Tour }) {
               <ul className="text-sm text-gray-700">
                 {tour.notIncluded.map((item, i) => <li key={i} className="mb-1">✘ {item}</li>)}
               </ul>
+            </div>
+          </div>
+
+          {/* Terms and Conditions Section */}
+          <div className="mt-10 pt-8 border-t-2 border-gray-200">
+            <h3 className="text-xl font-bold text-[#1c395b] border-b-2 border-[#f5a81a] pb-2 mb-6">Terms & Conditions</h3>
+
+            {/* Payment Procedure */}
+            <div className="mb-6">
+              <h4 className="font-bold text-[#1c395b] mb-2">{termsAndConditions.paymentProcedure.title}</h4>
+              <p className="text-sm text-gray-700">{termsAndConditions.paymentProcedure.content}</p>
+            </div>
+
+            {/* Payment Modes */}
+            <div className="mb-6">
+              <h4 className="font-bold text-[#1c395b] mb-3">{termsAndConditions.paymentModes.title}</h4>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Cash Payment */}
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h5 className="font-semibold text-[#1c395b] mb-2">{termsAndConditions.paymentModes.cashPayment.title}</h5>
+                  <p className="text-sm text-gray-700">{termsAndConditions.paymentModes.cashPayment.address}</p>
+                  <p className="text-sm text-gray-600">({termsAndConditions.paymentModes.cashPayment.timing})</p>
+                  <a
+                    href={termsAndConditions.paymentModes.cashPayment.location}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-[#f5a81a] hover:underline mt-1 inline-block"
+                  >
+                    View on Map →
+                  </a>
+                </div>
+
+                {/* Online Payment */}
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h5 className="font-semibold text-[#1c395b] mb-2">{termsAndConditions.paymentModes.onlinePayment.title}</h5>
+                  <div className="text-sm text-gray-700 space-y-1">
+                    <p><span className="font-medium">Account Title:</span> {termsAndConditions.paymentModes.onlinePayment.accountTitle}</p>
+                    <p><span className="font-medium">Account No:</span> {termsAndConditions.paymentModes.onlinePayment.accountNo}</p>
+                    <p><span className="font-medium">Branch Code:</span> {termsAndConditions.paymentModes.onlinePayment.branchCode}</p>
+                    <p><span className="font-medium">IBAN:</span> {termsAndConditions.paymentModes.onlinePayment.iban}</p>
+                    <p><span className="font-medium">Bank:</span> {termsAndConditions.paymentModes.onlinePayment.bank}</p>
+                    <p className="text-xs text-gray-500 mt-1">{termsAndConditions.paymentModes.onlinePayment.branchAddress}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Cancellation Policy */}
+            <div className="mb-6">
+              <h4 className="font-bold text-[#1c395b] mb-2">{termsAndConditions.cancellationPolicy.title}</h4>
+              <ul className="text-sm text-gray-700 space-y-1">
+                {termsAndConditions.cancellationPolicy.points.map((point, i) => (
+                  <li key={i} className="flex items-start gap-2">
+                    <span className="text-red-500 mt-0.5">•</span>
+                    <span>{point}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Price Not Include */}
+            <div className="mb-4">
+              <h4 className="font-bold text-[#1c395b] mb-2">{termsAndConditions.priceNotInclude.title}</h4>
+              <p className="text-sm text-gray-700">
+                {termsAndConditions.priceNotInclude.items.join(", ")}, and also any other items not specifically mentioned in the package inclusions.
+              </p>
             </div>
           </div>
         </div>

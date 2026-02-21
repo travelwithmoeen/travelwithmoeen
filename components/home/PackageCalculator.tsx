@@ -899,16 +899,6 @@ Please confirm availability and provide more details.`;
                             </span>
                           </div>
                         )}
-                        {pricing.lahoreChallanTotal > 0 && (
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">
-                              Lahore Challan
-                            </span>
-                            <span className="font-medium text-navy">
-                              PKR {formatPrice(pricing.lahoreChallanTotal)}
-                            </span>
-                          </div>
-                        )}
                         <Separator />
                         <div className="flex justify-between font-bold">
                           <span className="text-navy">Grand Total</span>
