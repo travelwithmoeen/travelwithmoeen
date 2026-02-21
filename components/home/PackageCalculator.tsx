@@ -149,7 +149,7 @@ export function PackageCalculator() {
     setDays(2);
     // Set default add-ons based on transport mode
     if (mode === "By Air") {
-      setSelectedAddOns(["welcome_pack", "entry_tickets", "arrival_breakfast"]);
+      setSelectedAddOns(["welcome_pack", "entry_tickets"]);
     } else {
       // By Road: include arrival_breakfast if days > 1 (default is 2)
       setSelectedAddOns(["arrival_breakfast"]);
@@ -745,8 +745,7 @@ Please confirm availability and provide more details.`;
                     </div>
                     {transportMode === "By Air" && (
                       <p className="mt-2 text-xs text-muted-foreground">
-                        * Welcome Pack, Entry Tickets & Arrival Breakfast
-                        included
+                        * Welcome Pack & Entry Tickets included
                       </p>
                     )}
                     {transportMode === "By Road" && days > 1 && (
