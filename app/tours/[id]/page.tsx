@@ -37,10 +37,6 @@ export default function TourDetails() {
       price: number;
       vehicleType: string;
       hotelName?: string;
-      airTicketTotal: number;
-      welcomePackTotal: number;
-      entryTicketsTotal: number;
-      stickerTotal: number;
     }> = {};
 
     // Calculate price for each hotel category
@@ -56,12 +52,8 @@ export default function TourDetails() {
       if (result) {
         prices[category] = {
           price: result.totalForTwo,
-          vehicleType: getVehicleDisplayName(result.vehicleType),
+          vehicleType: getVehicleDisplayName(result.vehicleType, tour.transport),
           hotelName: result.hotelName,
-          airTicketTotal: result.airTicketTotal,
-          welcomePackTotal: result.welcomePackTotal,
-          entryTicketsTotal: result.entryTicketsTotal,
-          stickerTotal: result.stickerTotal,
         };
       }
     });
@@ -279,10 +271,6 @@ export default function TourDetails() {
                     const displayPrice = priceData?.price || 0;
                     const vehicleType = priceData?.vehicleType || "GLI Car New Model";
                     const hotelName = priceData?.hotelName || "";
-                    const airTicketTotal = priceData?.airTicketTotal || 0;
-                    const welcomePackTotal = priceData?.welcomePackTotal || 0;
-                    const entryTicketsTotal = priceData?.entryTicketsTotal || 0;
-                    const stickerTotal = priceData?.stickerTotal || 0;
 
                     return (
                       <TabsContent
@@ -314,30 +302,6 @@ export default function TourDetails() {
                               <li className="flex items-start gap-2 text-sm">
                                 <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
                                 {hotelName}
-                              </li>
-                            )}
-                            {airTicketTotal > 0 && (
-                              <li className="flex items-start gap-2 text-sm">
-                                <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
-                                Air Tickets ({airTicketTotal.toLocaleString()} PKR)
-                              </li>
-                            )}
-                            {welcomePackTotal > 0 && (
-                              <li className="flex items-start gap-2 text-sm">
-                                <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
-                                Welcome Pack ({welcomePackTotal.toLocaleString()} PKR)
-                              </li>
-                            )}
-                            {entryTicketsTotal > 0 && (
-                              <li className="flex items-start gap-2 text-sm">
-                                <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
-                                Entry Tickets ({entryTicketsTotal.toLocaleString()} PKR)
-                              </li>
-                            )}
-                            {stickerTotal > 0 && (
-                              <li className="flex items-start gap-2 text-sm">
-                                <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
-                                Sticker Per Vehicle ({stickerTotal.toLocaleString()} PKR)
                               </li>
                             )}
                           </ul>

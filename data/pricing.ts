@@ -94,11 +94,10 @@ export const mealPricingPerNight: Record<HotelCategory, number> = {
 
 // ---- Vehicle Selection Rules ----
 // By Road: 1-4 GLI, 5-6 Honda BRV, 6-12 Grand Cabin, 13-25 Coaster
-// By Air: 1-4 GLI, 4-5 Prado, 6-12 Grand Cabin, 13-25 Coaster
+// By Air: 1-5 Prado, 6-12 Grand Cabin, 13-25 Coaster
 
 export function getRecommendedVehicle(travelers: number, transportMode: "By Road" | "By Air"): VehicleType {
     if (transportMode === "By Air") {
-        if (travelers <= 4) return "Gli Car";
         if (travelers <= 5) return "Parado";
         if (travelers <= 12) return "Grand Cabin";
         return "Coaster 4c";
@@ -1889,8 +1888,8 @@ export const vehiclePricingByAir: Record<
 // ---- By-Air Fixed Extras ----
 export const byAirExtras: Record<string, number> = {
     "Air Ticket (Islamabad Base)": 60000,
-    "Karachi Surcharge (Add-on)": 40000,
-    "Lahore Surcharge (Add-on)": 30000,
+    "Karachi Surcharge (Add-on)": 30000,
+    "Lahore Surcharge (Add-on)": 15000,
     "Welcome Pack (Per Person)": 1400,
     "Entry Tickets (Per Person)": 2500,
     "Sticker (Per Vehicle)": 600,
@@ -2034,8 +2033,8 @@ export function calculateTripPrice(params: {
 
     if (transportMode === "By Air") {
         const baseTicket = byAirExtras["Air Ticket (Islamabad Base)"] || 45000;
-        const karachiSurcharge = departure === "Karachi" ? (byAirExtras["Karachi Surcharge (Add-on)"] || 40000) : 0;
-        const lahoreSurchargeAir = departure === "Lahore" ? (byAirExtras["Lahore Surcharge (Add-on)"] || 30000) : 0;
+        const karachiSurcharge = departure === "Karachi" ? (byAirExtras["Karachi Surcharge (Add-on)"] || 30000) : 0;
+        const lahoreSurchargeAir = departure === "Lahore" ? (byAirExtras["Lahore Surcharge (Add-on)"] || 150000) : 0;
         const adultFare = baseTicket + karachiSurcharge + lahoreSurchargeAir;
 
         // Adult: 100% fare

@@ -166,14 +166,29 @@ export function calculatePackagePrice(
 }
 
 // Get vehicle display name
-export function getVehicleDisplayName(vehicleType: VehicleType): string {
-  const displayNames: Record<VehicleType, string> = {
+export function getVehicleDisplayName(vehicleType: VehicleType, transportMode?: string): string {
+  // By Air vehicles - with "(1 Vehicle)"
+  const byAirDisplayNames: Record<VehicleType, string> = {
+    "Gli Car": "GLI Car New Model (1 Vehicle)",
+    "Honda BRV": "Honda BRV (1 Vehicle)",
+    "Grand Cabin": "Grand Cabin New Model (1 Vehicle)",
+    "Coaster 4c": "Coaster 4C (1 Vehicle)",
+    "Coaster 5c": "Coaster 5C (1 Vehicle)",
+    "Parado": "Parado TZ 2004-07 New Model (1 Vehicle)",
+  };
+
+  // By Road vehicles - without "(1 Vehicle)"
+  const byRoadDisplayNames: Record<VehicleType, string> = {
     "Gli Car": "GLI Car New Model",
     "Honda BRV": "Honda BRV",
     "Grand Cabin": "Grand Cabin New Model",
     "Coaster 4c": "Coaster 4C",
     "Coaster 5c": "Coaster 5C",
-    "Parado": "Parado TZ",
+    "Parado": "Parado TZ 2004-07 New Model",
   };
-  return displayNames[vehicleType] || vehicleType;
+
+  if (transportMode === "By Air") {
+    return byAirDisplayNames[vehicleType] || vehicleType;
+  }
+  return byRoadDisplayNames[vehicleType] || vehicleType;
 }

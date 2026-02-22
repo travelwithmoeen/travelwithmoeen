@@ -122,7 +122,7 @@ const Navbar = () => {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3 group">
             <Image
-              src="/images/twm-logo.webp"
+              src="/images/logo/logo.png"
               alt="Travel With Moeen Logo"
               width={64}
               height={64}
