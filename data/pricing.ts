@@ -1971,6 +1971,7 @@ export function calculateTripPrice(params: {
     arrivalBreakfastTotal: number;
     departureSurcharge: number;
     lahoreChallanTotal: number;
+    stickerTotal: number;
     grandTotal: number;
     perPerson: number;
     // Breakdown for By Air traveler types
@@ -2081,13 +2082,16 @@ export function calculateTripPrice(params: {
 
     const lahoreChallanTotal = 0;
 
-    const subtotal = hotelTotal + vehicleTotal + airTicketTotal + addOnsTotal + departureSurcharge;
+    // Sticker cost for By Air tours (per vehicle)
+    const stickerTotal = transportMode === "By Air" ? (byAirExtras["Sticker (Per Vehicle)"] || 600) : 0;
+
+    const subtotal = hotelTotal + vehicleTotal + airTicketTotal + addOnsTotal + departureSurcharge + stickerTotal;
     const profitAmount = Math.round(subtotal * profitMargin);
     const grandTotal = subtotal + profitAmount;
     const perPerson = totalPeople > 0 ? Math.round(grandTotal / totalPeople) : 0;
 
     return {
-        hotelTotal, vehicleTotal, airTicketTotal, addOnsTotal, arrivalBreakfastTotal, departureSurcharge, lahoreChallanTotal, grandTotal, perPerson,
+        hotelTotal, vehicleTotal, airTicketTotal, addOnsTotal, arrivalBreakfastTotal, departureSurcharge, lahoreChallanTotal, stickerTotal, grandTotal, perPerson,
         adultTicketTotal, childTicketTotal, infantLapTotal, infantOwnSeatTotal
     };
 }

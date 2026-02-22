@@ -4,6 +4,7 @@ import {
   vehiclePricing,
   vehiclePricingByAir,
   profitMargin,
+  byAirExtras,
   HotelCategory,
   RoadDestination,
   AirDestination,
@@ -14,6 +15,11 @@ import { TourRegion, TransportType, TourCategory } from "@/data/tours";
 
 // Arrival breakfast price per person (for By Road tours > 1 day)
 const ARRIVAL_BREAKFAST_PER_PERSON = 500;
+
+// By Air extras per person
+const WELCOME_PACK_PER_PERSON = 1400;
+const ENTRY_TICKETS_PER_PERSON = 2500;
+const STICKER_PER_VEHICLE = 600;
 
 // Map TourCategory to HotelCategory
 function mapToHotelCategory(category: TourCategory): HotelCategory | null {
@@ -44,6 +50,10 @@ function getVehicleForCouple(transportMode: TransportType): VehicleType {
 export interface PackagePriceResult {
   hotelTotal: number;
   vehicleTotal: number;
+  airTicketTotal: number;
+  welcomePackTotal: number;
+  entryTicketsTotal: number;
+  stickerTotal: number;
   arrivalBreakfastTotal: number;
   subtotal: number;
   profitAmount: number;
@@ -111,8 +121,29 @@ export function calculatePackagePrice(
     arrivalBreakfastTotal = ARRIVAL_BREAKFAST_PER_PERSON * 2; // 2 persons
   }
 
-  // Calculate totals (arrival breakfast added before profit margin)
-  const subtotal = hotelTotal + vehicleTotal + arrivalBreakfastTotal;
+  // Calculate By Air extras (air tickets, welcome pack, entry tickets, sticker)
+  let airTicketTotal = 0;
+  let welcomePackTotal = 0;
+  let entryTicketsTotal = 0;
+  let stickerTotal = 0;
+
+  if (transport === "By Air") {
+    // Air tickets: base price per person * 2 persons
+    const airTicketPerPerson = byAirExtras["Air Ticket (Islamabad Base)"] || 60000;
+    airTicketTotal = airTicketPerPerson * 2;
+
+    // Welcome pack: per person * 2 persons
+    welcomePackTotal = WELCOME_PACK_PER_PERSON * 2;
+
+    // Entry tickets: per person * 2 persons
+    entryTicketsTotal = ENTRY_TICKETS_PER_PERSON * 2;
+
+    // Sticker: per vehicle (1 vehicle for couple)
+    stickerTotal = STICKER_PER_VEHICLE;
+  }
+
+  // Calculate totals
+  const subtotal = hotelTotal + vehicleTotal + arrivalBreakfastTotal + airTicketTotal + welcomePackTotal + entryTicketsTotal + stickerTotal;
   const profitAmount = Math.round(subtotal * profitMargin);
   const totalForTwo = subtotal + profitAmount;
   const perPerson = Math.round(totalForTwo / 2);
@@ -120,6 +151,10 @@ export function calculatePackagePrice(
   return {
     hotelTotal,
     vehicleTotal,
+    airTicketTotal,
+    welcomePackTotal,
+    entryTicketsTotal,
+    stickerTotal,
     arrivalBreakfastTotal,
     subtotal,
     profitAmount,

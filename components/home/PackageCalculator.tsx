@@ -899,6 +899,16 @@ Please confirm availability and provide more details.`;
                             </span>
                           </div>
                         )}
+                        {pricing.stickerTotal > 0 && (
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">
+                              Sticker (Per Vehicle)
+                            </span>
+                            <span className="font-medium text-navy">
+                              PKR {formatPrice(pricing.stickerTotal)}
+                            </span>
+                          </div>
+                        )}
                         <Separator />
                         <div className="flex justify-between font-bold">
                           <span className="text-navy">Grand Total</span>
