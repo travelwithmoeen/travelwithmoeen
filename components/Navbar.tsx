@@ -124,8 +124,8 @@ const Navbar = () => {
             <Image
               src="/images/logo/logo.png"
               alt="Travel With Moeen Logo"
-              width={64}
-              height={64}
+              width={80}
+              height={80}
               priority
               className="h-14 w-14 rounded-full object-cover shadow-md group-hover:shadow-lg transition-shadow"
             />

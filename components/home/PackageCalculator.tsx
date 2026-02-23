@@ -284,7 +284,7 @@ Please confirm availability and provide more details.`;
       {/* Scroll-triggered WhatsApp Popup */}
       <PackagePopup
         triggerRef={sectionRef}
-        imageSrc="/images/Picture1.jpg"
+        imageSrc="/images/logo/popup.jpeg"
         whatsappNumber="923339981177"
         whatsappMessage="Hi, I am interested in your tour packages. Please share more details."
       />
@@ -788,7 +788,7 @@ Please confirm availability and provide more details.`;
                         </div>
                       </motion.div>
 
-                      {/* Breakdown */}
+                      {/* Breakdown 
                       <div className="mb-4 space-y-2 rounded-xl bg-background p-4 text-sm">
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">
@@ -917,7 +917,7 @@ Please confirm availability and provide more details.`;
                           </span>
                         </div>
                       </div>
-
+*/}
                       {/* Hotel Name Display */}
                       {hotelName && (
                         <div className="mb-4 rounded-xl bg-navy/5 p-4">

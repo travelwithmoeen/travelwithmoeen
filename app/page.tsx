@@ -29,7 +29,6 @@ import { PopularToursSection } from "@/components/home/PopularToursSection";
 import { PopularDestinationsCarousel } from "@/components/home/PopularDestinationsCarousel";
 import { PackageCalculator } from "@/components/home/PackageCalculator";
 import { GallerySection } from "@/components/home/GallerySection";
-import { ScrollToTop } from "@/components/ScrollToTop";
 const featuredTours = [
   {
     id: 1,
@@ -113,9 +112,6 @@ export default function Home() {
       <GallerySection/>
       {/* Latest Blogs Section */}
       <LatestBlogsSection />
-
-      {/* Scroll to Top Button */}
-      <ScrollToTop />
     </div>
   );
 }

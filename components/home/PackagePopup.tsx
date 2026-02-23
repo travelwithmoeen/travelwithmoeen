@@ -14,7 +14,7 @@ interface PackagePopupProps {
 
 export function PackagePopup({
   triggerRef,
-  imageSrc = "/images/Picture1.jpg",
+  imageSrc = "/images/logo/popup.jpeg",
   whatsappNumber = "923339981177",
   whatsappMessage = "Hi, I am interested in your tour packages. Please share more details.",
 }: PackagePopupProps) {
