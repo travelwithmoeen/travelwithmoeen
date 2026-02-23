@@ -82,41 +82,44 @@ export function PackagePopup({
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Simple backdrop - click to close */}
-          <div
-            className="fixed inset-0 z-50"
+          {/* Backdrop with blur */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
             onClick={handleClose}
           />
 
-          {/* Popup */}
+          {/* Popup - Responsive container */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
             transition={{ duration: 0.3, type: "spring", damping: 25 }}
-            className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2"
+            className="fixed inset-4 z-50 flex items-center justify-center md:inset-8 lg:inset-12"
           >
-            <div className="relative max-w-[95vw] md:max-w-xl lg:max-w-2xl">
+            <div className="relative w-full max-w-[90vw] sm:max-w-md md:max-w-lg lg:max-w-xl">
               {/* Close Button */}
               <button
                 onClick={handleClose}
-                className="absolute -right-3 -top-3 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-lg transition-transform hover:scale-110 hover:bg-gray-100"
+                className="absolute -right-2 -top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-lg transition-transform hover:scale-110 hover:bg-gray-100 sm:-right-3 sm:-top-3 sm:h-10 sm:w-10"
                 aria-label="Close popup"
               >
-                <X className="h-5 w-5 text-gray-700" />
+                <X className="h-4 w-4 text-gray-700 sm:h-5 sm:w-5" />
               </button>
 
-              {/* Image - Clickable */}
+              {/* Image - Clickable with proper height constraints */}
               <div
                 onClick={handleImageClick}
-                className="cursor-pointer overflow-hidden rounded-2xl shadow-2xl transition-transform hover:scale-[1.02]"
+                className="cursor-pointer overflow-hidden rounded-xl shadow-2xl transition-transform hover:scale-[1.01] sm:rounded-2xl"
               >
                 <Image
                   src={imageSrc}
                   alt="Special Tour Offer"
-                  width={700}
-                  height={800}
-                  className="h-auto w-full object-cover"
+                  width={600}
+                  height={750}
+                  className="h-auto max-h-[80vh] w-full object-contain"
                   priority
                 />
               </div>
