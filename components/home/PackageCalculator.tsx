@@ -245,6 +245,7 @@ export function PackageCalculator() {
       .filter(Boolean)
       .join(", ");
 
+    const vehiclesNeededCount = pricing?.vehiclesNeeded || 1;
     const message = `Hi, I'm interested in booking a tour with the following details:
 
 *Transport Mode:* ${transportMode}
@@ -252,7 +253,7 @@ export function PackageCalculator() {
 *Destination:* ${selectedDestination || "Not selected"}
 *Duration:* ${days} Days
 *Hotel Category:* ${hotelCategory}
-*Vehicle Type:* ${vehicleType}
+*Vehicle Type:* ${vehicleType}${vehiclesNeededCount > 1 ? ` (×${vehiclesNeededCount} vehicles)` : ''}
 *Room Type:* ${roomType === "twin" ? "Twin (2 Pax)" : "Triple (3 Pax)"}
 
 *Travelers:*
@@ -673,17 +674,16 @@ Please confirm availability and provide more details.`;
                           />
                         </SelectTrigger>
                         <SelectContent>
-                          {availableVehicles.map(({ type, rate }) => (
+                          {availableVehicles.map(({ type, rate, vehiclesNeeded }) => (
                             <SelectItem key={type} value={type}>
-                              {type} ({rate.seats} seats)
+                              {type} ({rate.seats} seats){vehiclesNeeded > 1 ? ` × ${vehiclesNeeded}` : ''}
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
-                      {selectedDestination &&
-                        availableVehicles.length === 0 && (
-                          <p className="mt-1.5 text-xs text-destructive">
-                            No vehicle fits {totalSeatsNeeded} travelers
+                      {selectedDestination && totalSeatsNeeded > 0 && pricing && pricing.vehiclesNeeded > 1 && (
+                          <p className="mt-1.5 text-xs text-muted-foreground">
+                            {pricing.vehiclesNeeded} vehicles needed for {totalSeatsNeeded} travelers
                           </p>
                         )}
                     </div>
@@ -916,8 +916,8 @@ Please confirm availability and provide more details.`;
                             PKR {formatPrice(pricing.grandTotal)}
                           </span>
                         </div>
-                      </div>
-*/}
+                      </div>*/}
+
                       {/* Hotel Name Display */}
                       {hotelName && (
                         <div className="mb-4 rounded-xl bg-navy/5 p-4">

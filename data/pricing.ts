@@ -1927,13 +1927,18 @@ export const roadOnlyAddOns: AddOn[] = [
 export const profitMargin = 0.20; // 20%
 
 // ---- Vehicle Filtering by Seats ----
-export function getAvailableVehicles(departure: string, destination: string, travelers: number, transportMode: "By Road" | "By Air" = "By Road"): { type: VehicleType; rate: VehicleRate }[] {
+// Returns all available vehicles for the destination (no longer filters by traveler count)
+// Multiple vehicles will be used if travelers exceed vehicle capacity
+export function getAvailableVehicles(departure: string, destination: string, travelers: number, transportMode: "By Road" | "By Air" = "By Road"): { type: VehicleType; rate: VehicleRate; vehiclesNeeded: number }[] {
     if (transportMode === "By Air") {
         const destVehicles = vehiclePricingByAir[destination];
         if (!destVehicles) return [];
         return (Object.entries(destVehicles) as [VehicleType, VehicleRate][])
-            .filter(([, rate]) => rate.seats >= travelers)
-            .map(([type, rate]) => ({ type, rate }));
+            .map(([type, rate]) => ({
+                type,
+                rate,
+                vehiclesNeeded: Math.ceil(travelers / rate.seats)
+            }));
     } else {
         const departureKey = `Departure_${departure}`;
         const departureVehicles = vehiclePricing[departureKey];
@@ -1941,9 +1946,17 @@ export function getAvailableVehicles(departure: string, destination: string, tra
         const destVehicles = departureVehicles[destination];
         if (!destVehicles) return [];
         return (Object.entries(destVehicles) as [VehicleType, VehicleRate][])
-            .filter(([, rate]) => rate.seats >= travelers)
-            .map(([type, rate]) => ({ type, rate }));
+            .map(([type, rate]) => ({
+                type,
+                rate,
+                vehiclesNeeded: Math.ceil(travelers / rate.seats)
+            }));
     }
+}
+
+// Helper function to calculate number of vehicles needed
+export function getVehiclesNeeded(travelers: number, vehicleSeats: number): number {
+    return Math.ceil(travelers / vehicleSeats);
 }
 
 // ---- Price Calculation ----
@@ -1965,6 +1978,7 @@ export function calculateTripPrice(params: {
 }): {
     hotelTotal: number;
     vehicleTotal: number;
+    vehiclesNeeded: number;
     airTicketTotal: number;
     addOnsTotal: number;
     arrivalBreakfastTotal: number;
@@ -2006,7 +2020,8 @@ export function calculateTripPrice(params: {
     const hotelTotal = nightlyRate * nights * roomsNeeded;
 
     // Vehicle cost
-    // cost_per_day = rent + fuel, total = (cost_per_day * days) + toll (toll is one-time)
+    // cost_per_day = rent + fuel, total = (cost_per_day * days) + toll (toll is one-time per vehicle)
+    // If travelers exceed vehicle capacity, multiple vehicles are used
     let vehicle: VehicleRate | undefined;
     if (transportMode === "By Air") {
         const destVehicles = vehiclePricingByAir[destination];
@@ -2020,8 +2035,14 @@ export function calculateTripPrice(params: {
     const dailyRent = vehicle?.daily_rent || 14000;
     const fuel = vehicle?.fuel || 10000;
     const toll = vehicle?.toll || 4000;
+    const vehicleSeats = vehicle?.seats || 4;
+
+    // Calculate number of vehicles needed based on seats required
+    const vehiclesNeeded = Math.ceil(seatsForRooms / vehicleSeats);
+
     const costPerDay = dailyRent + fuel;
-    const vehicleTotal = (costPerDay * days) + toll;
+    // Multiply by number of vehicles needed
+    const vehicleTotal = ((costPerDay * days) + toll) * vehiclesNeeded;
 
     // Air ticket & departure surcharge
     let airTicketTotal = 0;
@@ -2081,8 +2102,8 @@ export function calculateTripPrice(params: {
 
     const lahoreChallanTotal = 0;
 
-    // Sticker cost for By Air tours (per vehicle)
-    const stickerTotal = transportMode === "By Air" ? (byAirExtras["Sticker (Per Vehicle)"] || 600) : 0;
+    // Sticker cost for By Air tours (per vehicle) - multiply by number of vehicles
+    const stickerTotal = transportMode === "By Air" ? (byAirExtras["Sticker (Per Vehicle)"] || 600) * vehiclesNeeded : 0;
 
     const subtotal = hotelTotal + vehicleTotal + airTicketTotal + addOnsTotal + departureSurcharge + stickerTotal;
     const profitAmount = Math.round(subtotal * profitMargin);
@@ -2090,7 +2111,7 @@ export function calculateTripPrice(params: {
     const perPerson = totalPeople > 0 ? Math.round(grandTotal / totalPeople) : 0;
 
     return {
-        hotelTotal, vehicleTotal, airTicketTotal, addOnsTotal, arrivalBreakfastTotal, departureSurcharge, lahoreChallanTotal, stickerTotal, grandTotal, perPerson,
+        hotelTotal, vehicleTotal, vehiclesNeeded, airTicketTotal, addOnsTotal, arrivalBreakfastTotal, departureSurcharge, lahoreChallanTotal, stickerTotal, grandTotal, perPerson,
         adultTicketTotal, childTicketTotal, infantLapTotal, infantOwnSeatTotal
     };
 }
