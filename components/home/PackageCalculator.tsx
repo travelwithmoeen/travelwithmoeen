@@ -489,11 +489,11 @@ Please confirm availability and provide more details.`;
                           {children}
                         </span>
                       </div>
-                      {transportMode === "By Air" && (
+                      {/* {transportMode === "By Air" && (
                         <p className="mt-1 text-xs text-muted-foreground">
                           75% of adult fare
                         </p>
-                      )}
+                      )} */}
                     </div>
 
                     {/* 7. Infant (Lap) */}
@@ -516,11 +516,11 @@ Please confirm availability and provide more details.`;
                           {infantLap}
                         </span>
                       </div>
-                      {transportMode === "By Air" && (
+                      {/* {transportMode === "By Air" && (
                         <p className="mt-1 text-xs text-muted-foreground">
                           PKR 1,000 fixed, no seat
                         </p>
-                      )}
+                      )} */}
                     </div>
 
                     {/* 8. Infant (Own Seat) */}
@@ -543,11 +543,11 @@ Please confirm availability and provide more details.`;
                           {infantOwnSeat}
                         </span>
                       </div>
-                      {transportMode === "By Air" && (
+                      {/* {transportMode === "By Air" && (
                         <p className="mt-1 text-xs text-muted-foreground">
                           PKR 5,000 fixed, 1 seat
                         </p>
-                      )}
+                      )} */}
                     </div>
 
                     {/* <div>
