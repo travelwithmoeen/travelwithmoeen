@@ -160,9 +160,14 @@ const Navbar = () => {
             </button>
             <Button className="gap-2 rounded-full bg-gradient-gold text-primary font-semibold hover:opacity-90 shadow-md hover:shadow-lg transition-all px-6">
               <Link href="/customize-trip" className="flex items-center gap-2">
-              Book Trip</Link>
+              Plan my trip</Link>
             </Button>
           </div>
+
+          {/* Mobile Plan My Trip Button */}
+          <Button className="lg:hidden gap-2 rounded-full bg-gradient-gold text-primary font-semibold hover:opacity-90 shadow-md hover:shadow-lg transition-all px-4 py-2 text-sm">
+            <Link href="/customize-trip">Plan my trip</Link>
+          </Button>
 
           {/* Mobile Menu Button */}
           <button

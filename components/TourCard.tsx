@@ -103,6 +103,7 @@ export function TourCard({ tour, view }: TourCardProps) {
             <p className="text-xl font-bold text-primary">
               {displayPrice.toLocaleString()} PKR
             </p>
+              <span className="text-xs text-muted-foreground">For 2 Persons</span>
           </div>
 
           {/* CTA */}

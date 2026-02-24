@@ -88,10 +88,11 @@ export function PopularToursSection() {
 
                 <CardFooter className="flex items-center justify-between border-t border-border pt-4">
                   <div>
-                    <span className="text-xs text-navy">From</span>
+                    
                     <p className="text-xl font-bold text-primary">
                       {tour.basePrice.toLocaleString()} PKR
                     </p>
+                    <span className="text-xs text-navy">For 2 Persons</span>
                   </div>
                   <Button asChild className="text-black bg-gold hover:bg-gold/80 " >
                     <Link href={`/tours/${tour.id}`}>View Tour</Link>
