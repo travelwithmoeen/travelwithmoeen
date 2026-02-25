@@ -9,7 +9,7 @@ export default function Gallery() {
   const [activeTab, setActiveTab] = useState<"private" | "group">("private");
   const [lightbox, setLightbox] = useState<GalleryImage | null>(null);
 
-  const filtered = galleryImages.filter((img) => img.category === activeTab);
+  const filtered = galleryImages.filter((img) => img.category === activeTab && !img.homeOnly);
 
   const tabs = [
     { key: "private" as const, label: "Private/Customized Tours" },

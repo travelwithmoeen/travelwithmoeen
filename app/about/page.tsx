@@ -97,11 +97,11 @@ const CounterStat = ({
 
   return (
     <div ref={ref}>
-      <p className="text-3xl md:text-4xl font-serif font-bold text-yellow-500">
+      <p className="text-2xl sm:text-3xl md:text-4xl font-serif font-bold text-yellow-500">
         {count}
         {suffix}
       </p>
-      <p className="text-primary-foreground/80 mt-2">{label}</p>
+      <p className="text-primary-foreground/80 mt-1 sm:mt-2 text-sm sm:text-base">{label}</p>
     </div>
   );
 };
@@ -245,17 +245,17 @@ const About = () => {
       {/* Section: Expertly Crafted Travel Experiences */}
       <section className="py-20 px-4 bg-[#f7f6f2]">
         <div className="max-w-[1200px] mx-auto">
-          <div className="grid lg:grid-cols-2 gap-4 items-start">
+          <div className="grid md:grid-cols-2 gap-8 md:gap-4 items-start">
             {/* Left: Overlapping Images */}
             <motion.div
               initial={{ opacity: 0, x: -30 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
-              className="relative"
+              className="relative flex justify-center md:justify-start"
             >
               {/* Background rectangular image */}
-              <div className="relative w-full aspect-[4/5] max-w-[400px] rounded-3xl overflow-hidden shadow-xl">
+              <div className="relative w-full aspect-[4/5] max-w-[300px] sm:max-w-[350px] md:max-w-[400px] rounded-3xl overflow-hidden shadow-xl mx-auto md:mx-0">
                 <Image
                   src={Profile}
                   alt="Temple destination"
@@ -301,16 +301,16 @@ const About = () => {
               </p>
 
               {/* Features */}
-              <div className="space-y-6">
-                <div className="flex items-start gap-4">
-                  <div className="w-14 h-14 rounded-full border-2 border-gray-300 flex items-center justify-center flex-shrink-0">
-                    <ClipboardCheck className="w-6 h-6 text-gray-600" />
+              <div className="space-y-4 sm:space-y-6">
+                <div className="flex items-start gap-3 sm:gap-4">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full border-2 border-gray-300 flex items-center justify-center flex-shrink-0">
+                    <ClipboardCheck className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
                   </div>
                   <div>
-                    <h4 className="font-bold text-lg mb-1">
+                    <h4 className="font-bold text-base sm:text-lg mb-1">
                       Expert Travel Advisors
                     </h4>
-                    <p className="text-muted-foreground text-sm">
+                    <p className="text-muted-foreground text-xs sm:text-sm">
                       Our experienced team ensures your trip is stress-free,
                       safe, and well-planned and for each travel a dedicated
                       travel expert looks after the travel and complete tour.
@@ -318,30 +318,30 @@ const About = () => {
                   </div>
                 </div>
 
-                <div className="flex items-start gap-4">
-                  <div className="w-14 h-14 rounded-full border-2 border-gray-300 flex items-center justify-center flex-shrink-0">
-                    <BadgeDollarSign className="w-6 h-6 text-gray-600" />
+                <div className="flex items-start gap-3 sm:gap-4">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full border-2 border-gray-300 flex items-center justify-center flex-shrink-0">
+                    <BadgeDollarSign className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
                   </div>
                   <div>
-                    <h4 className="font-bold text-lg mb-1">
+                    <h4 className="font-bold text-base sm:text-lg mb-1">
                       Affordable & Transparent Pricing
                     </h4>
-                    <p className="text-muted-foreground text-sm">
+                    <p className="text-muted-foreground text-xs sm:text-sm">
                       No hidden costs—just great value for your perfect
                       vacation.
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-4">
-                  <div className="w-14 h-14 rounded-full border-2 border-gray-300 flex items-center justify-center flex-shrink-0">
-                    <Headphones className="w-6 h-6 text-gray-600" />
+                <div className="flex items-start gap-3 sm:gap-4">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full border-2 border-gray-300 flex items-center justify-center flex-shrink-0">
+                    <Headphones className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
                   </div>
                   <div>
-                    <h4 className="font-bold text-lg mb-1">
+                    <h4 className="font-bold text-base sm:text-lg mb-1">
                       24/7 Customer Support
                     </h4>
-                    <p className="text-muted-foreground text-sm">
+                    <p className="text-muted-foreground text-xs sm:text-sm">
                       Enjoy peace of mind with our round-the-clock assistance
                       wherever you travel.
                     </p>
@@ -356,7 +356,7 @@ const About = () => {
       {/* Section 1: About Intro with Creative Image Layout */}
       <section className="py-20 px-4">
         <div className="max-w-[1200px] mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
             {/* Left: Creative Image Layout */}
             <motion.div
               initial={{ opacity: 0, x: -30 }}
@@ -365,19 +365,19 @@ const About = () => {
               transition={{ duration: 0.6 }}
               className="relative"
             >
-              <div className="relative">
+              <div className="relative pb-12 md:pb-8">
                 <Image
                   src={vision3}
                   alt="Travelers exploring"
-                  className="w-full max-w-md rounded-2xl shadow-travel-strong"
+                  className="w-full max-w-sm md:max-w-md rounded-2xl shadow-travel-strong mx-auto md:mx-0"
                   placeholder="blur"
                 />
                 {/* Overlapping thumbnails */}
-                <div className="absolute -bottom-8 right-0 lg:right-[-40px] flex gap-3">
+                <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:-bottom-8 md:right-0 lg:right-[-40px] flex gap-3">
                   <Image
                     src={vision2}
                     alt="Mountain destination"
-                    className="w-28 h-28 object-cover rounded-xl shadow-lg border-4 border-background"
+                    className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 object-cover rounded-xl shadow-lg border-4 border-background"
                     width={112}
                     height={112}
                     placeholder="blur"
@@ -385,7 +385,7 @@ const About = () => {
                   <Image
                     src={vision1}
                     alt="Adventure destination"
-                    className="w-28 h-28 object-cover rounded-xl shadow-lg border-4 border-background"
+                    className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 object-cover rounded-xl shadow-lg border-4 border-background"
                     width={116}
                     height={116}
                     placeholder="blur"
@@ -432,30 +432,30 @@ const About = () => {
               </p>
 
               {/* Vision & Mission */}
-              <div className="space-y-6">
-                <div className="flex gap-4">
-                  <div className="w-14 h-14 rounded-xl bg-yellow-400 flex items-center justify-center flex-shrink-0">
-                    <Eye className="w-7 h-7 text-white" />
+              <div className="space-y-4 sm:space-y-6">
+                <div className="flex gap-3 sm:gap-4">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-yellow-400 flex items-center justify-center flex-shrink-0">
+                    <Eye className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-serif font-bold text-primary mb-1">
+                    <h3 className="text-lg sm:text-xl font-serif font-bold text-primary mb-1">
                       Our Vision
                     </h3>
-                    <p className="text-muted-foreground text-sm">
+                    <p className="text-muted-foreground text-xs sm:text-sm">
                       To become the leading quality travel and tourism promoter company in Pakistan.
                     </p>
                   </div>
                 </div>
 
-                <div className="flex gap-4">
-                  <div className="w-14 h-14 rounded-xl bg-[#0b1c2c] flex items-center justify-center flex-shrink-0">
-                    <Target className="w-7 h-7 text-yellow-400" />
+                <div className="flex gap-3 sm:gap-4">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-[#0b1c2c] flex items-center justify-center flex-shrink-0">
+                    <Target className="w-6 h-6 sm:w-7 sm:h-7 text-yellow-400" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-serif font-bold text-primary mb-1">
+                    <h3 className="text-lg sm:text-xl font-serif font-bold text-primary mb-1">
                       Our Mission
                     </h3>
-                    <p className="text-muted-foreground text-sm">
+                    <p className="text-muted-foreground text-xs sm:text-sm">
                       To provide the finest quality of services for travel and tourism in Pakistan and for international tours, making comfort the priority while delivering high-quality hospitality services.
                     </p>
                   </div>
@@ -498,7 +498,7 @@ const About = () => {
 
           {/* Zigzag Process Steps */}
           <div className="relative">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-8 lg:gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-4">
               {processSteps.map((step, index) => (
                 <motion.div
                   key={index}
@@ -514,21 +514,21 @@ const About = () => {
                   <div className="relative inline-block">
                     {/* Step Number Badge */}
                     <div className="absolute -top-2 -left-2 z-10">
-                      <span className="bg-[#1d3556] text-white text-xs font-bold w-8 h-8 rounded-full flex items-center justify-center shadow-md">
+                      <span className="bg-[#1d3556] text-white text-xs font-bold w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center shadow-md">
                         {step.number}
                       </span>
                     </div>
 
                     {/* Icon Box */}
-                    <div className="w-24 h-28 bg-yellow-500 rounded-2xl flex items-center justify-center shadow-lg">
-                      <step.icon className="w-12 h-12 text-white" />
+                    <div className="w-20 h-24 sm:w-24 sm:h-28 bg-yellow-500 rounded-2xl flex items-center justify-center shadow-lg">
+                      <step.icon className="w-10 h-10 sm:w-12 sm:h-12 text-white" />
                     </div>
                   </div>
 
-                  <h3 className="text-xl font-serif font-bold text-primary mt-6 mb-3">
+                  <h3 className="text-lg sm:text-xl font-serif font-bold text-primary mt-4 sm:mt-6 mb-2 sm:mb-3">
                     {step.title}
                   </h3>
-                  <p className="text-muted-foreground text-sm max-w-[200px] mx-auto">
+                  <p className="text-muted-foreground text-xs sm:text-sm max-w-[250px] sm:max-w-[200px] mx-auto">
                     {step.description}
                   </p>
 
@@ -586,9 +586,9 @@ const About = () => {
       </section>
 
       {/* Section: Why Choose + Gateway to Journeys */}
-      <section className="py-20 px-4 bg-background">
+      <section className="py-20 px-4 bg-background overflow-hidden">
         <div className="max-w-[1400px] mx-auto">
-          <div className="grid lg:grid-cols-3 gap-8 items-center">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 items-center">
             {/* Left Column: Why Choose Content */}
             <motion.div
               initial={{ opacity: 0, x: -30 }}
@@ -597,7 +597,7 @@ const About = () => {
               transition={{ duration: 0.6 }}
               className="space-y-6"
             >
-              <h2 className="text-3xl md:text-4xl font-serif">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-serif">
                 <span className="italic">Why Choose Travel with Moeen</span> to
                 Make Your Journey <span className="italic">Truly</span>{" "}
                 Meaningful?
@@ -623,19 +623,19 @@ const About = () => {
               </ul>
 
               {/* CTA Box */}
-              <div className="bg-[#1a1a1a] rounded-3xl p-6 mt-8">
-                <h3 className="text-white text-2xl font-serif mb-2">
+              <div className="bg-[#1a1a1a] rounded-3xl p-4 sm:p-6 mt-6 sm:mt-8">
+                <h3 className="text-white text-xl sm:text-2xl font-serif mb-2">
                   <span className="font-bold">Ready to</span> explore
                   <br />
                   the <span className="font-bold">world?</span>
                 </h3>
                 <Link
                   href="/tours"
-                  className="inline-flex items-center gap-2 text-white font-semibold mt-4 hover:gap-3 transition-all"
+                  className="inline-flex items-center gap-2 text-white font-semibold mt-3 sm:mt-4 hover:gap-3 transition-all text-sm sm:text-base"
                 >
                   Discover Now
-                  <span className="w-6 h-6 rounded-full bg-white flex items-center justify-center">
-                    <ChevronRight className="w-4 h-4 text-black" />
+                  <span className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-white flex items-center justify-center">
+                    <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 text-black" />
                   </span>
                 </Link>
               </div>
@@ -647,12 +647,12 @@ const About = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="relative flex justify-center"
+              className="relative flex justify-center hidden md:flex md:col-span-2 lg:col-span-1"
             >
               {/* Years Badge */}
               <div className="absolute -top-4 left-1/2 -translate-x-1/2 lg:left-auto lg:translate-x-0 lg:-top-2 lg:right-4 z-10">
-                <div className="w-24 h-24 rounded-full bg-[#1a1a1a] flex flex-col items-center justify-center text-white">
-                  <span className="text-2xl font-bold">5+</span>
+                <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-[#1a1a1a] flex flex-col items-center justify-center text-white">
+                  <span className="text-xl md:text-2xl font-bold">5+</span>
                   <span className="text-xs text-center leading-tight">
                     Years
                     <br />
@@ -662,7 +662,7 @@ const About = () => {
               </div>
 
               {/* Main Circular Image */}
-              <div className="relative w-72 h-96 lg:w-80 lg:h-[450px]">
+              <div className="relative w-56 h-72 sm:w-64 sm:h-80 md:w-72 md:h-96 lg:w-80 lg:h-[450px]">
                 <div
                   className="absolute inset-0 rounded-full overflow-hidden"
                   style={{ borderRadius: "50% 50% 50% 50% / 60% 60% 40% 40%" }}
@@ -684,10 +684,10 @@ const About = () => {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.4 }}
-              className="space-y-6"
+              className="space-y-6 md:col-span-2 lg:col-span-1"
             >
               {/* Rounded Image */}
-              <div className="relative h-48 w-full rounded-[40px] overflow-hidden">
+              <div className="relative h-40 sm:h-48 w-full rounded-[40px] overflow-hidden">
                 <Image
                   src={RoundImage}
                   alt="Destination"
@@ -697,7 +697,7 @@ const About = () => {
                 />
               </div>
 
-              <h2 className="text-3xl md:text-4xl font-serif">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-serif">
                 <span className="italic">Gateway</span> to
                 <br />
                 <span className="italic">Unforgettable</span>
@@ -705,7 +705,7 @@ const About = () => {
                 Journeys.
               </h2>
 
-              <p className="text-muted-foreground leading-relaxed">
+              <p className="text-muted-foreground leading-relaxed text-sm sm:text-base">
                 Travel with Moeen is a trusted travel agency that brings the
                 best travel experiences to exotic destinations around the world.
                 We offer exclusive tour packages, private tours, and
@@ -739,7 +739,7 @@ const About = () => {
             </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
             {teamMembers.map((member, index) => (
               <motion.div
                 key={index}
@@ -749,7 +749,7 @@ const About = () => {
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 className="group relative"
               >
-                <div className="relative overflow-hidden rounded-t-2xl h-96">
+                <div className="relative overflow-hidden rounded-t-2xl h-64 sm:h-80 md:h-96">
                   <Image
                     src={member.image}
                     alt={member.name}
@@ -782,11 +782,11 @@ const About = () => {
                   </div> */}
                 </div>
                 {/* Name Card */}
-                <div className="bg-card rounded-b-2xl p-6 text-center shadow-travel border border-border">
-                  <h3 className="text-xl font-serif font-bold text-primary">
+                <div className="bg-card rounded-b-2xl p-3 sm:p-4 md:p-6 text-center shadow-travel border border-border">
+                  <h3 className="text-base sm:text-lg md:text-xl font-serif font-bold text-primary">
                     {member.name}
                   </h3>
-                  <p className="text-muted-foreground">{member.role}</p>
+                  <p className="text-muted-foreground text-sm md:text-base">{member.role}</p>
                 </div>
               </motion.div>
             ))}
@@ -812,7 +812,7 @@ const About = () => {
             </h2>
           </motion.div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mb-8 sm:mb-12">
             <motion.a
               href="https://www.google.com/maps/search/?api=1&query=Office+3+2nd+Floor+Shalimar+Plaza+F-10+Markaz+Islamabad"
               target="_blank"
@@ -821,13 +821,13 @@ const About = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              className="bg-card p-6 rounded-2xl shadow-travel border border-border text-center cursor-pointer hover:shadow-lg transition-shadow"
+              className="bg-card p-4 sm:p-6 rounded-2xl shadow-travel border border-border text-center cursor-pointer hover:shadow-lg transition-shadow"
             >
-              <div className="w-12 h-12 rounded-xl bg-gradient-gold flex items-center justify-center mx-auto mb-4">
-                <MapPin className="w-6 h-6 text-primary" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-gold flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                <MapPin className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
               </div>
-              <h4 className="font-semibold text-primary mb-2">Address</h4>
-              <p className="text-muted-foreground text-sm">
+              <h4 className="font-semibold text-primary mb-1 sm:mb-2 text-sm sm:text-base">Address</h4>
+              <p className="text-muted-foreground text-xs sm:text-sm">
                 Office # 3, 2nd Floor, Shalimar Plaza, F-10 Markaz, Islamabad
               </p>
             </motion.a>
@@ -838,13 +838,13 @@ const About = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="bg-card p-6 rounded-2xl shadow-travel border border-border text-center cursor-pointer hover:shadow-lg transition-shadow"
+              className="bg-card p-4 sm:p-6 rounded-2xl shadow-travel border border-border text-center cursor-pointer hover:shadow-lg transition-shadow"
             >
-              <div className="w-12 h-12 rounded-xl bg-gradient-gold flex items-center justify-center mx-auto mb-4">
-                <Phone className="w-6 h-6 text-primary" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-gold flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                <Phone className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
               </div>
-              <h4 className="font-semibold text-primary mb-2">Phone</h4>
-              <p className="text-muted-foreground text-sm">+92 333 9981177</p>
+              <h4 className="font-semibold text-primary mb-1 sm:mb-2 text-sm sm:text-base">Phone</h4>
+              <p className="text-muted-foreground text-xs sm:text-sm">+92 333 9981177</p>
             </motion.a>
 
             <motion.a
@@ -853,13 +853,13 @@ const About = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.3 }}
-              className="bg-card p-6 rounded-2xl shadow-travel border border-border text-center cursor-pointer hover:shadow-lg transition-shadow"
+              className="bg-card p-4 sm:p-6 rounded-2xl shadow-travel border border-border text-center cursor-pointer hover:shadow-lg transition-shadow"
             >
-              <div className="w-12 h-12 rounded-xl bg-gradient-gold flex items-center justify-center mx-auto mb-4">
-                <Mail className="w-6 h-6 text-primary" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-gold flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                <Mail className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
               </div>
-              <h4 className="font-semibold text-primary mb-2">Email</h4>
-              <p className="text-muted-foreground text-sm">
+              <h4 className="font-semibold text-primary mb-1 sm:mb-2 text-sm sm:text-base">Email</h4>
+              <p className="text-muted-foreground text-xs sm:text-sm break-all">
                 info@travelwithmoeen.com
               </p>
             </motion.a>
@@ -872,13 +872,13 @@ const About = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.4 }}
-              className="bg-card p-6 rounded-2xl shadow-travel border border-border text-center cursor-pointer hover:shadow-lg transition-shadow"
+              className="bg-card p-4 sm:p-6 rounded-2xl shadow-travel border border-border text-center cursor-pointer hover:shadow-lg transition-shadow"
             >
-              <div className="w-12 h-12 rounded-xl bg-gradient-gold flex items-center justify-center mx-auto mb-4">
-                <Globe className="w-6 h-6 text-primary" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-gold flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                <Globe className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
               </div>
-              <h4 className="font-semibold text-primary mb-2">Website</h4>
-              <p className="text-muted-foreground text-sm">
+              <h4 className="font-semibold text-primary mb-1 sm:mb-2 text-sm sm:text-base">Website</h4>
+              <p className="text-muted-foreground text-xs sm:text-sm">
                 travelwithmoeen.com
               </p>
             </motion.a>
@@ -890,16 +890,16 @@ const About = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="bg-[#162a48] from-navy to-navy-dark rounded-2xl p-8 md:p-12"
+            className="bg-[#162a48] from-navy to-navy-dark rounded-2xl p-6 sm:p-8 md:p-12"
           >
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center mb-8">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 md:gap-8 text-center mb-6 sm:mb-8">
               <CounterStat end={50} suffix="+" label="Tours" />
               <CounterStat end={10} suffix="+" label="Countries" />
               <CounterStat end={40} suffix="k+" label="Happy Clients" />
               <CounterStat end={20} suffix="+" label="Activities" />
             </div>
-            <div className="text-center border-t border-primary-foreground/20 pt-6">
-              <p className="text-primary-foreground/60 text-sm">
+            <div className="text-center border-t border-primary-foreground/20 pt-4 sm:pt-6">
+              <p className="text-primary-foreground/60 text-xs sm:text-sm">
                 <span className="text-yellow-500 font-semibold">License:</span>{" "}
                 Membership # 054, LIC ISB-9383
               </p>
