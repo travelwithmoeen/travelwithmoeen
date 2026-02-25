@@ -13,7 +13,7 @@ export const galleryImages: GalleryImage[] = [
   { id: 2, src: "/images/gallery/Picture12.JPG", alt: "Snow-capped peaks and clear skies", category: "private", span: "tall" },
   { id: 3, src: "/images/gallery/Picture22.JPG", alt: "Golden sunset over Karakoram range", category: "private", span: "wide" },
   { id: 4, src: "/images/gallery/Picture4.png", alt: "Couple at viewpoint overlooking lake", category: "private" },
-  { id: 5, src: "/images/gallery/Picture3.JPG", alt: "Road trip through green valleys", category: "private", span: "tall" },
+  { id: 5, src: "/images/gallery/Picture3.jpg", alt: "Road trip through green valleys", category: "private", span: "tall" },
   { id: 6, src: "/images/gallery/Picture14.JPG", alt: "Lush meadows and misty mountains", category: "private" },
   { id: 7, src: "/images/Islamabad.webp", alt: "Traditional wooden bridge crossing", category: "private", span: "tall" },
   { id: 8, src: "/images/twm-logo.webp", alt: "Waterfall in northern mountains", category: "private", span: "tall", homeOnly: true },
