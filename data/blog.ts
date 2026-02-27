@@ -927,7 +927,7 @@ export const blogs: Blog[] = [
     excerpt: "Every nation is defined not only by its borders but by the symbols that unite its people. Pakistan’s national symbols reflect its ideology, natural beauty, cultural depth, and collective aspirations. From the language spoken in poetry to the mountains that touch the sky, these symbols tell the story of a nation founded on faith, resilience, and hope.",
     author: "Tahib Hussain",
     date: "2026-02-09",
-    coverImage: "/images/Blogs/National_Symbols/Picture1.jpg",
+    coverImage: "/images/Blogs/National_Symbols/Picture1.webp",
     content: [
       {
         body: "Every nation is defined not only by its borders but by the symbols that unite its people. Pakistan’s national symbols reflect its ideology, natural beauty, cultural depth, and collective aspirations. From the language spoken in poetry to the mountains that touch the sky, these symbols tell the story of a nation founded on faith, resilience, and hope.This blog explores the key national symbols of Pakistan, explaining their historical roots, cultural meaning, and modern relevance.",
@@ -936,7 +936,7 @@ export const blogs: Blog[] = [
         heading: "🗣️ National Language: Urdu",
         body: "Urdu is the linguistic soul of Pakistan. Chosen as the national language at independence in 1947, Urdu serves as a unifying medium among Pakistan’s diverse ethnic groups.",
         highlight: ["•	Written in elegant Perso-Arabic script", "•	Rich in poetry, literature, and philosophy", "•	Language of national identity, media, and education", "From the verses of Allama Iqbal to everyday conversation, Urdu connects Pakistanis across provinces."],
-        image: "/images/Blogs/National_symbols/Picture2.jpg"
+        image: "/images/Blogs/National_symbols/Picture2.webp"
       },
 
       {
@@ -948,7 +948,7 @@ export const blogs: Blog[] = [
           "• Symbol of equality and tradition",
           "Despite changing fashion trends, shalwar kameez remains a proud expression of Pakistani identity."
         ],
-        image: "/images/Blogs/National_symbols/Picture3.jpg"
+        image: "/images/Blogs/National_symbols/Picture3.webp"
       },
       {
         heading: "🏑 National Sport: Field Hockey",
@@ -959,7 +959,7 @@ export const blogs: Blog[] = [
           "• Represents discipline, teamwork, and national pride",
           "Although cricket dominates popular culture today, hockey remains a historic symbol of Pakistan’s sporting glory."
         ],
-        image: "/images/Blogs/National_symbols/Picture4.jpg"
+        image: "/images/Blogs/National_symbols/Picture4.webp"
       }
       ,
       {
@@ -971,7 +971,7 @@ export const blogs: Blog[] = [
           "• A major export and cultural favorite",
           "Mango season is celebrated nationwide, marking joy and prosperity."
         ],
-        image: "/images/Blogs/National_symbols/Picture5.jpg"
+        image: "/images/Blogs/National_symbols/Picture5.webp"
       }
 
       ,
@@ -984,7 +984,7 @@ export const blogs: Blog[] = [
           "• Conservation success story of Pakistan",
           "The Markhor reflects the nation’s ability to survive and thrive in harsh environments."
         ],
-        image: "/images/Blogs/National_symbols/Picture6.jpg"
+        image: "/images/Blogs/National_symbols/Picture6.webp"
       }
       ,
       {
@@ -996,7 +996,7 @@ export const blogs: Blog[] = [
           "• Symbol of love for the homeland",
           "Its presence in literature makes it a deeply emotional national emblem."
         ],
-        image: "/images/Blogs/National_symbols/Picture7.jpg"
+        image: "/images/Blogs/National_symbols/Picture7.webp"
       }
       ,
       {
@@ -1008,7 +1008,7 @@ export const blogs: Blog[] = [
           "• Widely used in cultural and religious events",
           "Jasmine reflects the gentle, hopeful spirit of the nation."
         ],
-        image: "/images/Blogs/National_symbols/Picture8.jpg"
+        image: "/images/Blogs/National_symbols/Picture8.webp"
       }
 
       ,
@@ -1021,7 +1021,7 @@ export const blogs: Blog[] = [
           "• Represents endurance and spiritual heritage",
           "Its towering presence mirrors Pakistan’s aspiration for stability and growth."
         ],
-        image: "/images/Blogs/National_symbols/Picture9.jpg"
+        image: "/images/Blogs/National_symbols/Picture9.webp"
       }
       , {
         heading: "🌊 National River: Indus River",
@@ -1032,7 +1032,7 @@ export const blogs: Blog[] = [
           "• Central to Pakistan’s water security",
           "The river binds history, culture, and survival into one flowing legacy."
         ],
-        image: "/images/Blogs/National_symbols/Picture10.jpg"
+        image: "/images/Blogs/National_symbols/Picture10.webp"
       }
       ,
       {
@@ -1044,7 +1044,7 @@ export const blogs: Blog[] = [
           "• Symbol of determination and bravery",
           "K2 stands as a reminder that greatness demands resilience."
         ],
-        image: "/images/Blogs/National_symbols/Picture11.jpg"
+        image: "/images/Blogs/National_symbols/Picture11.webp"
       }
 
       ,
@@ -1057,7 +1057,7 @@ export const blogs: Blog[] = [
           "• Combines modern design with Islamic tradition",
           "It symbolizes Pakistan’s Islamic identity and global connection."
         ],
-        image: "/images/Blogs/National_symbols/Picture12.jpg"
+        image: "/images/Blogs/National_symbols/Picture12.webp"
       }
       ,
       {
@@ -1069,7 +1069,7 @@ export const blogs: Blog[] = [
           "• Emotional connection with the homeland",
           "It echoes the heartbeat of the nation."
         ],
-        image: "/images/Blogs/National_symbols/Picture13.png"
+        image: "/images/Blogs/National_symbols/Picture13.webp"
       }
       ,
       {
@@ -1094,7 +1094,7 @@ export const blogs: Blog[] = [
           "• Represents the vision of Pakistan",
           "It stands as a reminder of sacrifice and determination."
         ],
-        image: "/images/Blogs/National_symbols/Picture14.jpg"
+        image: "/images/Blogs/National_symbols/Picture14.webp"
       }
       ,
       {
@@ -1106,7 +1106,7 @@ export const blogs: Blog[] = [
           "• Architectural reflection of harmony",
           "It visually narrates Pakistan’s national story."
         ],
-        image: "/images/Blogs/National_symbols/Picture15.jpg"
+        image: "/images/Blogs/National_symbols/Picture15.webp"
       },
 
       {
