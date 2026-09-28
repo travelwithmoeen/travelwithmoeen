@@ -5,8 +5,8 @@
 **Client:** Travel With Moeen (Pvt) Ltd  
 **Prepared for:** Moeen  
 **Prepared by:** SoftBuilds Pvt Ltd  
-**Version:** 1.0  
-**Date:** September 26, 2026  
+**Version:** 1.1  
+**Date:** September 28, 2026  
 **Status:** Ready for sign-off  
 
 This document is for Travel With Moeen and SoftBuilds Pvt Ltd. Please do not publish it.
@@ -14,6 +14,7 @@ This document is for Travel With Moeen and SoftBuilds Pvt Ltd. Please do not pub
 | Version | Date | What changed |
 |---|---|---|
 | 1.0 | September 26, 2026 | First issue for review and sign-off |
+| 1.1 | September 28, 2026 | Taobat uses Swat rates. Naran stays as stored. Ratti Gali keeps the website price. A quote can change one night or one day. |
 
 Please read this document and sign Section 23 if you agree. After you sign, this document is the plan we will follow. If you want a change later, please send it in writing.
 
@@ -41,7 +42,7 @@ You already have a public website. Guests read tours, places, and articles, and 
 
 We will keep that public website. We will add a private office area with a login. Your staff will update tours, photos, articles, reviews, and prices there. The first prices will come from your Excel file. You named that file as the price source. After the first load, the Manager keeps the prices up to date.
 
-The work has four steps. Steps 1, 2, and 3 are the first delivery. Step 4 comes later, and it is written here so that limit is clear. From the day you sign, we plan to finish the first delivery in eight weeks. The plan is in Section 13. One price question, about Ratti Gali, is still with you. The eight-week plan does not wait for that answer.
+The work has four steps. Steps 1, 2, and 3 are the first delivery. Step 4 comes later, and it is written here so that limit is clear. From the day you sign, we plan to finish the first delivery in eight weeks. The plan is in Section 13. The price choices you sent on September 28, 2026 are included in that plan.
 
 ---
 
@@ -59,6 +60,7 @@ The work has four steps. Steps 1, 2, and 3 are the first delivery. Step 4 comes 
 | Prado | The preferred vehicle where that car is offered. |
 | Other | A vehicle choice where the office types the real mix, such as a car plus a jeep. |
 | Guest request | A contact message, a custom trip request, or a booking request from the website. |
+| Average nightly rate | The hotel rates for the nights on one quote, added up and divided by the number of nights. |
 | Step 4 | Later work. It is not part of the first delivery. |
 
 ---
@@ -112,6 +114,7 @@ The first delivery is Steps 1, 2, and 3 in Section 12.
 - A first load of prices from the Excel file
 - Price updates by the Manager after that
 - The price rules in Section 9
+- A quote the Manager can change for one night or one day, with the average nightly rate shown
 - Four hotel grades on the tour page and in the package builder
 - A vehicle list the office can edit, with Prado preferred where that car is offered, and an Other choice for a typed mix
 - Paid extras, such as a jeep for Saiful Muluk or Fairy Meadows
@@ -153,6 +156,8 @@ These points are agreed. We will not change them during Steps 1 to 3 unless you 
 | L-12 | A jeep price is the full amount for the days written on the line. We do not multiply that amount by the number of days again. |
 | L-13 | The jeep lines and amounts are in Section 9.3. Each line can be turned off. |
 | L-14 | The office uses the three roles in Section 8. Guests do not log in. |
+| L-15 | Taobat is loaded from the Swat rates. Naran keeps its own rates for now. Ratti Gali keeps the price already on the website. |
+| L-16 | On a quote, the office can change one night or one day. The average nightly rate is shown. |
 
 ---
 
@@ -219,6 +224,18 @@ Before we switch the live prices, this Excel example must give the same total:
 
 We add one jeep for each group of six travelers. The Manager can turn a line off.
 
+### 9.4 Changes on one night or one day
+
+The steps in Section 9.1 fill every night with the same hotel rate, and every day with the same vehicle. That is the starting quote.
+
+The Manager can then change one night or one day on that quote.
+
+- A different hotel rate on one night. The other nights stay as they were.
+- No vehicle on one day, a jeep on one day, or a higher vehicle on one day.
+- The screen shows the average nightly rate. That average tells the office which hotel category the stay sits in. For example, an average of 20,000 sits with the 20,000 hotel category.
+
+The test quote in Section 9.2 is checked before any one-night or one-day change. After a change, the total follows the edited nights and days, then the season profit.
+
 ---
 
 ## 10. How the system will be set up
@@ -241,7 +258,7 @@ The site stays on the hosting you use today, unless we agree a hosting change in
 2. **One price list.** The first rates are copied from the Excel file. We will not keep the old website price file, or the old costing page, as a second price list.
 3. **Match a known total.** Section 9.2 must match before Step 2 is accepted.
 4. **Work in steps.** We show you each step and check it against Section 12. The next step starts when you accept the current step, or after five working days with no written objection.
-5. **Do not delay the whole project for one place.** Ratti Gali stays on its current website price until you name a price list. The other tours continue.
+5. **Use the place choices you already sent.** Ratti Gali keeps the price already on the website. Taobat uses the Swat rates. Naran keeps its own rates for now. The other tours use the Excel file.
 6. **Changes.** A new page, a new charge, or a change to a decision in Section 7 is a change request. We agree it in writing before we build it.
 
 ---
@@ -278,6 +295,7 @@ The site stays on the hosting you use today, unless we agree a hosting change in
 - Four hotel grades on the public site
 - Vehicle controls, the Other choice, and paid extras
 - The jeep lines in Section 9.3
+- A quote screen where the Manager can change one night or one day, with the average nightly rate shown
 - A written result of the test quote in Section 9.2
 
 **How we know it is done**
@@ -287,7 +305,11 @@ The site stays on the hosting you use today, unless we agree a hosting change in
 - Premier is not offered as a grade guests can book.
 - A road quote cannot start from Karachi.
 - A Karachi air quote includes the extra 30,000 rupees.
-- If you have not yet chosen a list for Ratti Gali, that tour still shows its current website price.
+- A Taobat quote uses the Swat rates, not the old Neelum Taobat rate of 6,000.
+- A Naran quote still uses the Naran rates for now.
+- Ratti Gali still shows the price already on the website.
+- On a test quote, changing the hotel rate on night two changes only that night, and the average nightly rate updates.
+- Removing the vehicle on one day removes that day's rent from the total.
 
 ### Step 3. Guest requests are saved
 
@@ -332,7 +354,7 @@ The first delivery is Step 1, Step 2, and Step 3. The aim is your acceptance of 
 |---|---|---|
 | 1 and 2 | Step 1. Office login, three roles, and editing of public pages | 10 |
 | 3 | Your review of Step 1 | up to 5 |
-| 4 and 5 | Step 2. Excel prices, price rules, and the test quote | 10 |
+| 4 and 5 | Step 2. Excel prices, price rules, one-night and one-day edits, and the test quote | 10 |
 | 6 | Your review of Step 2 | up to 5 |
 | 7 | Step 3. Saved guest requests, with WhatsApp kept | 5 |
 | 8 | Your review of Step 3, and acceptance of the first delivery | up to 5 |
@@ -346,8 +368,6 @@ Please do these in week 1. If they come later, the build weeks move by the same 
 - Sign this document
 - Name the Owner, and the first Manager and Editor users
 - Confirm that the Excel file named in Section 3 is the file we should load
-
-You do not need to answer the Ratti Gali question in week 1. That tour stays on its current website price until you choose a list.
 
 ---
 
@@ -372,7 +392,7 @@ You do not need to answer the Ratti Gali question in week 1. That tour stays on 
 Before Step 3 is closed, we will show the office how to use the screens.
 
 - One short session for the Owner, covering logins and deletes
-- One short session for the Manager, covering prices, vehicles, jeeps, the season switch, and quotes
+- One short session for the Manager, covering prices, vehicles, jeeps, the season switch, quotes, and a change to one night or one day
 - One short session for the Editor, covering tours, photos, articles, and reviews
 - A short written guide in plain US English, with the same steps
 
@@ -414,26 +434,22 @@ Questions during the build can be sent in writing. We will reply in writing so t
 2. We will load the Excel file named in Section 3, unless you send a replacement file in writing.
 3. If a vehicle row has a price and an empty place name, we attach it to the place named on the row above, when the vehicle and the rates are filled in. A row stored as zero is not a live price.
 4. The Skardu and Hunza air hotel row with no grade name (twin 24,000, 3-share 28,000) will be loaded as Executive. It sits in the Executive place on the sheet, and the hotel names match the Executive line on the road sheet.
-5. Taobat keeps the prices already stored under the name Neelum Taobat Arang Kel. It does not get a new public tour page in the first delivery.
+5. Taobat is loaded from the Swat rates, not from the Neelum Taobat Arang Kel rows. It does not get a new public tour page in the first delivery. Naran keeps the rates already stored for Naran, for now. Ratti Gali, tour code 201, keeps the price already on the website.
 6. You will check each step against Section 12. If we show you a step and you do not write an objection within five working days, we treat that step as accepted.
 7. The site stays on your current hosting, unless we agree a hosting change separately.
 8. The office screens in the first delivery are in US English.
 
 ---
 
-## 20. What we still need from you
+## 20. Price choices confirmed on September 28, 2026
 
-We have asked you to choose the price list for Ratti Gali only.
+You answered the open price questions in writing on September 28, 2026. The same day, a voice message added the one-night and one-day rule in Section 9.4.
 
-The Excel file has no Ratti Gali row. The website has a three-day road tour, code 201. On the Lahore sheet, a Neelum Deluxe twin room is 6,000 rupees. A Naran Deluxe twin room is 15,000. A Swat Deluxe twin room is 9,000. The voice message on September 25 at 11:41 said to copy Naran or Swat. Those two lists are not the same, so we need you to name one list.
+- Taobat does not keep the Neelum Taobat Arang Kel rates. Those rows are replaced with the Swat rates. Taobat still does not get a new public tour page in the first delivery.
+- Naran keeps the Naran rates already in the Excel file for now. We do not copy Swat over Naran.
+- Ratti Gali keeps the price already on the website for tour code 201. We do not copy Neelum, Naran, or Swat onto it.
 
-Until you reply:
-
-- Taobat keeps its own rows in the Excel file
-- Ratti Gali keeps the price already on the website
-- Steps 1 to 3 will start as planned
-
-We do not need any other decision from you to start Step 1.
+We do not need another price choice from you to start Step 1.
 
 ---
 
@@ -441,7 +457,7 @@ We do not need any other decision from you to start Step 1.
 
 | Risk | Level | What can go wrong | What we will do |
 |---|---|---|---|
-| You do not choose a list for Ratti Gali | Medium | That one tour cannot move to an Excel price | Leave the current website price. Do not delay the rest. |
+| A one-night or one-day edit is missed on a quote | Low | The quote keeps the same hotel rate and the same vehicle on every day | The quote screen lists each night and each day, and it shows the average nightly rate. |
 | Some Excel rows have an empty place name, or a zero price | Medium | A vehicle can be missed, or a zero can be shown as a real price | Use point 3 in Section 19. Tell you about any row we still cannot place. |
 | The season profit is switched at the wrong time | Medium | Quotes use 15 percent in season, or 20 percent out of season | Only the Owner and the Manager can switch it. The active rate is shown on the quote screen. |
 | Staff share one login | Low | We cannot tell who made a change | Give one login to each person, with one role. |
@@ -455,9 +471,8 @@ Level means how much this can affect the first delivery. High would stop the rel
 
 1. Name the Owner, and the first Manager and Editor users.
 2. Sign this document, or mark the sections you do not accept.
-3. Reply on the Ratti Gali price list when you are ready.
-4. Ask a staff member to try each step against Section 12.
-5. Keep your Excel file if you still want a spreadsheet copy. We will not delete it.
+3. Ask a staff member to try each step against Section 12.
+4. Keep your Excel file if you still want a spreadsheet copy. We will not delete it.
 
 ---
 
@@ -472,4 +487,4 @@ Section 6.2 and Step 4 are not part of that first delivery.
 | Client, Travel With Moeen | Moeen | | |
 | SoftBuilds Pvt Ltd | | | |
 
-**End of document. TWM-SOW-001. Version 1.0. September 26, 2026.**
+**End of document. TWM-SOW-001. Version 1.1. September 28, 2026.**

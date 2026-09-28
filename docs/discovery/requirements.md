@@ -4,8 +4,8 @@ This file is the list of what we will build for Travel With Moeen. Each item has
 
 The longer discovery notes stay in these files:
 
-- `docs/implementation-details.md` records how the website works today.
-- `docs/resources-files.md` records the Excel file and the costing desk.
+- `docs/discovery/implementation-details.md` records how the website works today.
+- `docs/discovery/resources-files.md` records the Excel file and the costing desk.
 
 This file does not copy login passwords from `resources/Important-Notes.txt`.
 
@@ -33,8 +33,8 @@ Voice notes are in Urdu. The English under each voice source is the meaning of t
 
 | Source ID | What it is | Where |
 |---|---|---|
-| DISC-SITE | How the live website is built today | `docs/implementation-details.md` |
-| DISC-FILES | What is inside the Excel file and the costing desk | `docs/resources-files.md` |
+| DISC-SITE | How the live website is built today | `docs/discovery/implementation-details.md` |
+| DISC-FILES | What is inside the Excel file and the costing desk | `docs/discovery/resources-files.md` |
 | XLS | Price workbook. Moeen said this is the price source of truth | `resources/Trip Cost Calculator Final - Copy.xlsx` |
 | DESK | Standalone costing page saved on 31 Aug 2026 | `resources/Trip-Casting-Desk-2026-08-31 sawera.html` |
 | CHAT-Q | Written answers in chat to questions 1, 2, 3, 4, and 6 | Client reply, 25 Sep 2026 |
@@ -155,13 +155,21 @@ Status: Confirmed. Source: VN-1144A. The Excel sample formulas currently add 20 
 
 ### Places with no own price list
 
-**REQ-14. Ratti Gali still needs one price list.**  
-Tour code 201 has no row in the Excel file. The 11:41 voice note says to copy Naran or Swat. Those two lists are not equal, so this is not locked. The published website price stays until the client names one list: Neelum, Naran, or Swat.  
-Status: Open. Source: VN-1141, XLS, DISC-SITE (tour 201).
+**REQ-14. Ratti Gali keeps the website price.**  
+Tour code 201 has no row in the Excel file. On September 28, 2026 Moeen wrote: use the Ratti Gali prices as given. We do not copy Neelum, Naran, or Swat onto this tour. The published website price stays.  
+Status: Confirmed. Source: WhatsApp text, September 28, 2026, 10:39 am. Earlier source VN-1141 is superseded for this choice.
 
-**REQ-15. Taobat already has Excel prices.**  
-The workbook has Neelum Taobat Arang Kel. On the Lahore sheet, Deluxe twin is 6,000. That is not the Naran figure and not the Swat figure. The first release keeps those rows. It does not copy Naran or Swat over them, and it does not add a new Taobat tour page. The client has been asked to confirm this.  
-Status: Working assumption, sent for confirmation. Source: XLS, VN-1141, REQ-18.
+**REQ-15. Taobat uses the Swat rates.**  
+The workbook has Neelum Taobat Arang Kel. On the Lahore sheet, Deluxe twin is 6,000. On September 28, 2026 Moeen wrote: replace with Swat. The first load uses the Swat rates for Taobat. It does not keep the 6,000 rows, and it does not add a new Taobat tour page.  
+Status: Confirmed. Source: WhatsApp text, September 28, 2026, 10:38 am. XLS, REQ-18.
+
+**REQ-26. Naran keeps its own rates.**  
+Naran and Swat are not the same price. On September 28, 2026 Moeen wrote: keep Naran prices for the time. Do not copy Swat over Naran.  
+Status: Confirmed. Source: WhatsApp text, September 28, 2026, 10:39 am.
+
+**REQ-27. A quote can change one night or one day.**  
+The starting quote still uses one hotel rate for every night and one vehicle for every day. The Manager can then set a different hotel rate on one night, or a different vehicle on one day, including no vehicle that day. The quote shows the average nightly rate so the office can see the hotel category. Example from the voice note: an average of 20,000 sits with the 20,000 hotel category. Do not only multiply the days by one rent when the office needs to edit a day.  
+Status: Confirmed. In the first delivery, Step 2. Source: WhatsApp voice, September 28, 2026, 2:57 pm.
 
 ### Jeep charges
 
@@ -178,7 +186,7 @@ Status: Confirmed. Source: VN-1143.
 | Kumrat and Katora Lake | Road | 4x4 jeep | 6 | 16,200 |
 | Fairy Meadows Nanga Base Camp | Road and air | Jeep + porter (Raikot) | 6 | 18,200 |
 
-One jeep is added per group of 6 travellers. The office can switch a line off.  
+One jeep is added per group of 6 travelers. The office can switch a line off.  
 Status: Confirmed. Source: IMG-1143, VN-1143, DESK. The Excel road formula uses short place names and different sums (30,000 times 3, and 16,200). REQ-16 and this table override that formula where they conflict.
 
 ### Later season, not in the first build
@@ -238,7 +246,7 @@ Source: XLS, software proposal assumption 3.
 
 ## Items that were open, and how we close them
 
-None of these six stop the whole build. Four are settled by the Excel formulas and the voice notes. Roles are decided in REQ-24. Ratti Gali is the only price choice still waiting on the client. Taobat keeps the rows already in Excel unless the client says otherwise.
+None of these six stop the whole build. Four were settled by the Excel formulas and the voice notes. Roles are decided in REQ-24. The September 28, 2026 replies closed the price choice for Ratti Gali and Taobat.
 
 **OPEN-01. Closed from the sheet layout.** The unnamed Skardu and Hunza air row (twin 24,000, 3-share 28,000) sits between the Deluxe row and the Luxury row. That is the Executive slot. The hotel names on that row match the Executive hotels on the road sheet for the same valley. Executive is one of the four grades Moeen asked to keep. We will import that row as Executive.  
 Source: XLS sheet `Air_DB`, REQ-04.
@@ -249,25 +257,19 @@ Source: XLS formula on `BY AIR`.
 **OPEN-03. Closed from the quote formula.** The air sticker is 500 rupees times the number of rooms. The row label says "per vehicle", but the cell that feeds the grand total multiplies 500 by the room count. We follow the formula that makes the total.  
 Source: XLS formula on `BY AIR` (`Air_DB` sticker 500 times the room count).
 
-**OPEN-04. Closed for the first build.** Neelum Taobat does not get its own tour page yet. Kashmir tours of that kind come in a later season (REQ-18). Quoting uses the Taobat rows already in Excel (REQ-15).  
-Source: VN-1139, REQ-18, XLS.
+**OPEN-04. Closed for the first build.** Neelum Taobat does not get its own tour page yet. Kashmir tours of that kind come in a later season (REQ-18). Quoting uses the Swat rates for Taobat (REQ-15).  
+Source: VN-1139, REQ-18, WhatsApp text September 28, 2026.
 
-**OPEN-05. Still open for Ratti Gali only.** Taobat already has its own rows. The voice note says to copy Naran or Swat for both, and says those costs are the same. In Excel they are not the same. The question below has been sent. Until the reply, only tour 201 stays on the current website price.  
-Source: VN-1141, XLS sheets `Road_DB ISB` and `Road_DB LHE`.
+**OPEN-05. Closed.** Ratti Gali keeps the price already on the website. Taobat uses Swat. Naran keeps its own rates for now.  
+Source: WhatsApp text, September 28, 2026.
 
-### Question to send to Moeen about Ratti Gali and Taobat
+### Answers received on September 28, 2026
 
-We checked the Excel price file against the voice note from 11:41.
+The three questions below were sent. Moeen answered in writing the same morning. A voice message at 2:57 pm added REQ-27.
 
-The voice note says Ratti Gali and Taobat do not have their own prices, so we should copy Naran or Swat, because the cost is the same.
-
-The Excel file shows something else. Please reply to the three points below.
-
-1. Taobat already has its own prices in the file. The place name on the sheet is Neelum Taobat Arang Kel. On the Lahore list, a Deluxe twin room there is 6,000 rupees a night. Please confirm we should keep these Taobat prices, and not replace them with Naran or Swat.
-
-2. Naran and Swat are not the same price in the file, so we cannot copy "either" and get the same quote. On the Lahore list, a Deluxe twin room in Naran is 15,000 rupees a night. In Swat it is 9,000. The coaster toll is 10,000 for Naran and 12,000 for Swat. If you still want us to copy one of these, please name one list only.
-
-3. Ratti Gali is not on the price file at all. The website has a 3 day road tour for it, code 201. Ratti Gali is in Neelum, and Neelum already has its own prices in the file. Those Neelum prices match Taobat (Deluxe twin 6,000), not Naran (15,000) and not Swat (9,000). Which list should we use for Ratti Gali: Neelum, Naran, or Swat? Please pick one.
+1. Taobat: replace the Neelum Taobat Arang Kel rates with the Swat rates.
+2. Naran: keep the Naran rates for now. Do not copy Swat over Naran.
+3. Ratti Gali: use the Ratti Gali price already given on the website. Do not copy Neelum, Naran, or Swat.
 
 **OPEN-06. Closed.** The office uses the three roles in REQ-24. There is no single shared login.
 
@@ -290,8 +292,8 @@ The Excel file shows something else. Please reply to the three points below.
 | REQ-11 | Karachi air extra 30,000 | Confirmed | CHAT-Q 6 |
 | REQ-12 | Ticket-ISB 60,000 and LHE-Add 10,000 | Discovery | XLS |
 | REQ-13 | Profit 15 percent off season, 20 percent in season | Confirmed | VN-1144A |
-| REQ-14 | Ratti Gali price list not chosen | Open | VN-1141, XLS |
-| REQ-15 | Taobat keeps its Excel rows | Assumption, sent for confirmation | XLS, VN-1141 |
+| REQ-14 | Ratti Gali keeps the website price | Confirmed | WhatsApp text, September 28, 2026 |
+| REQ-15 | Taobat uses the Swat rates | Confirmed | WhatsApp text, September 28, 2026 |
 | REQ-16 | Jeep price is not multiplied by days | Confirmed | VN-1143 |
 | REQ-17 | Jeep amounts and places | Confirmed | IMG-1143, VN-1143 |
 | REQ-18 | Kashmir, Swat, Chitral jeep later | Confirmed, later | VN-1139 |
@@ -302,9 +304,11 @@ The Excel file shows something else. Please reply to the three points below.
 | REQ-23 | Save guest requests | Discovery | DISC-SITE |
 | REQ-24 | Owner, Manager, and Editor roles | Decided | Office role decision |
 | REQ-25 | Do not guess blank Excel cells | Discovery | XLS |
+| REQ-26 | Naran keeps its own rates for now | Confirmed | WhatsApp text, September 28, 2026 |
+| REQ-27 | Edit one night or one day on a quote | Confirmed, Step 2 | WhatsApp voice, September 28, 2026, 2:57 pm |
 | OPEN-01 | Unnamed air hotel row is Executive | Closed from the sheet | XLS `Air_DB`, REQ-04 |
 | OPEN-02 | Child fare is 75 percent | Closed from the formula | XLS `BY AIR` |
 | OPEN-03 | Sticker is 500 times rooms | Closed from the formula | XLS `BY AIR` |
 | OPEN-04 | No Taobat tour page in the first build | Closed for now | VN-1139, REQ-18 |
-| OPEN-05 | Ratti Gali source list | Open, one tour | VN-1141, XLS |
+| OPEN-05 | Ratti Gali, Taobat, and Naran choices | Closed | WhatsApp text, September 28, 2026 |
 | OPEN-06 | Three office roles | Closed | REQ-24 |
