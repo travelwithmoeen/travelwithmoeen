@@ -1,7 +1,7 @@
 # Requirements
 
 **Spec:** TWM-SPEC-REQ  
-**Proposal:** TWM-SOW-001, version 1.1, September 28, 2026  
+**Proposal:** TWM-SOW-001, version 1.3, September 29, 2026  
 **Status:** Ready to build  
 
 This file says what the first delivery must do. The design is in `docs/specs/design.md`. The build order is in `docs/specs/tasks.md`.
@@ -46,7 +46,7 @@ The public website stays. The office gets a private area on that same site. Gues
 | BR-22 | Off-season profit is 15 percent. In-season profit is 20 percent. Only the Owner and the Manager can switch it. The active rate is shown on the quote screen. |
 | BR-23 | Prado is the preferred vehicle where that car is offered. The Excel name Parado is the same car. Other vehicles can be turned on for a route. |
 | BR-24 | The office can choose Other and type a mix, for example a Gli car plus a jeep. |
-| BR-25 | A quote can add a paid extra on top of the main vehicle. |
+| BR-25 | A quote can add a paid extra on top of the main vehicle. The office types the name and the amount. Examples are a musical night, a BBQ and bonfire, fireworks, a honeymoon setup, or flowers. |
 | BR-26 | A jeep price is the full amount for the days written on the line. The system does not multiply that amount by the number of days again. |
 | BR-27 | Jeep lines are Kalash and Chitral road 90,000, Minimarg road 90,000, Kumrat road 16,200, and Fairy Meadows road and air 18,200. One jeep is added for each group of six travelers. The Manager can turn a line off. |
 | BR-28 | The Neelum Taobat Arang Kel rates are replaced with the Swat rates. The old 6,000 deluxe twin is not the live Taobat rate. Taobat does not get a new public tour page in the first delivery. |
@@ -83,7 +83,7 @@ These rules fill the quote before anyone edits a single night or a single day.
 | BR-47 | The Manager, and the Owner, can remove the vehicle on one day, set a jeep on one day, or set a higher vehicle on one day. |
 | BR-48 | The quote screen shows the average nightly rate. That average is the hotel rates for the nights, added up and divided by the number of nights. An average of 20,000 is shown with the 20,000 hotel category. If no grade is an exact match, the screen still shows the average and the nearest grade. |
 | BR-49 | After an edit, the total follows the edited nights and days, then the season profit. |
-| BR-50 | The guest package builder uses the starting quote only. Guests cannot edit one night or one day. |
+| BR-50 | The guest package builder uses the starting quote only. The guest sees one total. The guest does not see each breakfast line and does not see the profit. Guests cannot edit one night or one day. A staff member who is logged in sees each line and the profit. |
 
 ## 6. Excel load rules
 
@@ -105,15 +105,32 @@ These rules fill the quote before anyone edits a single night or a single day.
 
 ## 8. Not in the first delivery
 
+The first delivery is the baseline. These items stay out of it.
+
 - A new look for the public site.
 - A new public tour page for Taobat.
-- Kashmir, Swat, and Chitral jeep packages by air and by road.
-- Hours on each stop, and the labels Comfort, Luxury, Adventure, and Exploration.
+- Kashmir, Swat, and Chitral jeep packages by air and by road. These are Phase 2.
+- Hours on each stop, and the labels Comfort, Luxury, Adventure, and Exploration. These are Phase 2.
 - Card payment on the website.
 - A login for guests.
 - Deleting the Excel file.
 
-## 9. Done when
+## 9. Phase 3, after the baseline and Phase 2
+
+These were asked for on September 29, 2026. They are kept in the plan. They are sprint 4. They are not built in sprints 1 to 3. Sprint 4 starts after sprint 3 is accepted.
+
+- Season plans by month. Blossom is in April, and the exact April dates still need to be named. Summer is May through September. Autumn is 10 October through 30 November. Winter is 1 December through 30 March.
+- Fuel by kilometers. A Gli car uses 1 liter for each 14 km. A Prado uses 1 liter for each 5 km. One petrol rate and one diesel rate update every quote.
+- A guide price the office can edit by area. Islamabad and Murree can cost less than Skardu and Hunza.
+- Entry tickets added from the day's plan, instead of one air entry amount.
+- A tracking code on each quote a guest builds or downloads.
+- A no-price copy for the driver and field team, with services, dates, flights, vehicles, and hotels.
+- A PDF or image download of the guest quote.
+- A download of the live prices back to Excel.
+
+In sprint 4, the air sticker follows the number of vehicles. Until then it stays 500 rupees times the number of rooms.
+
+## 10. Done when
 
 Step 1 is done when an Editor can change a tour title and a photo and the public page shows both, an Editor cannot open a price, and an Owner can create an Editor login and a Manager login.
 

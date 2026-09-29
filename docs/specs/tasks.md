@@ -3,13 +3,11 @@
 **Spec:** TWM-SPEC-TASKS  
 **Requirements:** `docs/specs/requirements.md`  
 **Design:** `docs/specs/design.md`  
-**Proposal:** TWM-SOW-001, version 1.1  
+**Proposal:** TWM-SOW-001, version 1.3  
 
-Do these in order. Read `docs/specs/requirements.md` and `docs/specs/design.md` before T-01. The quote math is in design section 5. Do not invent a second formula.
+The plan is four sprints of two weeks. Sprints 1 and 2 are the baseline. Sprint 3 is Phase 2. Sprint 4 is Phase 3. All three phases finish in two months. Read the requirements and the design before T-01. The quote math is in design section 5. Do not invent a second formula.
 
-Step 2 starts after Step 1 is accepted. Step 3 starts after Step 2 is accepted. Each task names the requirement it covers.
-
-The eight-week plan in the proposal still holds. Weeks 1 and 2 are Step 1. Weeks 4 and 5 are Step 2. Week 7 is Step 3. Weeks 3, 6, and 8 are review.
+Your work now is T-01 through T-25. That is the baseline, sprints 1 and 2. Do not start sprint 3 or sprint 4.
 
 ## Step 1. Office can edit public pages
 
@@ -56,6 +54,26 @@ The eight-week plan in the proposal still holds. Weeks 1 and 2 are Step 1. Weeks
 | T-24 | Check office and public screens on current Chrome, Edge, Firefox, and Safari, on a computer and on a phone. | BR-57 | The Step 1, 2, and 3 paths work on those browsers. |
 | T-25 | Short office guide in plain US English, and the three training sessions: Owner, Manager, and Editor. | BR-16, BR-56 | The guide matches the screens, including one night and one day on a quote. Office screens are in US English. |
 
-## Not in these tasks
+## Not in sprint 1 or sprint 2
 
-Do not schedule a new public look, a Taobat tour page, card payment, a guest login, stop hours, Comfort / Luxury / Adventure / Exploration, or the later Kashmir, Swat, and Chitral jeep products. Those stay out until a separate written approval.
+Do not build these during the baseline tasks T-01 to T-25.
+
+Sprint 3, Phase 2:
+
+- Hours on each stop
+- Comfort, Luxury, Adventure, Exploration
+- Kashmir, Swat, and Chitral jeep products
+
+Sprint 4, Phase 3:
+
+- Season plans by month. Blossom in April. Summer from May through September. Autumn from 10 October through 30 November. Winter from 1 December through 30 March.
+- Fuel by kilometers. Gli at 1 liter per 14 km. Prado at 1 liter per 5 km. One petrol rate and one diesel rate.
+- Guide price by area
+- Entry tickets by stop
+- Quote tracking codes
+- A no-price copy for the driver and field team
+- PDF or image download of a guest quote
+- Excel download of live prices
+- A sticker counted by vehicles, replacing the room count from the baseline
+
+Card payment, a guest login, and a new public look stay out of these four sprints.
