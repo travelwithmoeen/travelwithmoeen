@@ -12,34 +12,6 @@ interface CardData {
   rotation: number;
 }
 
-const cards: CardData[] = [
-  {
-    id: 1,
-    image: '/images/slider/JeepSafari.webp',
-    title: 'Jeep Safari',
-    rotation: -15,
-  },
-  {
-    id: 2,
-    image: '/images/slider/NatureWildlife.webp',
-    title: 'Nature & Wildlife',
-    rotation: -7,
-  },
-  {
-    id: 3,
-    image: '/images/slider/Adventure.webp',
-    title: 'Adventure',
-    rotation: 0,
-  },
-  {
-    id: 4,
-    image: '/images/slider/Hiking.webp',
-    title: 'Hiking',
-    rotation: 7,
-  },
- 
-];  
-
 const GalleryCard = ({
   card,
   index,
@@ -58,7 +30,7 @@ const GalleryCard = ({
     cardWidth * 0.5,    // Right 1st position
     cardWidth * 1.5,    // Right 2nd position
   ];
-  const targetX = gridOffsets[index];
+  const targetX = gridOffsets[index] ?? 0;
 
   // Scroll-based transforms - cards grow significantly larger
   const rotate = useTransform(scrollYProgress, [0.1, 0.5], [card.rotation, 0]);
@@ -139,7 +111,7 @@ const MobileCard = ({ card }: { card: CardData }) => {
   );
 };
 
-export function FanGallery1() {
+export function FanGallery1({ cards }: { cards: CardData[] }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: containerRef,

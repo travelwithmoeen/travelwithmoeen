@@ -1,0 +1,157 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  Owner
+  Manager
+  Editor
+}
+
+enum PriceSource {
+  excel
+  website
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  passwordHash String
+  role         Role
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("app_user")
+}
+
+model Tour {
+  id            Int         @id @default(autoincrement())
+  slug          String      @unique
+  name          String
+  location      String
+  region        String
+  duration      Int
+  description   String
+  image         String
+  pdf           String
+  code          String      @unique
+  galleryImages String[]
+  categories    String[]
+  packageTypes  String[]
+  transport     String
+  basePrice     Int
+  packages      Json
+  included      String[]
+  notIncluded   String[]
+  featured      Boolean     @default(false)
+  priceSource   PriceSource @default(excel)
+  days          TourDay[]
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@map("tour")
+}
+
+model TourDay {
+  id          Int      @id @default(autoincrement())
+  tourId      Int
+  tour        Tour     @relation(fields: [tourId], references: [id], onDelete: Cascade)
+  dayNumber   Int
+  title       String
+  description String
+  highlights  String[]
+
+  @@unique([tourId, dayNumber])
+  @@map("tour_day")
+}
+
+model Place {
+  id            Int      @id @default(autoincrement())
+  title         String
+  slug          String   @unique
+  excerpt       String
+  bannerImage   String
+  location      String?
+  listingNumber Int
+  content       Json
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("place")
+}
+
+model Post {
+  id         Int      @id @default(autoincrement())
+  title      String
+  slug       String   @unique
+  excerpt    String
+  author     String
+  date       DateTime
+  coverImage String
+  content    Json
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("post")
+}
+
+model Photo {
+  id        Int      @id @default(autoincrement())
+  src       String
+  alt       String
+  category  String
+  span      String?
+  homeOnly  Boolean  @default(false)
+  sortOrder Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("photo")
+}
+
+model Review {
+  id        Int      @id @default(autoincrement())
+  name      String
+  avatar    String
+  location  String
+  text      String
+  rating    Int
+  sortOrder Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("review")
+}
+
+model Slide {
+  id        Int      @id @default(autoincrement())
+  image     String
+  title     String
+  rotation  Int
+  sortOrder Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("slide")
+}
+
+model SiteSettings {
+  id           Int      @id @default(1)
+  phone        String
+  email        String
+  address      String
+  whatsappUrl  String
+  mapUrl       String
+  facebookUrl  String
+  instagramUrl String
+  youtubeUrl   String
+  tiktokUrl    String
+  updatedAt    DateTime @updatedAt
+
+  @@map("site_settings")
+}

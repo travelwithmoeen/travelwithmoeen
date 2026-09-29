@@ -4,6 +4,7 @@ import { ChevronDown, Search, Menu, X, Phone, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import Link from "next/link";
+import { useSiteSettings } from "@/components/SiteSettingsProvider";
 
 const navLinks = [
   { name: "Home", href: "/", hasDropdown: false },
@@ -18,6 +19,7 @@ const navLinks = [
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const site = useSiteSettings();
 
   // Add scroll listener for navbar background
   useEffect(() => {
@@ -35,26 +37,26 @@ const Navbar = () => {
         <div className="mx-auto max-w-7xl flex items-center justify-between text-sm">
           <div className="flex items-center gap-6">
             <a
-               href="https://wa.me/923339981177"
+               href={site.whatsappUrl}
                   target="_blank"
               className="flex items-center gap-2 hover:text-gold transition-colors"
             >
               <Phone className="h-4 w-4" />
-              <span>+92 333 9981177</span>
+              <span>{site.phoneDisplay}</span>
             </a>
             <a
-              href="mailto:info@travelwithmoeen.com"
+              href={`mailto:${site.email}`}
               className="flex items-center gap-2 hover:text-gold transition-colors"
             >
               <Mail className="h-4 w-4" />
-              <span>info@travelwithmoeen.com</span>
+              <span>{site.email}</span>
             </a>
           </div>
           <div className="flex items-center gap-4">
             <span className="text-primary-foreground/80">Follow Us:</span>
             <div className="flex items-center gap-3">
               <a
-                href="https://www.facebook.com/TravelwithMoeen?mibextid=rS40aB7S9Ucbxw6v"
+                href={site.facebookUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-gold transition-colors"
@@ -68,7 +70,7 @@ const Navbar = () => {
                 </svg>
               </a>
               <a
-                href="https://www.instagram.com/travelwithmoeen/"
+                href={site.instagramUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-gold transition-colors"
@@ -199,14 +201,14 @@ const Navbar = () => {
               ))}
               <div className="flex items-center gap-4 mt-4 pt-4 border-t border-border">
                 <a
-                  href="tel:+1234567890"
+                  href={`tel:+${site.phoneE164}`}
                   className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary"
                 >
                   <Phone className="h-4 w-4" />
                   <span>Call Us</span>
                 </a>
                 <a
-                  href="mailto:info@travelwithmoeen.com"
+                  href={`mailto:${site.email}`}
                   className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary"
                 >
                   <Mail className="h-4 w-4" />

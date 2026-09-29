@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import { Facebook, Instagram, Youtube } from "lucide-react";
+import { useSiteSettings } from "@/components/SiteSettingsProvider";
 
 // Counter component for animated stats
 const CounterStat = ({
@@ -102,6 +103,13 @@ const socials = [
 ];
 
 export function SocialMediaSection() {
+  const site = useSiteSettings();
+  const links: Record<string, string> = {
+    YouTube: site.youtubeUrl,
+    Facebook: site.facebookUrl,
+    Instagram: site.instagramUrl,
+    TikTok: site.tiktokUrl,
+  };
   return (
     <section className="bg-muted/30 py-16">
       <div className="container mx-auto px-4">
@@ -124,7 +132,7 @@ export function SocialMediaSection() {
           {socials.map((s, i) => (
             <motion.a
               key={s.name}
-              href={s.url}
+              href={links[s.name]}
               target="_blank"
               rel="noopener noreferrer"
               initial={{ opacity: 0, y: 20 }}

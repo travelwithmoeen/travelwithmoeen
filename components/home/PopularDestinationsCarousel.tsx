@@ -12,9 +12,9 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { destinations } from "@/data/destinations";
+import type { Destination } from "@/data/destinations";
 
-export function PopularDestinationsCarousel() {
+export function PopularDestinationsCarousel({ destinations }: { destinations: Destination[] }) {
   return (
     <section className="bg-muted/30 py-16">
       <div className="container mx-auto px-4">

@@ -4,12 +4,11 @@ import { ArrowRight, Clock, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { tours, getCategoryBadgeClass } from "@/data/tours";
+import { getCategoryBadgeClass, type Tour } from "@/data/tours";
 import { cn } from "@/lib/utils";
 
-const popularTours = tours.filter((tour) => tour.featured).slice(0, 6);
-
-export function PopularToursSection() {
+export function PopularToursSection({ tours }: { tours: Tour[] }) {
+  const popularTours = tours.filter((tour) => tour.featured).slice(0, 6);
   return (
     <section className="bg-muted/30 py-16">
       <div className="container mx-auto px-4">

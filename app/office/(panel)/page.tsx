@@ -1,0 +1,22 @@
+import { getCurrentUser } from "@/lib/auth/session";
+import { canEditContent, canManageUsers } from "@/lib/auth/permissions";
+
+export default async function OfficeHomePage() {
+  const user = await getCurrentUser();
+  if (!user) return null;
+
+  return (
+    <div className="rounded-xl bg-white p-6 shadow">
+      <h1 className="text-2xl font-semibold">Office</h1>
+      {canEditContent(user.role) ? (
+        <p className="mt-3 text-slate-700">You can edit tours, places, the blog, the gallery, reviews, home slides, and site details.</p>
+      ) : null}
+      {canManageUsers(user.role) ? (
+        <p className="mt-3 text-slate-700">You can create a login, remove a login, and change a role.</p>
+      ) : null}
+      {user.role === "manager" ? (
+        <p className="mt-3 text-slate-700">Rates and quotes are not on this step. You cannot edit public page text.</p>
+      ) : null}
+    </div>
+  );
+}

@@ -2,7 +2,8 @@ import { ArrowUpRight, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import SearchBar from "@/components/SearchBar";
 import { FilterBar } from "@/components/FilterBar";
-const HeroSection = () => {
+import type { Tour } from "@/data/tours";
+const HeroSection = ({ tours }: { tours: Tour[] }) => {
   return (
     <section className="relative min-h-screen flex flex-col">
       {/* Background Image */}
@@ -44,7 +45,7 @@ const HeroSection = () => {
       {/* Search Bar */}
       <div className="relative z-20 -mt-20 mb-8">
         {/* <SearchBar /> */}
-        <FilterBar />
+        <FilterBar tours={tours} />
       </div>
     </section>
   );

@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 import { Geist, Geist_Mono, Philosopher } from "next/font/google";
 import "./globals.css";
-import  Navbar  from "@/components/Navbar";
-import { Footer } from "@/components/Footer";
 import { Toaster } from "sonner";
-import { ScrollToTop } from "@/components/ScrollToTop";
+import { SiteChrome } from "@/components/SiteChrome";
+import { SiteSettingsProvider } from "@/components/SiteSettingsProvider";
+import { getSiteSettings } from "@/lib/content";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,23 +28,22 @@ export const metadata: Metadata = {
   description: "Book your next adventure with Moeen Travel. Luxury tours, breathtaking destinations.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  await connection();
+  const settings = await getSiteSettings();
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${philosopher.variable} antialiased selection:bg-indigo-100 selection:text-indigo-900`}
       >
-        <Navbar />
-        <main className="min-h-screen">
-          {children}
-        </main>
-        <Footer />
-        <ScrollToTop />
-        <Toaster richColors />
+        <SiteSettingsProvider value={settings}>
+          <SiteChrome>{children}</SiteChrome>
+          <Toaster richColors />
+        </SiteSettingsProvider>
       </body>
     </html>
   );
