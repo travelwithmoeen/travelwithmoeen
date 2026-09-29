@@ -3,7 +3,7 @@
 **Spec:** TWM-SPEC-DESIGN  
 **Requirements:** `docs/specs/requirements.md`  
 **Tasks:** `docs/specs/tasks.md`  
-**Proposal:** TWM-SOW-001, version 1.1  
+**Proposal:** TWM-SOW-001, version 1.3  
 
 This file says how the first delivery sits on the site that already exists. The public pages stay. The words and prices move into a database. The office edits that database. The public pages read it.
 
@@ -162,7 +162,7 @@ An office save can replace the rate on one night line, and the hotel name on tha
 
 Average nightly rate equals the sum of the rates saved on the night lines, after edits, divided by the number of nights. The screen shows that number next to the hotel category it sits in. The match uses the twin rate on the loaded hotel table for that place. If no grade is an exact match, the screen still shows the average and the nearest grade. The example is 20,000 with the 20,000 category.
 
-The guest builder never sends these edits.
+The guest builder never sends these edits. The guest sees one total only. A staff member who is logged in sees each line and the profit.
 
 Road start cities in the guest builder are Lahore and Islamabad. Karachi is not in that list. Air start cities are Karachi, Lahore, and Islamabad.
 
@@ -217,6 +217,19 @@ The database is backed up once a day. A restore is done only when the data is da
 
 The first delivery does not promise a new uptime number. If the site is down, check the host, fix a fault that is inside this work, and restore from the daily backup if the data is damaged.
 
-## 10. Later, not in this design
+## 10. Later phases
 
-Step 4 is hours per stop, the labels Comfort, Luxury, Adventure, and Exploration, and the Kashmir, Swat, and Chitral jeep products. Those are not tables in the first delivery, except the four jeep lines already in BR-27.
+Phase 2 is sprint 3. It is hours per stop, the labels Comfort, Luxury, Adventure, and Exploration, and the Kashmir, Swat, and Chitral jeep products. The four jeep lines in BR-27 stay in the baseline.
+
+Phase 3 is sprint 4. These are not built in sprints 1 to 3.
+
+- Season trip plans by month. Blossom is in April. Summer is May through September. Autumn is 10 October through 30 November. Winter is 1 December through 30 March. The exact April dates are still to be named.
+- Fuel by kilometers. Gli uses 1 liter for each 14 km. Prado uses 1 liter for each 5 km. One petrol rate and one diesel rate update every quote.
+- Guide price by area. Islamabad and Murree can cost less than Skardu and Hunza.
+- Entry tickets by stop
+- A tracking code on a guest quote
+- A no-price field copy, with services, dates, flights, vehicles, and hotels
+- PDF or image download of a guest quote
+- Excel download of the live prices
+
+In sprint 4, the sticker follows the number of vehicles. In the baseline it stays 500 rupees times rooms.

@@ -5,8 +5,8 @@
 **Client:** Travel With Moeen (Pvt) Ltd  
 **Prepared for:** Moeen  
 **Prepared by:** SoftBuilds Pvt Ltd  
-**Version:** 1.1  
-**Date:** September 28, 2026  
+**Version:** 1.3  
+**Date:** September 29, 2026  
 **Status:** Ready for sign-off  
 
 This document is for Travel With Moeen and SoftBuilds Pvt Ltd. Please do not publish it.
@@ -15,10 +15,12 @@ This document is for Travel With Moeen and SoftBuilds Pvt Ltd. Please do not pub
 |---|---|---|
 | 1.0 | September 26, 2026 | First issue for review and sign-off |
 | 1.1 | September 28, 2026 | Taobat uses Swat rates. Naran stays as stored. Ratti Gali keeps the website price. A quote can change one night or one day. |
+| 1.2 | September 29, 2026 | Later requests are kept in the plan, in phases. The first delivery stays the baseline. |
+| 1.3 | September 29, 2026 | Four sprints of two weeks. Moeen's later requests are written into sprint 3 and sprint 4. |
 
 Please read this document and sign Section 23 if you agree. After you sign, this document is the plan we will follow. If you want a change later, please send it in writing.
 
-When you sign, you agree the work, the way we will do it, and the eight-week plan in Section 13.
+When you sign, you agree the work, the way we will do it, and the two-month plan in Section 13.
 
 ---
 
@@ -42,7 +44,7 @@ You already have a public website. Guests read tours, places, and articles, and 
 
 We will keep that public website. We will add a private office area with a login. Your staff will update tours, photos, articles, reviews, and prices there. The first prices will come from your Excel file. You named that file as the price source. After the first load, the Manager keeps the prices up to date.
 
-The work has four steps. Steps 1, 2, and 3 are the first delivery. Step 4 comes later, and it is written here so that limit is clear. From the day you sign, we plan to finish the first delivery in eight weeks. The plan is in Section 13. The price choices you sent on September 28, 2026 are included in that plan.
+The work has four sprints of two weeks. Sprints 1 and 2 are the baseline. Sprint 3 is Phase 2. Sprint 4 is Phase 3. From the day you sign, we plan to finish all three phases in two months. The plan is in Section 13.
 
 ---
 
@@ -54,7 +56,7 @@ The work has four steps. Steps 1, 2, and 3 are the first delivery. Step 4 comes 
 | Manager | The staff login that changes prices, vehicles, jeeps, and the season profit, and that saves quotes. |
 | Editor | The staff login that edits public pages and photos, and that cannot change prices. |
 | Excel file | `Trip Cost Calculator Final - Copy.xlsx`. This is the price source for the first load. |
-| First delivery | Steps 1, 2, and 3. This is what the eight-week plan covers. |
+| First delivery | Sprints 1 and 2. The baseline. Steps 1, 2, and 3. |
 | Twin rate | The hotel price for a room shared by two people. |
 | 3-share rate | The hotel price used when more than two people share a room. |
 | Prado | The preferred vehicle where that car is offered. |
@@ -117,7 +119,7 @@ The first delivery is Steps 1, 2, and 3 in Section 12.
 - A quote the Manager can change for one night or one day, with the average nightly rate shown
 - Four hotel grades on the tour page and in the package builder
 - A vehicle list the office can edit, with Prado preferred where that car is offered, and an Other choice for a typed mix
-- Paid extras, such as a jeep for Saiful Muluk or Fairy Meadows
+- Paid extras, such as a jeep, a musical night, a BBQ and bonfire, fireworks, a honeymoon setup, or flowers. The office types the name and the amount.
 - Start-city rules for air and for road
 - A switch for 15 percent or 20 percent profit
 - Saving of contact messages, custom trip requests, and booking requests
@@ -133,6 +135,8 @@ The first delivery is Steps 1, 2, and 3 in Section 12.
 - Card payment on the website
 - A login for guests
 - Deleting your Excel file. The file stays with you. We copy the prices from it.
+
+The first delivery is the baseline, in sprints 1 and 2. Requests that need a new price rule, or a new product, are Phase 2 in sprint 3, or Phase 3 in sprint 4. They are not dropped. They are not part of the first month.
 
 ---
 
@@ -236,6 +240,8 @@ The Manager can then change one night or one day on that quote.
 
 The test quote in Section 9.2 is checked before any one-night or one-day change. After a change, the total follows the edited nights and days, then the season profit.
 
+A guest on the website sees one total. The guest does not see each breakfast line, and the guest does not see the profit. A staff member who is logged in sees each line and the profit.
+
 ---
 
 ## 10. How the system will be set up
@@ -330,38 +336,53 @@ The site stays on the hosting you use today, unless we agree a hosting change in
 - An Editor can read the list and cannot delete an item.
 - An Owner can delete a test item.
 
-### Step 4. Later work (not part of the first delivery)
+### Phase 2. Sprint 3 (not part of the baseline)
 
 **Result.** Help with how long a day takes, and the extra custom jeep products.
 
 **What you would receive**
 
 - Hours saved for each stop, and a total for the day
-- Trip types: Comfort, Luxury, Adventure, Exploration
+- Trip labels: Comfort, Luxury, Adventure, and Exploration
 - Kashmir, Swat, and Chitral jeep products, by air and by road, as custom extras
 
-This step needs a separate written approval after the first delivery is in daily use. It is listed here so it is not treated as part of Steps 1 to 3.
+This is sprint 3, weeks 5 and 6. It starts after sprint 2 is accepted.
+
+### Phase 3. Sprint 4 (major enhancements)
+
+**Result.** Changes to how a price is built, and extra copies of a quote. These sit on top of the baseline. They do not replace it.
+
+**What you would receive**
+
+- Season plans. Blossom is in April, and the exact April dates still need to be named. Summer is May through September. Autumn is 10 October through 30 November. Winter is 1 December through 30 March. When a month is chosen, the matching plan is used.
+- Fuel by distance. A Gli car uses 1 liter for each 14 km. A Prado uses 1 liter for each 5 km. The office keeps one petrol rate and one diesel rate. A change to that rate updates every quote. Each day uses the kilometers for that route.
+- A guide price the office can edit by area. A local guide for Islamabad or Murree can cost less than a guide for Skardu or Hunza.
+- Entry tickets stored in the office and added from the day's plan, instead of one air entry amount for the whole trip.
+- A tracking code on each quote a guest builds or downloads, so the office can find that quote later.
+- A second copy for the driver and the field team. It has the services, dates, flight route, air ticket details, vehicles, hotels, and what is included. It has no prices.
+- A download of the guest quote as a PDF or an image.
+- A download of the live prices back to Excel.
+
+In the baseline, the air sticker is 500 rupees times the number of rooms. In sprint 4, the sticker follows the number of vehicles.
+
+This is sprint 4, weeks 7 and 8. It starts after sprint 3 is accepted.
 
 ---
 
 ## 13. Timeline
 
-The weeks start on the day you sign Section 23. The plan is for one full-time developer. It also allows you up to five working days to review each step.
+The plan starts on the day you sign Section 23. It is four sprints. Each sprint is two weeks. All three phases finish in two months. The plan is for one full-time developer. The last two working days of each sprint are for your review.
 
-The first delivery is Step 1, Step 2, and Step 3. The aim is your acceptance of Step 3 at the end of week 8. If you finish a review sooner, the next step starts sooner. If a review is late, or you add a change, the end date moves by the same number of days.
+If you accept a sprint sooner, the next sprint can start sooner. If a review is late, the next sprint starts late by the same number of days.
 
-| Week | Work | Working days |
+| Sprint | Weeks | What is delivered |
 |---|---|---|
-| 1 and 2 | Step 1. Office login, three roles, and editing of public pages | 10 |
-| 3 | Your review of Step 1 | up to 5 |
-| 4 and 5 | Step 2. Excel prices, price rules, one-night and one-day edits, and the test quote | 10 |
-| 6 | Your review of Step 2 | up to 5 |
-| 7 | Step 3. Saved guest requests, with WhatsApp kept | 5 |
-| 8 | Your review of Step 3, and acceptance of the first delivery | up to 5 |
+| 1 | 1 and 2 | Baseline. Office login, three roles, and editing of public pages. |
+| 2 | 3 and 4 | Baseline. Excel prices, quote rules, one-night and one-day edits, and saved guest requests. |
+| 3 | 5 and 6 | Phase 2. Hours on each stop, trip labels, and the Kashmir, Swat, and Chitral jeep products. |
+| 4 | 7 and 8 | Phase 3. The major enhancements in Section 12. |
 
-Inside these eight weeks, 25 working days are for building. The other 15 working days are for your review. They are not extra build days.
-
-Step 4 is not inside the eight weeks. After the first delivery is in use, and after a separate written approval, Step 4 is another 10 working days of build, plus up to 5 working days of review.
+The baseline is accepted at the end of sprint 2. Phase 2 is accepted at the end of sprint 3. Phase 3 is accepted at the end of sprint 4.
 
 Please do these in week 1. If they come later, the build weeks move by the same delay.
 
@@ -478,13 +499,13 @@ Level means how much this can affect the first delivery. High would stop the rel
 
 ## 23. Sign-off
 
-By signing, you confirm that Sections 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, and 19 are the agreed first delivery, the agreed schedule, and the agreed rules for setup, quality, training, support, ownership, updates, and assumptions.
+By signing, you confirm the baseline in sprints 1 and 2, and the later work in sprints 3 and 4, as written in Sections 6, 7, 8, 9, 10, 11, 12, and 13. You also confirm the rules in Sections 14, 15, 16, 17, 18, and 19.
 
-Section 6.2 and Step 4 are not part of that first delivery.
+The baseline is sprints 1 and 2. Sprint 3 is Phase 2. Sprint 4 is Phase 3. A new look, card payment, and a guest login are not part of this plan.
 
 | Role | Name | Signature | Date |
 |---|---|---|---|
 | Client, Travel With Moeen | Moeen | | |
 | SoftBuilds Pvt Ltd | | | |
 
-**End of document. TWM-SOW-001. Version 1.1. September 28, 2026.**
+**End of document. TWM-SOW-001. Version 1.3. September 29, 2026.**
