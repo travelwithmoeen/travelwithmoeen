@@ -58,7 +58,7 @@ ISO/IEC 25010 asks for maintainability and security. In this project that means:
 - Login and session follow BR-67 and BR-68. Task T-27 in Step 2 adds the 10-failure lock and the 401 and 403 codes. Do not weaken the cookie, and do not leave the lock for Step 3.
 - Database calls use the query builder. Do not build SQL by joining strings.
 
-Before a step is accepted, the four tests in `docs/specs/requirements.md` section 12 must pass. SAST is `npm run lint`. SCA is `npm run check:sca`. DAST is the OWASP ZAP baseline with no High alert. IAST is the step script against the running site. Run that same set at the end of Step 2, Step 3, and T-25.
+Before a step is accepted, the four tests in `docs/specs/requirements.md` section 12 must pass. SAST is `npm run lint`, including no `eval` and no raw HTML insert, plus the pre-commit secret-file check. SCA is `npm run check:sca` on production dependencies. DAST is the OWASP ZAP baseline with no High alert, and it must reach `/office/login`. IAST is the step script against the running site. Each later run keeps the older cases and adds the new step's cases. The route list in section 13 is who may call each office action. A new route updates that list in the same change.
 
 ## Checks while you work, and before a commit
 

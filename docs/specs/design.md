@@ -221,7 +221,9 @@ Step 1 stores a photo when the browser says the file is an image. Step 2, task T
 
 ## 7b. Security tests
 
-Task T-28 is part of Step 2. It runs four tests: lint on the code, `npm run check:sca` on production packages, an OWASP ZAP baseline scan of the running site with no High alert, and the step script against that same running site. The script must see 401, 403, a refused upload, and the login lock. Run these four again before Step 3 is accepted and again before T-25 is accepted. Do not swap in a different set later.
+Task T-28 is part of Step 2. It runs four tests: lint on the code, `npm run check:sca` on production packages, an OWASP ZAP baseline scan of the running site with no High alert, and the step script against that same running site. The script must see 401, 403, a refused upload, and the login lock. Later steps run the same four tests again. The script keeps the old cases and adds the new step's cases. It does not drop an old case.
+
+The route list in requirements section 13 is the authorization list for the whole project. A new office route is added to that list in the same change. A route that is not on the list is refused.
 
 ## 8. Guest requests
 

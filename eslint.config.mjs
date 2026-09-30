@@ -114,6 +114,15 @@ const eslintConfig = defineConfig([
       eqeqeq: "off",
     },
   },
+  {
+    files: ["**/*.{ts,tsx,js,jsx}"],
+    rules: {
+      "no-eval": "error",
+      "no-implied-eval": "error",
+      "no-new-func": "error",
+      "react/no-danger": "error",
+    },
+  },
 ]);
 
 export default eslintConfig;

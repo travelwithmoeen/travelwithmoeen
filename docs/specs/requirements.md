@@ -187,4 +187,41 @@ Four tests are the minimum. The same four run at the end of Step 2, again before
 | BR-71 | SAST. Static check of the code before it runs. | `npm run lint` passes. The pre-commit hook already runs it on staged TypeScript. It must also pass on the whole project before the step is accepted. A new forbidden import, a server action, or a Prisma import fails the step. |
 | BR-72 | SCA. Check of third-party packages. | `npm run check:sca` passes. That command is `npm audit --omit=dev --audit-level=high`. A high or critical finding in a production dependency fails the step. |
 | BR-73 | DAST. Check of the running site from the outside. | With `npm run dev` running, the OWASP ZAP baseline scan below finishes with no High alert. Exit code 2 fails the step. Warnings are written in the step note. `docker run --rm -t ghcr.io/zaproxy/zaproxy:stable zap-baseline.py -t http://host.docker.internal:3000 -I` |
-| BR-74 | IAST. Check from inside the running app while a test drives it. | This project does not add a separate agent. The minimum is the step script against the live server. Step 2's script must sign in, receive 401 with no cookie, receive 403 for the wrong role, refuse a bad upload, and refuse the 11th failed sign-in. The script reads those results from the real responses. A later step adds its own cases to that same script pattern. It does not skip the earlier cases. |
+| BR-74 | IAST. Check from inside the running app while a test drives it. | This project does not add a paid agent. The minimum is the step script against the live server. Every run keeps the cases already listed below and adds the new step's cases. It does not delete an old case. |
+
+The four tests cover the whole project, not only one screen.
+
+SAST, every pull request and every step close. `npm run lint` must pass, including these rules: no `eval`, no `new Function`, and no `dangerouslySetInnerHTML`. The pre-commit check must still reject `.env`, `resources/`, `public/uploads/` except `.gitkeep`, and Prisma. A secret in a tracked file fails the same way as a lint error.
+
+SCA, every step close. `npm run check:sca` checks production dependencies for high and critical findings. The lockfile in git is the list of packages. A pull request that adds a dependency names that package in the pull request text. Do not run `npm audit fix --force` to hide a finding.
+
+DAST, every step close, from outside the running site. The ZAP baseline must request the public home page and `/office/login`. A High alert fails the step. An office action with no cookie is not a ZAP job. The step script checks that, because ZAP is not logged in.
+
+IAST, every step close, from inside the running site. The script keeps these cases forever:
+
+- No cookie on an office save returns 401.
+- The wrong role returns 403.
+- The login error text is the same for a bad email and a bad password.
+- A response body does not contain `SESSION_SECRET` or a password.
+
+Step 2 adds, and later runs keep them: a renamed text file is refused, a file over 5 MB is refused, and the 11th failed sign-in inside 15 minutes is refused.
+
+Step 3 adds, and later runs keep them: a message over 4,000 characters is refused, and the public home page does not contain the test guest phone.
+
+Sprint 4 adds: the driver copy has no rupee amount. The guest download has one total. An Editor cannot download the live price Excel file.
+
+## 13. Who may call what
+
+This list is the whole project. A new office route is added to this list in the same change that adds the route. A route that is not on the list is refused. Public pages stay open. Guests do not get an office session.
+
+| Call | Who |
+|---|---|
+| Public pages, including home, tours, places, blog, gallery, calculator, contact, and custom trip | Anyone. No session. |
+| `POST /api/office/login` | Anyone. The failure rules in BR-67 and BR-68 apply. |
+| `POST /api/office/logout` and `GET /api/office/session` | A signed-in Owner, Manager, or Editor. |
+| Tour, place, post, photo, review, slide, and site-detail writes | Owner or Editor. |
+| Rates, season, vehicles, jeep lines, paid extras, and the live price Excel download | Owner or Manager. |
+| Create a login, remove a login, change a role, delete a tour, delete a price row, delete a guest request | Owner only. |
+| Read guest requests | Owner, Manager, or Editor. |
+| Change a guest request status | Owner or Manager. |
+| Guest PDF or image | The guest sees one total. Staff lines and profit stay off that file. |
