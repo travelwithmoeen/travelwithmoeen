@@ -51,14 +51,14 @@ import {
   type RoadDestination,
   type AirDestination,
 } from "@/data/pricing";
-import { tours } from "@/data/tours";
+import type { Tour } from "@/data/tours";
 import { TourCard } from "@/components/TourCard";
 import { cn } from "@/lib/utils";
 
 type TransportMode = "By Road" | "By Air";
 type RoomType = "twin" | "triple";
 
-export function PackageCalculator() {
+export function PackageCalculator({ tours }: { tours: Tour[] }) {
   const sectionRef = useRef<HTMLElement>(null);
   const [transportMode, setTransportMode] = useState<TransportMode>("By Road");
   const [departure, setDeparture] = useState<string>("Islamabad");
@@ -213,7 +213,7 @@ export function PackageCalculator() {
         tour.location.toLowerCase().includes(selectedDestination.toLowerCase());
       return matchTransport && matchDest;
     });
-  }, [transportMode, selectedDestination]);
+  }, [tours, transportMode, selectedDestination]);
 
   const toggleAddOn = (id: string) => {
     // Prevent removing guide if it's compulsory for current vehicle

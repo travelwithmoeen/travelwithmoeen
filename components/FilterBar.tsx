@@ -4,7 +4,7 @@ import React, { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { MapPin, Calendar as CalendarIcon, Award, Plane, ChevronDown, Search } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { tours } from "@/data/tours";
+import type { Tour } from "@/data/tours";
 
 interface FilterOption {
   value: string;
@@ -12,7 +12,7 @@ interface FilterOption {
 }
 
 // Helper functions to get unique values from tours data
-function getUniqueRegions(): FilterOption[] {
+function getUniqueRegions(tours: Tour[]): FilterOption[] {
   const regions = [...new Set(tours.map(tour => tour.region))];
   return regions.map(region => ({
     value: region,
@@ -20,7 +20,7 @@ function getUniqueRegions(): FilterOption[] {
   })).sort((a, b) => a.label.localeCompare(b.label));
 }
 
-function getUniqueCategories(): FilterOption[] {
+function getUniqueCategories(tours: Tour[]): FilterOption[] {
   const categories = [...new Set(tours.flatMap(tour => tour.categories))];
   // Filter to show only main plan categories (Deluxe, Executive, Luxury)
   const planCategories = categories.filter(cat =>
@@ -32,7 +32,7 @@ function getUniqueCategories(): FilterOption[] {
   }));
 }
 
-function getUniqueTransportTypes(): FilterOption[] {
+function getUniqueTransportTypes(tours: Tour[]): FilterOption[] {
   const transports = [...new Set(tours.map(tour => tour.transport))];
   return transports.map(transport => ({
     value: transport,
@@ -40,7 +40,7 @@ function getUniqueTransportTypes(): FilterOption[] {
   }));
 }
 
-function getDurationOptions(): FilterOption[] {
+function getDurationOptions(tours: Tour[]): FilterOption[] {
   // Get durations from tours
   const durations = tours.map(tour => tour.duration);
   const options: FilterOption[] = [];
@@ -146,7 +146,7 @@ function FilterField({
   );
 }
 
-export function FilterBar() {
+export function FilterBar({ tours }: { tours: Tour[] }) {
   const router = useRouter();
   const [destination, setDestination] = useState("");
   const [duration, setDuration] = useState("");
@@ -155,10 +155,10 @@ export function FilterBar() {
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
   // Get dynamic options from tours data
-  const destinationOptions = useMemo(() => getUniqueRegions(), []);
-  const durationOptions = useMemo(() => getDurationOptions(), []);
-  const planCategoryOptions = useMemo(() => getUniqueCategories(), []);
-  const transportOptions = useMemo(() => getUniqueTransportTypes(), []);
+  const destinationOptions = useMemo(() => getUniqueRegions(tours), [tours]);
+  const durationOptions = useMemo(() => getDurationOptions(tours), [tours]);
+  const planCategoryOptions = useMemo(() => getUniqueCategories(tours), [tours]);
+  const transportOptions = useMemo(() => getUniqueTransportTypes(tours), [tours]);
 
   const handleDropdownToggle = (fieldId: string) => {
     setOpenDropdown(openDropdown === fieldId ? null : fieldId);

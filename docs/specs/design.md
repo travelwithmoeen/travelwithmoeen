@@ -4,6 +4,7 @@
 **Requirements:** `docs/specs/requirements.md`  
 **Tasks:** `docs/specs/tasks.md`  
 **Proposal:** TWM-SOW-001, version 1.3  
+**Also read:** `docs/rules/project-structure.md` and `docs/rules/coding-standards.md`  
 
 This file says how the first delivery sits on the site that already exists. The public pages stay. The words and prices move into a database. The office edits that database. The public pages read it.
 
@@ -33,7 +34,7 @@ The site is a Next.js App Router app. These public routes stay, and their conten
 | Gallery | `data/gallery.ts` |
 | Reviews | `data/testimonials.ts` |
 | Rates used by the live site | `data/pricing.ts` and `lib/calculatePackagePrice.ts` |
-| Home slides | `components/FanGallery1.tsx` |
+| Home slides | Seed list in `scripts/seed-content.ts`. `components/FanGallery1.tsx` only draws the cards it is given. |
 | Phone, email, address, social links | `components/Navbar.tsx`, `components/Footer.tsx`, `components/home/SocialMediaSection.tsx`, `app/contact/page.tsx` |
 | Tour card price | `components/TourCard.tsx` calls `calculatePackagePrice` with Deluxe and Islamabad, and falls back to `basePrice` |
 | Package builder | `components/home/PackageCalculator.tsx`, also used by `app/calculator/page.tsx` |
@@ -55,24 +56,28 @@ Contact saves the request and does not send email. The custom trip form saves th
 
 ## 2. Shape
 
+The screens and the rules must be able to deploy as two services later. Today they may run in one Next.js process. The only door between them is the API.
+
 ```text
-Guest browser
-  public pages and package builder
+Browser
+  public pages and office screens
+        |
+        |  HTTP JSON, host from API_BASE_URL
+        v
+app/api
+  thin routes
         |
         v
-Next.js server
-  office screens at /office
-  quote function (one place)
-  login and role checks
+lib
+  auth, content, office rules, quote
         |
         v
 PostgreSQL
-  content, rates, quotes, guest requests, users
 ```
 
-There is one quote function. The guest package builder and the office quote screen both call it. The guest call does not send night edits or day edits. The office call can.
+There is one quote function in `lib/`. The guest package builder and the office quote screen both reach it through the API. The guest call does not send night edits or day edits. The office call can.
 
-Role checks run on the server. Hiding a button in the browser is not enough.
+Role checks run in `lib/`, on the server. Hiding a button in the browser is not enough.
 
 Office screens are in US English. The public site is not translated.
 
@@ -192,14 +197,31 @@ Rules:
 - Parado in the sheet is stored as Prado for the office label.
 - Premier: store, do not offer.
 - Rows that still have no place: write them to an import report. Do not invent a number.
+- Read cell values only. Do not run a macro, follow an external link, or write a file under `public/`.
 
 After a successful import, new quotes use the database. The Excel file can stay on disk as the client's copy.
 
 ## 7. Login
 
-Passwords are hashed. Staff do not share one password. The Owner removes a login when someone leaves.
+Passwords are hashed with bcrypt, at least 12 rounds. A new password is at least 8 characters. Staff do not share one password. The Owner removes a login when someone leaves. The last Owner cannot be removed.
 
-A session cookie is enough. Guests never get a session for the office.
+The login error is one sentence for an unknown email and for a wrong password. Do not say which one failed.
+
+A session cookie is enough. Guests never get a session for the office. Login sets a new cookie. Logout clears it. The cookie name is `twm_office`. It is `httpOnly`, `SameSite=Lax`, and `Secure` when the site is in production. It expires in 7 days. The value is signed. The role is loaded from the database on each request. Do not store the role inside the cookie and trust it.
+
+`proxy.ts` only checks that a cookie exists. The signed check stays in the session read. Do not drop that check in a later step.
+
+Step 2, task T-27, records failed sign-ins in the database. After 10 failures for the same email within 15 minutes, the next sign-in is refused until that window ends. A missing session is 401. A wrong role is 403. Step 1 may still use 400 for a wrong role. T-27 changes that. Do not leave it for Step 3.
+
+Database calls use the query builder. Do not build SQL by joining strings.
+
+## 7a. Uploads
+
+Step 1 stores a photo when the browser says the file is an image. Step 2, task T-26, replaces that check. Read the file bytes. Accept JPEG, PNG, and WebP only, at 5 MB or under. Refuse SVG. The saved name has no folder path. Do not move this task to Step 3 or sprint 4.
+
+## 7b. Security tests
+
+Task T-28 is part of Step 2. It runs four tests: lint on the code, `npm run check:sca` on production packages, an OWASP ZAP baseline scan of the running site with no High alert, and the step script against that same running site. The script must see 401, 403, a refused upload, and the login lock. Run these four again before Step 3 is accepted and again before T-25 is accepted. Do not swap in a different set later.
 
 ## 8. Guest requests
 
@@ -211,9 +233,11 @@ A session cookie is enough. Guests never get a session for the office.
 
 The office list shows status. The Manager and the Owner can change status. Only the Owner can delete.
 
+A guest name is at most 200 characters, a phone is at most 40, an email is at most 200, and a message is at most 4,000. Store the message as text. A public page does not render it as HTML and does not show the phone, the email, or the message.
+
 ## 9. Backups
 
-The database is backed up once a day. A restore is done only when the data is damaged, and the client is told.
+The database is backed up once a day. A restore is done only when the data is damaged, and the client is told. The backup file is not committed and is not placed under `public/`.
 
 The first delivery does not promise a new uptime number. If the site is down, check the host, fix a fault that is inside this work, and restore from the daily backup if the data is damaged.
 
@@ -228,8 +252,8 @@ Phase 3 is sprint 4. These are not built in sprints 1 to 3.
 - Guide price by area. Islamabad and Murree can cost less than Skardu and Hunza.
 - Entry tickets by stop
 - A tracking code on a guest quote
-- A no-price field copy, with services, dates, flights, vehicles, and hotels
-- PDF or image download of a guest quote
-- Excel download of the live prices
+- A no-price field copy, with services, dates, flights, vehicles, and hotels, and no rupee amounts
+- PDF or image download of a guest quote. The guest file shows one total, not the staff lines and not the profit
+- Excel download of the live prices. Only the Owner and the Manager can download it
 
 In sprint 4, the sticker follows the number of vehicles. In the baseline it stays 500 rupees times rooms.

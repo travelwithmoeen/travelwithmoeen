@@ -5,14 +5,14 @@ import { Star, Quote } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { testimonials } from "@/data/testimonials";
+import type { Testimonial } from "@/data/testimonials";
 import { cn } from "@/lib/utils";
 
-export function TestimonialCarousel() {
+export function TestimonialCarousel({ reviews }: { reviews: Testimonial[] }) {
   const [isPaused, setIsPaused] = useState(false);
 
   // Duplicate testimonials for seamless infinite scroll
-  const duplicatedTestimonials = [...testimonials, ...testimonials];
+  const duplicatedTestimonials = [...reviews, ...reviews];
 
   return (
     <section className="overflow-hidden bg-navy py-16">
@@ -45,7 +45,7 @@ export function TestimonialCarousel() {
         <motion.div
           className="flex gap-6"
           animate={{
-            x: isPaused ? 0 : [0, -50 * testimonials.length * 6],
+            x: isPaused ? 0 : [0, -50 * reviews.length * 6],
           }}
           transition={{
             x: {

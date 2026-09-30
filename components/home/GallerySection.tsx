@@ -2,11 +2,11 @@ import  Link  from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { galleryImages } from "@/data/gallery";
+import type { GalleryImage } from "@/data/gallery";
 
-export function GallerySection() {
+export function GallerySection({ photos }: { photos: GalleryImage[] }) {
   // Show first 8 images in a masonry grid for homepage preview
-  const previewImages = galleryImages.slice(0, 15);
+  const previewImages = photos.slice(0, 15);
 
   return (
     <section className="bg-card py-16">

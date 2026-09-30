@@ -12,37 +12,38 @@ import Navbar from "@/components/Navbar";
 import PageBanner from "@/components/PageBanner";
 import PageContainer from "@/components/PageContainer";
 import contactHero from "@/public/images/contact-hero.jpg";
-
-const contactInfo = [
-  {
-    icon: MapPin,
-    title: "Our Office",
-    details: ["Office # 3, 2nd Floor, Shalimar Plaza, F-10 Markaz, Islamabad"],
-    href: "https://www.google.com/maps/search/?api=1&query=Office+3+2nd+Floor+Shalimar+Plaza+F-10+Markaz+Islamabad",
-  },
-  {
-    icon: Phone,
-    title: "Phone",
-    details: ["+92 333 9981177"],
-    href: "https://wa.me/923339981177",
-  },
-  {
-    icon: Mail,
-    title: "Email",
-    details: ["info@travelwithmoeen.com"],
-    href: "mailto:info@travelwithmoeen.com",
-  },
-  {
-    icon: Clock,
-    title: "Working Hours",
-    details: [
-      "Mon - Sat: 9:00 AM - 6:00 PM",
-      "Sunday office Closed but virtually open",
-    ],
-  },
-];
+import { useSiteSettings } from "@/components/SiteSettingsProvider";
 
 const Contact = () => {
+  const site = useSiteSettings();
+  const contactInfo = [
+    {
+      icon: MapPin,
+      title: "Our Office",
+      details: [site.address],
+      href: site.mapsUrl,
+    },
+    {
+      icon: Phone,
+      title: "Phone",
+      details: [site.phoneDisplay],
+      href: site.whatsappUrl,
+    },
+    {
+      icon: Mail,
+      title: "Email",
+      details: [site.email],
+      href: `mailto:${site.email}`,
+    },
+    {
+      icon: Clock,
+      title: "Working Hours",
+      details: [
+        "Mon - Sat: 9:00 AM - 6:00 PM",
+        "Sunday office Closed but virtually open",
+      ],
+    },
+  ];
   // const { toast } = useToast();
   const [formData, setFormData] = useState({
     name: "",
@@ -215,7 +216,7 @@ const Contact = () => {
                 {[
                   {
                     name: "Facebook",
-                    href: "https://www.facebook.com/TravelwithMoeen?mibextid=rS40aB7S9Ucbxw6v",
+                    href: site.facebookUrl,
                     icon: (
                       <svg
                         className="h-5 w-5"
@@ -228,7 +229,7 @@ const Contact = () => {
                   },
                   {
                     name: "Instagram",
-                    href: "https://www.instagram.com/travelwithmoeen/",
+                    href: site.instagramUrl,
                     icon: (
                       <svg
                         className="h-5 w-5"
@@ -241,7 +242,7 @@ const Contact = () => {
                   },
                   {
                     name: "YouTube",
-                    href: "https://www.youtube.com/@itsmoeen",
+                    href: site.youtubeUrl,
                     icon: (
                       <svg
                         className="h-5 w-5"
@@ -254,7 +255,7 @@ const Contact = () => {
                   },
                   {
                     name: "TikTok",
-                    href: "https://www.tiktok.com/@travelwithmoeen",
+                    href: site.tiktokUrl,
                     icon: (
                       <svg
                         className="h-5 w-5"
