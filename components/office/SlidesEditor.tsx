@@ -1,20 +1,17 @@
 "use client";
 
 import { useActionState } from "react";
-import { deleteSlideAction, saveSlideAction } from "@/lib/office/actions";
-import type { ActionResult } from "@/lib/office/users";
+import { officeFormAction } from "@/lib/http/office-client";
+import type { ActionResult } from "@/lib/http/result";
 import type { HomeSlide } from "@/lib/content";
 
 const inputClass = "mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm";
 
 function SlideFields({ slide, sortOrder }: { slide?: HomeSlide; sortOrder: number }) {
-  const [state, action, pending] = useActionState(
-    async (_prev: ActionResult | null, formData: FormData) => saveSlideAction(formData),
-    null,
-  );
+  const [state, action, pending] = useActionState(officeFormAction("/api/office/slides"), null as ActionResult | null);
   const [removed, remove, removing] = useActionState(
-    async (_prev: ActionResult | null, formData: FormData) => deleteSlideAction(formData),
-    null,
+    officeFormAction("/api/office/slides/delete"),
+    null as ActionResult | null,
   );
 
   return (

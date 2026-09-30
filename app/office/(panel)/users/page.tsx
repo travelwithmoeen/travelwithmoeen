@@ -1,16 +1,12 @@
 import { redirect } from "next/navigation";
-import { asc } from "drizzle-orm";
-import { db } from "@/lib/db";
-import { users } from "@/lib/db/schema";
-import { getCurrentUser } from "@/lib/auth/session";
-import { canManageUsers } from "@/lib/auth/permissions";
 import { CreateUserForm } from "@/components/office/CreateUserForm";
 import { UserControls } from "@/components/office/UserControls";
+import { getOfficeSession, getOfficeUsers } from "@/lib/http/office-session";
 
 export default async function UsersPage() {
-  const actor = await getCurrentUser();
-  if (!actor || !canManageUsers(actor.role)) redirect("/office");
-  const rows = await db.select().from(users).orderBy(asc(users.email));
+  const actor = await getOfficeSession();
+  if (!actor?.canManageUsers) redirect("/office");
+  const rows = await getOfficeUsers();
 
   return (
     <div className="space-y-8">

@@ -12,7 +12,7 @@ How the site and the price files work today, and where each decision came from.
 
 ## Proposal
 
-The client document, TWM-SOW-001, version 1.1.
+The client document, TWM-SOW-001, version 1.3.
 
 - `proposal/software-proposal.md` is the source.
 - `proposal/SoftBuilds Proposal for Travel With Moeen.docx` is the Word file.
@@ -25,3 +25,17 @@ What the first delivery must do, how it sits on this site, and the task order.
 - `specs/requirements.md`
 - `specs/design.md`
 - `specs/tasks.md`
+
+## Rules
+
+How the code is laid out, and the coding rules to follow.
+
+- `rules/project-structure.md`
+- `rules/coding-standards.md`
+
+## Audit
+
+Reviews of a branch, and the build notes for that branch.
+
+- `audit/step01-office-can-edit-public-pages.md`
+- `audit/step01-build-instructions.md`

@@ -1,12 +1,11 @@
 import { notFound, redirect } from "next/navigation";
 import { getPost } from "@/lib/content";
-import { getCurrentUser } from "@/lib/auth/session";
-import { canEditContent } from "@/lib/auth/permissions";
+import { getOfficeSession } from "@/lib/http/office-session";
 import { PostForm } from "@/components/office/PostForm";
 
 export default async function OfficePostPage({ params }: { params: Promise<{ slug: string }> }) {
-  const user = await getCurrentUser();
-  if (!user || !canEditContent(user.role)) redirect("/office");
+  const user = await getOfficeSession();
+  if (!user?.canEditContent) redirect("/office");
   const { slug } = await params;
   const post = await getPost(slug);
   if (!post) notFound();

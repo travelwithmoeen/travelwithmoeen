@@ -1,11 +1,14 @@
 "use client";
 
 import { useActionState } from "react";
-import { createUserAction } from "@/lib/office/actions";
-import type { ActionResult } from "@/lib/office/users";
+import { officeFormAction } from "@/lib/http/office-client";
+import type { ActionResult } from "@/lib/http/result";
 
 export function CreateUserForm() {
-  const [state, action, pending] = useActionState(createUserAction, null as ActionResult | null);
+  const [state, action, pending] = useActionState(
+    officeFormAction("/api/office/users", "/office/users"),
+    null as ActionResult | null,
+  );
 
   return (
     <form action={action} className="rounded-xl bg-white p-6 shadow">

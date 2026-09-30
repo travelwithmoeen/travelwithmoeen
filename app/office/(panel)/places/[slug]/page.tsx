@@ -1,12 +1,11 @@
 import { notFound, redirect } from "next/navigation";
 import { getPlace } from "@/lib/content";
-import { getCurrentUser } from "@/lib/auth/session";
-import { canEditContent } from "@/lib/auth/permissions";
+import { getOfficeSession } from "@/lib/http/office-session";
 import { PlaceForm } from "@/components/office/PlaceForm";
 
 export default async function OfficePlacePage({ params }: { params: Promise<{ slug: string }> }) {
-  const user = await getCurrentUser();
-  if (!user || !canEditContent(user.role)) redirect("/office");
+  const user = await getOfficeSession();
+  if (!user?.canEditContent) redirect("/office");
   const { slug } = await params;
   const place = await getPlace(slug);
   if (!place) notFound();

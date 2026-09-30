@@ -4,7 +4,9 @@
 **Proposal:** TWM-SOW-001, version 1.3, September 29, 2026  
 **Status:** Ready to build  
 
-This file says what the first delivery must do. The design is in `docs/specs/design.md`. The build order is in `docs/specs/tasks.md`.
+This file says what the first delivery must do.
+
+**Also read:** `docs/specs/design.md`, `docs/specs/tasks.md`, `docs/rules/project-structure.md`, and `docs/rules/coding-standards.md`
 
 The public website stays. The office gets a private area on that same site. Guests do not log in.
 

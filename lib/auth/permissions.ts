@@ -1,5 +1,6 @@
-export const ROLES = ["owner", "manager", "editor"] as const;
-export type Role = (typeof ROLES)[number];
+import { ROLES, type Role } from "@/lib/http/result";
+
+export { ROLES, type Role };
 
 export function isRole(value: string): value is Role {
   return ROLES.includes(value as Role);

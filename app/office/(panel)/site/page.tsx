@@ -1,12 +1,11 @@
 import { redirect } from "next/navigation";
 import { getSiteSettings } from "@/lib/content";
-import { getCurrentUser } from "@/lib/auth/session";
-import { canEditContent } from "@/lib/auth/permissions";
+import { getOfficeSession } from "@/lib/http/office-session";
 import { SiteForm } from "@/components/office/SiteForm";
 
 export default async function OfficeSitePage() {
-  const user = await getCurrentUser();
-  if (!user || !canEditContent(user.role)) redirect("/office");
+  const user = await getOfficeSession();
+  if (!user?.canEditContent) redirect("/office");
   const settings = await getSiteSettings();
   return (
     <div>

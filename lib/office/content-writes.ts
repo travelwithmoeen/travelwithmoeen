@@ -8,7 +8,7 @@ import type { SessionUser } from "@/lib/auth/session";
 import type { BlogSection } from "@/data/blog";
 import type { DestinationSection } from "@/data/destinations";
 import type { PackageType, TourCategory, TourDay } from "@/data/tours";
-import type { ActionResult } from "@/lib/office/users";
+import type { ActionResult } from "@/lib/http/result";
 
 export type TourEditInput = {
   id: string;

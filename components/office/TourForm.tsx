@@ -1,8 +1,8 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { updateTourAction, deleteTourAction } from "@/lib/office/actions";
-import type { ActionResult } from "@/lib/office/users";
+import { officeFormAction } from "@/lib/http/office-client";
+import type { ActionResult } from "@/lib/http/result";
 import type { Tour } from "@/data/tours";
 
 const inputClass = "mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm";
@@ -15,13 +15,10 @@ export function TourForm({ tour, canDelete }: { tour: Tour; canDelete: boolean }
       highlights: day.highlights.join("\n"),
     })),
   );
-  const [state, action, pending] = useActionState(
-    async (_prev: ActionResult | null, formData: FormData) => updateTourAction(formData),
-    null,
-  );
+  const [state, action, pending] = useActionState(officeFormAction("/api/office/tours"), null as ActionResult | null);
   const [deleteState, deleteAction, deletePending] = useActionState(
-    async (_prev: ActionResult | null, formData: FormData) => deleteTourAction(formData),
-    null,
+    officeFormAction("/api/office/tours/delete", "/office/tours"),
+    null as ActionResult | null,
   );
 
   const itinerary = days.map((day, index) => ({

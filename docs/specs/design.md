@@ -4,6 +4,7 @@
 **Requirements:** `docs/specs/requirements.md`  
 **Tasks:** `docs/specs/tasks.md`  
 **Proposal:** TWM-SOW-001, version 1.3  
+**Also read:** `docs/rules/project-structure.md` and `docs/rules/coding-standards.md`  
 
 This file says how the first delivery sits on the site that already exists. The public pages stay. The words and prices move into a database. The office edits that database. The public pages read it.
 
@@ -33,7 +34,7 @@ The site is a Next.js App Router app. These public routes stay, and their conten
 | Gallery | `data/gallery.ts` |
 | Reviews | `data/testimonials.ts` |
 | Rates used by the live site | `data/pricing.ts` and `lib/calculatePackagePrice.ts` |
-| Home slides | `components/FanGallery1.tsx` |
+| Home slides | Seed list in `scripts/seed-content.ts`. `components/FanGallery1.tsx` only draws the cards it is given. |
 | Phone, email, address, social links | `components/Navbar.tsx`, `components/Footer.tsx`, `components/home/SocialMediaSection.tsx`, `app/contact/page.tsx` |
 | Tour card price | `components/TourCard.tsx` calls `calculatePackagePrice` with Deluxe and Islamabad, and falls back to `basePrice` |
 | Package builder | `components/home/PackageCalculator.tsx`, also used by `app/calculator/page.tsx` |
@@ -55,24 +56,28 @@ Contact saves the request and does not send email. The custom trip form saves th
 
 ## 2. Shape
 
+The screens and the rules must be able to deploy as two services later. Today they may run in one Next.js process. The only door between them is the API.
+
 ```text
-Guest browser
-  public pages and package builder
+Browser
+  public pages and office screens
+        |
+        |  HTTP JSON, host from API_BASE_URL
+        v
+app/api
+  thin routes
         |
         v
-Next.js server
-  office screens at /office
-  quote function (one place)
-  login and role checks
+lib
+  auth, content, office rules, quote
         |
         v
 PostgreSQL
-  content, rates, quotes, guest requests, users
 ```
 
-There is one quote function. The guest package builder and the office quote screen both call it. The guest call does not send night edits or day edits. The office call can.
+There is one quote function in `lib/`. The guest package builder and the office quote screen both reach it through the API. The guest call does not send night edits or day edits. The office call can.
 
-Role checks run on the server. Hiding a button in the browser is not enough.
+Role checks run in `lib/`, on the server. Hiding a button in the browser is not enough.
 
 Office screens are in US English. The public site is not translated.
 

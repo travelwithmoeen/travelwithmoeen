@@ -1,11 +1,23 @@
-import { count, eq } from "drizzle-orm";
+import { asc, count, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
 import { hashPassword } from "@/lib/auth/password";
 import { canManageUsers, isRole, type Role } from "@/lib/auth/permissions";
 import type { SessionUser } from "@/lib/auth/session";
+import type { ActionResult } from "@/lib/http/result";
 
-export type ActionResult = { ok: true; message?: string } | { ok: false; error: string };
+export type { ActionResult };
+
+export async function listUsersAs(actor: SessionUser) {
+  if (!canManageUsers(actor.role)) {
+    return { ok: false as const, error: "Only the Owner can see logins." };
+  }
+  const rows = await db
+    .select({ id: users.id, email: users.email, role: users.role })
+    .from(users)
+    .orderBy(asc(users.email));
+  return { ok: true as const, users: rows };
+}
 
 export async function createUserAs(
   actor: SessionUser,

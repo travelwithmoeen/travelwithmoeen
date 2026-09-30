@@ -1,8 +1,8 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { updatePostAction } from "@/lib/office/actions";
-import type { ActionResult } from "@/lib/office/users";
+import { officeFormAction } from "@/lib/http/office-client";
+import type { ActionResult } from "@/lib/http/result";
 import type { Blog, BlogSection } from "@/data/blog";
 
 const inputClass = "mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm";
@@ -25,10 +25,7 @@ function toDraft(section: BlogSection): DraftSection {
 
 export function PostForm({ post }: { post: Blog }) {
   const [sections, setSections] = useState(post.content.map(toDraft));
-  const [state, action, pending] = useActionState(
-    async (_prev: ActionResult | null, formData: FormData) => updatePostAction(formData),
-    null,
-  );
+  const [state, action, pending] = useActionState(officeFormAction("/api/office/posts"), null as ActionResult | null);
   const content = sections.map((section) => ({
     heading: section.heading,
     body: section.body,

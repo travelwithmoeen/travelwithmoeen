@@ -1,11 +1,11 @@
 "use client";
 
 import { useActionState } from "react";
-import { loginAction } from "@/lib/office/actions";
-import type { ActionResult } from "@/lib/office/users";
+import { officeFormAction } from "@/lib/http/office-client";
+import type { ActionResult } from "@/lib/http/result";
 
 export function LoginForm() {
-  const [state, action, pending] = useActionState(loginAction, null as ActionResult | null);
+  const [state, action, pending] = useActionState(officeFormAction("/api/office/login", "/office"), null as ActionResult | null);
 
   return (
     <form action={action} className="mx-auto mt-24 max-w-md rounded-xl bg-white p-8 shadow">

@@ -4,10 +4,11 @@
 **Requirements:** `docs/specs/requirements.md`  
 **Design:** `docs/specs/design.md`  
 **Proposal:** TWM-SOW-001, version 1.3  
+**Also read:** `docs/rules/project-structure.md` and `docs/rules/coding-standards.md`  
 
 The plan is four sprints of two weeks. Sprints 1 and 2 are the baseline. Sprint 3 is Phase 2. Sprint 4 is Phase 3. All three phases finish in two months. Read the requirements and the design before T-01. The quote math is in design section 5. Do not invent a second formula.
 
-Your work now is T-01 through T-25. That is the baseline, sprints 1 and 2. Do not start sprint 3 or sprint 4.
+Your work now is T-01 through T-25. That is the baseline, sprints 1 and 2. Do not start sprint 3 or sprint 4. Follow `docs/rules/project-structure.md` and `docs/rules/coding-standards.md` on every change. Step 1 office saves, and every later save, go through `app/api` and `lib/`. Do not add a server action for a new save.
 
 ## Step 1. Office can edit public pages
 

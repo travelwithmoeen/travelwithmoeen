@@ -1,17 +1,16 @@
-import { getCurrentUser } from "@/lib/auth/session";
-import { canEditContent, canManageUsers } from "@/lib/auth/permissions";
+import { getOfficeSession } from "@/lib/http/office-session";
 
 export default async function OfficeHomePage() {
-  const user = await getCurrentUser();
+  const user = await getOfficeSession();
   if (!user) return null;
 
   return (
     <div className="rounded-xl bg-white p-6 shadow">
       <h1 className="text-2xl font-semibold">Office</h1>
-      {canEditContent(user.role) ? (
+      {user.canEditContent ? (
         <p className="mt-3 text-slate-700">You can edit tours, places, the blog, the gallery, reviews, home slides, and site details.</p>
       ) : null}
-      {canManageUsers(user.role) ? (
+      {user.canManageUsers ? (
         <p className="mt-3 text-slate-700">You can create a login, remove a login, and change a role.</p>
       ) : null}
       {user.role === "manager" ? (

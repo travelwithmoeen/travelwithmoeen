@@ -1,20 +1,17 @@
 "use client";
 
 import { useActionState } from "react";
-import { deleteReviewAction, saveReviewAction } from "@/lib/office/actions";
-import type { ActionResult } from "@/lib/office/users";
+import { officeFormAction } from "@/lib/http/office-client";
+import type { ActionResult } from "@/lib/http/result";
 import type { Testimonial } from "@/data/testimonials";
 
 const inputClass = "mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm";
 
 function ReviewFields({ review }: { review?: Testimonial }) {
-  const [state, action, pending] = useActionState(
-    async (_prev: ActionResult | null, formData: FormData) => saveReviewAction(formData),
-    null,
-  );
+  const [state, action, pending] = useActionState(officeFormAction("/api/office/reviews"), null as ActionResult | null);
   const [removed, remove, removing] = useActionState(
-    async (_prev: ActionResult | null, formData: FormData) => deleteReviewAction(formData),
-    null,
+    officeFormAction("/api/office/reviews/delete"),
+    null as ActionResult | null,
   );
 
   return (

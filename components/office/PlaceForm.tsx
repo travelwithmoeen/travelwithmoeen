@@ -1,8 +1,8 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { updatePlaceAction } from "@/lib/office/actions";
-import type { ActionResult } from "@/lib/office/users";
+import { officeFormAction } from "@/lib/http/office-client";
+import type { ActionResult } from "@/lib/http/result";
 import type { Destination, DestinationSection } from "@/data/destinations";
 
 const inputClass = "mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm";
@@ -25,10 +25,7 @@ function toDraft(section: DestinationSection): DraftSection {
 
 export function PlaceForm({ place }: { place: Destination }) {
   const [sections, setSections] = useState(place.content.map(toDraft));
-  const [state, action, pending] = useActionState(
-    async (_prev: ActionResult | null, formData: FormData) => updatePlaceAction(formData),
-    null,
-  );
+  const [state, action, pending] = useActionState(officeFormAction("/api/office/places"), null as ActionResult | null);
   const content = sections.map((section) => ({
     heading: section.heading,
     body: section.body,

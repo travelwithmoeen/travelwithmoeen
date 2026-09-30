@@ -1,9 +1,8 @@
 "use client";
 
 import { useActionState } from "react";
-import { changeRoleAction, removeUserAction } from "@/lib/office/actions";
-import type { ActionResult } from "@/lib/office/users";
-import type { Role } from "@/lib/auth/permissions";
+import { officeFormAction } from "@/lib/http/office-client";
+import type { ActionResult, Role } from "@/lib/http/result";
 
 export function UserControls({
   userId,
@@ -15,12 +14,12 @@ export function UserControls({
   isSelf: boolean;
 }) {
   const [roleState, changeRole, rolePending] = useActionState(
-    async (_prev: ActionResult | null, formData: FormData) => changeRoleAction(formData),
-    null,
+    officeFormAction("/api/office/users/role", "/office/users"),
+    null as ActionResult | null,
   );
   const [removeState, removeUser, removePending] = useActionState(
-    async (_prev: ActionResult | null, formData: FormData) => removeUserAction(formData),
-    null,
+    officeFormAction("/api/office/users/remove", "/office/users"),
+    null as ActionResult | null,
   );
 
   return (

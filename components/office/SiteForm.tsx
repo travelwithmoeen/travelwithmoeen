@@ -1,14 +1,14 @@
 "use client";
 
 import { useActionState } from "react";
-import { updateSiteSettingsAction } from "@/lib/office/actions";
+import { officeFormAction } from "@/lib/http/office-client";
 import type { SiteSettings } from "@/lib/content";
-import type { ActionResult } from "@/lib/office/users";
+import type { ActionResult } from "@/lib/http/result";
 
 const inputClass = "mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm";
 
 export function SiteForm({ settings }: { settings: SiteSettings }) {
-  const [state, action, pending] = useActionState(updateSiteSettingsAction, null as ActionResult | null);
+  const [state, action, pending] = useActionState(officeFormAction("/api/office/site"), null as ActionResult | null);
 
   return (
     <form action={action} className="space-y-4 rounded-xl bg-white p-6 shadow">

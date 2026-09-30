@@ -1,12 +1,11 @@
 import { redirect } from "next/navigation";
 import { getReviews } from "@/lib/content";
-import { getCurrentUser } from "@/lib/auth/session";
-import { canEditContent } from "@/lib/auth/permissions";
+import { getOfficeSession } from "@/lib/http/office-session";
 import { ReviewsEditor } from "@/components/office/ReviewsEditor";
 
 export default async function OfficeReviewsPage() {
-  const user = await getCurrentUser();
-  if (!user || !canEditContent(user.role)) redirect("/office");
+  const user = await getOfficeSession();
+  if (!user?.canEditContent) redirect("/office");
   const reviews = await getReviews();
   return (
     <div>
