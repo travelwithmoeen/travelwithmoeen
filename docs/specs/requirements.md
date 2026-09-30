@@ -136,6 +136,55 @@ In sprint 4, the air sticker follows the number of vehicles. Until then it stays
 
 Step 1 is done when an Editor can change a tour title and a photo and the public page shows both, an Editor cannot open a price, and an Owner can create an Editor login and a Manager login.
 
-Step 2 is done when the test quote equals 140,400 rupees at 20 percent, 15 percent changes only the profit, Premier is not offered, a road quote cannot start from Karachi, a Karachi air quote includes 30,000 rupees, Taobat uses Swat rates, Naran still uses the Naran rates for now, Ratti Gali still shows the website price, a night-two hotel edit changes only that night and the average, and removing one day's vehicle removes that day's rent.
+Step 2 is done when the test quote equals 140,400 rupees at 20 percent, 15 percent changes only the profit, Premier is not offered, a road quote cannot start from Karachi, a Karachi air quote includes 30,000 rupees, Taobat uses Swat rates, Naran still uses the Naran rates for now, Ratti Gali still shows the website price, a night-two hotel edit changes only that night and the average, removing one day's vehicle removes that day's rent, and BR-59, BR-68, BR-70, and BR-71 through BR-74 pass. Step 2 is not done if a renamed text file or an oversized file can still be saved as a photo, or if an 11th failed sign-in inside 15 minutes is still accepted.
 
-Step 3 is done when a test contact and a test booking stay in the office list, WhatsApp still opens, an Editor can read the list and cannot delete an item, and an Owner can delete a test item.
+Step 3 is done when a test contact and a test booking stay in the office list, WhatsApp still opens, an Editor can read the list and cannot delete an item, an Owner can delete a test item, and a public page response does not include the test phone number.
+
+## 11. Security
+
+The source is the [OWASP Application Security Verification Standard](https://owasp.org/www-project-application-security-verification-standard/) and the [OWASP Top 10](https://owasp.org/www-project-top-ten/): broken access control, cryptographic failure, injection, identification failures, and security misconfiguration. ISO/IEC 25010 is why the product must stay secure. The rows below are the project rules. They are not a second copy of the whole OWASP text.
+
+Each rule closes in the step that opens the hole. A later step does not leave it for the step after that. A later step does not weaken a check that an earlier step already closed.
+
+These rules hold on every step, including Step 1:
+
+| ID | Requirement |
+|---|---|
+| BR-60 | Authenticate, then check the role, then check the input, then write. The role check runs inside the function that writes. A hidden button or a direct call to `app/api` cannot skip it. A missing or bad session returns 401. A signed-in person with the wrong role returns 403. Bad input returns 400. Step 1 may still return 400 for a wrong role. Task T-27 in Step 2 sets 401 and 403. That change does not wait for Step 3. |
+| BR-61 | Secrets stay in `.env`. A page, a log line, and an error response do not print `DATABASE_URL`, `SESSION_SECRET`, a password, or a stack trace. `.env` is not committed. |
+| BR-62 | A new office save goes through `app/api` and `lib/`. Do not add a server action for a save. |
+| BR-67 | Passwords are hashed with bcrypt, at least 12 rounds. A new password is at least 8 characters. The login error is the same text for an unknown email and a wrong password. Login sets a new cookie. Logout clears it. The cookie is `httpOnly`, `SameSite=Lax`, and `Secure` in production. It expires in 7 days. It is signed. The role is read from the database, not from the cookie body. `proxy.ts` only checks that a cookie exists. The signed check stays in the session read. |
+| BR-69 | Database calls use the query builder. Do not build SQL by joining strings. |
+
+Step 1 opened login and photo upload. The cookie and the password hash in BR-67 are already required. Step 2 closes what Step 1 left open: upload bytes, login throttling, and the 401 and 403 codes.
+
+| ID | Requirement |
+|---|---|
+| BR-59 | Check an office upload from the file bytes, not from the browser file type. Accept only JPEG, PNG, and WebP. Refuse SVG and any other type. Refuse a file larger than 5 MB. The stored name has no folder path. Task T-26. Part of Step 2. |
+| BR-63 | The Excel import reads cell values only. It does not run a macro, follow an external link, or write a file under `public/`. This closes in T-10. |
+| BR-68 | After 10 failed sign-ins for the same email within 15 minutes, refuse the next sign-in until that window ends. Record the failure in the database so a second server sees the same count. The log line has the email and the time. It does not have the password. Task T-27. Part of Step 2. |
+| BR-70 | Reject blank, negative, and non-numeric money and counts. A rupee amount is at most 10,000,000. A tour is at most 60 days. A review rating is 1 to 5. This closes with the quote and rate screens in Step 2. |
+
+Step 3 opens guest names, phones, and messages. Step 3 closes that in T-19 and T-22. Sprint 4 does not become the first time those fields are checked. BR-15 still applies: guest names, phone numbers, and messages are not shown on the public site.
+
+| ID | Requirement |
+|---|---|
+| BR-64 | A guest name is at most 200 characters, a phone is at most 40, an email is at most 200, and a message is at most 4,000. Store them as text. Do not render them as HTML. |
+
+The backup closes in T-23. Sprint 4 downloads close in the same sprint that builds them.
+
+| ID | Requirement |
+|---|---|
+| BR-65 | A backup file is not committed and is not placed under `public/`. |
+| BR-66 | The driver copy has no rupee amounts. A guest PDF or image has the guest total only, not the staff lines and not the profit. The Excel download of live prices is limited to the Owner and the Manager. |
+
+## 12. Security tests
+
+Four tests are the minimum. The same four run at the end of Step 2, again before Step 3 is accepted, and again before T-25 is accepted. Sprint 4 does not replace them with a different set. A step is not done if any of the four fails. Do not hide a failure with an ignore flag unless the step note names the package, the finding, and why it cannot be fixed in that step.
+
+| ID | Test | Minimum |
+|---|---|---|
+| BR-71 | SAST. Static check of the code before it runs. | `npm run lint` passes. The pre-commit hook already runs it on staged TypeScript. It must also pass on the whole project before the step is accepted. A new forbidden import, a server action, or a Prisma import fails the step. |
+| BR-72 | SCA. Check of third-party packages. | `npm run check:sca` passes. That command is `npm audit --omit=dev --audit-level=high`. A high or critical finding in a production dependency fails the step. |
+| BR-73 | DAST. Check of the running site from the outside. | With `npm run dev` running, the OWASP ZAP baseline scan below finishes with no High alert. Exit code 2 fails the step. Warnings are written in the step note. `docker run --rm -t ghcr.io/zaproxy/zaproxy:stable zap-baseline.py -t http://host.docker.internal:3000 -I` |
+| BR-74 | IAST. Check from inside the running app while a test drives it. | This project does not add a separate agent. The minimum is the step script against the live server. Step 2's script must sign in, receive 401 with no cookie, receive 403 for the wrong role, refuse a bad upload, and refuse the 11th failed sign-in. The script reads those results from the real responses. A later step adds its own cases to that same script pattern. It does not skip the earlier cases. |

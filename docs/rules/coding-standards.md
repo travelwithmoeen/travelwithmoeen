@@ -54,6 +54,11 @@ ISO/IEC 25010 asks for maintainability and security. In this project that means:
 - One price function, `lib/quote.ts`, when Step 2 starts. Do not copy the formula into a component.
 - Role checks live in `lib/auth/permissions.ts` and run inside the server write.
 - Secrets stay in `.env`. Do not print them and do not commit them.
+- Office uploads follow BR-59 in Step 2 (task T-26): file bytes, JPEG, PNG, or WebP, 5 MB maximum. Do not trust the browser file type, and do not leave that check for a later step.
+- Login and session follow BR-67 and BR-68. Task T-27 in Step 2 adds the 10-failure lock and the 401 and 403 codes. Do not weaken the cookie, and do not leave the lock for Step 3.
+- Database calls use the query builder. Do not build SQL by joining strings.
+
+Before a step is accepted, the four tests in `docs/specs/requirements.md` section 12 must pass. SAST is `npm run lint`. SCA is `npm run check:sca`. DAST is the OWASP ZAP baseline with no High alert. IAST is the step script against the running site. Run that same set at the end of Step 2, Step 3, and T-25.
 
 ## Checks while you work, and before a commit
 
