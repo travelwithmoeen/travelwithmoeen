@@ -51,37 +51,39 @@ export async function updateTourAs(actor: SessionUser, input: TourEditInput): Pr
   if (!existing) {
     return { ok: false, error: "That tour was not found." };
   }
-  await db
-    .update(tours)
-    .set({
-      name,
-      location: input.location.trim(),
-      region: input.region.trim(),
-      description: input.description,
-      duration: input.duration,
-      image: input.image.trim(),
-      pdf: input.pdf.trim(),
-      galleryImages: input.galleryImages,
-      categories: input.categories,
-      packageTypes: input.packageTypes,
-      transport: input.transport,
-      included: input.included,
-      notIncluded: input.notIncluded,
-      featured: input.featured,
-    })
-    .where(eq(tours.id, input.id));
-  await db.delete(tourDays).where(eq(tourDays.tourId, input.id));
-  if (input.itinerary.length > 0) {
-    await db.insert(tourDays).values(
-      input.itinerary.map((day, index) => ({
-        tourId: input.id,
-        dayNumber: index + 1,
-        title: day.title,
-        description: day.description,
-        highlights: day.highlights,
-      })),
-    );
-  }
+  await db.transaction(async (tx) => {
+    await tx
+      .update(tours)
+      .set({
+        name,
+        location: input.location.trim(),
+        region: input.region.trim(),
+        description: input.description,
+        duration: input.duration,
+        image: input.image.trim(),
+        pdf: input.pdf.trim(),
+        galleryImages: input.galleryImages,
+        categories: input.categories,
+        packageTypes: input.packageTypes,
+        transport: input.transport,
+        included: input.included,
+        notIncluded: input.notIncluded,
+        featured: input.featured,
+      })
+      .where(eq(tours.id, input.id));
+    await tx.delete(tourDays).where(eq(tourDays.tourId, input.id));
+    if (input.itinerary.length > 0) {
+      await tx.insert(tourDays).values(
+        input.itinerary.map((day, index) => ({
+          tourId: input.id,
+          dayNumber: index + 1,
+          title: day.title,
+          description: day.description,
+          highlights: day.highlights,
+        })),
+      );
+    }
+  });
   return { ok: true, message: "Tour saved." };
 }
 

@@ -12,6 +12,7 @@ import {
   savePhotoAs,
   saveReviewAs,
   saveSlideAs,
+  savePriceAs,
   saveUploadedImage,
   updatePlaceAs,
   updatePostAs,
@@ -61,6 +62,10 @@ export async function changeRoleFromForm(actor: SessionUser, formData: FormData)
 
 export async function removeUserFromForm(actor: SessionUser, formData: FormData): Promise<ActionResult> {
   return removeUserAs(actor, Number(formData.get("userId")));
+}
+
+export async function savePriceFromForm(actor: SessionUser): Promise<ActionResult> {
+  return savePriceAs(actor);
 }
 
 export async function updateTourFromForm(actor: SessionUser, formData: FormData): Promise<ActionResult> {

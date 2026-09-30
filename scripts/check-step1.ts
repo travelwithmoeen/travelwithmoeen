@@ -6,6 +6,75 @@ import { savePriceAs, updateTourAs } from "../lib/office/content-writes";
 import { createUserAs, removeUserAs } from "../lib/office/users";
 import { getTour } from "../lib/content";
 
+function officeBase() {
+  const configured = process.env.API_BASE_URL?.trim().replace(/\/$/, "");
+  return configured || "http://localhost:3000";
+}
+
+function sessionCookie(response: Response) {
+  const lines = response.headers.getSetCookie?.() ?? [];
+  const match = lines.find((line) => line.startsWith("twm_office="));
+  return match ? match.split(";")[0] : "";
+}
+
+async function officePost(path: string, form: FormData, cookie: string) {
+  let response: Response;
+  try {
+    response = await fetch(`${officeBase()}${path}`, {
+      method: "POST",
+      body: form,
+      headers: cookie ? { cookie } : {},
+    });
+  } catch {
+    throw new Error(`The office API is not running at ${officeBase()}. Start it with npm run dev.`);
+  }
+  const body = (await response.json()) as { ok?: boolean; error?: string };
+  return { status: response.status, body };
+}
+
+async function signIn(email: string, password: string) {
+  const form = new FormData();
+  form.set("email", email);
+  form.set("password", password);
+  let response: Response;
+  try {
+    response = await fetch(`${officeBase()}/api/office/login`, { method: "POST", body: form });
+  } catch {
+    throw new Error(`The office API is not running at ${officeBase()}. Start it with npm run dev.`);
+  }
+  const body = (await response.json()) as { ok?: boolean; error?: string };
+  if (!response.ok || !body.ok) {
+    throw new Error(`Office login failed for ${email}: ${body.error ?? response.status}`);
+  }
+  const cookie = sessionCookie(response);
+  if (!cookie) throw new Error(`Office login for ${email} did not set a session cookie.`);
+  return cookie;
+}
+
+async function checkOfficeApi(
+  editorEmail: string,
+  editorPassword: string,
+  managerEmail: string,
+  managerPassword: string,
+) {
+  const editorCookie = await signIn(editorEmail, editorPassword);
+  const priceAttempt = await officePost("/api/office/rates", new FormData(), editorCookie);
+  if (priceAttempt.status === 200 || priceAttempt.body.ok || priceAttempt.body.error !== "You cannot change a price.") {
+    throw new Error(`Editor price save through the API was not refused: ${JSON.stringify(priceAttempt)}`);
+  }
+
+  const managerCookie = await signIn(managerEmail, managerPassword);
+  const tourForm = new FormData();
+  tourForm.set("id", "1_day_by_road_trip_to_islamabad");
+  tourForm.set("name", "Changed by manager");
+  tourForm.set("image", "/images/twm-logo.webp");
+  tourForm.set("itinerary", "[]");
+  const titleAttempt = await officePost("/api/office/tours", tourForm, managerCookie);
+  if (titleAttempt.status === 200 || titleAttempt.body.ok || titleAttempt.body.error !== "You cannot edit a tour.") {
+    throw new Error(`Manager tour save through the API was not refused: ${JSON.stringify(titleAttempt)}`);
+  }
+}
+
 async function main() {
   const email = process.env.OWNER_EMAIL?.trim().toLowerCase();
   const password = process.env.OWNER_PASSWORD;
@@ -75,6 +144,8 @@ async function main() {
     if (titleAttempt.ok || titleAttempt.error !== "You cannot edit a tour.") {
       throw new Error(`Manager tour save was not refused: ${JSON.stringify(titleAttempt)}`);
     }
+
+    await checkOfficeApi(editorEmail, editorPassword, managerEmail, managerPassword);
 
     const sample = await getTour("1_day_by_road_trip_to_islamabad");
     if (!sample) throw new Error("Sample tour was not loaded.");
