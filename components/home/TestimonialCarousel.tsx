@@ -85,7 +85,7 @@ export function TestimonialCarousel({ reviews }: { reviews: Testimonial[] }) {
                     </div>
                   </div>
                   <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
-                    "{testimonial.text}"
+                    {`"${testimonial.text}"`}
                   </p>
                   <div className="flex items-center gap-3">
                     <Avatar className="h-12 w-12 border-2 border-primary/20">

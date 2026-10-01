@@ -85,7 +85,7 @@ export default function TourDetails({ tour }: { tour: Tour | null }) {
             Tour Not Found
           </h1>
           <p className="mb-8 text-muted-foreground">
-            The tour you're looking for doesn't exist.
+            The tour you&apos;re looking for doesn&apos;t exist.
           </p>
           <Button asChild>
             <Link href="/tours">Browse All Tours</Link>
@@ -194,7 +194,7 @@ export default function TourDetails({ tour }: { tour: Tour | null }) {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-lg">
                     <Check className="h-5 w-5 text-success" />
-                    What's Included
+                    What&apos;s Included
                   </CardTitle>
                 </CardHeader>
                 <CardContent>

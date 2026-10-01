@@ -94,6 +94,7 @@ export function Footer() {
               <li><Link href="/tours" className="hover:text-amber-400 transition-colors">Tours</Link></li>
               <li><Link href="/gallery" className="hover:text-amber-400 transition-colors">Gallery</Link></li>
               <li><Link href="/contact" className="hover:text-amber-400 transition-colors">Contact</Link></li>
+              <li><Link href="/office/login" className="hover:text-amber-400 transition-colors">Office</Link></li>
             </ul>
           </div>
 

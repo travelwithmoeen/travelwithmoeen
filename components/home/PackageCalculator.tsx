@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useRef } from "react";
 import Link from "next/link";
 import { PackagePopup } from "./PackagePopup";
 import { motion, AnimatePresence } from "framer-motion";
@@ -58,6 +58,14 @@ import { cn } from "@/lib/utils";
 type TransportMode = "By Road" | "By Air";
 type RoomType = "twin" | "triple";
 
+function roadBreakfast(addOns: string[], nextDays: number, mode: TransportMode) {
+  if (mode !== "By Road") return addOns;
+  const hasBreakfast = addOns.includes("arrival_breakfast");
+  if (nextDays > 1 && !hasBreakfast) return [...addOns, "arrival_breakfast"];
+  if (nextDays <= 1 && hasBreakfast) return addOns.filter((item) => item !== "arrival_breakfast");
+  return addOns;
+}
+
 export function PackageCalculator({ tours }: { tours: Tour[] }) {
   const sectionRef = useRef<HTMLElement>(null);
   const [transportMode, setTransportMode] = useState<TransportMode>("By Road");
@@ -73,7 +81,7 @@ export function PackageCalculator({ tours }: { tours: Tour[] }) {
   const [vehicleType, setVehicleType] = useState<VehicleType>("Honda BRV");
   const [roomType, setRoomType] = useState<RoomType>("twin");
   // Default: welcome_pack, entry_tickets, arrival_breakfast are always included (not shown to user)
-  const [selectedAddOns, setSelectedAddOns] = useState<string[]>([]);
+  const [selectedAddOns, setSelectedAddOns] = useState<string[]>(["arrival_breakfast"]);
   const [showMatchingTours, setShowMatchingTours] = useState(false);
 
   const destinations =
@@ -116,6 +124,7 @@ export function PackageCalculator({ tours }: { tours: Tour[] }) {
     const minDays = getMinimumDays(dest, transportMode);
     if (days < minDays) {
       setDays(minDays);
+      setSelectedAddOns((prev) => roadBreakfast(prev, minDays, transportMode));
     }
     // Auto-select recommended vehicle
     const recommended = getRecommendedVehicle(totalSeatsNeeded, transportMode);
@@ -156,16 +165,10 @@ export function PackageCalculator({ tours }: { tours: Tour[] }) {
     }
   };
 
-  // Auto-manage arrival_breakfast for By Road based on days
-  useEffect(() => {
-    if (transportMode === "By Road") {
-      if (days > 1 && !selectedAddOns.includes("arrival_breakfast")) {
-        setSelectedAddOns((prev) => [...prev, "arrival_breakfast"]);
-      } else if (days <= 1 && selectedAddOns.includes("arrival_breakfast")) {
-        setSelectedAddOns((prev) => prev.filter((a) => a !== "arrival_breakfast"));
-      }
-    }
-  }, [days, transportMode]);
+  const changeDays = (nextDays: number) => {
+    setDays(nextDays);
+    setSelectedAddOns((prev) => roadBreakfast(prev, nextDays, transportMode));
+  };
 
   // Add-ons that users can toggle (shown in UI) - only Guide and Meals
   const toggleableAddOns = optionalAddOns.filter(
@@ -633,7 +636,7 @@ Please confirm availability and provide more details.`;
                         <Slider
                           value={[days]}
                           onValueChange={([val]) =>
-                            setDays(Math.max(val, minimumDays))
+                            changeDays(Math.max(val, minimumDays))
                           }
                           min={minimumDays}
                           max={15}

@@ -99,7 +99,7 @@ const Contact = () => {
                        Contact Us
                       </h1>
                       <p className="mx-auto mt-4 max-w-2xl text-white/70">
-                        We'd love to hear from you. Get in touch with our team.
+                        We&apos;d love to hear from you. Get in touch with our team.
                       </p>
                     </motion.div>
                   </section>

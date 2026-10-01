@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 import Image from "next/image";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform, type MotionValue } from "framer-motion";
 
 const images = [
   {
@@ -26,6 +26,44 @@ const images = [
     alt: "Amazing view",
   },
 ];
+
+function FeatureImage({
+  image,
+  index,
+  total,
+  scrollYProgress,
+}: {
+  image: { src: string; alt: string };
+  index: number;
+  total: number;
+  scrollYProgress: MotionValue<number>;
+}) {
+  const startProgress = index * 0.15;
+  const endProgress = startProgress + 0.3;
+  const scale = useTransform(scrollYProgress, [startProgress, endProgress], [0.4, 1]);
+  const x = useTransform(scrollYProgress, [startProgress, endProgress], [`${(2 - index) * 15}%`, "0%"]);
+  const y = useTransform(scrollYProgress, [startProgress, endProgress], [`${index * 8}%`, "0%"]);
+  const rotate = useTransform(scrollYProgress, [startProgress, endProgress], [(index - 2) * 8, 0]);
+  const zIndex = useTransform(scrollYProgress, [startProgress, endProgress], [total - index, index]);
+  const opacity = useTransform(scrollYProgress, [startProgress, endProgress], [0.7, 1]);
+
+  return (
+    <motion.div
+      style={{ scale, x, y, rotate, zIndex, opacity }}
+      className="relative h-full rounded-2xl overflow-hidden shadow-2xl"
+    >
+      <Image
+        src={image.src}
+        alt={image.alt}
+        fill
+        className="object-cover"
+        sizes="(max-width: 768px) 100vw, 20vw"
+        priority={index === 0}
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300" />
+    </motion.div>
+  );
+}
 
 export function FeatureImages() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -60,89 +98,15 @@ export function FeatureImages() {
         {/* Images Grid with Scroll Animation */}
         <div className="relative h-[150vh]">
           <div className="sticky top-20 grid grid-cols-5 gap-4 h-[70vh]">
-            {images.map((image, index) => {
-              // Calculate individual scroll progress for each image
-              const startProgress = index * 0.15;
-              const endProgress = startProgress + 0.3;
-              
-              // Create transforms based on scroll position
-              const scale = useTransform(
-                scrollYProgress,
-                [startProgress, endProgress],
-                [0.4, 1]
-              );
-              
-              const x = useTransform(
-                scrollYProgress,
-                [startProgress, endProgress],
-                [
-                  // Initial positions (stacked in center)
-                  `${(2 - index) * 15}%`,
-                  // Final positions (spread out)
-                  "0%"
-                ]
-              );
-              
-              const y = useTransform(
-                scrollYProgress,
-                [startProgress, endProgress],
-                [
-                  // Initial positions (slight vertical offset)
-                  `${index * 8}%`,
-                  // Final position
-                  "0%"
-                ]
-              );
-              
-              const rotate = useTransform(
-                scrollYProgress,
-                [startProgress, endProgress],
-                [
-                  // Initial rotation (fan effect)
-                  (index - 2) * 8,
-                  // Final rotation
-                  0
-                ]
-              );
-              
-              const zIndex = useTransform(
-                scrollYProgress,
-                [startProgress, endProgress],
-                [images.length - index, index]
-              );
-              
-              const opacity = useTransform(
-                scrollYProgress,
-                [startProgress, endProgress],
-                [0.7, 1]
-              );
-
-              return (
-                <motion.div
-                  key={index}
-                  style={{
-                    scale,
-                    x,
-                    y,
-                    rotate,
-                    zIndex,
-                    opacity,
-                  }}
-                  className="relative h-full rounded-2xl overflow-hidden shadow-2xl"
-                >
-                  <Image
-                    src={image.src}
-                    alt={image.alt}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 100vw, 20vw"
-                    priority={index === 0}
-                  />
-                  {/* Overlay gradient */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300" />
-                </motion.div>
-              );
-            })}
+            {images.map((image, index) => (
+              <FeatureImage
+                key={image.src}
+                image={image}
+                index={index}
+                total={images.length}
+                scrollYProgress={scrollYProgress}
+              />
+            ))}
           </div>
         </div>
 

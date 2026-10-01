@@ -15,5 +15,11 @@ export async function handleOfficeForm(
   const formData = await request.formData();
   const result = await run(actor, formData);
   if (result.ok && refresh) refresh(formData);
-  return Response.json(result, { status: result.ok ? 200 : 400 });
+  if (!result.ok && result.status === 403) {
+    return Response.json({ ok: false, error: result.error }, { status: 403 });
+  }
+  if (!result.ok) {
+    return Response.json({ ok: false, error: result.error }, { status: 400 });
+  }
+  return Response.json(result);
 }

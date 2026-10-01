@@ -59,7 +59,7 @@ async function checkOfficeApi(
 ) {
   const editorCookie = await signIn(editorEmail, editorPassword);
   const priceAttempt = await officePost("/api/office/rates", new FormData(), editorCookie);
-  if (priceAttempt.status === 200 || priceAttempt.body.ok || priceAttempt.body.error !== "You cannot change a price.") {
+  if (priceAttempt.status !== 403 || priceAttempt.body.ok || priceAttempt.body.error !== "You cannot change a price.") {
     throw new Error(`Editor price save through the API was not refused: ${JSON.stringify(priceAttempt)}`);
   }
 
@@ -70,7 +70,7 @@ async function checkOfficeApi(
   tourForm.set("image", "/images/twm-logo.webp");
   tourForm.set("itinerary", "[]");
   const titleAttempt = await officePost("/api/office/tours", tourForm, managerCookie);
-  if (titleAttempt.status === 200 || titleAttempt.body.ok || titleAttempt.body.error !== "You cannot edit a tour.") {
+  if (titleAttempt.status !== 403 || titleAttempt.body.ok || titleAttempt.body.error !== "You cannot edit a tour.") {
     throw new Error(`Manager tour save through the API was not refused: ${JSON.stringify(titleAttempt)}`);
   }
 }

@@ -72,7 +72,7 @@ export default function DestinationDetail({ destination }: { destination: Destin
               Destination Not Found
             </h2>
             <p className="mb-6 text-muted-foreground">
-              The destination you're looking for doesn't exist or has been removed.
+              The destination you&apos;re looking for doesn&apos;t exist or has been removed.
             </p>
             <Button asChild>
               <Link href="/destinations">Back to Destinations</Link>
