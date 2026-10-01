@@ -26,7 +26,7 @@ export function GallerySection({ photos }: { photos: GalleryImage[] }) {
           </div>
           <h2 className="text-3xl font-bold md:text-4xl">Our Gallery</h2>
           <p className="mx-auto mt-3 max-w-lg text-muted-foreground">
-            Captured moments from our travelers' unforgettable adventures across Pakistan's breathtaking landscapes.
+            Captured moments from our travelers&apos; unforgettable adventures across Pakistan&apos;s breathtaking landscapes.
           </p>
         </motion.div>
 

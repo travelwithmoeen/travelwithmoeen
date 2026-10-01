@@ -417,7 +417,7 @@ const About = () => {
                 including INGOs, USAID, and the United Nations and has extensive
                 experience in Administration, Logistics and Management. This
                 background in international standards and logistical precision
-                is the backbone of the "Quality Tourism" we deliver today. <br /> As Mr
+                is the backbone of the &quot;Quality Tourism&quot; we deliver today. <br /> As Mr
                 Moeen is highly and widely appreciated by follower’s for
                 authentic travel and tourism content which is shared through
                 different social media platforms and has also been broadcasted

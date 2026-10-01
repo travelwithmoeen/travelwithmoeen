@@ -8,16 +8,20 @@ import type { Blog } from "@/data/blog";
 import { ArrowLeft, Calendar, User } from "lucide-react";
 
 export default function BlogDetail({ blog }: { blog: Blog | null }) {
+  const blogKey = blog?.slug ?? "";
+  const [seenBlog, setSeenBlog] = useState(blogKey);
   const [isLoading, setIsLoading] = useState(true);
-
-  // Simulate loading for skeleton demonstration
-  useEffect(() => {
+  if (blogKey !== seenBlog) {
+    setSeenBlog(blogKey);
     setIsLoading(true);
+  }
+
+  useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 1200);
     return () => clearTimeout(timer);
-  }, [blog]);
+  }, [blogKey]);
 
   const formattedDate = blog
     ? new Date(blog.date).toLocaleDateString("en-US", {
@@ -95,7 +99,7 @@ export default function BlogDetail({ blog }: { blog: Blog | null }) {
               Blog Not Found
             </h2>
             <p className="mb-6 text-muted-foreground">
-              The blog post you're looking for doesn't exist or has been removed.
+              The blog post you&apos;re looking for doesn&apos;t exist or has been removed.
             </p>
             <Button asChild >
               <Link href="/blog">Back to Blog</Link>

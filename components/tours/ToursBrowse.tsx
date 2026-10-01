@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo, useEffect, Suspense } from "react";
+import { useState, useMemo, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { TourCard } from "@/components/TourCard";
 import  FilterSidebar  from "@/components/FilterSidebar";
@@ -30,31 +30,24 @@ function ToursContent({ tours }: { tours: Tour[] }) {
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Apply URL query parameters on mount
-  useEffect(() => {
-    const region = searchParams.get("region");
-    const regions = searchParams.get("regions"); // Support multiple regions (comma-separated)
-    const duration = searchParams.get("duration");
-    const category = searchParams.get("category");
-    const transport = searchParams.get("transport");
-
-    if (regions) {
-      // Handle multiple regions from category links
-      const regionList = decodeURIComponent(regions).split(",") as TourRegion[];
-      setSelectedRegions(regionList);
-    } else if (region) {
-      setSelectedRegions([region as TourRegion]);
+  const regionQuery = searchParams.get("regions");
+  const regionSingle = searchParams.get("region");
+  const durationQuery = searchParams.get("duration");
+  const categoryQuery = searchParams.get("category");
+  const transportQuery = searchParams.get("transport");
+  const queryKey = [regionQuery, regionSingle, durationQuery, categoryQuery, transportQuery].join("|");
+  const [appliedQuery, setAppliedQuery] = useState<string | null>(null);
+  if (queryKey !== appliedQuery) {
+    setAppliedQuery(queryKey);
+    if (regionQuery) {
+      setSelectedRegions(decodeURIComponent(regionQuery).split(",") as TourRegion[]);
+    } else if (regionSingle) {
+      setSelectedRegions([regionSingle as TourRegion]);
     }
-    if (duration) {
-      setSelectedDuration(duration);
-    }
-    if (category) {
-      setSelectedCategories([category as TourCategory]);
-    }
-    if (transport) {
-      setSelectedTransport([transport as TransportType]);
-    }
-  }, [searchParams]);
+    if (durationQuery) setSelectedDuration(durationQuery);
+    if (categoryQuery) setSelectedCategories([categoryQuery as TourCategory]);
+    if (transportQuery) setSelectedTransport([transportQuery as TransportType]);
+  }
 
   // Handle category toggle
   const handleCategoryChange = (category: TourCategory) => {
@@ -155,10 +148,20 @@ function ToursContent({ tours }: { tours: Tour[] }) {
     return result;
   }, [tours, searchQuery, priceRange, selectedCategories, selectedRegions, selectedTransport, selectedDuration, sortBy]);
 
-  // Reset to page 1 when filters change
-  useEffect(() => {
+  const filterKey = [
+    searchQuery,
+    priceRange.join(","),
+    selectedCategories.join(","),
+    selectedRegions.join(","),
+    selectedTransport.join(","),
+    selectedDuration,
+    sortBy,
+  ].join("|");
+  const [appliedFilter, setAppliedFilter] = useState(filterKey);
+  if (filterKey !== appliedFilter) {
+    setAppliedFilter(filterKey);
     setCurrentPage(1);
-  }, [searchQuery, priceRange, selectedCategories, selectedRegions, selectedTransport, selectedDuration, sortBy]);
+  }
 
   // Pagination calculations
   const totalPages = Math.ceil(filteredTours.length / ITEMS_PER_PAGE);

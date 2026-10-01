@@ -7,6 +7,7 @@ import {
   serial,
   text,
   timestamp,
+  index,
   uniqueIndex,
 } from "drizzle-orm/pg-core";
 import type { BlogSection } from "@/data/blog";
@@ -15,6 +16,16 @@ import type { TourCategory, TourPackage, PackageType } from "@/data/tours";
 
 export const userRole = pgEnum("user_role", ["owner", "manager", "editor"]);
 export const priceSource = pgEnum("price_source", ["excel", "website"]);
+
+export const loginFailures = pgTable(
+  "login_failures",
+  {
+    id: serial("id").primaryKey(),
+    email: text("email").notNull(),
+    failedAt: timestamp("failed_at", { withTimezone: true }).notNull(),
+  },
+  (table) => [index("login_failures_email_failed_at_idx").on(table.email, table.failedAt)],
+);
 
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),

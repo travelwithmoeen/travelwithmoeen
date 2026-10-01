@@ -4,13 +4,13 @@ import { users } from "@/lib/db/schema";
 import { hashPassword } from "@/lib/auth/password";
 import { canManageUsers, isRole, type Role } from "@/lib/auth/permissions";
 import type { SessionUser } from "@/lib/auth/session";
-import type { ActionResult } from "@/lib/http/result";
+import { forbidden, type ActionResult } from "@/lib/http/result";
 
 export type { ActionResult };
 
 export async function listUsersAs(actor: SessionUser) {
   if (!canManageUsers(actor.role)) {
-    return { ok: false as const, error: "Only the Owner can see logins." };
+    return forbidden("Only the Owner can see logins.");
   }
   const rows = await db
     .select({ id: users.id, email: users.email, role: users.role })
@@ -24,7 +24,7 @@ export async function createUserAs(
   input: { email: string; password: string; role: string },
 ): Promise<ActionResult> {
   if (!canManageUsers(actor.role)) {
-    return { ok: false, error: "Only the Owner can create a login." };
+    return forbidden("Only the Owner can create a login.");
   }
   const email = input.email.trim().toLowerCase();
   if (!email.includes("@")) {
@@ -50,7 +50,7 @@ export async function createUserAs(
 
 export async function removeUserAs(actor: SessionUser, userId: number): Promise<ActionResult> {
   if (!canManageUsers(actor.role)) {
-    return { ok: false, error: "Only the Owner can remove a login." };
+    return forbidden("Only the Owner can remove a login.");
   }
   if (actor.id === userId) {
     return { ok: false, error: "You cannot remove your own login." };
@@ -71,7 +71,7 @@ export async function removeUserAs(actor: SessionUser, userId: number): Promise<
 
 export async function changeRoleAs(actor: SessionUser, userId: number, role: string): Promise<ActionResult> {
   if (!canManageUsers(actor.role)) {
-    return { ok: false, error: "Only the Owner can change a role." };
+    return forbidden("Only the Owner can change a role.");
   }
   if (!isRole(role)) {
     return { ok: false, error: "Choose Owner, Manager, or Editor." };

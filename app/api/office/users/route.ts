@@ -8,7 +8,10 @@ export async function GET() {
   try {
     const actor = await requireUser();
     const result = await listUsersAs(actor);
-    return Response.json(result, { status: result.ok ? 200 : 403 });
+    if (!result.ok) {
+      return Response.json({ ok: false, error: result.error }, { status: result.status === 403 ? 403 : 400 });
+    }
+    return Response.json(result);
   } catch {
     return Response.json({ ok: false, error: "Sign in again." }, { status: 401 });
   }

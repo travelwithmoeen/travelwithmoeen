@@ -1,3 +1,4 @@
+import { randomBytes } from "crypto";
 import { mkdir, writeFile } from "fs/promises";
 import path from "path";
 import { eq, max } from "drizzle-orm";
@@ -8,7 +9,7 @@ import type { SessionUser } from "@/lib/auth/session";
 import type { BlogSection } from "@/data/blog";
 import type { DestinationSection } from "@/data/destinations";
 import type { PackageType, TourCategory, TourDay } from "@/data/tours";
-import type { ActionResult } from "@/lib/http/result";
+import { forbidden, type ActionResult } from "@/lib/http/result";
 
 export type TourEditInput = {
   id: string;
@@ -31,14 +32,14 @@ export type TourEditInput = {
 
 export async function savePriceAs(actor: SessionUser): Promise<ActionResult> {
   if (!canEditRates(actor.role)) {
-    return { ok: false, error: "You cannot change a price." };
+    return forbidden("You cannot change a price.");
   }
   return { ok: false, error: "Rates are not open yet." };
 }
 
 export async function updateTourAs(actor: SessionUser, input: TourEditInput): Promise<ActionResult> {
   if (!canEditContent(actor.role)) {
-    return { ok: false, error: "You cannot edit a tour." };
+    return forbidden("You cannot edit a tour.");
   }
   const name = input.name.trim();
   if (!name) {
@@ -89,7 +90,7 @@ export async function updateTourAs(actor: SessionUser, input: TourEditInput): Pr
 
 export async function deleteTourAs(actor: SessionUser, tourId: string): Promise<ActionResult> {
   if (!canDeleteTour(actor.role)) {
-    return { ok: false, error: "Only the Owner can delete a tour." };
+    return forbidden("Only the Owner can delete a tour.");
   }
   await db.delete(tours).where(eq(tours.id, tourId));
   return { ok: true, message: "Tour deleted." };
@@ -107,7 +108,7 @@ export async function updatePlaceAs(
   },
 ): Promise<ActionResult> {
   if (!canEditContent(actor.role)) {
-    return { ok: false, error: "You cannot edit a place." };
+    return forbidden("You cannot edit a place.");
   }
   if (!input.title.trim()) {
     return { ok: false, error: "Enter a title." };
@@ -138,7 +139,7 @@ export async function updatePostAs(
   },
 ): Promise<ActionResult> {
   if (!canEditContent(actor.role)) {
-    return { ok: false, error: "You cannot edit a blog post." };
+    return forbidden("You cannot edit a blog post.");
   }
   if (!input.title.trim()) {
     return { ok: false, error: "Enter a title." };
@@ -162,7 +163,7 @@ export async function savePhotoAs(
   input: { id?: number; src: string; alt: string; category: string; span: string; homeOnly: boolean },
 ): Promise<ActionResult> {
   if (!canEditContent(actor.role)) {
-    return { ok: false, error: "You cannot edit the gallery." };
+    return forbidden("You cannot edit the gallery.");
   }
   if (!input.src.trim() || !input.alt.trim()) {
     return { ok: false, error: "Enter a photo and a description." };
@@ -199,7 +200,7 @@ export async function savePhotoAs(
 
 export async function deletePhotoAs(actor: SessionUser, id: number): Promise<ActionResult> {
   if (!canEditContent(actor.role)) {
-    return { ok: false, error: "You cannot edit the gallery." };
+    return forbidden("You cannot edit the gallery.");
   }
   await db.delete(photos).where(eq(photos.id, id));
   return { ok: true, message: "Photo removed." };
@@ -210,7 +211,7 @@ export async function saveReviewAs(
   input: { id?: number; name: string; avatar: string; location: string; text: string; rating: number },
 ): Promise<ActionResult> {
   if (!canEditContent(actor.role)) {
-    return { ok: false, error: "You cannot edit reviews." };
+    return forbidden("You cannot edit reviews.");
   }
   if (!input.name.trim() || !input.text.trim()) {
     return { ok: false, error: "Enter a name and the review." };
@@ -243,7 +244,7 @@ export async function saveReviewAs(
 
 export async function deleteReviewAs(actor: SessionUser, id: number): Promise<ActionResult> {
   if (!canEditContent(actor.role)) {
-    return { ok: false, error: "You cannot edit reviews." };
+    return forbidden("You cannot edit reviews.");
   }
   await db.delete(reviews).where(eq(reviews.id, id));
   return { ok: true, message: "Review removed." };
@@ -254,7 +255,7 @@ export async function saveSlideAs(
   input: { id?: number; image: string; title: string; rotation: number; sortOrder: number },
 ): Promise<ActionResult> {
   if (!canEditContent(actor.role)) {
-    return { ok: false, error: "You cannot edit home slides." };
+    return forbidden("You cannot edit home slides.");
   }
   if (!input.image.trim() || !input.title.trim()) {
     return { ok: false, error: "Enter a photo and a title." };
@@ -285,7 +286,7 @@ export async function saveSlideAs(
 
 export async function deleteSlideAs(actor: SessionUser, id: number): Promise<ActionResult> {
   if (!canEditContent(actor.role)) {
-    return { ok: false, error: "You cannot edit home slides." };
+    return forbidden("You cannot edit home slides.");
   }
   await db.delete(slides).where(eq(slides.id, id));
   return { ok: true, message: "Slide removed." };
@@ -306,7 +307,7 @@ export async function updateSiteSettingsAs(
   },
 ): Promise<ActionResult> {
   if (!canEditContent(actor.role)) {
-    return { ok: false, error: "You cannot edit site details." };
+    return forbidden("You cannot edit site details.");
   }
   await db
     .update(siteSettings)
@@ -325,13 +326,45 @@ export async function updateSiteSettingsAs(
   return { ok: true, message: "Site details saved." };
 }
 
-export async function saveUploadedImage(file: File): Promise<string> {
-  if (!file.type.startsWith("image/")) {
-    throw new Error("Choose an image file.");
+const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
+
+function imageKind(bytes: Buffer): "jpg" | "png" | "webp" | null {
+  if (bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) return "jpg";
+  if (
+    bytes.length >= 8 &&
+    bytes[0] === 0x89 &&
+    bytes[1] === 0x50 &&
+    bytes[2] === 0x4e &&
+    bytes[3] === 0x47 &&
+    bytes[4] === 0x0d &&
+    bytes[5] === 0x0a &&
+    bytes[6] === 0x1a &&
+    bytes[7] === 0x0a
+  ) {
+    return "png";
+  }
+  if (bytes.length >= 12 && bytes.toString("ascii", 0, 4) === "RIFF" && bytes.toString("ascii", 8, 12) === "WEBP") {
+    return "webp";
+  }
+  return null;
+}
+
+export async function saveUploadedImage(actor: SessionUser, file: File): Promise<string | ActionResult> {
+  if (!canEditContent(actor.role)) {
+    return forbidden("You cannot edit a photo.");
+  }
+  if (file.size > MAX_UPLOAD_BYTES) {
+    throw new Error("The file is larger than 5 MB.");
   }
   const bytes = Buffer.from(await file.arrayBuffer());
-  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-  const filename = `${Date.now()}-${safeName}`;
+  if (bytes.length > MAX_UPLOAD_BYTES) {
+    throw new Error("The file is larger than 5 MB.");
+  }
+  const kind = imageKind(bytes);
+  if (!kind) {
+    throw new Error("Use a JPEG, PNG, or WebP file.");
+  }
+  const filename = `${Date.now()}-${randomBytes(8).toString("hex")}.${kind}`;
   const dir = path.join(process.cwd(), "public", "uploads");
   await mkdir(dir, { recursive: true });
   await writeFile(path.join(dir, filename), bytes);

@@ -1,4 +1,5 @@
 import { authenticate } from "@/lib/auth/authenticate";
+import { loginIsLocked, logLockedSignIn, recordLoginFailure } from "@/lib/auth/login-guard";
 import { clearSessionCookie, setSessionCookie, type SessionUser } from "@/lib/auth/session";
 import type { ActionResult } from "@/lib/http/result";
 import type { BlogSection } from "@/data/blog";
@@ -28,16 +29,27 @@ function lines(value: string) {
     .filter(Boolean);
 }
 
-function photoError(error: unknown): ActionResult {
-  return { ok: false, error: error instanceof Error ? error.message : "The photo could not be saved." };
+const LOGIN_ERROR = "That email or password is not right.";
+
+async function applyUploadedImage(actor: SessionUser, file: File): Promise<string | ActionResult> {
+  try {
+    return await saveUploadedImage(actor, file);
+  } catch (error) {
+    return { ok: false, error: error instanceof Error ? error.message : "The photo could not be saved." };
+  }
 }
 
 export async function loginFromForm(formData: FormData): Promise<ActionResult> {
   const email = String(formData.get("email") ?? "");
   const password = String(formData.get("password") ?? "");
+  if (await loginIsLocked(email)) {
+    logLockedSignIn(email);
+    return { ok: false, error: LOGIN_ERROR };
+  }
   const user = await authenticate(email, password);
   if (!user) {
-    return { ok: false, error: "That email or password is not right." };
+    await recordLoginFailure(email);
+    return { ok: false, error: LOGIN_ERROR };
   }
   await setSessionCookie(user.id);
   return { ok: true };
@@ -72,11 +84,9 @@ export async function updateTourFromForm(actor: SessionUser, formData: FormData)
   let image = String(formData.get("image") ?? "");
   const file = formData.get("photo");
   if (file instanceof File && file.size > 0) {
-    try {
-      image = await saveUploadedImage(file);
-    } catch (error) {
-      return photoError(error);
-    }
+    const uploaded = await applyUploadedImage(actor, file);
+    if (typeof uploaded !== "string") return uploaded;
+    image = uploaded;
   }
   let itinerary: TourEditInput["itinerary"];
   try {
@@ -147,11 +157,9 @@ export async function savePhotoFromForm(actor: SessionUser, formData: FormData):
   let src = String(formData.get("src") ?? "");
   const file = formData.get("photo");
   if (file instanceof File && file.size > 0) {
-    try {
-      src = await saveUploadedImage(file);
-    } catch (error) {
-      return photoError(error);
-    }
+    const uploaded = await applyUploadedImage(actor, file);
+    if (typeof uploaded !== "string") return uploaded;
+    src = uploaded;
   }
   const idValue = String(formData.get("id") ?? "");
   return savePhotoAs(actor, {
@@ -188,11 +196,9 @@ export async function saveSlideFromForm(actor: SessionUser, formData: FormData):
   let image = String(formData.get("image") ?? "");
   const file = formData.get("photo");
   if (file instanceof File && file.size > 0) {
-    try {
-      image = await saveUploadedImage(file);
-    } catch (error) {
-      return photoError(error);
-    }
+    const uploaded = await applyUploadedImage(actor, file);
+    if (typeof uploaded !== "string") return uploaded;
+    image = uploaded;
   }
   const idValue = String(formData.get("id") ?? "");
   return saveSlideAs(actor, {

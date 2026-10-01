@@ -19,28 +19,19 @@ export function PackagePopup({
   whatsappMessage = "Hi, I am interested in your tour packages. Please share more details.",
 }: PackagePopupProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [hasTriggered, setHasTriggered] = useState(false);
 
-  // Check if popup was already shown in this session
   useEffect(() => {
-    const wasShown = sessionStorage.getItem("packagePopupShown");
-    if (wasShown) {
-      setHasTriggered(true);
-    }
-  }, []);
-
-  // Intersection Observer to detect when PackageCalculator is in view
-  useEffect(() => {
-    if (!triggerRef.current || hasTriggered) return;
+    const node = triggerRef.current;
+    if (!node) return;
+    if (sessionStorage.getItem("packagePopupShown") === "true") return;
 
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting && !hasTriggered) {
-            setIsOpen(true);
-            setHasTriggered(true);
-            sessionStorage.setItem("packagePopupShown", "true");
-          }
+          if (!entry.isIntersecting) return;
+          setIsOpen(true);
+          sessionStorage.setItem("packagePopupShown", "true");
+          observer.disconnect();
         });
       },
       {
@@ -48,12 +39,12 @@ export function PackagePopup({
       }
     );
 
-    observer.observe(triggerRef.current);
+    observer.observe(node);
 
     return () => {
       observer.disconnect();
     };
-  }, [triggerRef, hasTriggered]);
+  }, [triggerRef]);
 
   const handleClose = useCallback(() => {
     setIsOpen(false);

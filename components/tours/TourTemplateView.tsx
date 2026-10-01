@@ -58,7 +58,7 @@ export default function TourTemplatePage({ tour }: { tour: Tour | null }) {
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-800 mb-4">Tour Not Found</h1>
-          <p className="text-gray-600">The tour you're looking for doesn't exist.</p>
+          <p className="text-gray-600">The tour you&apos;re looking for doesn&apos;t exist.</p>
         </div>
       </div>
     );
