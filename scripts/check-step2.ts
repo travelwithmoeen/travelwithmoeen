@@ -12,6 +12,8 @@ const LOGIN_ERROR = "That email or password is not right.";
 const PROBE_PASSWORD = "step2-probe-password";
 const EDITOR_EMAIL = "editor-step2-security@travelwithmoeen.test";
 const EDITOR_PASSWORD = "Step2Editor-pass";
+const MANAGER_EMAIL = "manager-step2-security@travelwithmoeen.test";
+const MANAGER_PASSWORD = "Step2Manager-pass";
 
 const JPEG = Buffer.from(
   "/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=",
@@ -81,7 +83,11 @@ async function signIn(email: string, password: string) {
 
 function runStep1() {
   return new Promise<void>((resolve, reject) => {
-    const child = spawn("npm", ["run", "check:step1"], { stdio: "inherit" });
+    const child = spawn("npm", ["run", "check:step1"], {
+      stdio: "inherit",
+      shell: process.platform === "win32",
+    });
+    child.on("error", reject);
     child.on("exit", (code) => {
       if (code === 0) resolve();
       else reject(new Error("The Step 1 checks failed."));
@@ -136,8 +142,10 @@ async function main() {
 
   await db.delete(loginFailures).where(eq(loginFailures.email, ownerEmail));
   await db.delete(loginFailures).where(eq(loginFailures.email, EDITOR_EMAIL));
+  await db.delete(loginFailures).where(eq(loginFailures.email, MANAGER_EMAIL));
   await db.delete(loginFailures).where(eq(loginFailures.email, "nobody-step2@travelwithmoeen.test"));
   await db.delete(users).where(eq(users.email, EDITOR_EMAIL));
+  await db.delete(users).where(eq(users.email, MANAGER_EMAIL));
 
   const unknown = await signIn("nobody-step2@travelwithmoeen.test", PROBE_PASSWORD);
   const wrong = await signIn(ownerEmail, PROBE_PASSWORD);
@@ -162,6 +170,12 @@ async function main() {
     role: "editor",
   });
   if (!created.ok) throw new Error("The Owner could not create the Step 2 Editor.");
+  const managerCreated = await createUserAs(owner, {
+    email: MANAGER_EMAIL,
+    password: MANAGER_PASSWORD,
+    role: "manager",
+  });
+  if (!managerCreated.ok) throw new Error("The Owner could not create the Step 2 Manager.");
 
   let editorCookie = "";
   const saved: { id: number; src: string }[] = [];
@@ -223,6 +237,21 @@ async function main() {
       throw new Error(`The Editor price save returned ${priceAttempt.status}.`);
     }
 
+    const managerLogin = await signIn(MANAGER_EMAIL, MANAGER_PASSWORD);
+    if (managerLogin.status !== 200 || !managerLogin.body.ok) {
+      throw new Error("The Step 2 Manager could not sign in.");
+    }
+    const managerCookie = sessionCookie(managerLogin.response);
+    if (!managerCookie) throw new Error("The Manager login did not set a session cookie.");
+    const managerPhoto = await officePost(
+      "/api/office/photos",
+      photoForm("tiny.jpg", JPEG, "step2-manager", "image/jpeg"),
+      managerCookie,
+    );
+    if (managerPhoto.status !== 403 || managerPhoto.body.ok || managerPhoto.body.error !== "You cannot edit a photo.") {
+      throw new Error(`A Manager photo upload returned ${managerPhoto.status} ${managerPhoto.body.error ?? ""}`);
+    }
+
     const logout = await officePost("/api/office/logout", new FormData(), editorCookie);
     if (!logout.body.ok || !cookieCleared(logout.response)) {
       throw new Error("Logout did not clear the session cookie.");
@@ -230,6 +259,10 @@ async function main() {
     const afterLogout = await officePost("/api/office/tours", new FormData(), "");
     if (afterLogout.status !== 401) {
       throw new Error(`An office save after logout returned ${afterLogout.status}.`);
+    }
+    const badLogout = await officePost("/api/office/logout", new FormData(), "twm_office=not-a-session");
+    if (badLogout.status !== 401 || !cookieCleared(badLogout.response)) {
+      throw new Error("Logout left a bad session cookie in place.");
     }
 
     for (let attempt = 0; attempt < 10; attempt += 1) {
@@ -246,6 +279,20 @@ async function main() {
     if (failureRows.length !== 10) {
       throw new Error(`Expected 10 recorded sign-in failures and found ${failureRows.length}.`);
     }
+    const expiredAt = new Date(Date.now() - 16 * 60 * 1000);
+    await db.update(loginFailures).set({ failedAt: expiredAt }).where(eq(loginFailures.email, EDITOR_EMAIL));
+    const aged = await db
+      .select({ failedAt: loginFailures.failedAt })
+      .from(loginFailures)
+      .where(eq(loginFailures.email, EDITOR_EMAIL));
+    const cutoff = new Date(Date.now() - 15 * 60 * 1000);
+    if (aged.length !== 10 || aged.some((row) => row.failedAt >= cutoff)) {
+      throw new Error("The ten old sign-in failures were not outside the 15 minute window.");
+    }
+    const afterWindow = await signIn(EDITOR_EMAIL, EDITOR_PASSWORD);
+    if (afterWindow.status !== 200 || !afterWindow.body.ok) {
+      throw new Error("The right password was refused after the 15 minute window.");
+    }
   } finally {
     for (const photo of saved) {
       await removePhoto(photo.id, photo.src, editorCookie).catch(() => undefined);
@@ -254,11 +301,16 @@ async function main() {
     await db.delete(photos).where(eq(photos.alt, "step2-png"));
     await db.delete(photos).where(eq(photos.alt, "step2-webp"));
     await db.delete(loginFailures).where(eq(loginFailures.email, EDITOR_EMAIL));
+    await db.delete(loginFailures).where(eq(loginFailures.email, MANAGER_EMAIL));
     await db.delete(loginFailures).where(eq(loginFailures.email, ownerEmail));
     await db.delete(loginFailures).where(eq(loginFailures.email, "nobody-step2@travelwithmoeen.test"));
+    await db.delete(photos).where(eq(photos.alt, "step2-manager"));
     const editor = await authenticate(EDITOR_EMAIL, EDITOR_PASSWORD);
     if (editor) await removeUserAs(owner, editor.id);
+    const manager = await authenticate(MANAGER_EMAIL, MANAGER_PASSWORD);
+    if (manager) await removeUserAs(owner, manager.id);
     await db.delete(users).where(eq(users.email, EDITOR_EMAIL));
+    await db.delete(users).where(eq(users.email, MANAGER_EMAIL));
   }
 
   console.info("Step 2 security checks passed.");

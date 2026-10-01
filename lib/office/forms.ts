@@ -31,11 +31,12 @@ function lines(value: string) {
 
 const LOGIN_ERROR = "That email or password is not right.";
 
-function photoError(error: unknown): ActionResult {
-  if (error instanceof Error && "status" in error && error.status === 403) {
-    return { ok: false, error: error.message, status: 403 };
+async function applyUploadedImage(actor: SessionUser, file: File): Promise<string | ActionResult> {
+  try {
+    return await saveUploadedImage(actor, file);
+  } catch (error) {
+    return { ok: false, error: error instanceof Error ? error.message : "The photo could not be saved." };
   }
-  return { ok: false, error: error instanceof Error ? error.message : "The photo could not be saved." };
 }
 
 export async function loginFromForm(formData: FormData): Promise<ActionResult> {
@@ -83,11 +84,9 @@ export async function updateTourFromForm(actor: SessionUser, formData: FormData)
   let image = String(formData.get("image") ?? "");
   const file = formData.get("photo");
   if (file instanceof File && file.size > 0) {
-    try {
-      image = await saveUploadedImage(actor, file);
-    } catch (error) {
-      return photoError(error);
-    }
+    const uploaded = await applyUploadedImage(actor, file);
+    if (typeof uploaded !== "string") return uploaded;
+    image = uploaded;
   }
   let itinerary: TourEditInput["itinerary"];
   try {
@@ -158,11 +157,9 @@ export async function savePhotoFromForm(actor: SessionUser, formData: FormData):
   let src = String(formData.get("src") ?? "");
   const file = formData.get("photo");
   if (file instanceof File && file.size > 0) {
-    try {
-      src = await saveUploadedImage(actor, file);
-    } catch (error) {
-      return photoError(error);
-    }
+    const uploaded = await applyUploadedImage(actor, file);
+    if (typeof uploaded !== "string") return uploaded;
+    src = uploaded;
   }
   const idValue = String(formData.get("id") ?? "");
   return savePhotoAs(actor, {
@@ -199,11 +196,9 @@ export async function saveSlideFromForm(actor: SessionUser, formData: FormData):
   let image = String(formData.get("image") ?? "");
   const file = formData.get("photo");
   if (file instanceof File && file.size > 0) {
-    try {
-      image = await saveUploadedImage(actor, file);
-    } catch (error) {
-      return photoError(error);
-    }
+    const uploaded = await applyUploadedImage(actor, file);
+    if (typeof uploaded !== "string") return uploaded;
+    image = uploaded;
   }
   const idValue = String(formData.get("id") ?? "");
   return saveSlideAs(actor, {

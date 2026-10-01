@@ -349,11 +349,9 @@ function imageKind(bytes: Buffer): "jpg" | "png" | "webp" | null {
   return null;
 }
 
-export async function saveUploadedImage(actor: SessionUser, file: File): Promise<string> {
+export async function saveUploadedImage(actor: SessionUser, file: File): Promise<string | ActionResult> {
   if (!canEditContent(actor.role)) {
-    const error = new Error("You cannot edit a photo.") as Error & { status?: 403 };
-    error.status = 403;
-    throw error;
+    return forbidden("You cannot edit a photo.");
   }
   if (file.size > MAX_UPLOAD_BYTES) {
     throw new Error("The file is larger than 5 MB.");
