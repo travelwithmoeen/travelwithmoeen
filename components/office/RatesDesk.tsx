@@ -85,7 +85,7 @@ export function RatesDesk({
         </select>
         {vehicle ? <VehicleForm vehicle={vehicle} key={vehicle.id} /> : null}
       </section>
-      <QuoteForm places={places} />
+      <QuoteForm places={places} vehicles={desk.vehicles} />
     </div>
   );
 }
@@ -204,7 +204,8 @@ function VehicleForm({ vehicle }: { vehicle: Vehicle }) {
   );
 }
 
-function QuoteForm({ places }: { places: string[] }) {
+function QuoteForm({ places, vehicles }: { places: string[]; vehicles: Vehicle[] }) {
+  const vehicleNames = [...new Set(vehicles.filter((row) => row.live).map((row) => row.vehicle))];
   const [state, action, pending] = useRateAction();
   return (
     <form action={action} className="rounded-xl bg-white p-6 shadow">
@@ -253,8 +254,23 @@ function QuoteForm({ places }: { places: string[] }) {
         <label className="block text-sm">Night number<input className="mt-1 w-full rounded-md border px-3 py-2" name="night" /></label>
         <label className="block text-sm">Night rate<input className="mt-1 w-full rounded-md border px-3 py-2" name="nightRate" /></label>
         <label className="block text-sm md:col-span-2">Night hotel<input className="mt-1 w-full rounded-md border px-3 py-2" name="nightHotel" /></label>
-        <label className="block text-sm">Day to clear<input className="mt-1 w-full rounded-md border px-3 py-2" name="day" /></label>
-        <label className="flex items-center gap-2 text-sm"><input name="clearDay" type="checkbox" />Clear that day&apos;s vehicle</label>
+        <label className="block text-sm">Day<input className="mt-1 w-full rounded-md border px-3 py-2" name="day" /></label>
+        <label className="block text-sm">That day
+          <select className="mt-1 w-full rounded-md border px-3 py-2" name="dayChange" defaultValue="">
+            <option value="">Leave the vehicle</option>
+            <option value="clear">No vehicle</option>
+            <option value="jeep">Jeep</option>
+            <option value="vehicle">Higher vehicle</option>
+          </select>
+        </label>
+        <label className="block text-sm">Higher vehicle
+          <select className="mt-1 w-full rounded-md border px-3 py-2" name="dayVehicle" defaultValue="">
+            <option value="">Choose a vehicle</option>
+            {vehicleNames.map((name) => <option key={name}>{name}</option>)}
+          </select>
+        </label>
+        <label className="block text-sm">Jeep rent<input className="mt-1 w-full rounded-md border px-3 py-2" name="dayRent" /></label>
+        <label className="block text-sm">Jeep fuel<input className="mt-1 w-full rounded-md border px-3 py-2" name="dayFuel" /></label>
         <label className="block text-sm">Paid extra<input className="mt-1 w-full rounded-md border px-3 py-2" name="extraName" /></label>
         <label className="block text-sm">Extra amount<input className="mt-1 w-full rounded-md border px-3 py-2" name="extraAmount" /></label>
         <label className="block text-sm md:col-span-2">Other mix<input className="mt-1 w-full rounded-md border px-3 py-2" name="otherNote" placeholder="Use vehicle Other, then type the mix" /></label>

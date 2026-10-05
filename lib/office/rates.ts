@@ -127,10 +127,23 @@ export async function quoteInputFromForm(formData: FormData): Promise<{ ok: true
     nightEdits.push({ night: nightNumber.count, rate: rate.amount, hotelName: String(formData.get("nightHotel") ?? "") });
   }
   const dayEdits: DayEdit[] = [];
-  if (checked(formData.get("clearDay"))) {
+  const dayChange = String(formData.get("dayChange") ?? "").trim();
+  if (dayChange === "clear" || dayChange === "jeep" || dayChange === "vehicle") {
     const day = readCount(String(formData.get("day") ?? ""), "the day", 60);
     if (!day.ok) return day;
-    dayEdits.push({ day: day.count, cleared: true });
+    if (dayChange === "clear") {
+      dayEdits.push({ day: day.count, cleared: true });
+    } else if (dayChange === "jeep") {
+      const rent = readAmount(String(formData.get("dayRent") ?? ""));
+      if (!rent.ok) return rent;
+      const fuel = readAmount(String(formData.get("dayFuel") ?? ""));
+      if (!fuel.ok) return fuel;
+      dayEdits.push({ day: day.count, jeep: true, rent: rent.amount, fuel: fuel.amount });
+    } else {
+      const dayVehicle = String(formData.get("dayVehicle") ?? "").trim();
+      if (!dayVehicle) return { ok: false, error: "Choose a vehicle for that day." };
+      dayEdits.push({ day: day.count, vehicle: dayVehicle });
+    }
   }
   const paidExtras: { name: string; amount: number }[] = [];
   const extraName = String(formData.get("extraName") ?? "").trim();

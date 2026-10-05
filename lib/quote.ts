@@ -71,7 +71,14 @@ export type RateCatalog = {
 };
 
 export type NightEdit = { night: number; rate: number; hotelName?: string };
-export type DayEdit = { day: number; cleared?: boolean; rent?: number; fuel?: number; vehicle?: string };
+export type DayEdit = {
+  day: number;
+  cleared?: boolean;
+  jeep?: boolean;
+  vehicle?: string;
+  rent?: number;
+  fuel?: number;
+};
 
 export type QuoteInput = {
   place: string;
@@ -86,6 +93,7 @@ export type QuoteInput = {
   vehicle: string;
   vehicleCount?: number;
   roomCount?: number;
+  share?: "twin" | "triple";
   guide: boolean;
   meals: boolean;
   seasonPercent?: SeasonPercent;
@@ -218,12 +226,20 @@ export function buildQuote(input: QuoteInput, catalog: RateCatalog): QuoteResult
     return { ok: false, error: "That vehicle has no seats." };
   }
 
-  const rooms = input.roomCount ?? Math.ceil(seats / 3);
+  const rooms =
+    input.roomCount ??
+    (input.share === "twin" ? Math.ceil(seats / 2) : Math.ceil(seats / 3));
   if (!Number.isInteger(rooms) || rooms < 1) {
     return { ok: false, error: "Enter the rooms." };
   }
-  const peoplePerRoom = seats / rooms;
-  const nightly = peoplePerRoom > 2 ? hotel.triple : hotel.twin;
+  const nightly =
+    input.share === "triple"
+      ? hotel.triple
+      : input.share === "twin"
+        ? hotel.twin
+        : seats / rooms > 2
+          ? hotel.triple
+          : hotel.twin;
   const nightsCount = input.days > 1 ? input.days - 1 : 0;
   const nights: NightLine[] = [];
   for (let night = 1; night <= nightsCount; night += 1) {
@@ -242,15 +258,44 @@ export function buildQuote(input: QuoteInput, catalog: RateCatalog): QuoteResult
   const days: DayLine[] = [];
   for (let day = 1; day <= input.days; day += 1) {
     const edit = input.dayEdits?.find((row) => row.day === day);
-    const cleared = Boolean(edit?.cleared);
-    days.push({
-      day,
-      vehicle: cleared ? "" : edit?.vehicle?.trim() || vehicleName,
-      rent: cleared ? 0 : edit?.rent ?? rent,
-      fuel: cleared ? 0 : edit?.fuel ?? fuel,
-      toll,
-      cleared,
-    });
+    if (!edit || edit.cleared) {
+      days.push({
+        day,
+        vehicle: edit?.cleared ? "" : vehicleName,
+        rent: edit?.cleared ? 0 : rent,
+        fuel: edit?.cleared ? 0 : fuel,
+        toll,
+        cleared: Boolean(edit?.cleared),
+      });
+      continue;
+    }
+    if (edit.jeep) {
+      if (edit.rent === undefined || edit.fuel === undefined || !whole(edit.rent) || !whole(edit.fuel)) {
+        return { ok: false, error: "Enter the rent and fuel for the jeep on that day." };
+      }
+      days.push({ day, vehicle: "Jeep", rent: edit.rent, fuel: edit.fuel, toll, cleared: false });
+      continue;
+    }
+    const replacement = edit.vehicle?.trim();
+    if (!replacement) {
+      days.push({ day, vehicle: vehicleName, rent, fuel, toll, cleared: false });
+      continue;
+    }
+    const named = catalog.vehicles.find(
+      (row) =>
+        row.place === place &&
+        row.startCity === city &&
+        row.mode === input.mode &&
+        row.live &&
+        vehicleKey(row.vehicle) === vehicleKey(replacement),
+    );
+    if (!named) {
+      return { ok: false, error: "No vehicle rate is stored for that day." };
+    }
+    if (named.rent + named.fuel <= rent + fuel) {
+      return { ok: false, error: "Choose a higher vehicle for that day." };
+    }
+    days.push({ day, vehicle: named.vehicle, rent: named.rent, fuel: named.fuel, toll, cleared: false });
   }
 
   const activeDays = days.filter((day) => !day.cleared);

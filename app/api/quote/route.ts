@@ -16,7 +16,8 @@ export async function POST(request: Request) {
     return Response.json({ ok: false, error: "The quote could not be read." }, { status: 400 });
   }
   const user = await getCurrentUser();
-  const staff = Boolean(user && canEditRates(user.role));
+  const signedIn = Boolean(user);
+  const rateEditor = Boolean(user && canEditRates(user.role));
   const days = readCount(text(body, "days"), "the days", 60);
   if (!days.ok) return Response.json(days, { status: 400 });
   const adults = readCount(text(body, "adults"), "the adults", 60);
@@ -42,9 +43,11 @@ export async function POST(request: Request) {
     roomCount: text(body, "roomCount") ? Number(text(body, "roomCount")) : undefined,
     guide: body.guide === true,
     meals: body.meals === true,
-    seasonPercent: season === "15" || season === "20" ? (Number(season) as SeasonPercent) : undefined,
+    seasonPercent: rateEditor && (season === "15" || season === "20") ? (Number(season) as SeasonPercent) : undefined,
     otherNote: text(body, "otherNote"),
   };
+  const share = text(body, "share");
+  if (share === "twin" || share === "triple") input.share = share;
   if (input.vehicle.trim().toLowerCase() === "other") {
     const rent = readAmount(text(body, "otherRent"));
     if (!rent.ok) return Response.json(rent, { status: 400 });
@@ -59,7 +62,7 @@ export async function POST(request: Request) {
     input.otherToll = toll.amount;
     input.otherSeats = seats.count;
   }
-  if (staff && Array.isArray(body.nightEdits)) {
+  if (rateEditor && Array.isArray(body.nightEdits)) {
     const nightEdits: NightEdit[] = [];
     for (const edit of body.nightEdits) {
       const row = edit as { night?: unknown; rate?: unknown; hotelName?: unknown };
@@ -71,17 +74,30 @@ export async function POST(request: Request) {
     }
     input.nightEdits = nightEdits;
   }
-  if (staff && Array.isArray(body.dayEdits)) {
+  if (rateEditor && Array.isArray(body.dayEdits)) {
     const dayEdits: DayEdit[] = [];
     for (const edit of body.dayEdits) {
-      const row = edit as { day?: unknown; cleared?: unknown };
+      const row = edit as { day?: unknown; cleared?: unknown; jeep?: unknown; vehicle?: unknown; rent?: unknown; fuel?: unknown };
       const day = readCount(String(row.day ?? ""), "the day", 60);
       if (!day.ok) return Response.json(day, { status: 400 });
-      dayEdits.push({ day: day.count, cleared: row.cleared === true });
+      if (row.cleared === true) {
+        dayEdits.push({ day: day.count, cleared: true });
+        continue;
+      }
+      if (row.jeep === true) {
+        const rent = readAmount(String(row.rent ?? ""));
+        if (!rent.ok) return Response.json(rent, { status: 400 });
+        const fuel = readAmount(String(row.fuel ?? ""));
+        if (!fuel.ok) return Response.json(fuel, { status: 400 });
+        dayEdits.push({ day: day.count, jeep: true, rent: rent.amount, fuel: fuel.amount });
+        continue;
+      }
+      const vehicle = String(row.vehicle ?? "").trim();
+      if (vehicle) dayEdits.push({ day: day.count, vehicle });
     }
     input.dayEdits = dayEdits;
   }
-  if (staff && Array.isArray(body.paidExtras)) {
+  if (rateEditor && Array.isArray(body.paidExtras)) {
     const paidExtras: { name: string; amount: number }[] = [];
     for (const extra of body.paidExtras) {
       const row = extra as { name?: unknown; amount?: unknown };
@@ -93,7 +109,7 @@ export async function POST(request: Request) {
   }
   const quote = buildQuote(input, await loadCatalog());
   if (!quote.ok) return Response.json(quote, { status: 400 });
-  if (!staff) {
+  if (!signedIn) {
     return Response.json({ ok: true, total: quote.total, hotelName: quote.hotelName, vehicleCount: quote.vehicleCount });
   }
   return Response.json(quote);

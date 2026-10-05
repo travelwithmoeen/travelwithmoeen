@@ -202,6 +202,10 @@ export function PackageCalculator({ tours }: { tours: Tour[] }) {
           seatInfants: infantOwnSeat,
           grade: hotelCategory,
           vehicle: vehicleType,
+          share: roomType,
+          roomCount: totalSeatsNeeded > 0
+            ? Math.ceil(totalSeatsNeeded / (roomType === "twin" ? 2 : 3))
+            : undefined,
           guide: selectedAddOns.includes("guide") || guideRequired,
           meals: selectedAddOns.includes("meal") || selectedAddOns.includes("meals"),
         }),
@@ -231,6 +235,8 @@ export function PackageCalculator({ tours }: { tours: Tour[] }) {
     infantOwnSeat,
     selectedAddOns,
     guideRequired,
+    roomType,
+    totalSeatsNeeded,
   ]);
 
   const matchingTours = useMemo(() => {
