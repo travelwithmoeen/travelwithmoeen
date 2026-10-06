@@ -3,10 +3,12 @@ import { unlink } from "fs/promises";
 import path from "path";
 import { eq } from "drizzle-orm";
 import { db } from "../lib/db";
-import { loginFailures, photos, users } from "../lib/db/schema";
+import { hotelRates, loginFailures, photos, tours, users } from "../lib/db/schema";
 import { signInRefusalLine } from "../lib/auth/login-guard";
 import { createUserAs, removeUserAs } from "../lib/office/users";
 import { authenticate } from "../lib/auth/authenticate";
+import { buildQuote, GUEST_GRADES, vehicleKey } from "../lib/quote";
+import { loadCatalog } from "../lib/rates";
 
 const LOGIN_ERROR = "That email or password is not right.";
 const PROBE_PASSWORD = "step2-probe-password";
@@ -313,8 +315,207 @@ async function main() {
     await db.delete(users).where(eq(users.email, MANAGER_EMAIL));
   }
 
+  await assertQuotes();
   console.info("Step 2 security checks passed.");
   process.exit(0);
+}
+
+async function quotePost(payload: unknown, cookie = "") {
+  const response = await fetch(`${officeBase()}/api/quote`, {
+    method: "POST",
+    headers: { "content-type": "application/json", ...(cookie ? { cookie } : {}) },
+    body: JSON.stringify(payload),
+  });
+  const body = (await response.json()) as {
+    ok?: boolean;
+    total?: number;
+    profit?: number;
+    lines?: unknown;
+    seasonPercent?: number;
+  };
+  return { status: response.status, body };
+}
+
+async function assertQuotes() {
+  const catalog = await loadCatalog();
+  if (catalog.air.karachiAdd !== 30000) throw new Error("The Karachi air extra is not 30,000.");
+  if ((GUEST_GRADES as readonly string[]).includes("Premier")) throw new Error("Premier is offered to guests.");
+
+  const base = {
+    place: "Skardu Valley",
+    startCity: "Islamabad",
+    mode: "road" as const,
+    days: 5,
+    adults: 2,
+    children: 0,
+    lapInfants: 0,
+    seatInfants: 0,
+    grade: "Deluxe",
+    vehicle: "Gli Car",
+    guide: false,
+    meals: false,
+    seasonPercent: 20 as const,
+  };
+  const premier = buildQuote({ ...base, grade: "Premier" }, catalog);
+  if (premier.ok) throw new Error("Premier was quoted.");
+  const quote = buildQuote(base, catalog);
+  if (!quote.ok || quote.subtotal !== 117000 || quote.total !== 140400) {
+    throw new Error(`The Skardu quote was ${quote.ok ? quote.total : quote.error}.`);
+  }
+  const fifteen = buildQuote({ ...base, seasonPercent: 15 }, catalog);
+  if (!fifteen.ok || fifteen.subtotal !== 117000 || fifteen.profit === quote.profit || fifteen.total !== 134550) {
+    throw new Error("15 percent did not change only the profit.");
+  }
+  const karachiRoad = buildQuote({ ...base, startCity: "Karachi" }, catalog);
+  if (karachiRoad.ok) throw new Error("A road quote started in Karachi.");
+  const karachiAir = buildQuote(
+    { ...base, startCity: "Karachi", mode: "air", days: 4, adults: 1, vehicle: "Prado" },
+    catalog,
+  );
+  const tickets = karachiAir.ok ? karachiAir.lines.find((line) => line.label === "Air tickets") : undefined;
+  if (!karachiAir.ok || tickets?.amount !== 90000) throw new Error("The Karachi air quote did not include 30,000.");
+  const savedSeason = buildQuote({ ...base, seasonPercent: undefined }, catalog);
+  if (!savedSeason.ok) throw new Error("The saved season quote failed.");
+  const otherSeason = catalog.seasonPercent === 20 ? 15 : 20;
+  const guestResponse = await quotePost({ ...base, seasonPercent: otherSeason });
+  if (
+    guestResponse.status !== 200 ||
+    guestResponse.body.total !== savedSeason.total ||
+    guestResponse.body.profit !== undefined ||
+    guestResponse.body.lines !== undefined
+  ) {
+    throw new Error("A guest quote changed the saved season or returned the lines.");
+  }
+  const twinRoom = buildQuote({ ...base, share: "twin", roomCount: 1 }, catalog);
+  const tripleRoom = buildQuote({ ...base, share: "triple", roomCount: 1 }, catalog);
+  if (!twinRoom.ok || !tripleRoom.ok || twinRoom.total === tripleRoom.total) {
+    throw new Error("Twin and Triple did not change the quote.");
+  }
+
+  const edited = buildQuote({ ...base, nightEdits: [{ night: 2, rate: 20000 }] }, catalog);
+  if (!edited.ok || edited.nights[1]?.rate !== 20000 || edited.nights.some((night, index) => index !== 1 && night.rate !== 9000)) {
+    throw new Error("Night two changed another night.");
+  }
+  if (edited.averageNightly !== 11750) throw new Error("The average nightly rate did not follow night two.");
+  const cleared = buildQuote({ ...base, dayEdits: [{ day: 1, cleared: true }] }, catalog);
+  const vehicleBefore = quote.lines.find((line) => line.label === "Vehicle")?.amount ?? 0;
+  const vehicleAfter = cleared.ok ? cleared.lines.find((line) => line.label === "Vehicle")?.amount ?? 0 : 0;
+  if (!cleared.ok || vehicleBefore - vehicleAfter !== 15000 || cleared.days[1]?.rent !== 8000) {
+    throw new Error("Clearing one day did not remove that day's rent.");
+  }
+  const gli = catalog.vehicles.find(
+    (row) =>
+      row.place === "Skardu Valley" &&
+      row.startCity === "Islamabad" &&
+      row.mode === "road" &&
+      row.live &&
+      vehicleKey(row.vehicle) === "gli car",
+  );
+  const higher = catalog.vehicles.find(
+    (row) =>
+      gli &&
+      row.place === gli.place &&
+      row.startCity === gli.startCity &&
+      row.mode === "road" &&
+      row.live &&
+      row.rent + row.fuel > gli.rent + gli.fuel,
+  );
+  if (!gli || !higher) throw new Error("Skardu has no higher vehicle than the Gli car.");
+  const raised = buildQuote({ ...base, dayEdits: [{ day: 1, vehicle: higher.vehicle }] }, catalog);
+  const same = buildQuote({ ...base, dayEdits: [{ day: 1, vehicle: gli.vehicle }] }, catalog);
+  if (
+    same.ok ||
+    !raised.ok ||
+    raised.days[0]?.vehicle !== higher.vehicle ||
+    raised.days[0]?.rent !== higher.rent ||
+    raised.days[1]?.rent !== gli.rent
+  ) {
+    throw new Error("One day did not change to a higher vehicle.");
+  }
+  const jeepDay = buildQuote({ ...base, dayEdits: [{ day: 1, jeep: true, rent: 20000, fuel: 1000 }] }, catalog);
+  if (!jeepDay.ok || jeepDay.days[0]?.vehicle !== "Jeep" || jeepDay.days[0]?.rent !== 20000 || jeepDay.days[1]?.rent !== 8000) {
+    throw new Error("One day did not change to a jeep.");
+  }
+
+  const jeep = buildQuote(
+    { ...base, place: "Kalash Valley & Chitral", days: 6, vehicle: "Gli Car" },
+    catalog,
+  );
+  const jeepLine = jeep.ok ? jeep.lines.find((line) => line.amount === 90000) : undefined;
+  if (!jeep.ok || !jeepLine || jeep.lines.some((line) => line.amount === 90000 * 6 || line.amount === 90000 * 3)) {
+    throw new Error("The jeep amount was multiplied by the number of days.");
+  }
+
+  const taobat = await db.select().from(hotelRates).where(eq(hotelRates.place, "Taobat"));
+  const taobatDeluxe = taobat.find((row) => row.grade === "Deluxe" && row.startCity === "Islamabad");
+  if (!taobatDeluxe || taobatDeluxe.twin === 6000 || taobatDeluxe.twin !== 9000) {
+    throw new Error("The live Taobat deluxe twin is still 6,000.");
+  }
+  const naran = await db.select().from(hotelRates).where(eq(hotelRates.place, "Naran Kaghan & Babusar Top"));
+  const naranDeluxe = naran.find((row) => row.grade === "Deluxe" && row.startCity === "Islamabad");
+  if (!naranDeluxe || naranDeluxe.twin !== 15000) throw new Error("Naran was not left as stored.");
+  const [ratti] = await db.select().from(tours).where(eq(tours.code, "201")).limit(1);
+  if (!ratti || ratti.priceSource !== "website" || ratti.basePrice !== 150000) {
+    throw new Error("Ratti Gali is not on the website price of 150,000.");
+  }
+
+  const owner = await authenticate(process.env.OWNER_EMAIL?.trim().toLowerCase() ?? "", process.env.OWNER_PASSWORD ?? "");
+  if (!owner) throw new Error("The Owner password was refused.");
+  await db.delete(users).where(eq(users.email, MANAGER_EMAIL));
+  const managerCreated = await createUserAs(owner, { email: MANAGER_EMAIL, password: MANAGER_PASSWORD, role: "manager" });
+  if (!managerCreated.ok) throw new Error("The Owner could not create the Step 2 Manager.");
+  try {
+    const managerLogin = await signIn(MANAGER_EMAIL, MANAGER_PASSWORD);
+    const managerCookie = sessionCookie(managerLogin.response);
+    const editorCreated = await createUserAs(owner, { email: EDITOR_EMAIL, password: EDITOR_PASSWORD, role: "editor" });
+    if (!editorCreated.ok) throw new Error("The Owner could not create the Step 2 Editor.");
+    const editorLogin = await signIn(EDITOR_EMAIL, EDITOR_PASSWORD);
+    const editorCookie = sessionCookie(editorLogin.response);
+    const editorQuote = await quotePost({ ...base, seasonPercent: otherSeason }, editorCookie);
+    if (
+      editorQuote.status !== 200 ||
+      editorQuote.body.total !== savedSeason.total ||
+      editorQuote.body.profit === undefined ||
+      !Array.isArray(editorQuote.body.lines)
+    ) {
+      throw new Error("A signed-in Editor did not see the lines and the saved season.");
+    }
+    const managerQuote = await quotePost({ ...base, seasonPercent: otherSeason }, managerCookie);
+    const switched = buildQuote({ ...base, seasonPercent: otherSeason }, catalog);
+    if (!switched.ok || managerQuote.status !== 200 || managerQuote.body.total !== switched.total || managerQuote.body.profit === undefined) {
+      throw new Error("A Manager could not quote the other season.");
+    }
+    const hotel = taobatDeluxe;
+    const form = new FormData();
+    form.set("kind", "hotel");
+    form.set("id", String(hotel.id));
+    form.set("twin", "-1");
+    form.set("triple", "12000");
+    form.set("hotelName", hotel.hotelName);
+    const negative = await officePost("/api/office/rates", form, managerCookie);
+    if (negative.status !== 400 || negative.body.ok) throw new Error(`A negative rate returned ${negative.status}.`);
+    const blank = new FormData();
+    blank.set("kind", "hotel");
+    blank.set("id", String(hotel.id));
+    blank.set("twin", "");
+    blank.set("triple", "12000");
+    const missing = await officePost("/api/office/rates", blank, managerCookie);
+    if (missing.status !== 400) throw new Error(`A blank rate returned ${missing.status}.`);
+    const text = new FormData();
+    text.set("kind", "hotel");
+    text.set("id", String(hotel.id));
+    text.set("twin", "nine");
+    text.set("triple", "12000");
+    const word = await officePost("/api/office/rates", text, managerCookie);
+    if (word.status !== 400) throw new Error(`A non-numeric rate returned ${word.status}.`);
+  } finally {
+    const manager = await authenticate(MANAGER_EMAIL, MANAGER_PASSWORD);
+    if (manager) await removeUserAs(owner, manager.id);
+    const editor = await authenticate(EDITOR_EMAIL, EDITOR_PASSWORD);
+    if (editor) await removeUserAs(owner, editor.id);
+    await db.delete(users).where(eq(users.email, MANAGER_EMAIL));
+    await db.delete(users).where(eq(users.email, EDITOR_EMAIL));
+  }
 }
 
 main().catch((error) => {
