@@ -10,7 +10,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getCategoryBadgeClass, type Tour } from "@/data/tours";
 import { TourOverview } from "@/components/tours/TourOverview";
+import { apiPath } from "@/lib/http/api-path";
 import { cn } from "@/lib/utils";
+
+const WHATSAPP_BOOKING = "https://wa.me/923339981177";
+
+function saveBooking(message: string) {
+  void fetch(apiPath("/api/requests"), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ kind: "booking", message }),
+  }).catch(() => undefined);
+}
 const GUEST_GRADES = ["Deluxe", "Executive", "Luxury", "Ultra Luxury"];
 
 export default function TourDetails({ tour }: { tour: Tour | null }) {
@@ -238,6 +249,14 @@ export default function TourDetails({ tour }: { tour: Tour | null }) {
                     const displayPrice = priceData?.price || 0;
                     const vehicleType = priceData?.vehicleType || "GLI Car New Model";
                     const hotelName = priceData?.hotelName || "";
+                    const bookingMessage =
+                      `Hi, I'm interested in booking:\n\n` +
+                      `*Package Code:* ${tour.code}\n` +
+                      `*Tour:* ${tour.name}\n` +
+                      `*Package:* ${category}\n` +
+                      `*Hotel:* ${hotelName}\n` +
+                      `*Price:* ${displayPrice.toLocaleString()} PKR\n\n` +
+                      `Please provide more details.`;
 
                     return (
                       <TabsContent
@@ -276,17 +295,12 @@ export default function TourDetails({ tour }: { tour: Tour | null }) {
                           {/* CTA */}
                           <Button className="w-full" asChild>
                             <a
-                              href={`https://wa.me/923339981177?text=${encodeURIComponent(
-                                `Hi, I'm interested in booking:\n\n` +
-                                  `*Package Code:* ${tour.code}\n` +
-                                  `*Tour:* ${tour.name}\n` +
-                                  `*Package:* ${category}\n` +
-                                  `*Hotel:* ${hotelName}\n` +
-                                  `*Price:* ${displayPrice.toLocaleString()} PKR\n\n` +
-                                  `Please provide more details.`
-                              )}`}
+                              href={`${WHATSAPP_BOOKING}?text=${encodeURIComponent(bookingMessage)}`}
                               target="_blank"
                               rel="noopener noreferrer"
+                              onClick={() => {
+                                saveBooking(bookingMessage);
+                              }}
                             >
                               Book Now
                             </a>
