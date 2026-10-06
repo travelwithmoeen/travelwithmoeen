@@ -15,18 +15,12 @@ import { cn } from "@/lib/utils";
 
 const WHATSAPP_BOOKING = "https://wa.me/923339981177";
 
-async function openBooking(message: string) {
-  const href = `${WHATSAPP_BOOKING}?text=${encodeURIComponent(message)}`;
-  try {
-    await fetch(apiPath("/api/requests"), {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ kind: "booking", message }),
-    });
-  } catch {
-    // The WhatsApp link still opens when the save cannot be reached.
-  }
-  window.open(href, "_blank", "noopener,noreferrer");
+function saveBooking(message: string) {
+  void fetch(apiPath("/api/requests"), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ kind: "booking", message }),
+  }).catch(() => undefined);
 }
 const GUEST_GRADES = ["Deluxe", "Executive", "Luxury", "Ultra Luxury"];
 
@@ -304,9 +298,8 @@ export default function TourDetails({ tour }: { tour: Tour | null }) {
                               href={`${WHATSAPP_BOOKING}?text=${encodeURIComponent(bookingMessage)}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              onClick={(event) => {
-                                event.preventDefault();
-                                void openBooking(bookingMessage);
+                              onClick={() => {
+                                saveBooking(bookingMessage);
                               }}
                             >
                               Book Now

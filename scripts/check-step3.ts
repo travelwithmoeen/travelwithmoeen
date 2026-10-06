@@ -1,7 +1,8 @@
+import { readFileSync } from "fs";
 import { spawn } from "child_process";
 import { eq } from "drizzle-orm";
 import { db, sql } from "../lib/db";
-import { guestRequests } from "../lib/db/schema";
+import { guestRequests, tours } from "../lib/db/schema";
 import { GUEST_EMAIL_LIMIT, GUEST_MESSAGE_LIMIT, GUEST_NAME_LIMIT, GUEST_PHONE_LIMIT } from "../lib/requests";
 
 const WHATSAPP = "https://wa.me/923339981177";
@@ -45,6 +46,26 @@ async function postRequest(body: Record<string, string>) {
     parsed = {};
   }
   return { status: response.status, body: parsed, text };
+}
+
+function decodeHtml(value: string) {
+  return value
+    .replace(/&amp;/g, "&")
+    .replace(/&#x27;/g, "'")
+    .replace(/&#39;/g, "'")
+    .replace(/&quot;/g, '"');
+}
+
+function bookNowHref(html: string) {
+  const match = html.match(/<a\b[^>]*href="(https:\/\/wa\.me\/923339981177[^"]*)"[^>]*>Book Now<\/a>/);
+  return match ? decodeHtml(match[1]) : "";
+}
+
+function assertBookNowOpensOnClick() {
+  const source = readFileSync(new URL("../components/tours/TourDetail.tsx", import.meta.url), "utf8");
+  if (!source.includes(WHATSAPP) || source.includes("preventDefault") || source.includes("window.open")) {
+    throw new Error("Book Now must open the WhatsApp link on the click.");
+  }
 }
 
 async function main() {
@@ -136,11 +157,43 @@ async function main() {
       throw new Error("The saved booking could not be read back.");
     }
 
+    assertBookNowOpensOnClick();
+    const tourRows = await db.select({ id: tours.id, name: tours.name }).from(tours);
+    let bookNow = "";
+    let tourName = "";
+    for (const tour of tourRows) {
+      const page = await fetch(`${siteBase()}/tours/${encodeURIComponent(tour.id)}`);
+      const html = await page.text();
+      if (!page.ok) continue;
+      if (html.includes(PLACEHOLDER_PHONE)) {
+        throw new Error("A tour page still uses the placeholder phone link.");
+      }
+      const href = bookNowHref(html);
+      if (!href) continue;
+      bookNow = href;
+      tourName = tour.name;
+      break;
+    }
+    if (!bookNow.startsWith(WHATSAPP)) {
+      throw new Error("Book Now does not open the WhatsApp link.");
+    }
+    const bookingText = new URL(bookNow).searchParams.get("text") ?? "";
+    if (!bookingText.includes(tourName) || !bookingText.toLowerCase().includes("booking")) {
+      throw new Error("Book Now does not carry the tour booking.");
+    }
+    const buttonBooking = await postRequest({ kind: "booking", message: bookingText });
+    if (buttonBooking.status !== 200 || !buttonBooking.body.id) {
+      throw new Error("The Book Now booking was not saved.");
+    }
+    savedIds.push(buttonBooking.body.id);
+    const [buttonRow] = await db.select().from(guestRequests).where(eq(guestRequests.id, buttonBooking.body.id));
+    if (!buttonRow || buttonRow.kind !== "booking" || buttonRow.message !== bookingText) {
+      throw new Error("The Book Now booking could not be read back.");
+    }
+
     const home = await fetch(`${siteBase()}/`);
     const homeText = await home.text();
-    if (!home.ok || !homeText.includes(WHATSAPP)) {
-      throw new Error("The public home page does not open the WhatsApp link.");
-    }
+    if (!home.ok) throw new Error("The public home page did not load.");
     if (homeText.includes(PLACEHOLDER_PHONE)) {
       throw new Error("The public home page still uses the placeholder phone link.");
     }
