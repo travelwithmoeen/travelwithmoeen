@@ -16,6 +16,8 @@ import type { TourCategory, TourPackage, PackageType } from "@/data/tours";
 
 export const userRole = pgEnum("user_role", ["owner", "manager", "editor"]);
 export const priceSource = pgEnum("price_source", ["excel", "website"]);
+export const guestRequestKind = pgEnum("guest_request_kind", ["contact", "custom", "booking"]);
+export const guestRequestStatus = pgEnum("guest_request_status", ["new", "in_progress", "closed"]);
 
 export const loginFailures = pgTable(
   "login_failures",
@@ -230,6 +232,17 @@ export const quoteExtras = pgTable("quote_extras", {
     .references(() => quotes.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   amount: integer("amount").notNull(),
+});
+
+export const guestRequests = pgTable("guest_requests", {
+  id: serial("id").primaryKey(),
+  kind: guestRequestKind("kind").notNull(),
+  status: guestRequestStatus("status").notNull().default("new"),
+  name: text("name").notNull().default(""),
+  phone: text("phone").notNull().default(""),
+  email: text("email").notNull().default(""),
+  message: text("message").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
 export const siteSettings = pgTable("site_settings", {
