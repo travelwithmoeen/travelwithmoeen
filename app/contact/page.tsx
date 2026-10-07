@@ -12,37 +12,39 @@ import Navbar from "@/components/Navbar";
 import PageBanner from "@/components/PageBanner";
 import PageContainer from "@/components/PageContainer";
 import contactHero from "@/public/images/contact-hero.jpg";
-
-const contactInfo = [
-  {
-    icon: MapPin,
-    title: "Our Office",
-    details: ["Office # 3, 2nd Floor, Shalimar Plaza, F-10 Markaz, Islamabad"],
-    href: "https://www.google.com/maps/search/?api=1&query=Office+3+2nd+Floor+Shalimar+Plaza+F-10+Markaz+Islamabad",
-  },
-  {
-    icon: Phone,
-    title: "Phone",
-    details: ["+92 333 9981177"],
-    href: "https://wa.me/923339981177",
-  },
-  {
-    icon: Mail,
-    title: "Email",
-    details: ["info@travelwithmoeen.com"],
-    href: "mailto:info@travelwithmoeen.com",
-  },
-  {
-    icon: Clock,
-    title: "Working Hours",
-    details: [
-      "Mon - Sat: 9:00 AM - 6:00 PM",
-      "Sunday office Closed but virtually open",
-    ],
-  },
-];
+import { useSiteSettings } from "@/components/SiteSettingsProvider";
+import { apiPath } from "@/lib/http/api-path";
 
 const Contact = () => {
+  const site = useSiteSettings();
+  const contactInfo = [
+    {
+      icon: MapPin,
+      title: "Our Office",
+      details: [site.address],
+      href: site.mapsUrl,
+    },
+    {
+      icon: Phone,
+      title: "Phone",
+      details: [site.phoneDisplay],
+      href: site.whatsappUrl,
+    },
+    {
+      icon: Mail,
+      title: "Email",
+      details: [site.email],
+      href: `mailto:${site.email}`,
+    },
+    {
+      icon: Clock,
+      title: "Working Hours",
+      details: [
+        "Mon - Sat: 9:00 AM - 6:00 PM",
+        "Sunday office Closed but virtually open",
+      ],
+    },
+  ];
   // const { toast } = useToast();
   const [formData, setFormData] = useState({
     name: "",
@@ -51,6 +53,8 @@ const Contact = () => {
     message: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [notice, setNotice] = useState("");
+  const [error, setError] = useState("");
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -61,17 +65,36 @@ const Contact = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setNotice("");
+    setError("");
 
-    // Simulate form submission
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    const message = formData.subject.trim()
+      ? `Subject: ${formData.subject.trim()}\n\n${formData.message.trim()}`
+      : formData.message.trim();
 
-    // toast({
-    //   title: "Message Sent!",
-    //   description: "Thank you for contacting us. We'll get back to you soon.",
-    // });
-
-    setFormData({ name: "", email: "", subject: "", message: "" });
-    setIsSubmitting(false);
+    try {
+      const response = await fetch(apiPath("/api/requests"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          kind: "contact",
+          name: formData.name,
+          email: formData.email,
+          message,
+        }),
+      });
+      const body = (await response.json().catch(() => ({}))) as { ok?: boolean; error?: string };
+      if (!response.ok || !body.ok) {
+        setError(body.error || "The message could not be saved.");
+        return;
+      }
+      setFormData({ name: "", email: "", subject: "", message: "" });
+      setNotice("Your message is saved.");
+    } catch {
+      setError("The message could not be saved.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -98,7 +121,7 @@ const Contact = () => {
                        Contact Us
                       </h1>
                       <p className="mx-auto mt-4 max-w-2xl text-white/70">
-                        We'd love to hear from you. Get in touch with our team.
+                        We&apos;d love to hear from you. Get in touch with our team.
                       </p>
                     </motion.div>
                   </section>
@@ -184,6 +207,13 @@ const Contact = () => {
                 />
               </div>
 
+              {error ? (
+                <p role="alert" className="text-sm text-red-700">
+                  {error}
+                </p>
+              ) : null}
+              {notice ? <p className="text-sm text-slate-700">{notice}</p> : null}
+
               <Button
                 type="submit"
                 disabled={isSubmitting}
@@ -215,7 +245,7 @@ const Contact = () => {
                 {[
                   {
                     name: "Facebook",
-                    href: "https://www.facebook.com/TravelwithMoeen?mibextid=rS40aB7S9Ucbxw6v",
+                    href: site.facebookUrl,
                     icon: (
                       <svg
                         className="h-5 w-5"
@@ -228,7 +258,7 @@ const Contact = () => {
                   },
                   {
                     name: "Instagram",
-                    href: "https://www.instagram.com/travelwithmoeen/",
+                    href: site.instagramUrl,
                     icon: (
                       <svg
                         className="h-5 w-5"
@@ -241,7 +271,7 @@ const Contact = () => {
                   },
                   {
                     name: "YouTube",
-                    href: "https://www.youtube.com/@itsmoeen",
+                    href: site.youtubeUrl,
                     icon: (
                       <svg
                         className="h-5 w-5"
@@ -254,7 +284,7 @@ const Contact = () => {
                   },
                   {
                     name: "TikTok",
-                    href: "https://www.tiktok.com/@travelwithmoeen",
+                    href: site.tiktokUrl,
                     icon: (
                       <svg
                         className="h-5 w-5"

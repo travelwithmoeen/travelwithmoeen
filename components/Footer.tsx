@@ -1,8 +1,12 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
 import { Mail, Phone, MapPin } from "lucide-react";
+import { useSiteSettings } from "@/components/SiteSettingsProvider";
 
 export function Footer() {
+  const site = useSiteSettings();
   return (
     <footer className="bg-[#1a2744] text-slate-300">
       <div className="max-w-7xl mx-auto px-6 py-16">
@@ -27,7 +31,7 @@ export function Footer() {
             {/* Social Icons */}
             <div className="flex gap-3">
               <a
-                href="https://www.facebook.com/TravelwithMoeen?mibextid=rS40aB7S9Ucbxw6v"
+                href={site.facebookUrl}
                     target="_blank"
                 className="w-10 h-10 rounded-full bg-slate-700/50 hover:bg-amber-400 flex items-center justify-center text-slate-300 hover:text-slate-900 transition-all"
                 aria-label="Facebook"
@@ -39,7 +43,7 @@ export function Footer() {
          
 
               <a
-                href="https://www.instagram.com/travelwithmoeen/"
+                href={site.instagramUrl}
                 target="_blank"
                 className="w-10 h-10 rounded-full bg-slate-700/50 hover:bg-amber-400 flex items-center justify-center text-slate-300 hover:text-slate-900 transition-all"
                 aria-label="Instagram"
@@ -54,7 +58,7 @@ export function Footer() {
               </a>
 
                <a
-                href="https://www.tiktok.com/@travelwithmoeen"
+                href={site.tiktokUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                  className="w-10 h-10 rounded-full bg-slate-700/50 hover:bg-amber-400 flex items-center justify-center text-slate-300 hover:text-slate-900 transition-all"
@@ -69,7 +73,7 @@ export function Footer() {
               </a>
               
               <a
-                href="https://www.youtube.com/@itsmoeen"
+                href={site.youtubeUrl}
                 target="_blank"
                 className="w-10 h-10 rounded-full bg-slate-700/50 hover:bg-amber-400 flex items-center justify-center text-slate-300 hover:text-slate-900 transition-all"
                 aria-label="YouTube"
@@ -90,6 +94,7 @@ export function Footer() {
               <li><Link href="/tours" className="hover:text-amber-400 transition-colors">Tours</Link></li>
               <li><Link href="/gallery" className="hover:text-amber-400 transition-colors">Gallery</Link></li>
               <li><Link href="/contact" className="hover:text-amber-400 transition-colors">Contact</Link></li>
+              <li><Link href="/office/login" className="hover:text-amber-400 transition-colors">Office</Link></li>
             </ul>
           </div>
 
@@ -111,33 +116,33 @@ export function Footer() {
             <ul className="space-y-4">
               <li>
                 <a
-                  href="https://www.google.com/maps/search/?api=1&query=Office+3+2nd+Floor+Shalimar+Plaza+F-10+Markaz+Islamabad"
+                  href={site.mapsUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-start gap-3 hover:text-amber-400 transition-colors"
                 >
                   <MapPin size={20} className="text-amber-400 mt-0.5 flex-shrink-0" />
-                  <span>Office # 3, 2nd Floor, Shalimar Plaza, F-10 Markaz, Islamabad</span>
+                  <span>{site.address}</span>
                 </a>
               </li>
               <li>
                 <a
-                  href="https://wa.me/923339981177"
+                  href={site.whatsappUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-3 hover:text-amber-400 transition-colors"
                 >
                   <Phone size={20} className="text-amber-400 flex-shrink-0" />
-                  <span>+92 333 9981177</span>
+                  <span>{site.phoneDisplay}</span>
                 </a>
               </li>
               <li>
                 <a
-                  href="mailto:info@travelwithmoeen.com"
+                  href={`mailto:${site.email}`}
                   className="flex items-center gap-3 hover:text-amber-400 transition-colors"
                 >
                   <Mail size={20} className="text-amber-400 flex-shrink-0" />
-                  <span>info@travelwithmoeen.com</span>
+                  <span>{site.email}</span>
                 </a>
               </li>
             </ul>

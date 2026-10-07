@@ -31,7 +31,7 @@ export default function TravelersInstructions() {
             Guide
           </span>
           <h1 className="text-3xl font-bold text-white md:text-5xl">
-            Traveler's Instructions & Packing Guide
+            Traveler&apos;s Instructions & Packing Guide
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-white/70">
             To ensure a smooth journey with Travel with Moeen, please follow these guidelines.

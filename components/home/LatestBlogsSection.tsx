@@ -4,11 +4,10 @@ import { ArrowRight, Calendar, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { blogs } from "@/data/blog";
+import type { Blog } from "@/data/blog";
 
-const latestBlogs = blogs.slice(0, 3);
-
-export function LatestBlogsSection() {
+export function LatestBlogsSection({ posts }: { posts: Blog[] }) {
+  const latestBlogs = posts.slice(0, 3);
   return (
     <section className="py-16">
       <div className="container mx-auto px-4">

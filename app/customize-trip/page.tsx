@@ -20,6 +20,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { apiPath } from "@/lib/http/api-path";
 import { cn } from "@/lib/utils";
 
 const locationData = {
@@ -215,9 +216,11 @@ export default function CustomizeTrip() {
     }
 
     setIsSubmitting(true);
+    let savedOk = false;
 
     try {
       const actualDepartureCity = form.departureCity === "Other" ? form.departureCityOther : form.departureCity;
+      const phone = form.whatsapp.trim() ? `${form.whatsappCode} ${form.whatsapp.trim()}` : "";
       const templateParams = {
         from_name: form.fullName,
         from_email: form.email || "Not provided",
@@ -243,6 +246,29 @@ export default function CustomizeTrip() {
 - Additional: ${form.requirements || "None"}`,
       };
 
+      try {
+        const saved = await fetch(apiPath("/api/requests"), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            kind: "custom",
+            name: form.fullName,
+            phone,
+            email: form.email,
+            message: templateParams.message,
+          }),
+        });
+        const savedBody = (await saved.json().catch(() => ({}))) as { ok?: boolean; error?: string };
+        savedOk = saved.ok && Boolean(savedBody.ok);
+        if (!savedOk) {
+          toast.error("Request not saved", {
+            description: savedBody.error || "Please try again or contact us directly.",
+          });
+        }
+      } catch {
+        toast.error("Request not saved", { description: "Please try again or contact us directly." });
+      }
+
       await emailjs.send(
         "service_3aeq96g",
         "template_hi5ldme",
@@ -250,21 +276,26 @@ export default function CustomizeTrip() {
         "CrpJGXuytR1u1QPwD"
       );
 
-      toast.success("Request Submitted!", { description: "We'll get back to you within 24 hours with a custom quote." });
-
-      setForm({
-        tripMode: "Air", tripCategory: "", fullName: "", email: "",
-        whatsappCode: "+92", whatsapp: "", nationality: "Pakistan",
-        departureCity: "Islamabad", departureCityOther: "",
-        tripType: "Adventure", depDatePk: "", retDatePk: "",
-        arrDateForeign: "", retDateForeign: "", duration: 9,
-        adults: 2, children: 0, selectedLocations: [],
-        hotelType: "Deluxe", roomType: "Master Bed",
-        numRooms: 1, requirements: "",
-      });
+      if (savedOk) {
+        toast.success("Request Submitted!", { description: "We'll get back to you within 24 hours with a custom quote." });
+        setForm({
+          tripMode: "Air", tripCategory: "", fullName: "", email: "",
+          whatsappCode: "+92", whatsapp: "", nationality: "Pakistan",
+          departureCity: "Islamabad", departureCityOther: "",
+          tripType: "Adventure", depDatePk: "", retDatePk: "",
+          arrDateForeign: "", retDateForeign: "", duration: 9,
+          adults: 2, children: 0, selectedLocations: [],
+          hotelType: "Deluxe", roomType: "Master Bed",
+          numRooms: 1, requirements: "",
+        });
+      }
     } catch (error) {
       console.error("EmailJS Error:", error);
-      toast.error("Submission Failed", { description: "Please try again or contact us directly." });
+      toast.error("Submission Failed", {
+        description: savedOk
+          ? "The request is saved. The email could not be sent."
+          : "Please try again or contact us directly.",
+      });
     } finally {
       setIsSubmitting(false);
     }

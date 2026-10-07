@@ -10,10 +10,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { TourCategory, TourRegion, TransportType, tours } from "@/data/tours";
+import { TourCategory, TourRegion, TransportType, type Tour } from "@/data/tours";
 import { cn } from "@/lib/utils";
 
 interface FilterSidebarProps {
+  tours: Tour[];
   isOpen: boolean;
   onClose: () => void;
   // Filters
@@ -30,16 +31,6 @@ interface FilterSidebarProps {
   onClearFilters: () => void;
 }
 
-// Derive available filter values from the tours data so filters stay in sync
-const categories: TourCategory[] = Array.from(
-  new Set(tours.flatMap((t) => t.categories))
-).sort() as TourCategory[];
-
-const regions: TourRegion[] = Array.from(new Set(tours.map((t) => t.region))).sort() as TourRegion[];
-
-const transportTypes: TransportType[] = Array.from(
-  new Set(tours.map((t) => t.transport))
-).sort() as TransportType[];
 const durations = [
   { value: "all", label: "All Durations" },
   { value: "1-3", label: "1-3 Days" },
@@ -49,6 +40,7 @@ const durations = [
 ];
 
 export default function FilterSidebar({
+  tours,
   isOpen,
   onClose,
   priceRange,
@@ -63,6 +55,14 @@ export default function FilterSidebar({
   onDurationChange,
   onClearFilters,
 }: FilterSidebarProps) {
+  const categories: TourCategory[] = Array.from(
+    new Set(tours.flatMap((tour) => tour.categories))
+  ).sort() as TourCategory[];
+  const regions: TourRegion[] = Array.from(new Set(tours.map((tour) => tour.region))).sort() as TourRegion[];
+  const transportTypes: TransportType[] = Array.from(
+    new Set(tours.map((tour) => tour.transport))
+  ).sort() as TransportType[];
+
   // Define transport-specific region lists
   const roadRegions: TourRegion[] = [
     "Skardu Valley",
