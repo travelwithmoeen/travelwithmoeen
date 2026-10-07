@@ -9,6 +9,8 @@ export type OfficeSession = {
   canManageUsers: boolean;
   canDeleteTour: boolean;
   canEditRates: boolean;
+  canUpdateRequestStatus: boolean;
+  canDeleteRequest: boolean;
 };
 
 export type OfficeUserRow = {
@@ -48,7 +50,27 @@ export async function getOfficeSession(): Promise<OfficeSession | null> {
     canManageUsers: Boolean(body.canManageUsers),
     canDeleteTour: Boolean(body.canDeleteTour),
     canEditRates: Boolean(body.canEditRates),
+    canUpdateRequestStatus: Boolean(body.canUpdateRequestStatus),
+    canDeleteRequest: Boolean(body.canDeleteRequest),
   };
+}
+
+export type OfficeRequestRow = {
+  id: number;
+  kind: "contact" | "custom" | "booking";
+  status: "new" | "in_progress" | "closed";
+  name: string;
+  phone: string;
+  email: string;
+  message: string;
+  createdAt: string;
+};
+
+export async function getOfficeRequests(): Promise<OfficeRequestRow[]> {
+  const response = await officeRequest("/api/office/requests");
+  if (!response.ok) return [];
+  const body = (await response.json()) as { ok: boolean; requests?: OfficeRequestRow[] };
+  return body.requests ?? [];
 }
 
 export async function getOfficeUsers(): Promise<OfficeUserRow[]> {

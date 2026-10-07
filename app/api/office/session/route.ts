@@ -1,5 +1,12 @@
 import { getCurrentUser } from "@/lib/auth/session";
-import { canDeleteTour, canEditContent, canEditRates, canManageUsers } from "@/lib/auth/permissions";
+import {
+  canDeleteRequest,
+  canDeleteTour,
+  canEditContent,
+  canEditRates,
+  canManageUsers,
+  canUpdateRequestStatus,
+} from "@/lib/auth/permissions";
 
 export async function GET() {
   const user = await getCurrentUser();
@@ -13,5 +20,7 @@ export async function GET() {
     canManageUsers: canManageUsers(user.role),
     canDeleteTour: canDeleteTour(user.role),
     canEditRates: canEditRates(user.role),
+    canUpdateRequestStatus: canUpdateRequestStatus(user.role),
+    canDeleteRequest: canDeleteRequest(user.role),
   });
 }

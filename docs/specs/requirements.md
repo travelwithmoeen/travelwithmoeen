@@ -224,6 +224,9 @@ This list is the whole project. A new office route is added to this list in the 
 | Tour, place, post, photo, review, slide, and site-detail writes | Owner or Editor. |
 | Rates, season, vehicles, jeep lines, paid extras, and the live price Excel download | Owner or Manager. |
 | Create a login, remove a login, change a role, delete a tour, delete a price row, delete a guest request | Owner only. |
+| `GET /api/office/requests` | A signed-in Owner, Manager, or Editor. |
+| `POST /api/office/requests/status` | Owner or Manager. |
+| `POST /api/office/requests/delete` | Owner only. |
 | Read guest requests | Owner, Manager, or Editor. |
 | Change a guest request status | Owner or Manager. |
 | Guest PDF or image | The guest sees one total. Staff lines and profit stay off that file. |
