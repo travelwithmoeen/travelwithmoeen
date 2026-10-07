@@ -16,6 +16,13 @@ export default async function OfficeHomePage() {
       {user.canEditRates ? (
         <p className="mt-3 text-slate-700">You can change rates, the season, vehicles, jeep lines, and a quote.</p>
       ) : null}
+      <p className="mt-3 text-slate-700">You can read guest requests.</p>
+      {user.canUpdateRequestStatus ? (
+        <p className="mt-3 text-slate-700">You can update a guest request status.</p>
+      ) : null}
+      {user.canDeleteRequest ? (
+        <p className="mt-3 text-slate-700">You can delete a guest request.</p>
+      ) : null}
       {user.role === "manager" ? (
         <p className="mt-3 text-slate-700">You cannot edit public page text.</p>
       ) : null}

@@ -24,6 +24,9 @@ export async function OfficeShell({ children }: { children: React.ReactNode }) {
           <Link className={linkClass} href="/office">
             Home
           </Link>
+          <Link className={linkClass} href="/office/requests">
+            Requests
+          </Link>
           {user.canManageUsers ? (
             <Link className={linkClass} href="/office/users">
               Users

@@ -32,3 +32,7 @@ export function refreshSite() {
 export function refreshUsers() {
   revalidatePath("/office/users");
 }
+
+export function refreshRequests() {
+  revalidatePath("/office/requests");
+}
