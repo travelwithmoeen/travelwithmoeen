@@ -46,7 +46,7 @@ const tripTypes = [
   "Safari",
   "Adventure + Sightseeing"
 ];
-const hotelTypes = ["Deluxe", "Premier", "Executive", "Luxury", "Ultra Luxury"];
+const hotelTypes = ["Deluxe", "Executive", "Luxury", "Ultra Luxury"];
 const roomTypes = ["Master Bed", "Twin Beds", "Triple bed"];
 
 // Main departure cities in Pakistan

@@ -102,13 +102,27 @@ async function officeGet(pathname: string, cookie: string) {
     headers: cookie ? { cookie } : {},
   });
   const text = await response.text();
-  let body: { ok?: boolean; requests?: { id: number; phone?: string; message?: string; status?: string }[] } = {};
+  let body: { ok?: boolean; requests?: { id: number; kind?: string; phone?: string; message?: string; status?: string }[] } = {};
   try {
     body = JSON.parse(text) as typeof body;
   } catch {
     body = {};
   }
   return { status: response.status, body, text };
+}
+
+async function assertBookingOnOfficeList(id: number, message: string) {
+  const ownerEmail = process.env.OWNER_EMAIL?.trim().toLowerCase();
+  const ownerPassword = process.env.OWNER_PASSWORD;
+  if (!ownerEmail || !ownerPassword) throw new Error("OWNER_EMAIL and OWNER_PASSWORD are required.");
+  const login = await signIn(ownerEmail, ownerPassword);
+  const cookie = sessionCookie(login.response);
+  if (!cookie) throw new Error("The Owner did not get a session.");
+  const list = await officeGet("/api/office/requests", cookie);
+  const listed = list.body.requests?.find((row) => row.id === id);
+  if (list.status !== 200 || !listed || listed.kind !== "booking" || listed.status !== "new" || listed.message !== message) {
+    throw new Error("The saved booking is not in the office list.");
+  }
 }
 
 async function assertOfficeRequests(savedIds: number[]) {
@@ -302,6 +316,7 @@ async function main() {
     if (!bookingRow || bookingRow.kind !== "booking" || bookingRow.status !== "new" || bookingRow.message !== `${marker} booking`) {
       throw new Error("The saved booking could not be read back.");
     }
+    await assertBookingOnOfficeList(booking.body.id, `${marker} booking`);
 
     assertBookNowOpensOnClick();
     const tourRows = await db.select({ id: tours.id, name: tours.name }).from(tours);
