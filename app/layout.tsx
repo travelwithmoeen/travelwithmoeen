@@ -5,7 +5,7 @@ import "./globals.css";
 import { Toaster } from "sonner";
 import { SiteChrome } from "@/components/SiteChrome";
 import { SiteSettingsProvider } from "@/components/SiteSettingsProvider";
-import { getSiteSettings } from "@/lib/content";
+import { getSiteSettings } from "@/lib/http/site-content";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

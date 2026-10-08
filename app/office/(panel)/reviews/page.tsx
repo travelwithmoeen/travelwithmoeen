@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getReviews } from "@/lib/content";
+import { getReviews } from "@/lib/http/site-content";
 import { getOfficeSession } from "@/lib/http/office-session";
 import { ReviewsEditor } from "@/components/office/ReviewsEditor";
 

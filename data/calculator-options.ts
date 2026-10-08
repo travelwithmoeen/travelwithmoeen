@@ -30,7 +30,7 @@ export type RoadDestination =
     | "Islamabad"
     | "Kumrat and Katora Lake"
     | "Kalash Valley & Chitral"
-    | "Ratti Gali Lake";
+   
 
 export type AirDestination = "Skardu Valley" | "Hunza Valley" | "Skardu & Hunza" | "Minimarg Astor Valley" | "Fairy Meadows Nanga Base Camp";
 
@@ -60,7 +60,7 @@ export const roadDestinations: RoadDestination[] = [
     "Skardu Valley", "Hunza Valley", "Skardu & Hunza", "Minimarg Astor Valley", "Fairy Meadows Nanga Base Camp",
     "Naran Kaghan & Babusar Top", "Murree Ayubia Nathiagali", "Neelum Valley Kashmir",
     "Neelum Taobat Arang Kel", "Swat Kalam & Malam Jabba", "Islamabad", "Kumrat and Katora Lake", "Kalash Valley & Chitral",
-    "Ratti Gali Lake",
+   
 ];
 // testing purposes
 // ---- Air Destinations ----
@@ -81,6 +81,7 @@ export const roadDepartures: RoadDeparture[] = ["Islamabad", "Lahore", "Karachi"
 export const airDepartures: AirDeparture[] = ["Islamabad", "Karachi", "Lahore"];
 
 export const lahoreSurcharge = 15000; // flat per-trip surcharge for Lahore departure
+export const lahoreChallanPerDay = 5000; // Lahore challan: 5000 flat (one-time) if trip > 3 days
 
 // ---- Meal Pricing per Person per Night ----
 export const mealPricingPerNight: Record<HotelCategory, number> = {
@@ -93,11 +94,10 @@ export const mealPricingPerNight: Record<HotelCategory, number> = {
 
 // ---- Vehicle Selection Rules ----
 // By Road: 1-4 GLI, 5-6 Honda BRV, 6-12 Grand Cabin, 13-25 Coaster
-// By Air: 1-4 GLI, 4-5 Prado, 6-12 Grand Cabin, 13-25 Coaster
+// By Air: 1-5 Prado, 6-12 Grand Cabin, 13-25 Coaster
 
 export function getRecommendedVehicle(travelers: number, transportMode: "By Road" | "By Air"): VehicleType {
     if (transportMode === "By Air") {
-        if (travelers <= 4) return "Gli Car";
         if (travelers <= 5) return "Parado";
         if (travelers <= 12) return "Grand Cabin";
         return "Coaster 4c";
@@ -133,7 +133,7 @@ export const roadMinimumDays: Record<RoadDestination, number> = {
     "Islamabad": 1,
     "Kumrat and Katora Lake": 4,
     "Kalash Valley & Chitral": 6,
-    "Ratti Gali Lake": 3,
+
 };
 
 export const airMinimumDays: Record<AirDestination, number> = {
@@ -213,7 +213,7 @@ export const roadHotelPricing: Record<RoadDestination, Record<HotelCategory, Hot
     "Deluxe": {
       "twin_rate": 10000,
       "triple_rate": 13000,
-      "hotel_name": "Tarangfa Lodges Chilas or Indus Hotel / Dirleh Resort Skardu/ Qayyam Skardu /Mulbery Resort Hunza / Roomy Dastan Hunza / Demanchi Hotel Naran"
+      "hotel_name": "Tarangfa Lodges Chilas or Indus Hotel / Dirleh Resort Skardu / AlNoorHotel /Mulbery Resort Hunza / Roomy Dastan Hunza / Demanchi Hotel Naran"
     },
     "Premier": {
       "twin_rate": 13000,
@@ -250,7 +250,7 @@ export const roadHotelPricing: Record<RoadDestination, Record<HotelCategory, Hot
     "Executive": {
       "twin_rate": 19000,
       "triple_rate": 22000,
-      "hotel_name": "Grace Continental Chilas / Khar Hotel Skardu (deluxe room) \nMinimarg Camping Side \nWazir Guest House Rama Astore / The Sarai Hotel & Resort Naran"
+      "hotel_name": "Grace Continental Chilas \nMinimarg Camping Side \nWazir Guest House Rama Astore / The Sarai Hotel & Resort Naran"
     },
     "Luxury": {
       "twin_rate": 30000,
@@ -469,13 +469,13 @@ export const roadHotelPricing: Record<RoadDestination, Record<HotelCategory, Hot
       "hotel_name": "Serena Hotel / Hotel Hill view Islamabad"
     },
     "Luxury": {
-      "twin_rate": 30000,
-      "triple_rate": 33000,
+      "twin_rate": 42000,
+      "triple_rate": 45000,
       "hotel_name": "Sintra Hotel / Ramada Hotel/IFQ Hotel and Resort"
     },
     "Ultra Luxury": {
-      "twin_rate": 35000,
-      "triple_rate": 40000,
+      "twin_rate": 47000,
+      "triple_rate": 50000,
       "hotel_name": "Islamabad Marriot Hotel"
     }
   },
@@ -532,35 +532,11 @@ export const roadHotelPricing: Record<RoadDestination, Record<HotelCategory, Hot
       "triple_rate": 31000,
       "hotel_name": "Kumrat Glamping Resort/The WoodPeckers"
     }
-  },
-  "Ratti Gali Lake": {
-    "Deluxe": {
-      "twin_rate": 8000,
-      "triple_rate": 10000,
-      "hotel_name": "Camping at Ratti Gali / Local Guest House"
-    },
-    "Premier": {
-      "twin_rate": 10000,
-      "triple_rate": 12000,
-      "hotel_name": "Guest House Ratti Gali / Neelum Inn"
-    },
-    "Executive": {
-      "twin_rate": 14000,
-      "triple_rate": 16000,
-      "hotel_name": "Hotel Neelum Elites / Wanderlust Neelum"
-    },
-    "Luxury": {
-      "twin_rate": 18000,
-      "triple_rate": 21000,
-      "hotel_name": "Wanderlust Chapter 1 / Ratti Gali Camp"
-    },
-    "Ultra Luxury": {
-      "twin_rate": 25000,
-      "triple_rate": 28000,
-      "hotel_name": "Roameo Resort / Premium Camping"
-    }
   }
 }
+
+
+
 // ---- Air Hotel Pricing ----
 export const airHotelPricing: Record<AirDestination, Record<HotelCategory, HotelRate>> =
 {
@@ -576,18 +552,18 @@ export const airHotelPricing: Record<AirDestination, Record<HotelCategory, Hotel
       "hotel_name": "Tibet / Hotel Himalaya (Executive room) / Kinara Hotel Skardu / Qayyam Skardu"
     },
     "Executive": {
-      "twin_rate": 19000,
-      "triple_rate": 22000,
+      "twin_rate": 34000,
+      "triple_rate": 38000,
       "hotel_name": "Khar Resort  Skardu / Guman resort / PC Lagacy/ Rivage Resort Skardu"
     },
     "Luxury": {
-      "twin_rate": 30000,
-      "triple_rate": 40000,
+      "twin_rate": 45000,
+      "triple_rate": 50000,
       "hotel_name": "Khoj Resorts (Deluxe room) or Rivage Resort Skardu (Executive rooms)"
     },
     "Ultra Luxury": {
-      "twin_rate": 50000,
-      "triple_rate": 60000,
+      "twin_rate": 60000,
+      "triple_rate": 70000,
       "hotel_name": "Shangrila (Executive Room) / Himmel by Luxus (Deluxe room) /Khoj Resorts (River view loft villa)"
     }
   },
@@ -603,18 +579,18 @@ export const airHotelPricing: Record<AirDestination, Record<HotelCategory, Hotel
       "hotel_name": "Qayam Resort Hunza / Roomy Dastan/ Hunza 1 Night Qayyam Skardu (Skardu)"
     },
     "Executive": {
-      "twin_rate": 19000,
-      "triple_rate": 22000,
+      "twin_rate": 34000,
+      "triple_rate": 38000,
       "hotel_name": "Hard Rock Hunza Resort / Best Western/ Villas Roomy Resort / Khar Resort Hunza"
     },
     "Luxury": {
-      "twin_rate": 30000,
-      "triple_rate": 40000,
+      "twin_rate": 45000,
+      "triple_rate": 50000,
       "hotel_name": "Horizon Resort Attabad Lake (Deluxe room) or Offto Resort Hunza"
     },
     "Ultra Luxury": {
-      "twin_rate": 50000,
-      "triple_rate": 60000,
+      "twin_rate": 60000,
+      "triple_rate": 70000,
       "hotel_name": "Best Western / Darbar Hotel / Hunza Serena Hotel  (Hunza)/ PC Skardu for 1 night  (Deluxe room Hunza Hotel )"
     }
   },
@@ -680,22 +656,22 @@ export const airHotelPricing: Record<AirDestination, Record<HotelCategory, Hotel
     },
     "Premier": {
       "twin_rate": 15000,
-      "triple_rate": 18000,
+      "triple_rate": 17000,
       "hotel_name": "Tibet / Hotel Himalaya / Kinara Hotel Skardu / Qayyam Skardu\nQayam Resort Hunza / Roomy Dastan Hunza"
     },
     "Executive": {
-      "twin_rate": 18000,
-      "triple_rate": 22000,
+      "twin_rate": 34000,
+      "triple_rate": 38000,
       "hotel_name": "Khar Resort  Skardu / Guman resort / PC Lagacy/ Rivage Resort Skardu  \nHard Rock Hunza Resort / Villas Roomy Resort Hunza"
     },
     "Luxury": {
-      "twin_rate": 24000,
-      "triple_rate": 30000,
+      "twin_rate": 45000,
+      "triple_rate": 50000,
       "hotel_name": "Khoj Resorts (Deluxe room) or Rivage Resort Skardu (Executive rooms)  Skardu \nHorizon Resort Attabad Lake (Deluxe room) or Offto Resort Hunza"
     },
     "Ultra Luxury": {
-      "twin_rate": 30000,
-      "triple_rate": 40000,
+      "twin_rate": 60000,
+      "triple_rate": 70000,
       "hotel_name": "Shangrila (Executive Room) / Himmel by Luxus (Deluxe room) /Khoj Resorts (River view loft villa) (Deluxe room Skardu Hotel )\nBest Western / Darbar Hotel / Hunza Serena Hotel  (Deluxe room Hunza Hotel )"
     }
   }
@@ -712,30 +688,30 @@ export const vehiclePricing: Record<
     "Coaster 5c": {
       "daily_rent": 17000,
       "toll": 6000,
-      "fuel": 16000,
+      "fuel": 18000,
       "seats": 25,
-      "per_day_total": 39000
+      "per_day_total": 41000
     },
     "Coaster 4c": {
       "daily_rent": 16000,
       "toll": 6000,
-      "fuel": 16000,
+      "fuel": 18000,
       "seats": 25,
-      "per_day_total": 38000
+      "per_day_total": 40000
     },
     "Grand Cabin": {
       "daily_rent": 12000,
       "toll": 5000,
-      "fuel": 11000,
+      "fuel": 13000,
       "seats": 12,
-      "per_day_total": 28000
+      "per_day_total": 30000
     },
     "Honda BRV": {
       "daily_rent": 9000,
       "toll": 4000,
-      "fuel": 9000,
+      "fuel": 10000,
       "seats": 6,
-      "per_day_total": 22000
+      "per_day_total": 23000
     },
     "Gli Car": {
       "daily_rent": 7000,
@@ -749,23 +725,23 @@ export const vehiclePricing: Record<
     "Coaster 5c": {
       "daily_rent": 17000,
       "toll": 6000,
-      "fuel": 17000,
+      "fuel": 18000,
       "seats": 25,
-      "per_day_total": 40000
+      "per_day_total": 41000
     },
     "Coaster 4c": {
       "daily_rent": 16000,
       "toll": 7000,
-      "fuel": 17000,
+      "fuel": 18000,
       "seats": 25,
-      "per_day_total": 40000
+      "per_day_total": 41000
     },
     "Grand Cabin": {
       "daily_rent": 12000,
       "toll": 5000,
-      "fuel": 12000,
+      "fuel": 15000,
       "seats": 12,
-      "per_day_total": 29000
+      "per_day_total": 32000
     },
     "Honda BRV": {
       "daily_rent": 9000,
@@ -786,37 +762,37 @@ export const vehiclePricing: Record<
     "Coaster 5c": {
       "daily_rent": 17000,
       "toll": 7000,
-      "fuel": 17000,
+      "fuel": 20000,
       "seats": 25,
-      "per_day_total": 41000
+      "per_day_total": 44000
     },
     "Coaster 4c": {
       "daily_rent": 16000,
       "toll": 7000,
-      "fuel": 17000,
+      "fuel": 20000,
       "seats": 25,
-      "per_day_total": 40000
+      "per_day_total": 43000
     },
     "Grand Cabin": {
       "daily_rent": 12000,
       "toll": 5000,
-      "fuel": 12000,
+      "fuel": 150000,
       "seats": 12,
-      "per_day_total": 29000
+      "per_day_total": 167000
     },
     "Honda BRV": {
       "daily_rent": 9000,
       "toll": 4000,
-      "fuel": 10000,
+      "fuel": 12000,
       "seats": 6,
-      "per_day_total": 23000
+      "per_day_total": 25000
     },
     "Gli Car": {
       "daily_rent": 7000,
       "toll": 3500,
-      "fuel": 8000,
+      "fuel": 10000,
       "seats": 4,
-      "per_day_total": 18500
+      "per_day_total": 20500
     }
   },
   "Minimarg Astor Valley": {
@@ -971,23 +947,23 @@ export const vehiclePricing: Record<
     "Coaster 5c": {
       "daily_rent": 17000,
       "toll": 6000,
-      "fuel": 15000,
+      "fuel": 17000,
       "seats": 25,
-      "per_day_total": 38000
+      "per_day_total": 40000
     },
     "Coaster 4c": {
       "daily_rent": 16000,
       "toll": 6000,
-      "fuel": 1500,
+      "fuel": 17000,
       "seats": 25,
-      "per_day_total": 23500
+      "per_day_total": 39000
     },
     "Grand Cabin": {
       "daily_rent": 12000,
       "toll": 5000,
-      "fuel": 12000,
+      "fuel": 15000,
       "seats": 12,
-      "per_day_total": 29000
+      "per_day_total": 32000
     },
     "Honda BRV": {
       "daily_rent": 9000,
@@ -1232,519 +1208,519 @@ Departure_Lahore:{
   "Skardu Valley": {
     "Coaster 5c": {
       "daily_rent": 17000,
-      "toll": 7000,
-      "fuel": 20000,
+      "toll": 12000,
+      "fuel": 23000,
       "seats": 25,
-      "per_day_total": 44000
+      "per_day_total": 52000
     },
     "Coaster 4c": {
       "daily_rent": 16000,
-      "toll": 7000,
-      "fuel": 20000,
+      "toll": 12000,
+      "fuel": 23000,
       "seats": 25,
-      "per_day_total": 43000
+      "per_day_total": 51000
     },
     "Grand Cabin": {
       "daily_rent": 12000,
-      "toll": 5000,
-      "fuel": 12000,
+      "toll": 10000,
+      "fuel": 18000,
       "seats": 12,
-      "per_day_total": 29000
+      "per_day_total": 40000
     },
     "Honda BRV": {
       "daily_rent": 9000,
-      "toll": 4000,
-      "fuel": 10000,
+      "toll": 6000,
+      "fuel": 12000,
       "seats": 6,
-      "per_day_total": 23000
+      "per_day_total": 27000
     },
     "Gli Car": {
       "daily_rent": 7000,
-      "toll": 3500,
-      "fuel": 8000,
+      "toll": 5000,
+      "fuel": 10000,
       "seats": 4,
-      "per_day_total": 18500
+      "per_day_total": 22000
     }
   },
   "Hunza Valley": {
     "Coaster 5c": {
       "daily_rent": 17000,
-      "toll": 7000,
-      "fuel": 18000,
+      "toll": 12000,
+      "fuel": 23000,
       "seats": 25,
-      "per_day_total": 42000
+      "per_day_total": 52000
     },
     "Coaster 4c": {
       "daily_rent": 16000,
-      "toll": 7000,
-      "fuel": 18000,
+      "toll": 12000,
+      "fuel": 23000,
       "seats": 25,
-      "per_day_total": 41000
+      "per_day_total": 51000
     },
     "Grand Cabin": {
       "daily_rent": 12000,
-      "toll": 5000,
-      "fuel": 12000,
+      "toll": 10000,
+      "fuel": 18000,
       "seats": 12,
-      "per_day_total": 29000
+      "per_day_total": 40000
     },
     "Honda BRV": {
       "daily_rent": 9000,
-      "toll": 4000,
-      "fuel": 10000,
+      "toll": 6000,
+      "fuel": 12000,
       "seats": 6,
-      "per_day_total": 23000
+      "per_day_total": 27000
     },
     "Gli Car": {
       "daily_rent": 7000,
-      "toll": 3500,
-      "fuel": 8000,
+      "toll": 5000,
+      "fuel": 10000,
       "seats": 4,
-      "per_day_total": 18500
+      "per_day_total": 22000
     }
   },
   "Skardu & Hunza": {
     "Coaster 5c": {
       "daily_rent": 17000,
-      "toll": 7000,
-      "fuel": 22000,
+      "toll": 12000,
+      "fuel": 26000,
       "seats": 25,
-      "per_day_total": 46000
+      "per_day_total": 55000
     },
     "Coaster 4c": {
       "daily_rent": 16000,
-      "toll": 7000,
-      "fuel": 22000,
+      "toll": 12000,
+      "fuel": 26000,
       "seats": 25,
-      "per_day_total": 45000
+      "per_day_total": 54000
     },
     "Grand Cabin": {
       "daily_rent": 12000,
-      "toll": 5000,
-      "fuel": 12000,
+      "toll": 10000,
+      "fuel": 20000,
       "seats": 12,
-      "per_day_total": 29000
+      "per_day_total": 42000
     },
     "Honda BRV": {
       "daily_rent": 9000,
-      "toll": 4000,
-      "fuel": 10000,
+      "toll": 6000,
+      "fuel": 12000,
       "seats": 6,
-      "per_day_total": 23000
+      "per_day_total": 27000
     },
     "Gli Car": {
       "daily_rent": 7000,
-      "toll": 3500,
-      "fuel": 8000,
+      "toll": 5000,
+      "fuel": 10000,
       "seats": 4,
-      "per_day_total": 18500
+      "per_day_total": 22000
     }
   },
   "Minimarg Astor Valley": {
     "Coaster 5c": {
       "daily_rent": 17000,
-      "toll": 7000,
-      "fuel": 17000,
+      "toll": 12000,
+      "fuel": 22000,
       "seats": 25,
-      "per_day_total": 41000
+      "per_day_total": 51000
     },
     "Coaster 4c": {
       "daily_rent": 16000,
-      "toll": 7000,
-      "fuel": 17000,
+      "toll": 12000,
+      "fuel": 22000,
       "seats": 25,
-      "per_day_total": 40000
+      "per_day_total": 50000
     },
     "Grand Cabin": {
       "daily_rent": 12000,
-      "toll": 5000,
-      "fuel": 12000,
+      "toll": 10000,
+      "fuel": 16000,
       "seats": 12,
-      "per_day_total": 29000
+      "per_day_total": 38000
     },
     "Honda BRV": {
       "daily_rent": 9000,
-      "toll": 4000,
+      "toll": 6000,
       "fuel": 10000,
       "seats": 6,
-      "per_day_total": 23000
+      "per_day_total": 25000
     },
     "Gli Car": {
       "daily_rent": 7000,
-      "toll": 3500,
+      "toll": 5000,
       "fuel": 8000,
       "seats": 4,
-      "per_day_total": 18500
+      "per_day_total": 20000
     }
   },
   "Fairy Meadows Nanga Base Camp": {
     "Coaster 5c": {
       "daily_rent": 17000,
-      "toll": 7000,
-      "fuel": 17000,
+      "toll": 12000,
+      "fuel": 18000,
       "seats": 25,
-      "per_day_total": 41000
+      "per_day_total": 47000
     },
     "Coaster 4c": {
       "daily_rent": 16000,
-      "toll": 7000,
-      "fuel": 17000,
+      "toll": 12000,
+      "fuel": 18000,
       "seats": 25,
-      "per_day_total": 40000
+      "per_day_total": 46000
     },
     "Grand Cabin": {
       "daily_rent": 12000,
-      "toll": 5000,
-      "fuel": 12000,
+      "toll": 10000,
+      "fuel": 15000,
       "seats": 12,
-      "per_day_total": 29000
+      "per_day_total": 37000
     },
     "Honda BRV": {
       "daily_rent": 9000,
-      "toll": 4000,
+      "toll": 6000,
       "fuel": 10000,
       "seats": 6,
-      "per_day_total": 23000
+      "per_day_total": 25000
     },
     "Gli Car": {
       "daily_rent": 7000,
-      "toll": 3500,
-      "fuel": 8000,
+      "toll": 5000,
+      "fuel": 10000,
       "seats": 4,
-      "per_day_total": 18500
+      "per_day_total": 22000
     }
   },
   "Murree Patriata Galiyat": {
     "Coaster 5c": {
       "daily_rent": 20000,
-      "toll": 5000,
-      "fuel": 60000,
+      "toll": 10000,
+      "fuel": 70000,
       "seats": 25,
-      "per_day_total": 85000
+      "per_day_total": 100000
     },
     "Coaster 4c": {
       "daily_rent": 20000,
-      "toll": 5000,
-      "fuel": 60000,
+      "toll": 10000,
+      "fuel": 70000,
       "seats": 25,
-      "per_day_total": 85000
+      "per_day_total": 100000
     },
     "Grand Cabin": {
       "daily_rent": 12000,
-      "toll": 5000,
-      "fuel": 12000,
+      "toll": 8000,
+      "fuel": 60000,
       "seats": 12,
-      "per_day_total": 29000
+      "per_day_total": 80000
     },
     "Honda BRV": {
       "daily_rent": 9000,
-      "toll": 4000,
-      "fuel": 10000,
+      "toll": 6000,
+      "fuel": 40000,
       "seats": 6,
-      "per_day_total": 23000
+      "per_day_total": 55000
     },
     "Gli Car": {
       "daily_rent": 7000,
-      "toll": 3500,
-      "fuel": 8000,
+      "toll": 5000,
+      "fuel": 15000,
       "seats": 4,
-      "per_day_total": 18500
+      "per_day_total": 27000
     }
   },
   "Murree Ayubia Nathiagali": {
     "Coaster 5c": {
       "daily_rent": 20000,
-      "toll": 5000,
+      "toll": 10000,
       "fuel": 60000,
       "seats": 25,
-      "per_day_total": 85000
+      "per_day_total": 90000
     },
     "Coaster 4c": {
       "daily_rent": 20000,
-      "toll": 5000,
+      "toll": 10000,
       "fuel": 60000,
       "seats": 25,
-      "per_day_total": 85000
+      "per_day_total": 90000
     },
     "Grand Cabin": {
       "daily_rent": 12000,
-      "toll": 5000,
-      "fuel": 12000,
+      "toll": 8000,
+      "fuel": 40000,
       "seats": 12,
-      "per_day_total": 29000
+      "per_day_total": 60000
     },
     "Honda BRV": {
       "daily_rent": 9000,
-      "toll": 4000,
-      "fuel": 10000,
+      "toll": 6000,
+      "fuel": 12000,
       "seats": 6,
-      "per_day_total": 23000
+      "per_day_total": 27000
     },
     "Gli Car": {
       "daily_rent": 7000,
-      "toll": 3500,
-      "fuel": 8000,
+      "toll": 5000,
+      "fuel": 10000,
       "seats": 4,
-      "per_day_total": 18500
+      "per_day_total": 22000
     }
   },
   "Naran Kaghan & Babusar Top": {
     "Coaster 5c": {
       "daily_rent": 17000,
-      "toll": 5000,
+      "toll": 10000,
       "fuel": 25000,
       "seats": 25,
-      "per_day_total": 47000
+      "per_day_total": 52000
     },
     "Coaster 4c": {
       "daily_rent": 16000,
-      "toll": 5000,
+      "toll": 10000,
       "fuel": 25000,
       "seats": 25,
-      "per_day_total": 46000
+      "per_day_total": 51000
     },
     "Grand Cabin": {
       "daily_rent": 12000,
-      "toll": 5000,
+      "toll": 8000,
       "fuel": 12000,
       "seats": 12,
-      "per_day_total": 29000
+      "per_day_total": 32000
     },
     "Honda BRV": {
       "daily_rent": 9000,
-      "toll": 4000,
+      "toll": 6000,
       "fuel": 10000,
       "seats": 6,
-      "per_day_total": 23000
+      "per_day_total": 25000
     },
     "Gli Car": {
       "daily_rent": 7000,
-      "toll": 3500,
+      "toll": 4000,
       "fuel": 8000,
       "seats": 4,
-      "per_day_total": 18500
+      "per_day_total": 19000
     }
   },
   "Neelum Valley Kashmir": {
     "Coaster 5c": {
       "daily_rent": 17000,
-      "toll": 5000,
+      "toll": 12000,
       "fuel": 25000,
       "seats": 25,
-      "per_day_total": 47000
+      "per_day_total": 54000
     },
     "Coaster 4c": {
       "daily_rent": 16000,
-      "toll": 5000,
+      "toll": 12000,
       "fuel": 25000,
       "seats": 25,
-      "per_day_total": 46000
+      "per_day_total": 53000
     },
     "Grand Cabin": {
       "daily_rent": 12000,
-      "toll": 5000,
+      "toll": 10000,
       "fuel": 12000,
       "seats": 12,
-      "per_day_total": 29000
+      "per_day_total": 34000
     },
     "Honda BRV": {
       "daily_rent": 9000,
-      "toll": 4000,
+      "toll": 6000,
       "fuel": 10000,
       "seats": 6,
-      "per_day_total": 23000
+      "per_day_total": 25000
     },
     "Gli Car": {
       "daily_rent": 7000,
-      "toll": 3500,
+      "toll": 4000,
       "fuel": 8000,
       "seats": 4,
-      "per_day_total": 18500
+      "per_day_total": 19000
     }
   },
   "Neelum Taobat Arang Kel": {
     "Coaster 5c": {
       "daily_rent": 17000,
-      "toll": 5000,
+      "toll": 12000,
       "fuel": 25000,
       "seats": 25,
-      "per_day_total": 47000
+      "per_day_total": 54000
     },
     "Coaster 4c": {
       "daily_rent": 16000,
-      "toll": 5000,
+      "toll": 12000,
       "fuel": 25000,
       "seats": 25,
-      "per_day_total": 46000
+      "per_day_total": 53000
     },
     "Grand Cabin": {
       "daily_rent": 12000,
-      "toll": 5000,
+      "toll": 10000,
       "fuel": 12000,
       "seats": 12,
-      "per_day_total": 29000
+      "per_day_total": 34000
     },
     "Honda BRV": {
       "daily_rent": 9000,
-      "toll": 4000,
+      "toll": 6000,
       "fuel": 10000,
       "seats": 6,
-      "per_day_total": 23000
+      "per_day_total": 25000
     },
     "Gli Car": {
       "daily_rent": 7000,
-      "toll": 3500,
+      "toll": 4000,
       "fuel": 8000,
       "seats": 4,
-      "per_day_total": 18500
+      "per_day_total": 19000
     }
   },
   "Swat Kalam & Malam Jabba": {
     "Coaster 5c": {
       "daily_rent": 17000,
-      "toll": 5000,
+      "toll": 12000,
       "fuel": 25000,
       "seats": 25,
-      "per_day_total": 47000
+      "per_day_total": 54000
     },
     "Coaster 4c": {
       "daily_rent": 16000,
-      "toll": 5000,
+      "toll": 12000,
       "fuel": 25000,
       "seats": 25,
-      "per_day_total": 46000
+      "per_day_total": 53000
     },
     "Grand Cabin": {
       "daily_rent": 12000,
-      "toll": 5000,
+      "toll": 8000,
       "fuel": 12000,
       "seats": 12,
-      "per_day_total": 29000
+      "per_day_total": 32000
     },
     "Honda BRV": {
       "daily_rent": 9000,
-      "toll": 4000,
+      "toll": 6000,
       "fuel": 10000,
       "seats": 6,
-      "per_day_total": 23000
+      "per_day_total": 25000
     },
     "Gli Car": {
       "daily_rent": 7000,
-      "toll": 3500,
+      "toll": 4000,
       "fuel": 8000,
       "seats": 4,
-      "per_day_total": 18500
+      "per_day_total": 19000
     }
   },
   "Islamabad": {
     "Coaster 5c": {
       "daily_rent": 17000,
-      "toll": 5000,
-      "fuel": 20000,
+      "toll": 12000,
+      "fuel": 60000,
       "seats": 25,
-      "per_day_total": 42000
+      "per_day_total": 89000
     },
     "Coaster 4c": {
       "daily_rent": 16000,
-      "toll": 5000,
-      "fuel": 20000,
+      "toll": 12000,
+      "fuel": 60000,
       "seats": 25,
-      "per_day_total": 41000
+      "per_day_total": 88000
     },
     "Grand Cabin": {
       "daily_rent": 12000,
-      "toll": 1000,
-      "fuel": 6000,
+      "toll": 10000,
+      "fuel": 45000,
       "seats": 12,
-      "per_day_total": 19000
+      "per_day_total": 67000
     },
     "Honda BRV": {
       "daily_rent": 9000,
-      "toll": 500,
-      "fuel": 4000,
+      "toll": 8000,
+      "fuel": 25000,
       "seats": 6,
-      "per_day_total": 13500
+      "per_day_total": 42000
     },
     "Gli Car": {
       "daily_rent": 7000,
-      "toll": 500,
-      "fuel": 3000,
+      "toll": 4000,
+      "fuel": 13000,
       "seats": 4,
-      "per_day_total": 10500
+      "per_day_total": 24000
     }
   },
   "Kalash Valley & Chitral": {
     "Coaster 5c": {
       "daily_rent": 17000,
-      "toll": 7000,
-      "fuel": 17000,
+      "toll": 12000,
+      "fuel": 20000,
       "seats": 25,
-      "per_day_total": 41000
+      "per_day_total": 49000
     },
     "Coaster 4c": {
       "daily_rent": 16000,
-      "toll": 7000,
-      "fuel": 17000,
+      "toll": 12000,
+      "fuel": 20000,
       "seats": 25,
-      "per_day_total": 40000
+      "per_day_total": 48000
     },
     "Grand Cabin": {
       "daily_rent": 12000,
-      "toll": 5000,
-      "fuel": 12000,
+      "toll": 10000,
+      "fuel": 15000,
       "seats": 12,
-      "per_day_total": 29000
+      "per_day_total": 37000
     },
     "Honda BRV": {
       "daily_rent": 9000,
-      "toll": 4000,
-      "fuel": 10000,
+      "toll": 6000,
+      "fuel": 12000,
       "seats": 6,
-      "per_day_total": 23000
+      "per_day_total": 27000
     },
     "Gli Car": {
       "daily_rent": 7000,
       "toll": 3500,
-      "fuel": 8000,
+      "fuel": 10000,
       "seats": 4,
-      "per_day_total": 18500
+      "per_day_total": 20500
     }
   },
   "Kumrat and Katora Lake": {
     "Coaster 5c": {
       "daily_rent": 17000,
-      "toll": 5000,
+      "toll": 12000,
       "fuel": 25000,
       "seats": 25,
-      "per_day_total": 47000
+      "per_day_total": 54000
     },
     "Coaster 4c": {
       "daily_rent": 16000,
-      "toll": 5000,
+      "toll": 12000,
       "fuel": 25000,
       "seats": 25,
-      "per_day_total": 46000
+      "per_day_total": 53000
     },
     "Grand Cabin": {
       "daily_rent": 12000,
-      "toll": 5000,
-      "fuel": 12000,
+      "toll": 10000,
+      "fuel": 18000,
       "seats": 12,
-      "per_day_total": 29000
+      "per_day_total": 40000
     },
     "Honda BRV": {
       "daily_rent": 9000,
-      "toll": 4000,
-      "fuel": 10000,
+      "toll": 6000,
+      "fuel": 15000,
       "seats": 6,
-      "per_day_total": 23000
+      "per_day_total": 30000
     },
     "Gli Car": {
       "daily_rent": 7000,
-      "toll": 3500,
-      "fuel": 8000,
+      "toll": 4000,
+      "fuel": 10000,
       "seats": 4,
-      "per_day_total": 18500
+      "per_day_total": 21000
     }
   }
 }
@@ -1911,9 +1887,9 @@ export const vehiclePricingByAir: Record<
 
 // ---- By-Air Fixed Extras ----
 export const byAirExtras: Record<string, number> = {
-    "Air Ticket (Islamabad Base)": 50000,
-    "Karachi Surcharge (Add-on)": 40000,
-    "Lahore Surcharge (Add-on)": 30000,
+    "Air Ticket (Islamabad Base)": 60000,
+    "Karachi Surcharge (Add-on)": 30000,
+    "Lahore Surcharge (Add-on)": 15000,
     "Welcome Pack (Per Person)": 1400,
     "Entry Tickets (Per Person)": 2500,
     "Sticker (Per Vehicle)": 600,
@@ -1951,13 +1927,18 @@ export const roadOnlyAddOns: AddOn[] = [
 export const profitMargin = 0.20; // 20%
 
 // ---- Vehicle Filtering by Seats ----
-export function getAvailableVehicles(departure: string, destination: string, travelers: number, transportMode: "By Road" | "By Air" = "By Road"): { type: VehicleType; rate: VehicleRate }[] {
+// Returns all available vehicles for the destination (no longer filters by traveler count)
+// Multiple vehicles will be used if travelers exceed vehicle capacity
+export function getAvailableVehicles(departure: string, destination: string, travelers: number, transportMode: "By Road" | "By Air" = "By Road"): { type: VehicleType; rate: VehicleRate; vehiclesNeeded: number }[] {
     if (transportMode === "By Air") {
         const destVehicles = vehiclePricingByAir[destination];
         if (!destVehicles) return [];
         return (Object.entries(destVehicles) as [VehicleType, VehicleRate][])
-            .filter(([, rate]) => rate.seats >= travelers)
-            .map(([type, rate]) => ({ type, rate }));
+            .map(([type, rate]) => ({
+                type,
+                rate,
+                vehiclesNeeded: Math.ceil(travelers / rate.seats)
+            }));
     } else {
         const departureKey = `Departure_${departure}`;
         const departureVehicles = vehiclePricing[departureKey];
@@ -1965,147 +1946,15 @@ export function getAvailableVehicles(departure: string, destination: string, tra
         const destVehicles = departureVehicles[destination];
         if (!destVehicles) return [];
         return (Object.entries(destVehicles) as [VehicleType, VehicleRate][])
-            .filter(([, rate]) => rate.seats >= travelers)
-            .map(([type, rate]) => ({ type, rate }));
+            .map(([type, rate]) => ({
+                type,
+                rate,
+                vehiclesNeeded: Math.ceil(travelers / rate.seats)
+            }));
     }
 }
 
-// ---- Price Calculation ----
-export function calculateTripPrice(params: {
-    transportMode: "By Road" | "By Air";
-    destination: string;
-    hotelCategory: HotelCategory;
-    vehicleType: VehicleType;
-    days: number;
-    travelers: number;
-    roomType: "twin" | "triple";
-    selectedAddOns: string[];
-    departure: string;
-    // By Air traveler types (optional, only used for By Air mode)
-    adults?: number;
-    children?: number;
-    infantLap?: number;
-    infantOwnSeat?: number;
-}): {
-    hotelTotal: number;
-    vehicleTotal: number;
-    airTicketTotal: number;
-    addOnsTotal: number;
-    arrivalBreakfastTotal: number;
-    departureSurcharge: number;
-    grandTotal: number;
-    perPerson: number;
-    // Breakdown for By Air traveler types
-    adultTicketTotal?: number;
-    childTicketTotal?: number;
-    infantLapTotal?: number;
-    infantOwnSeatTotal?: number;
-} {
-    const { transportMode, destination, hotelCategory, vehicleType, days, travelers, roomType, selectedAddOns, departure } = params;
-
-    // Use traveler type counts for both By Road and By Air
-    const adultCount = params.adults ?? travelers;
-    const childCount = params.children ?? 0;
-    const infantLapCount = params.infantLap ?? 0;
-    const infantOwnSeatCount = params.infantOwnSeat ?? 0;
-
-    // Total people for add-ons (includes everyone)
-    const totalPeople = adultCount + childCount + infantLapCount + infantOwnSeatCount;
-
-    // Seats needed for rooms (infant lap doesn't need seat/room space)
-    const seatsForRooms = adultCount + childCount + infantOwnSeatCount;
-
-    // Hotel cost
-    const hotelData = transportMode === "By Air"
-        ? (airHotelPricing as any)[destination]
-        : (roadHotelPricing as any)[destination];
-    const hotelRate = hotelData?.[hotelCategory];
-    const nightlyRate = roomType === "twin" ? (hotelRate?.twin_rate || 10000) : (hotelRate?.triple_rate || 12000);
-    const nights = days > 1 ? days - 1 : 0;
-    const roomsNeeded = roomType === "twin" ? Math.ceil(seatsForRooms / 2) : Math.ceil(seatsForRooms / 3);
-    const hotelTotal = nightlyRate * nights * roomsNeeded;
-
-    // Vehicle cost
-    // cost_per_day = rent + fuel, total = (cost_per_day * days) + toll (toll is one-time)
-    let vehicle: VehicleRate | undefined;
-    if (transportMode === "By Air") {
-        const destVehicles = vehiclePricingByAir[destination];
-        vehicle = destVehicles?.[vehicleType];
-    } else {
-        const departureKey = `Departure_${departure}`;
-        const departureVehicles = vehiclePricing[departureKey];
-        const vehicleData = departureVehicles?.[destination];
-        vehicle = vehicleData?.[vehicleType];
-    }
-    const dailyRent = vehicle?.daily_rent || 14000;
-    const fuel = vehicle?.fuel || 10000;
-    const toll = vehicle?.toll || 4000;
-    const costPerDay = dailyRent + fuel;
-    const vehicleTotal = (costPerDay * days) + toll;
-
-    // Air ticket & departure surcharge
-    let airTicketTotal = 0;
-    const departureSurcharge = 0;
-    let adultTicketTotal = 0;
-    let childTicketTotal = 0;
-    let infantLapTotal = 0;
-    let infantOwnSeatTotal = 0;
-
-    if (transportMode === "By Air") {
-        const baseTicket = byAirExtras["Air Ticket (Islamabad Base)"] || 45000;
-        const karachiSurcharge = departure === "Karachi" ? (byAirExtras["Karachi Surcharge (Add-on)"] || 40000) : 0;
-        const lahoreSurchargeAir = departure === "Lahore" ? (byAirExtras["Lahore Surcharge (Add-on)"] || 30000) : 0;
-        const adultFare = baseTicket + karachiSurcharge + lahoreSurchargeAir;
-
-        // Adult: 100% fare
-        adultTicketTotal = adultFare * adultCount;
-        // Child (2-11): 75% of adult fare
-        childTicketTotal = Math.round(adultFare * childFarePercent) * childCount;
-        // Infant (Lap): Fixed 1000 PKR
-        infantLapTotal = infantLapPrice * infantLapCount;
-        // Infant (Own Seat): Fixed 5000 PKR
-        infantOwnSeatTotal = infantOwnSeatPrice * infantOwnSeatCount;
-
-        airTicketTotal = adultTicketTotal + childTicketTotal + infantLapTotal + infantOwnSeatTotal;
-    }
-
-    // Add-ons cost (check both common and road-only add-ons)
-    let addOnsTotal = 0;
-    let mealTotal = 0;
-    let arrivalBreakfastTotal = 0;
-    const allAddOns = [...optionalAddOns, ...roadOnlyAddOns];
-    selectedAddOns.forEach((addonId) => {
-        // Special handling for meals - use hotel category pricing and nights
-        if (addonId === "meal") {
-            const mealRate = mealPricingPerNight[hotelCategory] || 1200;
-            mealTotal = mealRate * nights * totalPeople;
-            addOnsTotal += mealTotal;
-            return;
-        }
-        // Special handling for arrival_breakfast - track separately
-        if (addonId === "arrival_breakfast") {
-            arrivalBreakfastTotal = 500 * totalPeople; // 500 per person
-            addOnsTotal += arrivalBreakfastTotal;
-            return;
-        }
-        const addon = allAddOns.find((a) => a.id === addonId);
-        if (addon) {
-            switch (addon.unit) {
-                case "per_person": addOnsTotal += addon.pricePerUnit * totalPeople; break;
-                case "per_day": addOnsTotal += addon.pricePerUnit * days; break;
-                case "per_person_per_day": addOnsTotal += addon.pricePerUnit * totalPeople * days; break;
-                case "flat": addOnsTotal += addon.pricePerUnit; break;
-            }
-        }
-    });
-
-    const subtotal = hotelTotal + vehicleTotal + airTicketTotal + addOnsTotal + departureSurcharge;
-    const profitAmount = Math.round(subtotal * profitMargin);
-    const grandTotal = subtotal + profitAmount;
-    const perPerson = totalPeople > 0 ? Math.round(grandTotal / totalPeople) : 0;
-
-    return {
-        hotelTotal, vehicleTotal, airTicketTotal, addOnsTotal, arrivalBreakfastTotal, departureSurcharge, grandTotal, perPerson,
-        adultTicketTotal, childTicketTotal, infantLapTotal, infantOwnSeatTotal
-    };
+// Helper function to calculate number of vehicles needed
+export function getVehiclesNeeded(travelers: number, vehicleSeats: number): number {
+    return Math.ceil(travelers / vehicleSeats);
 }

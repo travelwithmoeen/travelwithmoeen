@@ -76,15 +76,23 @@ The rules ESLint enforces:
 
 Old public pages are not failed for `any` or `==`. Do not reformat them in the same change. New files follow the table above.
 
-Before `git commit`, the hook in `.husky/pre-commit` runs two checks:
+Before `git commit`, the hook in `.husky/pre-commit` runs three checks:
 
 1. `node scripts/check-staged.mjs` rejects a commit that adds an env file in any folder (`.env.example` with empty values is allowed), `resources/`, `public/uploads/` (except `.gitkeep`), or `prisma/`.
-2. `lint-staged` runs ESLint on the staged `.ts` and `.tsx` files.
+2. `node scripts/check-standards.mjs --staged` checks the staged files. `npm run check:standards` checks the whole tree. It rejects the commit when:
+   - A file in `app/` or `components/` imports `lib/content` or `lib/rates`. `app/api/` may import those.
+   - A file in `app/` or `components/` calls `fetch` on an `/api/` path without `apiPath()`.
+   - A file other than `lib/quote.ts` exports `calculateTripPrice` or `calculatePackagePrice`, or a screen imports `data/pricing` or `lib/calculatePackagePrice`.
+   - A file in `app/api/` imports `lib/auth/permissions`.
+   - A name in `lib/`, `app/office/`, `app/api/`, `components/office/`, or `scripts/` starts or ends with `_`.
+3. `lint-staged` runs ESLint on the staged `.ts` and `.tsx` files.
 
-If either check fails, the commit stops. Run `npm install` once so the hook is installed.
+If a check fails, the commit stops. Run `npm install` once so the hook is installed.
 
 ## Checks before a pull request
 
+- GitHub runs `node scripts/check-standards.mjs --since origin/<base>` on the pull request. It checks only the files the pull request adds or changes. A changed file must pass in full, including lines that were already there.
+- `npm run check:standards` still lists every file that breaks a rule. Those older files are fixed in their own pull request.
 - `npm run lint` passes.
 - A behavior change has a check script, in the same way `scripts/check-step1.ts` checks Step 1.
 - The pull request names the task, such as T-07.

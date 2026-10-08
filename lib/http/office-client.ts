@@ -20,7 +20,7 @@ export async function postOfficeForm(path: string, formData: FormData): Promise<
 }
 
 export function officeFormAction(path: string, goTo?: string) {
-  return async (_prev: ActionResult | null, formData: FormData): Promise<ActionResult> => {
+  return async (previous: ActionResult | null, formData: FormData): Promise<ActionResult> => {
     const result = await postOfficeForm(path, formData);
     if (result.ok && goTo) window.location.assign(goTo);
     return result;

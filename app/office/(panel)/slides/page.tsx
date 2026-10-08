@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getSlides } from "@/lib/content";
+import { getSlides } from "@/lib/http/site-content";
 import { getOfficeSession } from "@/lib/http/office-session";
 import { SlidesEditor } from "@/components/office/SlidesEditor";
 

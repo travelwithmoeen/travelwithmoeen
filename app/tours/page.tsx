@@ -1,5 +1,5 @@
 import Tours from "@/components/tours/ToursBrowse";
-import { getTours } from "@/lib/content";
+import { getTours } from "@/lib/http/site-content";
 
 export const dynamic = "force-dynamic";
 

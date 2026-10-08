@@ -92,7 +92,7 @@ export function RatesDesk({
 
 function useRateAction() {
   const router = useRouter();
-  return useActionState(async (_prev: ActionResult | null, formData: FormData) => {
+  return useActionState(async (previous: ActionResult | null, formData: FormData) => {
     const result = await postOfficeForm("/api/office/rates", formData);
     if (result.ok) router.refresh();
     return result;

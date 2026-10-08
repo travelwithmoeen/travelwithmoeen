@@ -1,0 +1,21 @@
+name: Preview database backup
+
+on:
+  schedule:
+    # 19:00 UTC is midnight in Pakistan.
+    - cron: "0 19 * * *"
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ask the preview site to save a backup
+        env:
+          BACKUP_SECRET: ${{ secrets.PREVIEW_BACKUP_SECRET }}
+          VERCEL_BYPASS: ${{ secrets.VERCEL_PREVIEW_BYPASS }}
+        run: |
+          curl --fail-with-body --silent --show-error --max-time 90 \
+            --request POST "https://new.travelwithmoeen.com/api/backup" \
+            --header "Authorization: Bearer $BACKUP_SECRET" \
+            --header "x-vercel-protection-bypass: $VERCEL_BYPASS"

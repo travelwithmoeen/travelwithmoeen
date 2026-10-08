@@ -1,5 +1,4 @@
-import { getCurrentUser } from "@/lib/auth/session";
-import { canEditRates } from "@/lib/auth/permissions";
+import { getQuoteAccess } from "@/lib/auth/quote-access";
 import { buildQuote, type DayEdit, type NightEdit, type QuoteInput, type SeasonPercent } from "@/lib/quote";
 import { loadCatalog, readAmount, readCount } from "@/lib/rates";
 
@@ -15,9 +14,7 @@ export async function POST(request: Request) {
   } catch {
     return Response.json({ ok: false, error: "The quote could not be read." }, { status: 400 });
   }
-  const user = await getCurrentUser();
-  const signedIn = Boolean(user);
-  const rateEditor = Boolean(user && canEditRates(user.role));
+  const { signedIn, rateEditor } = await getQuoteAccess();
   const days = readCount(text(body, "days"), "the days", 60);
   if (!days.ok) return Response.json(days, { status: 400 });
   const adults = readCount(text(body, "adults"), "the adults", 60);

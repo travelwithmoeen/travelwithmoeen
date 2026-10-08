@@ -11,6 +11,7 @@ export type OfficeSession = {
   canEditRates: boolean;
   canUpdateRequestStatus: boolean;
   canDeleteRequest: boolean;
+  canRunBackup: boolean;
 };
 
 export type OfficeUserRow = {
@@ -52,6 +53,7 @@ export async function getOfficeSession(): Promise<OfficeSession | null> {
     canEditRates: Boolean(body.canEditRates),
     canUpdateRequestStatus: Boolean(body.canUpdateRequestStatus),
     canDeleteRequest: Boolean(body.canDeleteRequest),
+    canRunBackup: Boolean(body.canRunBackup),
   };
 }
 
@@ -78,4 +80,17 @@ export async function getOfficeUsers(): Promise<OfficeUserRow[]> {
   if (!response.ok) return [];
   const body = (await response.json()) as { ok: boolean; users?: OfficeUserRow[] };
   return body.users ?? [];
+}
+
+export type OfficeBackupRow = {
+  name: string;
+  size: number;
+  uploadedAt: string;
+};
+
+export async function getOfficeBackups(): Promise<OfficeBackupRow[]> {
+  const response = await officeRequest("/api/office/backup");
+  if (!response.ok) return [];
+  const body = (await response.json()) as { ok: boolean; backups?: OfficeBackupRow[] };
+  return body.backups ?? [];
 }

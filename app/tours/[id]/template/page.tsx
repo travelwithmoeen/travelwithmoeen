@@ -1,5 +1,5 @@
 import TourTemplatePage from "@/components/tours/TourTemplateView";
-import { getTour } from "@/lib/content";
+import { getTour } from "@/lib/http/site-content";
 
 export const dynamic = "force-dynamic";
 

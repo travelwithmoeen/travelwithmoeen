@@ -1,5 +1,5 @@
 import Gallery from "@/components/gallery/GalleryBrowse";
-import { getPhotos } from "@/lib/content";
+import { getPhotos } from "@/lib/http/site-content";
 
 export const dynamic = "force-dynamic";
 
