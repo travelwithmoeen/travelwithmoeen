@@ -8,10 +8,10 @@ Checked the home page, tours, one tour with **Book Now** opening `https://wa.me/
 | Browser | Computer | Phone-sized window |
 |---|---|---|
 | Chrome 150.0.7871.125 | Passed | Passed at 390 by 844 |
-| Safari 17.6 | Passed | Passed for the home page, the calculator, and Rates at 390 by 860 |
+| Safari 17.6 | Passed | Passed the same pages at 390 by 860 |
 | Firefox 157.0.1 | Passed | Passed at 390 by 844 |
-| Edge 154.0.4258.62 | Does not start on this Mac | Not checked |
+| Edge 150.0.4078.105 | Passed | Passed at 390 by 844 |
 
-Edge is installed. Opening it stops with a missing VideoToolbox symbol, `_kVTCompressionPropertyKey_ReferenceBufferCount`. This Mac is on macOS 12, and that Edge build does not run here.
+Edge 154.0.4258.62 is installed and does not start on this Mac. Opening it stops with a missing VideoToolbox symbol, `_kVTCompressionPropertyKey_ReferenceBufferCount`. Microsoft supports macOS 12 through Edge 150. Edge 151 and later need macOS 13. This check used Edge 150.0.4078.105, which starts here.
 
 No phone was connected, and this Mac has no phone simulator. The phone-sized checks are desktop windows at a phone width.

@@ -1,26 +1,34 @@
 # Database backup
 
-The database is backed up once a day. From the project folder, with Postgres running, run:
+The backup reads `DATABASE_URL`. That is the database the site uses. On this machine that is `localhost` port `5434`, database `travelwithmoeen`. The dump runs `pg_dump` in a Postgres client container. `localhost` is reached as `host.docker.internal` so the client can see that database. The script does not use `docker compose exec`.
+
+The folder `backups/` is not committed and is not under `public/`.
+
+## Every day
+
+On this Mac the job `com.travelwithmoeen.db-backup` runs at 02:15. It calls `scripts/backup-db.sh`. The log is `backups/backup.log`. Install the same job on the machine that holds the database:
 
 ```bash
-npm run db:backup
+sh scripts/install-daily-backup.sh
 ```
-
-The file is `backups/travelwithmoeen-YYYY-MM-DD.sql`. That folder is not committed and is not under `public/`.
 
 A restore is used only when the data is damaged. Tell the client before restoring the live database.
 
-Try the file on a copy first. Replace the date in the file name with the backup you are checking.
+## Restore onto a copy
 
 ```bash
-docker compose exec -T postgres sh -c 'psql -U "$POSTGRES_USER" -d postgres -c "CREATE DATABASE travelwithmoeen_restore_copy;"'
-docker compose exec -T postgres sh -c 'psql -U "$POSTGRES_USER" -d travelwithmoeen_restore_copy' < backups/travelwithmoeen-YYYY-MM-DD.sql
+npm run db:restore-copy
 ```
 
-Check that the copy has the tables. When the check is done, remove the copy:
+That loads `backups/travelwithmoeen-YYYY-MM-DD.sql` into `travelwithmoeen_restore_copy`, prints the table counts, and removes the copy. To restore the live database, stop the site and load that file into `travelwithmoeen` only after the copy looks right and the client has been told. That load replaces the live data.
 
-```bash
-docker compose exec -T postgres sh -c 'psql -U "$POSTGRES_USER" -d postgres -c "DROP DATABASE travelwithmoeen_restore_copy;"'
-```
+## Tried on 8 October 2026
 
-Restore the live database only after that copy looks right and the client has been told. Stop the site so it is not writing, then load the same file into `travelwithmoeen`. That load replaces the live data.
+The daily job wrote `backups/travelwithmoeen-2026-10-08.sql` (294,726 bytes). `npm run db:restore-copy` loaded that file into `travelwithmoeen_restore_copy`.
+
+| | Live database | Copy |
+|---|---|---|
+| Tables | 20 | 20 |
+| Users | 3 | 3 |
+
+The copy was removed after the check. The live database was not replaced.
