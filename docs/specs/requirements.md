@@ -227,6 +227,8 @@ This list is the whole project. A new office route is added to this list in the 
 | `GET /api/office/requests` | A signed-in Owner, Manager, or Editor. |
 | `POST /api/office/requests/status` | Owner or Manager. |
 | `POST /api/office/requests/delete` | Owner only. |
+| `GET /api/office/backup`, `POST /api/office/backup`, and `GET /api/office/backup/file` | Owner only. Lists, takes, and downloads database backups. A backup is kept in private storage and is never under `public/`. |
+| `POST /api/backup` | The nightly scheduled run only. It must send the backup secret. No session. |
 | Read guest requests | Owner, Manager, or Editor. |
 | Change a guest request status | Owner or Manager. |
 | Guest PDF or image | The guest sees one total. Staff lines and profit stay off that file. |
