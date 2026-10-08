@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import { createRequire } from "node:module";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
@@ -162,10 +163,33 @@ function checkFile(file) {
   visit(source);
 }
 
+function gitFiles(args) {
+  const output = execFileSync("git", ["diff", "--name-only", "--diff-filter=ACMR", ...args], { cwd: root, encoding: "utf8" });
+  return output.split("\n").map((line) => line.trim()).filter(Boolean);
+}
+
+function changedFiles(args) {
+  if (args.length === 0) return null;
+  if (args[0] === "--staged" && args.length === 1) return gitFiles(["--cached"]);
+  if (args[0] === "--since" && args.length === 2) return gitFiles([`${args[1]}...HEAD`]);
+  console.error("Use: check-standards.mjs, check-standards.mjs --staged, or check-standards.mjs --since <base>.");
+  process.exit(2);
+}
+
+const changed = changedFiles(process.argv.slice(2));
 const files = [];
-for (const dir of roots) {
-  const full = path.join(root, dir);
-  if (statSync(full, { throwIfNoEntry: false })?.isDirectory()) walk(full, files);
+if (changed) {
+  for (const rel of changed) {
+    const inRoot = roots.some((dir) => rel.startsWith(dir + "/"));
+    if (!inRoot || rel.includes("node_modules/") || rel.endsWith(".d.ts") || !/\.(tsx|ts|mjs|js)$/.test(rel)) continue;
+    const full = path.join(root, rel);
+    if (statSync(full, { throwIfNoEntry: false })?.isFile()) files.push(full);
+  }
+} else {
+  for (const dir of roots) {
+    const full = path.join(root, dir);
+    if (statSync(full, { throwIfNoEntry: false })?.isDirectory()) walk(full, files);
+  }
 }
 
 for (const file of files) checkFile(file);
@@ -188,7 +212,7 @@ const unique = findings.filter((item) => {
 });
 
 if (unique.length === 0) {
-  console.log("Standards check passed.");
+  console.log(changed ? `Standards check passed for ${files.length} changed files.` : "Standards check passed.");
   process.exit(0);
 }
 
