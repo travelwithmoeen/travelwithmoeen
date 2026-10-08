@@ -147,7 +147,7 @@ export function TourForm({ tour, canDelete }: { tour: Tour; canDelete: boolean }
               <button
                 className="mt-2 text-sm text-red-700"
                 type="button"
-                onClick={() => setDays((current) => current.filter((_, itemIndex) => itemIndex !== index))}
+                onClick={() => setDays((current) => current.filter((item, itemIndex) => itemIndex !== index))}
               >
                 Remove day
               </button>

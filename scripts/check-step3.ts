@@ -193,6 +193,36 @@ async function assertOfficeRequests(savedIds: number[]) {
     const managerDelete = await officePost("/api/office/requests/delete", deleteForm, managerCookie);
     if (managerDelete.status !== 403) throw new Error(`A Manager delete returned ${managerDelete.status}.`);
 
+    const contentPaths = ["/api/content/tours", "/api/content/places", "/api/content/posts", "/api/content/photos", "/api/content/reviews", "/api/content/slides", "/api/content/site"];
+    for (const path of contentPaths) {
+      const read = await officeGet(path, "");
+      if (read.status !== 200 || !read.body.ok) throw new Error(`${path} returned ${read.status}.`);
+    }
+    const missingTour = await officeGet("/api/content/tours/no-such-tour", "");
+    if (missingTour.status !== 404) throw new Error(`A missing tour returned ${missingTour.status}.`);
+    const ratesSignedOut = await officeGet("/api/office/rates", "");
+    if (ratesSignedOut.status !== 401) throw new Error(`A rates read with no cookie returned ${ratesSignedOut.status}.`);
+    const editorRates = await officeGet("/api/office/rates", editorCookie);
+    if (editorRates.status !== 403) throw new Error(`An Editor rates read returned ${editorRates.status}.`);
+    const managerRates = await officeGet("/api/office/rates", managerCookie);
+    if (managerRates.status !== 200 || !managerRates.text.includes('"hotels"')) {
+      throw new Error(`A Manager rates read returned ${managerRates.status}.`);
+    }
+    const officePages: [string, string][] = [
+      ["/office/tours", editorCookie],
+      ["/office/places", editorCookie],
+      ["/office/blog", editorCookie],
+      ["/office/gallery", editorCookie],
+      ["/office/reviews", editorCookie],
+      ["/office/slides", editorCookie],
+      ["/office/site", editorCookie],
+      ["/office/rates", managerCookie],
+    ];
+    for (const [path, cookie] of officePages) {
+      const page = await fetch(`${siteBase()}${path}`, { headers: { cookie }, redirect: "manual" });
+      if (page.status !== 200) throw new Error(`The office page ${path} returned ${page.status}.`);
+    }
+
     const publicPaths = ["/", "/tours", "/contact", "/customize-trip", "/calculator"];
     for (const path of publicPaths) {
       const page = await fetch(`${siteBase()}${path}`);

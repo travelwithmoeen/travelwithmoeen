@@ -8,26 +8,9 @@ import type { Testimonial } from "@/data/testimonials";
 import type { Tour, TourDay, TourRegion, TransportType } from "@/data/tours";
 import { buildQuote, GUEST_GRADES, type RateCatalog } from "@/lib/quote";
 import { loadCatalog } from "@/lib/rates";
+import type { HomeSlide, SiteSettings } from "@/lib/content-types";
 
-export type SiteSettings = {
-  phoneDisplay: string;
-  phoneE164: string;
-  email: string;
-  address: string;
-  mapsUrl: string;
-  facebookUrl: string;
-  instagramUrl: string;
-  tiktokUrl: string;
-  youtubeUrl: string;
-  whatsappUrl: string;
-};
-
-export type HomeSlide = {
-  id: number;
-  image: string;
-  title: string;
-  rotation: number;
-};
+export type { HomeSlide, SiteSettings };
 
 function toTour(row: typeof tours.$inferSelect, days: TourDay[]): Tour {
   return {

@@ -3,7 +3,7 @@
 import { useActionState } from "react";
 import { officeFormAction } from "@/lib/http/office-client";
 import type { ActionResult } from "@/lib/http/result";
-import type { HomeSlide } from "@/lib/content";
+import type { HomeSlide } from "@/lib/content-types";
 
 const inputClass = "mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm";
 

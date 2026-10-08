@@ -1,5 +1,5 @@
 import Blog from "@/components/blog/BlogBrowse";
-import { getPosts } from "@/lib/content";
+import { getPosts } from "@/lib/http/site-content";
 
 export const dynamic = "force-dynamic";
 

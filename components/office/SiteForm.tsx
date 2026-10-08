@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import { officeFormAction } from "@/lib/http/office-client";
-import type { SiteSettings } from "@/lib/content";
+import type { SiteSettings } from "@/lib/content-types";
 import type { ActionResult } from "@/lib/http/result";
 
 const inputClass = "mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm";

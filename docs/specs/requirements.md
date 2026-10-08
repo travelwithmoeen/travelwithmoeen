@@ -219,12 +219,14 @@ This list is the whole project. A new office route is added to this list in the 
 | Public pages, including home, tours, places, blog, gallery, calculator, contact, and custom trip | Anyone. No session. |
 | `POST /api/quote` | Anyone. A guest response is one total and uses the season saved in the office. A signed-in Owner, Manager, or Editor also receives the lines and the profit. Only an Owner or a Manager can send a different season, a night edit, or a day edit. |
 | `POST /api/requests` | Anyone. No session. Saves a contact, a custom trip, or a booking. The response does not include the name, phone, email, or message. |
+| `GET /api/content/tours`, `/tours/[id]`, `/places`, `/places/[slug]`, `/posts`, `/posts/[slug]`, `/photos`, `/reviews`, `/slides`, `/site` | Anyone. No session. Read only. The same data the public pages show. |
 | `POST /api/office/login` | Anyone. The failure rules in BR-67 and BR-68 apply. |
 | `POST /api/office/logout` and `GET /api/office/session` | A signed-in Owner, Manager, or Editor. |
 | Tour, place, post, photo, review, slide, and site-detail writes | Owner or Editor. |
 | Rates, season, vehicles, jeep lines, paid extras, and the live price Excel download | Owner or Manager. |
 | Create a login, remove a login, change a role, delete a tour, delete a price row, delete a guest request | Owner only. |
 | `GET /api/office/requests` | A signed-in Owner, Manager, or Editor. |
+| `GET /api/office/rates` | Owner or Manager. |
 | `POST /api/office/requests/status` | Owner or Manager. |
 | `POST /api/office/requests/delete` | Owner only. |
 | `GET /api/office/backup`, `POST /api/office/backup`, and `GET /api/office/backup/file` | Owner only. Lists, takes, and downloads database backups. A backup is kept in private storage and is never under `public/`. |

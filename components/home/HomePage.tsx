@@ -34,7 +34,7 @@ import type { Destination } from "@/data/destinations";
 import type { Blog } from "@/data/blog";
 import type { GalleryImage } from "@/data/gallery";
 import type { Testimonial } from "@/data/testimonials";
-import type { HomeSlide } from "@/lib/content";
+import type { HomeSlide } from "@/lib/content-types";
 
 const featuredTours = [
   {

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getPlaces } from "@/lib/content";
+import { getPlaces } from "@/lib/http/site-content";
 import { getOfficeSession } from "@/lib/http/office-session";
 
 export default async function OfficePlacesPage() {

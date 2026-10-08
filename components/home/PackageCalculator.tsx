@@ -45,8 +45,9 @@ import {
   getRecommendedVehicle,
   type HotelCategory,
   type VehicleType,
-} from "@/data/pricing";
+} from "@/data/calculator-options";
 import type { Tour } from "@/data/tours";
+import { apiPath } from "@/lib/http/api-path";
 import { TourCard } from "@/components/TourCard";
 import { cn } from "@/lib/utils";
 
@@ -187,7 +188,7 @@ export function PackageCalculator({ tours }: { tours: Tour[] }) {
     if (!selectedDestination) return;
     let active = true;
     const timer = setTimeout(() => {
-      void fetch("/api/quote", {
+      void fetch(apiPath("/api/quote"), {
         method: "POST",
         headers: { "content-type": "application/json" },
         credentials: "include",

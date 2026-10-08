@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getSiteSettings } from "@/lib/content";
+import { getSiteSettings } from "@/lib/http/site-content";
 import { getOfficeSession } from "@/lib/http/office-session";
 import { SiteForm } from "@/components/office/SiteForm";
 
