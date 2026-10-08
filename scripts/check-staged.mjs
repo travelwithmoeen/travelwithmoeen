@@ -22,6 +22,9 @@ export function blockedReason(name) {
   if (lower === "prisma" || lower.startsWith("prisma/")) {
     return `${normalized}: do not commit Prisma. The live schema is lib/db/schema.ts.`;
   }
+  if (lower === "backups" || lower.startsWith("backups/") || lower.startsWith("public/backups")) {
+    return `${normalized}: do not commit a database backup.`;
+  }
   return "";
 }
 
