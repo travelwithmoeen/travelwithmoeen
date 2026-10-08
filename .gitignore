@@ -49,3 +49,6 @@ next-env.d.ts
 
 # cover working files, not part of the proposal
 docs/_*
+
+# database backups stay on disk only
+/backups/
