@@ -1,5 +1,5 @@
 import Destinations from "@/components/destinations/DestinationsBrowse";
-import { getPlaces } from "@/lib/content";
+import { getPlaces } from "@/lib/http/site-content";
 
 export const dynamic = "force-dynamic";
 

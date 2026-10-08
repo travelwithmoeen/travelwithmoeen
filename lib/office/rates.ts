@@ -15,7 +15,12 @@ import { canEditRates } from "@/lib/auth/permissions";
 import type { SessionUser } from "@/lib/auth/session";
 import { forbidden, type ActionResult } from "@/lib/http/result";
 import { buildQuote, type DayEdit, type NightEdit, type QuoteInput, type SeasonPercent } from "@/lib/quote";
-import { loadCatalog, readAmount, readCount } from "@/lib/rates";
+import { loadCatalog, loadRateDesk, readAmount, readCount } from "@/lib/rates";
+
+export async function loadRateDeskAs(actor: SessionUser) {
+  if (!canEditRates(actor.role)) return forbidden("You cannot read the rates.");
+  return { ok: true as const, desk: await loadRateDesk() };
+}
 
 function checked(value: FormDataEntryValue | null) {
   return value === "on" || value === "true" || value === "1";

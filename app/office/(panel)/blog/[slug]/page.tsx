@@ -1,5 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import { getPost } from "@/lib/content";
+import { getPost } from "@/lib/http/site-content";
 import { getOfficeSession } from "@/lib/http/office-session";
 import { PostForm } from "@/components/office/PostForm";
 

@@ -1,5 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import { getTour } from "@/lib/content";
+import { getTour } from "@/lib/http/site-content";
 import { getOfficeSession } from "@/lib/http/office-session";
 import { TourForm } from "@/components/office/TourForm";
 

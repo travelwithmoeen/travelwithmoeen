@@ -1,5 +1,5 @@
 import HomePage from "@/components/home/HomePage";
-import { getPhotos, getPlaces, getPosts, getReviews, getSlides, getTours } from "@/lib/content";
+import { getPhotos, getPlaces, getPosts, getReviews, getSlides, getTours } from "@/lib/http/site-content";
 
 export const dynamic = "force-dynamic";
 

@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getPhotos } from "@/lib/content";
+import { getPhotos } from "@/lib/http/site-content";
 import { getOfficeSession } from "@/lib/http/office-session";
 import { GalleryEditor } from "@/components/office/GalleryEditor";
 

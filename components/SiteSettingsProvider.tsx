@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext } from "react";
-import type { SiteSettings } from "@/lib/content";
+import type { SiteSettings } from "@/lib/content-types";
 
 const SiteSettingsContext = createContext<SiteSettings | null>(null);
 

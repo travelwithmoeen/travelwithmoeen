@@ -1,5 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import { getPlace } from "@/lib/content";
+import { getPlace } from "@/lib/http/site-content";
 import { getOfficeSession } from "@/lib/http/office-session";
 import { PlaceForm } from "@/components/office/PlaceForm";
 
