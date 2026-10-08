@@ -29,3 +29,7 @@ export function canUpdateRequestStatus(role: Role) {
 export function canDeleteRequest(role: Role) {
   return role === "owner";
 }
+
+export function canRunBackup(role: Role) {
+  return role === "owner";
+}

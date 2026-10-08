@@ -32,6 +32,11 @@ export async function OfficeShell({ children }: { children: React.ReactNode }) {
               Users
             </Link>
           ) : null}
+          {user.canRunBackup ? (
+            <Link className={linkClass} href="/office/backup">
+              Backups
+            </Link>
+          ) : null}
           {user.canEditRates ? (
             <Link className={linkClass} href="/office/rates">
               Rates

@@ -5,6 +5,7 @@ import {
   canEditContent,
   canEditRates,
   canManageUsers,
+  canRunBackup,
   canUpdateRequestStatus,
 } from "@/lib/auth/permissions";
 
@@ -22,5 +23,6 @@ export async function GET() {
     canEditRates: canEditRates(user.role),
     canUpdateRequestStatus: canUpdateRequestStatus(user.role),
     canDeleteRequest: canDeleteRequest(user.role),
+    canRunBackup: canRunBackup(user.role),
   });
 }
