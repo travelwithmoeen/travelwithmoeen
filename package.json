@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "check:staged": "node scripts/check-staged.mjs",
+    "check:standards": "node scripts/check-standards.mjs",
     "prepare": "husky",
     "db:up": "docker compose up -d",
     "db:push": "drizzle-kit push",

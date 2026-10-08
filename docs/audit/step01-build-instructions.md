@@ -4,7 +4,7 @@
 **Date:** September 30, 2026  
 **Read first:** `docs/rules/project-structure.md` and `docs/rules/coding-standards.md`
 
-This note is for the Step 1 branch, and for every branch after it.
+This note is the Step 1 record. For work after Step 3, read `docs/audit/after-step03.md`.
 
 ## What is already in place
 
