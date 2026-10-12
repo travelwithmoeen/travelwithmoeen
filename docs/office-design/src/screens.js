@@ -313,19 +313,42 @@
           <div class="row-actions">${btn("Save season", { v: "primary", a: { type: "submit" } })}</div>`, "A single quote can still use the other season.")}</form>`;
     } else {
       const vehicles = [...new Set(d.vehicles.filter((v) => v.live).map((v) => v.vehicle))];
+      const countField = (label, name, value) => field(label, input(name, value, { inputmode: "numeric" }), { name });
       body = `<div class="quote-grid"><form data-form="quote" novalidate>${card("Trip", `<div class="form-grid">
           ${field("Place", select("place", "Skardu Valley", uniq(d.hotels.map((h) => h.place))), { name: "place" })}
           ${field("Travel by", select("mode", "road", [["road", "Road"], ["air", "Air"]]), { name: "mode" })}
           ${field("Start city", select("start", "Islamabad", ["Islamabad", "Lahore", "Karachi"]), { name: "start", help: "Karachi starts are by air only." })}
           ${field("Grade", select("grade", "Deluxe", ["Deluxe", "Executive", "Luxury", "Ultra Luxury"]), { name: "grade" })}
           ${field("Vehicle", select("vehicle", "Gli Car", vehicles), { name: "vehicle" })}
-          ${field("Days", input("days", "5", { inputmode: "numeric" }), { name: "days" })}
-          ${field("Adults", input("adults", "2", { inputmode: "numeric" }), { name: "adults" })}
-          ${field("Children", input("children", "0", { inputmode: "numeric" }), { name: "children" })}
+          ${countField("Days", "days", "5")}
+          ${countField("Adults", "adults", "2")}
+          ${countField("Children", "children", "0")}
+          ${countField("Lap infants", "lapInfants", "0")}
+          ${countField("Infants with a seat", "seatInfants", "0")}
           ${field("Season profit", select("season", String(d.season), [["20", "20 percent"], ["15", "15 percent"]]), { name: "season" })}
           <div class="field">${check("guide", false, "Guide")}${check("meals", false, "Meals")}</div>
-        </div>`)}<div class="row-actions">${btn("Calculate quote", { v: "primary", ic: "calc", a: { type: "submit" } })}</div></form>
-        <section class="card quote-result" aria-live="polite" id="quote-result">${empty("calc", "No quote yet", "Fill in the trip and press Calculate quote.")}</section></div>`;
+        </div>`)}
+        ${card("One night or one day", `<div class="form-grid">
+          ${countField("Night number", "night", "")}
+          ${field("Night rate", money("nightRate", ""), { name: "nightRate", opt: true })}
+          ${field("Night hotel", input("nightHotel", ""), { name: "nightHotel", full: true, opt: true })}
+          ${countField("Day", "day", "")}
+          ${field("That day", select("dayChange", "", [["", "Leave the vehicle"], ["clear", "No vehicle"], ["jeep", "Jeep"], ["vehicle", "Higher vehicle"]]), { name: "dayChange" })}
+          ${field("Higher vehicle", select("dayVehicle", "", [["", "Choose a vehicle"], ...vehicles]), { name: "dayVehicle" })}
+          ${field("Jeep rent", money("dayRent", ""), { name: "dayRent", opt: true })}
+          ${field("Jeep fuel", money("dayFuel", ""), { name: "dayFuel", opt: true })}
+        </div>`, "Leave these blank to keep the saved hotel and the trip vehicle.")}
+        ${card("Extras", `<div class="form-grid">
+          ${field("Paid extra", input("extraName", ""), { name: "extraName", opt: true })}
+          ${field("Extra amount", money("extraAmount", ""), { name: "extraAmount", opt: true })}
+          ${field("Other mix", input("otherNote", "", { placeholder: "Use vehicle Other, then type the mix" }), { name: "otherNote", full: true, opt: true })}
+          ${field("Other rent", money("otherRent", ""), { name: "otherRent", opt: true })}
+          ${field("Other fuel", money("otherFuel", ""), { name: "otherFuel", opt: true })}
+          ${field("Other toll", money("otherToll", ""), { name: "otherToll", opt: true })}
+          ${field("Other seats", input("otherSeats", "", { inputmode: "numeric" }), { name: "otherSeats", opt: true })}
+        </div>`)}
+        <div class="row-actions">${btn("Save quote", { v: "primary", a: { type: "submit" } })}</div></form>
+        <section class="card quote-result" aria-live="polite" id="quote-result">${empty("calc", "No quote yet", "Fill in the trip and press Save quote.")}</section></div>`;
     }
     return head + t + body;
   };

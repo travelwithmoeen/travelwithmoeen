@@ -297,23 +297,87 @@
     quote(fd, form) {
       const e = {};
       const days = readCount(fd.get("days"), 30), adults = readCount(fd.get("adults"), 50);
-      const ch = String(fd.get("children")).trim();
+      const countFromZero = (raw, name, max) => {
+        const t = String(raw ?? "").trim();
+        if (!/^\d+$/.test(t) || +t > max) { e[name] = `Enter a number from 0 to ${max}.`; return 0; }
+        return +t;
+      };
+      const amountOrBlank = (raw) => {
+        const t = String(raw ?? "").replace(/,/g, "").trim();
+        if (!t) return { value: null };
+        return readAmount(t);
+      };
+      const children = countFromZero(fd.get("children"), "children", 50);
+      const laps = countFromZero(fd.get("lapInfants"), "lapInfants", 60);
+      const seatInfants = countFromZero(fd.get("seatInfants"), "seatInfants", 60);
       if (days.error) e.days = "Enter a number of days from 1 to 30.";
       if (adults.error) e.adults = "Enter a number of adults from 1 to 50.";
-      if (!/^\d+$/.test(ch) || +ch > 50) e.children = "Enter a number from 0 to 50.";
       if (fd.get("mode") === "road" && fd.get("start") === "Karachi") e.start = "Karachi starts are by air only. Choose Air or another city.";
+      const withinDays = (raw, name, label) => {
+        const t = String(raw ?? "").trim();
+        if (!t) return null;
+        if (!/^\d+$/.test(t) || +t < 1 || (days.value && +t > days.value)) { e[name] = `Enter ${label} from 1 to the number of days.`; return null; }
+        return +t;
+      };
+      const nightRaw = String(fd.get("night") ?? "").trim();
+      const nightRate = amountOrBlank(fd.get("nightRate"));
+      const nightHotel = String(fd.get("nightHotel") ?? "").trim();
+      let night = null;
+      if (nightRaw || nightRate.value != null || nightHotel) {
+        const n = withinDays(nightRaw, "night", "a night number");
+        if (!nightRaw) e.night = "Enter a night number from 1 to the number of days.";
+        if (nightRate.error) e.nightRate = nightRate.error;
+        else if (nightRate.value == null) e.nightRate = "Enter the night rate.";
+        else if (n) night = { n, rate: nightRate.value, hotel: nightHotel };
+      }
+      const dayChange = String(fd.get("dayChange") ?? "").trim();
+      const dayNumber = withinDays(fd.get("day"), "day", "a day");
+      let dayLabel = "";
+      if (dayChange || String(fd.get("day") ?? "").trim()) {
+        if (!dayNumber && !e.day) e.day = "Enter a day from 1 to the number of days.";
+        if (dayChange === "clear") dayLabel = "No vehicle";
+        else if (dayChange === "jeep") {
+          const rent = amountOrBlank(fd.get("dayRent"));
+          const fuel = amountOrBlank(fd.get("dayFuel"));
+          if (rent.error || rent.value == null) e.dayRent = rent.error || "Enter the jeep rent.";
+          if (fuel.error || fuel.value == null) e.dayFuel = fuel.error || "Enter the jeep fuel.";
+          dayLabel = "Jeep";
+        } else if (dayChange === "vehicle") {
+          dayLabel = String(fd.get("dayVehicle") ?? "").trim();
+          if (!dayLabel) e.dayVehicle = "Choose a vehicle for that day.";
+        } else e.dayChange = "Choose No vehicle, Jeep, or a higher vehicle.";
+      }
+      const extraName = String(fd.get("extraName") ?? "").trim();
+      const extraAmount = amountOrBlank(fd.get("extraAmount"));
+      if (extraName || extraAmount.value != null) {
+        if (extraAmount.error || extraAmount.value == null) e.extraAmount = extraAmount.error || "Enter the extra amount.";
+      }
+      const otherSeats = String(fd.get("otherSeats") ?? "").trim();
+      if (otherSeats && (!/^\d+$/.test(otherSeats) || +otherSeats > 60)) e.otherSeats = "Enter a number of seats from 0 to 60.";
+      ["otherRent", "otherFuel", "otherToll"].forEach((name) => {
+        const amount = amountOrBlank(fd.get(name));
+        if (amount.error) e[name] = amount.error;
+      });
       if (Object.keys(e).length) return showErrors(form, e);
       clearErrors(form);
       const pct = +fd.get("season");
-      const isSpec = fd.get("place") === "Skardu Valley" && fd.get("mode") === "road" && fd.get("start") === "Islamabad" && fd.get("grade") === "Deluxe" && fd.get("vehicle") === "Gli Car" && days.value === 5 && adults.value === 2 && +ch === 0 && !fd.has("guide") && !fd.has("meals");
+      const otherNote = String(fd.get("otherNote") ?? "").trim();
+      const plain = !night && !dayLabel && !(extraName || extraAmount.value != null) && !otherNote;
+      const isSpec = plain && fd.get("place") === "Skardu Valley" && fd.get("mode") === "road" && fd.get("start") === "Islamabad" && fd.get("grade") === "Deluxe" && fd.get("vehicle") === "Gli Car" && days.value === 5 && adults.value === 2 && children === 0 && laps === 0 && seatInfants === 0 && !fd.has("guide") && !fd.has("meals");
+      const lines = [
+        night ? `<dt>Night ${night.n}</dt><dd>${rs(night.rate)}${night.hotel ? ` · ${esc(night.hotel)}` : ""}</dd>` : "",
+        dayLabel ? `<dt>Day ${dayNumber}</dt><dd>${esc(dayLabel)}</dd>` : "",
+        extraName || extraAmount.value != null ? `<dt>${esc(extraName || "Paid extra")}</dt><dd>${rs(extraAmount.value)}</dd>` : "",
+        otherNote ? `<dt>Other mix</dt><dd>${esc(otherNote)}</dd>` : "",
+      ].join("");
       const out = $("#quote-result");
       if (isSpec) {
         const sub = 117000, profit = Math.round(sub * pct / 100), total = sub + profit;
-        out.innerHTML = `<div class="card-head"><div><h3>Quote</h3><p>Skardu Valley · road from Islamabad · Deluxe · Gli Car · 5 days · 2 adults</p></div></div><div class="card-body">
+        out.innerHTML = `<div class="card-head"><div><h3>Quote saved</h3><p>Skardu Valley · road from Islamabad · Deluxe · Gli Car · 5 days · 2 adults</p></div></div><div class="card-body">
           <dl class="sum"><dt>Subtotal</dt><dd>${rs(sub)}</dd><dt>Profit, ${pct} percent</dt><dd>${rs(profit)}</dd><dt class="sum-total">Total</dt><dd class="sum-total">${rs(total)}</dd><dt>Per adult</dt><dd>${rs(total / 2)}</dd></dl>
           <p class="help">This is the Skardu test quote from design section 5: 117,000 before profit, ${pct === 20 ? "140,400 at 20 percent" : "134,550 at 15 percent"}.</p></div>`;
       } else {
-        out.innerHTML = `<div class="card-head"><div><h3>Quote</h3></div></div><div class="card-body">${alert("info", "Priced by the office server", "The real office prices every trip with the one quote function in <b>lib/quote.ts</b>. This prototype only prices the spec example: Skardu Valley, Road, Islamabad, Deluxe, Gli Car, 5 days, 2 adults.")}</div>`;
+        out.innerHTML = `<div class="card-head"><div><h3>Quote saved</h3></div></div><div class="card-body">${lines ? `<dl class="sum">${lines}</dl>` : ""}${alert("info", "Priced by the office server", "The real office prices every trip with the one quote function in <b>lib/quote.ts</b>. This prototype only prices the spec example: Skardu Valley, Road, Islamabad, Deluxe, Gli Car, 5 days, 2 adults.")}</div>`;
       }
       out.querySelector("h3").setAttribute("tabindex", "-1"); out.querySelector("h3").focus();
     },
