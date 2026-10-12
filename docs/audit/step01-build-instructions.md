@@ -25,6 +25,6 @@ Later tasks must use the same split. Do not add a new save that stays inside one
 
 ## Do not
 
-- Do not start prices, quotes, or sprint 3 and sprint 4.
+- On this Step 1 branch, do not start prices, quotes, or later sprints. That limit was for 30 September 2026. Current work is in `docs/audit/after-step03.md`.
 - Do not commit `.env` or the `resources` folder.
 - Do not put a password in the code.

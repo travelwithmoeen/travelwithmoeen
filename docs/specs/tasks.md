@@ -6,9 +6,9 @@
 **Proposal:** TWM-SOW-001, version 1.3  
 **Also read:** `docs/rules/project-structure.md` and `docs/rules/coding-standards.md`  
 
-The plan is four sprints of two weeks, plus one sprint before Phase 2. Sprints 1 and 2 are the baseline. Those tasks are built. The next sprint is office media and the Meadow design prototype. Sprint 3 is Phase 2. Sprint 4 is Phase 3. That next sprint is accepted before Phase 2 starts. Phase 2 is accepted before Phase 3 starts. Read the requirements and the design before a new task. The quote math is in design section 5. Do not invent a second formula.
+The plan is four sprints of two weeks, plus one sprint before Phase 2. Sprints 1 and 2 are the baseline. Those tasks are built. The Meadow prototype, T-36, is on `main`. The remaining work in the next sprint is office media, T-29 through T-35. Sprint 3 is Phase 2. Sprint 4 is Phase 3. T-35 is accepted before Phase 2 starts. Phase 2 is accepted before Phase 3 starts. Read the requirements and the design before a new task. The quote math is in design section 5. Do not invent a second formula.
 
-T-01 through T-28 are the baseline. Do not reopen them. The next tasks are T-29 through T-36. Do not start Phase 2 or Phase 3 until those tasks are accepted. Follow `docs/rules/project-structure.md` and `docs/rules/coding-standards.md` on every change. Step 1 office saves, and every later save, go through `app/api` and `lib/`. Do not add a server action for a new save. Security checks close in the step named in `docs/specs/requirements.md` section 11. The four security tests in section 12 run at the end of Step 2, Step 3, T-25, and T-35. Do not move a check into the next step.
+T-01 through T-28 are the baseline. Do not reopen them. T-36 is accepted. The next tasks are T-29 through T-35. Do not start Phase 2 or Phase 3 until T-35 is accepted. Follow `docs/rules/project-structure.md` and `docs/rules/coding-standards.md` on every change. Step 1 office saves, and every later save, go through `app/api` and `lib/`. Do not add a server action for a new save. Security checks close in the step named in `docs/specs/requirements.md` section 11. The four security tests in section 12 run at the end of Step 2, Step 3, T-25, and T-35. Do not move a check into the next step.
 
 ## Step 1. Office can edit public pages
 
@@ -60,7 +60,7 @@ T-01 through T-28 are the baseline. Do not reopen them. The next tasks are T-29 
 
 ## Next sprint. Office media and the design prototype
 
-Do this before Phase 2. Office media is design section 7c and BR-75 to BR-80. The design prototype is T-36. It does not change the live office.
+Do this before Phase 2. Office media is design section 7c and BR-75 to BR-80. T-36 is already accepted.
 
 | ID | Task | Covers | Done when |
 |---|---|---|---|
@@ -71,7 +71,7 @@ Do this before Phase 2. Office media is design section 7c and BR-75 to BR-80. Th
 | T-33 | Upload a review avatar. Clear the avatar without deleting the review. | BR-77, BR-78, BR-79 | The review stays after the avatar is cleared, and that office file is deleted. Remove review still deletes the whole review. |
 | T-34 | When a gallery photo, a home slide, a tour main photo, or a whole tour is replaced or removed, delete the office files. | BR-79 | The old office file is gone. Deleting a tour also deletes its office extra photos and office PDF. A photo that still uses `/images/` still loads. |
 | T-35 | Add these cases to the step script that already runs Step 3, and run the four security tests again. Update `docs/office-guide.md` so it matches the new controls. A new route is added to requirements section 13 in the same change. | BR-75, BR-62, BR-71 to BR-74 | The script still runs the Step 1, 2, and 3 cases. It refuses a Manager upload, accepts an Editor JPEG, refuses a non-PDF in the PDF field, and shows the file on the public page. `npm run lint`, `npm run check:sca`, and the ZAP baseline pass. |
-| T-36 | Finish the Meadow design prototype in `docs/office-design/`. | BR-81 | `meadow.html` opens in a browser. The Owner, Manager, and Editor links match BR-01 to BR-07. The Quote tab has the live Rates fields, including night and day. The zip is the current `docs/office-design` folder. No file under `app/`, `components/`, or `lib/` changes. The four security tests are not repeated for this file. T-35 already runs them for the media work. |
+| T-36 | Meadow design prototype. Accepted on `main` in pull request 11. | BR-81 | Done. `docs/office-design/meadow.html` is on `main`. The Owner, Manager, and Editor links match BR-01 to BR-07. The Quote tab has the night edit and the day edit. The zip matches that folder in git. No file under `app/`, `components/`, or `lib/` changed. This task does not repeat the four security tests. |
 
 ## Not in the next sprint
 
@@ -82,7 +82,7 @@ Do not build these in T-29 through T-36.
 - Building the Meadow look into the live office. T-36 is the clickable file only.
 - Phase 2 or Phase 3.
 
-Sprint 3, Phase 2. Starts after T-35 and T-36 are accepted.
+Sprint 3, Phase 2. Starts after T-35 is accepted. T-36 is already accepted.
 
 - Hours on each stop
 - Comfort, Luxury, Adventure, Exploration

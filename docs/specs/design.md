@@ -227,7 +227,7 @@ The route list in requirements section 13 is the authorization list for the whol
 
 ## 7c. Office media
 
-This is half of the next sprint. The other half is the Meadow prototype in T-36, rule BR-81. Both finish before Phase 2 and Phase 3. The media rules are BR-75 to BR-80. T-36 does not change the live office.
+This is the remaining work in the next sprint. The Meadow prototype, T-36 and BR-81, is already on `main`. Office media finishes before Phase 2 and Phase 3. The media rules are BR-75 to BR-80. T-36 does not change the live office.
 
 What the office can do today:
 
@@ -272,7 +272,7 @@ The first delivery does not promise a new uptime number. If the site is down, ch
 
 ## 10. Later phases
 
-The next sprint is office media in section 7c and the Meadow prototype in T-36. The prototype rule is BR-81. Both are accepted before Phase 2.
+The Meadow prototype, T-36 and BR-81, is accepted. The remaining next-sprint work is office media in section 7c. It is accepted before Phase 2.
 
 Phase 2 is sprint 3. It is hours per stop, the labels Comfort, Luxury, Adventure, and Exploration, and the Kashmir, Swat, and Chitral jeep products. The four jeep lines in BR-27 stay in the baseline. T-36 is the clickable file in `docs/office-design/`. Building that look into the live office is not part of T-36, Phase 2, or Phase 3.
 
