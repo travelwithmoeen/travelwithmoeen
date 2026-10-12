@@ -47,3 +47,5 @@ Only the Owner opens **Users**. Under **Create a login**, type an email and a pa
 ## Public pages an Editor can change
 
 **Tours**, **Places**, **Blog**, **Gallery**, **Reviews**, **Home slides**, and **Site details** edit the public site. Open a tour and click **Save tour** only when the new title or photo should go live.
+
+A tour main photo, a gallery photo, and a home slide can be replaced with a file. The other photo fields are a path, such as `/images/...`. Upload and remove for those fields is planned in T-29 through T-35. It is not on these screens yet.

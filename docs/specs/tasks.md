@@ -6,9 +6,9 @@
 **Proposal:** TWM-SOW-001, version 1.3  
 **Also read:** `docs/rules/project-structure.md` and `docs/rules/coding-standards.md`  
 
-The plan is four sprints of two weeks. Sprints 1 and 2 are the baseline. Sprint 3 is Phase 2. Sprint 4 is Phase 3. All three phases finish in two months. Read the requirements and the design before T-01. The quote math is in design section 5. Do not invent a second formula.
+The plan is four sprints of two weeks, plus one sprint before Phase 2. Sprints 1 and 2 are the baseline. Those tasks are built. The next sprint is office media and the Meadow design prototype. Sprint 3 is Phase 2. Sprint 4 is Phase 3. That next sprint is accepted before Phase 2 starts. Phase 2 is accepted before Phase 3 starts. Read the requirements and the design before a new task. The quote math is in design section 5. Do not invent a second formula.
 
-Your work now is T-01 through T-25, plus T-26, T-27, and T-28. T-26, T-27, and T-28 are part of Step 2, not tasks after T-25. That set is the baseline, sprints 1 and 2. Do not start sprint 3 or sprint 4. Follow `docs/rules/project-structure.md` and `docs/rules/coding-standards.md` on every change. Step 1 office saves, and every later save, go through `app/api` and `lib/`. Do not add a server action for a new save. Security checks close in the step named in `docs/specs/requirements.md` section 11. The four security tests in section 12 run at the end of Step 2, Step 3, and T-25. Do not move a check into the next step.
+T-01 through T-28 are the baseline. Do not reopen them. The next tasks are T-29 through T-36. Do not start Phase 2 or Phase 3 until those tasks are accepted. Follow `docs/rules/project-structure.md` and `docs/rules/coding-standards.md` on every change. Step 1 office saves, and every later save, go through `app/api` and `lib/`. Do not add a server action for a new save. Security checks close in the step named in `docs/specs/requirements.md` section 11. The four security tests in section 12 run at the end of Step 2, Step 3, T-25, and T-35. Do not move a check into the next step.
 
 ## Step 1. Office can edit public pages
 
@@ -58,11 +58,31 @@ Your work now is T-01 through T-25, plus T-26, T-27, and T-28. T-26, T-27, and T
 | T-24 | Check office and public screens on current Chrome, Edge, Firefox, and Safari, on a computer and on a phone. | BR-57 | The Step 1, 2, and 3 paths work on those browsers. |
 | T-25 | Short office guide in plain US English, and the three training sessions: Owner, Manager, and Editor. | BR-16, BR-56 | The guide matches the screens, including one night and one day on a quote. Office screens are in US English. |
 
-## Not in sprint 1 or sprint 2
+## Next sprint. Office media and the design prototype
 
-Do not build these during the baseline tasks T-01 to T-25.
+Do this before Phase 2. Office media is design section 7c and BR-75 to BR-80. The design prototype is T-36. It does not change the live office.
 
-Sprint 3, Phase 2:
+| ID | Task | Covers | Done when |
+|---|---|---|---|
+| T-29 | Store an office upload where the preview site can still serve it. Use the existing office save routes. The object name has no folder path. The picture store is not the backup store. Deleting or replacing an office file removes it from the store. A path under `/images/` or `/pdfs/` is not deleted. | BR-59, BR-65, BR-79, BR-80 | A file uploaded on the preview site is still on the public page after a new deployment. Replacing it removes the previous office file. A picture URL cannot read a backup. |
+| T-30 | Upload and remove one tour extra photo. Upload a tour PDF of at most 10 MB. | BR-76, BR-77, BR-78, BR-79 | An Editor adds one extra photo from a file, removes that photo, and the tour stays. That photo's office file is deleted. A PDF opens on the tour page. A renamed text file is refused. A PDF over 10 MB is refused. |
+| T-31 | Upload a place banner and a section photo. Remove a section. | BR-77, BR-78, BR-79 | The place page shows the uploaded banner. Removing a section removes that section and its office file. The place stays. |
+| T-32 | Upload a blog cover and a section photo. Add a section and remove a section. | BR-77, BR-78, BR-79 | The post page shows the uploaded cover. A new section can be added and then removed, and its office file is deleted. The post stays. |
+| T-33 | Upload a review avatar. Clear the avatar without deleting the review. | BR-77, BR-78, BR-79 | The review stays after the avatar is cleared, and that office file is deleted. Remove review still deletes the whole review. |
+| T-34 | When a gallery photo, a home slide, a tour main photo, or a whole tour is replaced or removed, delete the office files. | BR-79 | The old office file is gone. Deleting a tour also deletes its office extra photos and office PDF. A photo that still uses `/images/` still loads. |
+| T-35 | Add these cases to the step script that already runs Step 3, and run the four security tests again. Update `docs/office-guide.md` so it matches the new controls. A new route is added to requirements section 13 in the same change. | BR-75, BR-62, BR-71 to BR-74 | The script still runs the Step 1, 2, and 3 cases. It refuses a Manager upload, accepts an Editor JPEG, refuses a non-PDF in the PDF field, and shows the file on the public page. `npm run lint`, `npm run check:sca`, and the ZAP baseline pass. |
+| T-36 | Finish the Meadow design prototype in `docs/office-design/`. | BR-81 | `meadow.html` opens in a browser. The Owner, Manager, and Editor links match BR-01 to BR-07. The Quote tab has the live Rates fields, including night and day. The zip is the current `docs/office-design` folder. No file under `app/`, `components/`, or `lib/` changes. The four security tests are not repeated for this file. T-35 already runs them for the media work. |
+
+## Not in the next sprint
+
+Do not build these in T-29 through T-36.
+
+- A new tour, place, or blog post.
+- Delete a price row. That remains BR-03.
+- Building the Meadow look into the live office. T-36 is the clickable file only.
+- Phase 2 or Phase 3.
+
+Sprint 3, Phase 2. Starts after T-35 and T-36 are accepted.
 
 - Hours on each stop
 - Comfort, Luxury, Adventure, Exploration
@@ -80,4 +100,4 @@ Sprint 4, Phase 3:
 - Excel download of live prices. Only the Owner and the Manager can download it (BR-66).
 - A sticker counted by vehicles, replacing the room count from the baseline
 
-Card payment, a guest login, and a new public look stay out of these four sprints.
+Card payment, a guest login, and a new public look stay out of the baseline, office media, Phase 2, and Phase 3.
