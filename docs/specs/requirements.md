@@ -124,11 +124,15 @@ Asked for on 13 October 2026. This work is the remaining part of the next sprint
 
 A path may stay in the field. The office must also be able to upload a file and to remove that file. Removing a picture takes it off the page and deletes the stored file when this office saved that file. A picture that shipped with the site, under `/images/` or `/pdfs/`, is unlinked only. It is not deleted from the repo.
 
-The file is stored in Vercel Blob, the same store the backups already use, through `@vercel/blob` and `BLOB_READ_WRITE_TOKEN`. A picture or a PDF is saved with `access: "public"` and a name `media/` plus one file name, such as `media/1710000000000-ab12cd34ef567890.jpg`. The file name has no slash. The database stores the public URL that `put` returns. `del` removes it. Backups stay `access: "private"` under `backups/`. A media URL cannot read a backup. If `BLOB_READ_WRITE_TOKEN` is missing, the save fails and says storage is not connected. Do not write the file under `public/uploads`, and do not commit it. Do not copy the token into Production.
+Preview and Production each have their own Vercel Blob stores and their own Neon database. A token or a connection string from one environment is never copied into the other.
+
+Pictures and PDFs use the public media store for that environment, through `@vercel/blob` and `MEDIA_READ_WRITE_TOKEN`. A picture or a PDF is saved with `access: "public"` and a name `media/` plus one file name, such as `media/1710000000000-ab12cd34ef567890.jpg`. The file name has no slash. The database stores the public URL that `put` returns. `del` removes it. Backups use the private backup store for that environment, `BLOB_READ_WRITE_TOKEN`, and `access: "private"` under `backups/`. A media URL cannot read a backup. If `MEDIA_READ_WRITE_TOKEN` is missing, the save fails and says storage is not connected. Do not write the file under `public/uploads`, and do not commit it.
+
+`DATABASE_URL` on Preview points at the Preview Neon database. Production gets its own Neon database and its own `DATABASE_URL` when this app is what Production deploys. The two databases are not the same database.
 
 | ID | Requirement |
 |---|---|
-| BR-75 | An office upload of a picture still follows BR-59: JPEG, PNG, or WebP, read from the bytes, 5 MB or under. It is stored as a public Vercel Blob under `media/`, and the page stores that public URL. The Owner or the Editor may upload. The Manager is refused. |
+| BR-75 | An office upload of a picture still follows BR-59: JPEG, PNG, or WebP, read from the bytes, 5 MB or under. It is stored as a public Vercel Blob under `media/` in that environment's media store, and the page stores that public URL. The Owner or the Editor may upload. The Manager is refused. |
 | BR-76 | A tour PDF upload is a PDF, read from the bytes, 10 MB or under. Any other type is refused. |
 | BR-77 | Tour extra photos, the tour PDF, the place banner, each place section photo, the blog cover, each blog section photo, and the review avatar can be uploaded. A path can still be typed. |
 | BR-78 | One tour extra photo, one place section, one blog section, the place banner, the blog cover, and the review avatar can be removed without deleting the tour, the place, the post, or the review. A place section can already be added. A blog section can be added and removed. |

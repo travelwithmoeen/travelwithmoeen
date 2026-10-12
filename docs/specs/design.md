@@ -248,7 +248,7 @@ What this build adds:
 - Remove on a tour extra photo, a place section, a blog section, a banner, a cover, and a review avatar. The tour, place, post, and review stay.
 - Add and remove for a blog section. A place section can already be added. This build adds remove.
 - A stored file that this office uploaded is deleted when that picture is replaced or removed. The same delete runs for a gallery photo, a home slide, a tour extra photo, a tour PDF, a section photo, and every office file on a tour when that tour is deleted.
-- The file is saved with `put` from `@vercel/blob`, `access: "public"`, under `media/` plus one file name. The page stores the returned public URL and loads that URL. `del` deletes it. Backups stay `put` with `access: "private"` under `backups/`. A media URL cannot read a backup. A missing `BLOB_READ_WRITE_TOKEN` fails the save. `public/uploads` on the server disk is not the store. A PDF is at most 10 MB.
+- The file is saved with `put` from `@vercel/blob`, `access: "public"`, under `media/` plus one file name, using `MEDIA_READ_WRITE_TOKEN` for this environment. The page stores the returned public URL and loads that URL. `del` deletes it. Backups stay on this environment's private store, `put` with `access: "private"` under `backups/`, using `BLOB_READ_WRITE_TOKEN`. A media URL cannot read a backup. A missing `MEDIA_READ_WRITE_TOKEN` fails the save. `public/uploads` on the server disk is not the store. A PDF is at most 10 MB. Preview and Production do not share a Blob store or a Neon database.
 
 These saves use the office routes that already exist: tours, places, posts, photos, reviews, and slides. A new route is added to requirements section 13 in the same change. The role check stays in `lib/`. The screen does not import `lib/office` or `lib/auth`. An Editor or the Owner may upload and remove these files. A Manager is refused. Only the Owner may delete a whole tour.
 
@@ -266,7 +266,7 @@ A guest name is at most 200 characters, a phone is at most 40, an email is at mo
 
 ## 9. Backups
 
-The database is backed up once a day. A restore is done only when the data is damaged, and the client is told. The backup file is not committed and is not placed under `public/`.
+The database is backed up once a day. A restore is done only when the data is damaged, and the client is told. The backup file is not committed and is not placed under `public/`. Preview backups go to the Preview private store. Production backups go to the Production private store. Each environment also has its own public media store and its own Neon database.
 
 The first delivery does not promise a new uptime number. If the site is down, check the host, fix a fault that is inside this work, and restore from the daily backup if the data is damaged.
 

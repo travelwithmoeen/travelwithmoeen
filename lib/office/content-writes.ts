@@ -1,6 +1,5 @@
 import { randomBytes } from "crypto";
-import { mkdir, writeFile } from "fs/promises";
-import path from "path";
+import { put } from "@vercel/blob";
 import { eq, max } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { photos, places, posts, reviews, siteSettings, slides, tourDays, tours } from "@/lib/db/schema";
@@ -370,9 +369,16 @@ export async function saveUploadedImage(actor: SessionUser, file: File): Promise
   if (!kind) {
     throw new Error("Use a JPEG, PNG, or WebP file.");
   }
+  const token = process.env.MEDIA_READ_WRITE_TOKEN;
+  if (!token) {
+    throw new Error("Storage is not connected.");
+  }
   const filename = `${Date.now()}-${randomBytes(8).toString("hex")}.${kind}`;
-  const dir = path.join(process.cwd(), "public", "uploads");
-  await mkdir(dir, { recursive: true });
-  await writeFile(path.join(dir, filename), bytes);
-  return `/uploads/${filename}`;
+  const blob = await put(`media/${filename}`, bytes, {
+    access: "public",
+    token,
+    contentType: kind === "png" ? "image/png" : kind === "webp" ? "image/webp" : "image/jpeg",
+    addRandomSuffix: false,
+  });
+  return blob.url;
 }
