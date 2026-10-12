@@ -248,7 +248,7 @@ What this build adds:
 - Remove on a tour extra photo, a place section, a blog section, a banner, a cover, and a review avatar. The tour, place, post, and review stay.
 - Add and remove for a blog section. A place section can already be added. This build adds remove.
 - A stored file that this office uploaded is deleted when that picture is replaced or removed. The same delete runs for a gallery photo, a home slide, a tour extra photo, a tour PDF, a section photo, and every office file on a tour when that tour is deleted.
-- The file is saved in a public file store, and the public page loads that URL. The object name is one file name, with no folder path, as BR-59 already requires. `public/uploads` on the server disk is not the store. The backup store stays private and is not the picture store. A picture URL must not be able to read a backup. A PDF is at most 10 MB.
+- The file is saved with `put` from `@vercel/blob`, `access: "public"`, under `media/` plus one file name. The page stores the returned public URL and loads that URL. `del` deletes it. Backups stay `put` with `access: "private"` under `backups/`. A media URL cannot read a backup. A missing `BLOB_READ_WRITE_TOKEN` fails the save. `public/uploads` on the server disk is not the store. A PDF is at most 10 MB.
 
 These saves use the office routes that already exist: tours, places, posts, photos, reviews, and slides. A new route is added to requirements section 13 in the same change. The role check stays in `lib/`. The screen does not import `lib/office` or `lib/auth`. An Editor or the Owner may upload and remove these files. A Manager is refused. Only the Owner may delete a whole tour.
 

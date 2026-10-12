@@ -26,7 +26,7 @@ These were specified and are not built. They are not the next sprint.
 
 ## Planned, in this order
 
-1. **Next sprint, still open.** Office media, T-29 through T-35 (BR-75 to BR-80). Upload and remove on the photo fields that are still a path, and delete the stored file when an office upload is replaced or removed. The file must still load on the preview site. The Meadow prototype, T-36, is already on `main`.
+1. **Next sprint, still open.** Office media, T-29 through T-35 (BR-75 to BR-80). Upload and remove on the photo fields that are still a path. New files go to public Vercel Blob under `media/`, not into the private `backups/` store and not under `public/uploads`. The Meadow prototype, T-36, is already on `main`.
 2. **Phase 2.** Hours on each stop. Comfort, Luxury, Adventure, and Exploration. Kashmir, Swat, and Chitral jeep products. Starts after T-35 is accepted.
 3. **Phase 3.** Seasons by month, fuel by kilometers, guide price by area, entry tickets, quote codes, a driver copy with no prices, a guest quote download, and an Excel download of live prices. Starts after Phase 2 is accepted.
 
