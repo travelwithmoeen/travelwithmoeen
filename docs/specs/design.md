@@ -225,6 +225,33 @@ Task T-28 is part of Step 2. It runs four tests: lint on the code, `npm run chec
 
 The route list in requirements section 13 is the authorization list for the whole project. A new office route is added to that list in the same change. A route that is not on the list is refused.
 
+## 7c. Office media
+
+This is half of the next sprint. The other half is the Meadow prototype in T-36, rule BR-81. Both finish before Phase 2 and Phase 3. The media rules are BR-75 to BR-80. T-36 does not change the live office.
+
+What the office can do today:
+
+| Screen | Path | Upload | Remove |
+|---|---|---|---|
+| Tour main photo | Yes | Yes | Clear the path, or the Owner deletes the tour. The file stays. |
+| Tour extra photos | One path per line | No | Delete a line. The file stays. |
+| Tour PDF | Yes | No | Clear the path. |
+| Place banner and section photo | Yes | No | A section can be added. It cannot be removed. |
+| Blog cover and section photo | Yes | No | A section cannot be added or removed. |
+| Gallery | Yes | Yes | Remove photo. The file stays. |
+| Home slide | Yes | Yes | Remove slide. The file stays. |
+| Review avatar | Yes | No | Remove deletes the whole review. |
+
+What this build adds:
+
+- The same upload control on every row that is missing it in the table above.
+- Remove on a tour extra photo, a place section, a blog section, a banner, a cover, and a review avatar. The tour, place, post, and review stay.
+- Add and remove for a blog section. A place section can already be added. This build adds remove.
+- A stored file that this office uploaded is deleted when that picture is replaced or removed. The same delete runs for a gallery photo, a home slide, a tour extra photo, a tour PDF, a section photo, and every office file on a tour when that tour is deleted.
+- The file is saved in a public file store, and the public page loads that URL. The object name is one file name, with no folder path, as BR-59 already requires. `public/uploads` on the server disk is not the store. The backup store stays private and is not the picture store. A picture URL must not be able to read a backup. A PDF is at most 10 MB.
+
+These saves use the office routes that already exist: tours, places, posts, photos, reviews, and slides. A new route is added to requirements section 13 in the same change. The role check stays in `lib/`. The screen does not import `lib/office` or `lib/auth`. An Editor or the Owner may upload and remove these files. A Manager is refused. Only the Owner may delete a whole tour.
+
 ## 8. Guest requests
 
 | Form | Save | Also |
@@ -245,9 +272,11 @@ The first delivery does not promise a new uptime number. If the site is down, ch
 
 ## 10. Later phases
 
-Phase 2 is sprint 3. It is hours per stop, the labels Comfort, Luxury, Adventure, and Exploration, and the Kashmir, Swat, and Chitral jeep products. The four jeep lines in BR-27 stay in the baseline.
+The next sprint is office media in section 7c and the Meadow prototype in T-36. The prototype rule is BR-81. Both are accepted before Phase 2.
 
-Phase 3 is sprint 4. These are not built in sprints 1 to 3.
+Phase 2 is sprint 3. It is hours per stop, the labels Comfort, Luxury, Adventure, and Exploration, and the Kashmir, Swat, and Chitral jeep products. The four jeep lines in BR-27 stay in the baseline. T-36 is the clickable file in `docs/office-design/`. Building that look into the live office is not part of T-36, Phase 2, or Phase 3.
+
+Phase 3 is sprint 4. These are not built in the baseline, in the next sprint, or in Phase 2.
 
 - Season trip plans by month. Blossom is in April. Summer is May through September. Autumn is 10 October through 30 November. Winter is 1 December through 30 March. The exact April dates are still to be named.
 - Fuel by kilometers. Gli uses 1 liter for each 14 km. Prado uses 1 liter for each 5 km. One petrol rate and one diesel rate update every quote.

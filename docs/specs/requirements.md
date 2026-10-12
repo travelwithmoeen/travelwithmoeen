@@ -2,9 +2,9 @@
 
 **Spec:** TWM-SPEC-REQ  
 **Proposal:** TWM-SOW-001, version 1.3, September 29, 2026  
-**Status:** Ready to build  
+**Status:** Baseline built. The next sprint is office media and the Meadow design prototype, before Phase 2 and Phase 3.
 
-This file says what the first delivery must do.
+This file says what the first delivery must do, and what is planned after it. What is already in the code is listed in `docs/audit/after-step03.md`.
 
 **Also read:** `docs/specs/design.md`, `docs/specs/tasks.md`, `docs/rules/project-structure.md`, and `docs/rules/coding-standards.md`
 
@@ -116,10 +116,31 @@ The first delivery is the baseline. These items stay out of it.
 - Card payment on the website.
 - A login for guests.
 - Deleting the Excel file.
+- Office media controls beyond the three screens that already upload. Those controls are section 8a. They are the next sprint, with the Meadow prototype. They are not part of the first delivery.
 
-## 9. Phase 3, after the baseline and Phase 2
+## 8a. Office media, before Phase 2 and Phase 3
 
-These were asked for on September 29, 2026. They are kept in the plan. They are sprint 4. They are not built in sprints 1 to 3. Sprint 4 starts after sprint 3 is accepted.
+Asked for on 13 October 2026. This work is in the next sprint, together with the Meadow design prototype in T-36. The prototype is a clickable file. It does not change the live office. Both finish before Phase 2 and before Phase 3. Do not start Phase 2 or Phase 3 while these rows or T-36 are open.
+
+A path may stay in the field. The office must also be able to upload a file and to remove that file. Removing a picture takes it off the page and deletes the stored file when this office saved that file. A picture that shipped with the site, under `/images/` or `/pdfs/`, is unlinked only. It is not deleted from the repo.
+
+The file is stored where the preview site can still serve it after the request ends. Writing it only under `public/uploads` on the server disk does not count. The file is not committed.
+
+| ID | Requirement |
+|---|---|
+| BR-75 | An office upload of a picture still follows BR-59: JPEG, PNG, or WebP, read from the bytes, 5 MB or under. The stored object name is one file name, with no folder path. The page may store the full public URL of that file. The Owner or the Editor may upload. The Manager is refused. |
+| BR-76 | A tour PDF upload is a PDF, read from the bytes, 10 MB or under. Any other type is refused. |
+| BR-77 | Tour extra photos, the tour PDF, the place banner, each place section photo, the blog cover, each blog section photo, and the review avatar can be uploaded. A path can still be typed. |
+| BR-78 | One tour extra photo, one place section, one blog section, the place banner, the blog cover, and the review avatar can be removed without deleting the tour, the place, the post, or the review. A place section can already be added. A blog section can be added and removed. |
+| BR-79 | Replacing or removing an office-uploaded file deletes that stored file. This includes a gallery photo, a home slide, a tour main photo, a tour extra photo, a tour PDF, and the files on a place section or a blog section. Deleting a tour deletes the office files that tour used. A path under `/images/` or `/pdfs/` is not deleted from the repo. |
+| BR-80 | The public page shows the new file on the preview site after a refresh. The page layout does not change. |
+| BR-81 | The Meadow prototype is the clickable file `docs/office-design/meadow.html`, in the same sprint as office media. The Owner, Manager, and Editor links match BR-01 to BR-07. The quote screen includes the night edit and the day edit. The zip is that same folder. No file under `app/`, `components/`, or `lib/` changes. Building that look into the live office is not this sprint. |
+
+Creating a new tour, place, or blog post is not part of this work. Deleting a price row stays BR-03 and is not part of this work. The prototype changes no running route, so it does not repeat the four security tests. T-35 does.
+
+## 9. Phase 3, after the baseline, office media, and Phase 2
+
+These were asked for on September 29, 2026. They are kept in the plan. They are sprint 4. They are not built in the baseline, in office media, or in the Meadow prototype. Phase 2 is accepted before Phase 3 starts. Office media and the Meadow prototype are accepted before Phase 2 starts.
 
 - Season plans by month. Blossom is in April, and the exact April dates still need to be named. Summer is May through September. Autumn is 10 October through 30 November. Winter is 1 December through 30 March.
 - Fuel by kilometers. A Gli car uses 1 liter for each 14 km. A Prado uses 1 liter for each 5 km. One petrol rate and one diesel rate update every quote.
@@ -139,6 +160,10 @@ Step 1 is done when an Editor can change a tour title and a photo and the public
 Step 2 is done when the test quote equals 140,400 rupees at 20 percent, 15 percent changes only the profit, Premier is not offered, a road quote cannot start from Karachi, a Karachi air quote includes 30,000 rupees, Taobat uses Swat rates, Naran still uses the Naran rates for now, Ratti Gali still shows the website price, a night-two hotel edit changes only that night and the average, removing one day's vehicle removes that day's rent, and BR-59, BR-68, BR-70, and BR-71 through BR-74 pass. Step 2 is not done if a renamed text file or an oversized file can still be saved as a photo, or if an 11th failed sign-in inside 15 minutes is still accepted.
 
 Step 3 is done when a test contact and a test booking stay in the office list, WhatsApp still opens, an Editor can read the list and cannot delete an item, an Owner can delete a test item, and a public page response does not include the test phone number.
+
+Office media is done when BR-75 to BR-80 pass. An Editor can upload and remove a tour extra photo, a tour PDF, a place banner, a place section photo, a blog cover, a blog section photo, and a review avatar. A blog section can be added and removed. A place section can be removed. A Manager upload is refused. A file that is not a PDF is refused in the PDF field. A PDF over 10 MB is refused. A picture over 5 MB is refused. The public page on the preview site shows the file. Replacing or removing an office file deletes that file, including the office files on a deleted tour. A path under `/images/` or `/pdfs/` still loads.
+
+The Meadow prototype is done when BR-81 passes.
 
 ## 11. Security
 
@@ -180,7 +205,7 @@ The backup closes in T-23. Sprint 4 downloads close in the same sprint that buil
 
 ## 12. Security tests
 
-Four tests are the minimum. The same four run at the end of Step 2, again before Step 3 is accepted, and again before T-25 is accepted. Sprint 4 does not replace them with a different set. A step is not done if any of the four fails. Do not hide a failure with an ignore flag unless the step note names the package, the finding, and why it cannot be fixed in that step.
+Four tests are the minimum. The same four run at the end of Step 2, again before Step 3 is accepted, again before T-25 is accepted, and again before T-35 is accepted. Sprint 4 does not replace them with a different set. A step is not done if any of the four fails. Do not hide a failure with an ignore flag unless the step note names the package, the finding, and why it cannot be fixed in that step.
 
 | ID | Test | Minimum |
 |---|---|---|
@@ -207,6 +232,8 @@ IAST, every step close, from inside the running site. The script keeps these cas
 Step 2 adds, and later runs keep them: a renamed text file is refused, a file over 5 MB is refused, and the 11th failed sign-in inside 15 minutes is refused.
 
 Step 3 adds, and later runs keep them: a message over 4,000 characters is refused, and the public home page does not contain the test guest phone.
+
+Office media adds, and later runs keep them: a Manager upload returns 403, a file that is not a PDF is refused in the PDF field, and the public page shows an Editor upload.
 
 Sprint 4 adds: the driver copy has no rupee amount. The guest download has one total. An Editor cannot download the live price Excel file.
 
