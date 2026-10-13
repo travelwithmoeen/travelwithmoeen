@@ -68,6 +68,11 @@ export async function updateTourAs(actor: SessionUser, input: TourEditInput): Pr
   if (!existing) {
     return { ok: false, error: "That tour was not found." };
   }
+  const removed = await removeDroppedFiles(
+    [existing.image, existing.pdf, ...existing.galleryImages],
+    [input.image.trim(), input.pdf.trim(), ...input.galleryImages],
+  );
+  if (removed) return removed;
   await db.transaction(async (tx) => {
     await tx
       .update(tours)
@@ -101,11 +106,6 @@ export async function updateTourAs(actor: SessionUser, input: TourEditInput): Pr
       );
     }
   });
-  const removed = await removeDroppedFiles(
-    [existing.image, existing.pdf, ...existing.galleryImages],
-    [input.image.trim(), input.pdf.trim(), ...input.galleryImages],
-  );
-  if (removed) return removed;
   return { ok: true, message: "Tour saved." };
 }
 
@@ -118,11 +118,11 @@ export async function deleteTourAs(actor: SessionUser, tourId: string): Promise<
     .from(tours)
     .where(eq(tours.id, tourId))
     .limit(1);
-  await db.delete(tours).where(eq(tours.id, tourId));
   if (existing) {
     const removed = await removeDroppedFiles([existing.image, existing.pdf, ...existing.galleryImages], []);
     if (removed) return removed;
   }
+  await db.delete(tours).where(eq(tours.id, tourId));
   return { ok: true, message: "Tour deleted." };
 }
 
@@ -148,6 +148,12 @@ export async function updatePlaceAs(
     .from(places)
     .where(eq(places.slug, input.slug))
     .limit(1);
+  if (existing) {
+    const previous = [existing.bannerImage, ...existing.content.map((section) => section.image ?? "")];
+    const next = [input.bannerImage.trim(), ...input.content.map((section) => section.image ?? "")];
+    const removed = await removeDroppedFiles(previous, next);
+    if (removed) return removed;
+  }
   await db
     .update(places)
     .set({
@@ -158,12 +164,6 @@ export async function updatePlaceAs(
       content: input.content,
     })
     .where(eq(places.slug, input.slug));
-  if (existing) {
-    const previous = [existing.bannerImage, ...existing.content.map((section) => section.image ?? "")];
-    const next = [input.bannerImage.trim(), ...input.content.map((section) => section.image ?? "")];
-    const removed = await removeDroppedFiles(previous, next);
-    if (removed) return removed;
-  }
   return { ok: true, message: "Place saved." };
 }
 
@@ -190,6 +190,12 @@ export async function updatePostAs(
     .from(posts)
     .where(eq(posts.slug, input.slug))
     .limit(1);
+  if (existing) {
+    const previous = [existing.coverImage, ...existing.content.map((section) => section.image ?? "")];
+    const next = [input.coverImage.trim(), ...input.content.map((section) => section.image ?? "")];
+    const removed = await removeDroppedFiles(previous, next);
+    if (removed) return removed;
+  }
   await db
     .update(posts)
     .set({
@@ -201,12 +207,6 @@ export async function updatePostAs(
       content: input.content,
     })
     .where(eq(posts.slug, input.slug));
-  if (existing) {
-    const previous = [existing.coverImage, ...existing.content.map((section) => section.image ?? "")];
-    const next = [input.coverImage.trim(), ...input.content.map((section) => section.image ?? "")];
-    const removed = await removeDroppedFiles(previous, next);
-    if (removed) return removed;
-  }
   return { ok: true, message: "Post saved." };
 }
 
@@ -226,6 +226,10 @@ export async function savePhotoAs(
   const span = input.span === "tall" || input.span === "wide" || input.span === "large" ? input.span : null;
   if (input.id) {
     const [existing] = await db.select({ src: photos.src }).from(photos).where(eq(photos.id, input.id)).limit(1);
+    if (existing) {
+      const removed = await removeDroppedFiles([existing.src], [input.src.trim()]);
+      if (removed) return removed;
+    }
     await db
       .update(photos)
       .set({
@@ -236,10 +240,6 @@ export async function savePhotoAs(
         homeOnly: input.homeOnly,
       })
       .where(eq(photos.id, input.id));
-    if (existing) {
-      const removed = await removeDroppedFiles([existing.src], [input.src.trim()]);
-      if (removed) return removed;
-    }
     return { ok: true, message: "Photo saved." };
   }
   const [row] = await db.select({ value: max(photos.id) }).from(photos);
@@ -260,11 +260,11 @@ export async function deletePhotoAs(actor: SessionUser, id: number): Promise<Act
     return forbidden("You cannot edit the gallery.");
   }
   const [existing] = await db.select({ src: photos.src }).from(photos).where(eq(photos.id, id)).limit(1);
-  await db.delete(photos).where(eq(photos.id, id));
   if (existing) {
     const removed = await removeDroppedFiles([existing.src], []);
     if (removed) return removed;
   }
+  await db.delete(photos).where(eq(photos.id, id));
   return { ok: true, message: "Photo removed." };
 }
 
@@ -284,6 +284,10 @@ export async function saveReviewAs(
   const rating = input.rating;
   if (input.id) {
     const [existing] = await db.select({ avatar: reviews.avatar }).from(reviews).where(eq(reviews.id, input.id)).limit(1);
+    if (existing) {
+      const removed = await removeDroppedFiles([existing.avatar], [input.avatar.trim()]);
+      if (removed) return removed;
+    }
     await db
       .update(reviews)
       .set({
@@ -294,10 +298,6 @@ export async function saveReviewAs(
         rating,
       })
       .where(eq(reviews.id, input.id));
-    if (existing) {
-      const removed = await removeDroppedFiles([existing.avatar], [input.avatar.trim()]);
-      if (removed) return removed;
-    }
     return { ok: true, message: "Review saved." };
   }
   const [row] = await db.select({ value: max(reviews.id) }).from(reviews);
@@ -317,11 +317,11 @@ export async function deleteReviewAs(actor: SessionUser, id: number): Promise<Ac
     return forbidden("You cannot edit reviews.");
   }
   const [existing] = await db.select({ avatar: reviews.avatar }).from(reviews).where(eq(reviews.id, id)).limit(1);
-  await db.delete(reviews).where(eq(reviews.id, id));
   if (existing) {
     const removed = await removeDroppedFiles([existing.avatar], []);
     if (removed) return removed;
   }
+  await db.delete(reviews).where(eq(reviews.id, id));
   return { ok: true, message: "Review removed." };
 }
 
@@ -337,6 +337,10 @@ export async function saveSlideAs(
   }
   if (input.id) {
     const [existing] = await db.select({ image: slides.image }).from(slides).where(eq(slides.id, input.id)).limit(1);
+    if (existing) {
+      const removed = await removeDroppedFiles([existing.image], [input.image.trim()]);
+      if (removed) return removed;
+    }
     await db
       .update(slides)
       .set({
@@ -346,10 +350,6 @@ export async function saveSlideAs(
         sortOrder: input.sortOrder,
       })
       .where(eq(slides.id, input.id));
-    if (existing) {
-      const removed = await removeDroppedFiles([existing.image], [input.image.trim()]);
-      if (removed) return removed;
-    }
     return { ok: true, message: "Slide saved." };
   }
   const [row] = await db.select({ value: max(slides.id) }).from(slides);
@@ -369,11 +369,11 @@ export async function deleteSlideAs(actor: SessionUser, id: number): Promise<Act
     return forbidden("You cannot edit home slides.");
   }
   const [existing] = await db.select({ image: slides.image }).from(slides).where(eq(slides.id, id)).limit(1);
-  await db.delete(slides).where(eq(slides.id, id));
   if (existing) {
     const removed = await removeDroppedFiles([existing.image], []);
     if (removed) return removed;
   }
+  await db.delete(slides).where(eq(slides.id, id));
   return { ok: true, message: "Slide removed." };
 }
 

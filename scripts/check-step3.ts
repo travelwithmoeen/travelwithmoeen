@@ -1,9 +1,9 @@
 import { existsSync, readFileSync } from "fs";
 import path from "path";
 import { spawn } from "child_process";
-import { eq } from "drizzle-orm";
+import { eq, max } from "drizzle-orm";
 import { db, sql } from "../lib/db";
-import { guestRequests, loginFailures, tours, users } from "../lib/db/schema";
+import { guestRequests, loginFailures, places, posts, reviews, tours, users } from "../lib/db/schema";
 import { authenticate } from "../lib/auth/authenticate";
 import { createUserAs, removeUserAs } from "../lib/office/users";
 import { officeMediaPath } from "../lib/office/media";
@@ -179,6 +179,186 @@ function tourForm(
   return form;
 }
 
+function jpegFile(name: string) {
+  return new File([new Uint8Array(JPEG)], name, { type: "image/jpeg" });
+}
+
+async function assertPlaceBlogReview(editorCookie: string, shipped: string) {
+  const placeSlug = "office-media-place";
+  const postSlug = "office-media-post";
+  await db.delete(places).where(eq(places.slug, placeSlug));
+  await db.delete(posts).where(eq(posts.slug, postSlug));
+  const [idRow] = await db.select({ value: max(reviews.id) }).from(reviews);
+  const reviewId = (idRow?.value ?? 0) + 1;
+  await db.insert(places).values({
+    slug: placeSlug,
+    title: "Office media place",
+    excerpt: "Office media place",
+    bannerImage: shipped,
+    location: "Check",
+    listingNumber: 99001,
+    content: [],
+  });
+  await db.insert(posts).values({
+    slug: postSlug,
+    title: "Office media post",
+    excerpt: "Office media post",
+    author: "Office",
+    date: "2026-10-13",
+    coverImage: shipped,
+    content: [],
+  });
+  await db.insert(reviews).values({
+    id: reviewId,
+    name: "Office media review",
+    avatar: "",
+    location: "Check",
+    text: "Office media review stays.",
+    rating: 5,
+  });
+  const uploaded: string[] = [];
+  try {
+    const placeForm = new FormData();
+    placeForm.set("slug", placeSlug);
+    placeForm.set("title", "Office media place");
+    placeForm.set("excerpt", "Office media place");
+    placeForm.set("location", "Check");
+    placeForm.set("bannerImage", shipped);
+    placeForm.set("content", "[]");
+    placeForm.set("bannerPhoto", jpegFile("banner.jpg"));
+    const placeSave = await officePost("/api/office/places", placeForm, editorCookie);
+    if (placeSave.status !== 200 || !placeSave.body.ok) {
+      throw new Error(`A place banner was not saved: ${placeSave.status} ${placeSave.body.error ?? ""}`);
+    }
+    const [place] = await db.select().from(places).where(eq(places.slug, placeSlug)).limit(1);
+    if (!place?.bannerImage || !officeMediaPath(place.bannerImage)?.endsWith(".jpg")) {
+      throw new Error("The place banner was not stored as a public media file.");
+    }
+    uploaded.push(place.bannerImage);
+    const placePage = await fetch(`${siteBase()}/destinations/${placeSlug}`);
+    if (!(await placePage.text()).includes(place.bannerImage)) {
+      throw new Error("The public place page does not show the banner.");
+    }
+    const postForm = new FormData();
+    postForm.set("slug", postSlug);
+    postForm.set("title", "Office media post");
+    postForm.set("excerpt", "Office media post");
+    postForm.set("author", "Office");
+    postForm.set("date", "2026-10-13");
+    postForm.set("coverImage", shipped);
+    postForm.set("content", "[]");
+    postForm.set("coverPhoto", jpegFile("cover.jpg"));
+    const postSave = await officePost("/api/office/posts", postForm, editorCookie);
+    if (postSave.status !== 200 || !postSave.body.ok) {
+      throw new Error(`A blog cover was not saved: ${postSave.status} ${postSave.body.error ?? ""}`);
+    }
+    const [post] = await db.select().from(posts).where(eq(posts.slug, postSlug)).limit(1);
+    if (!post?.coverImage || !officeMediaPath(post.coverImage)?.endsWith(".jpg")) {
+      throw new Error("The blog cover was not stored as a public media file.");
+    }
+    uploaded.push(post.coverImage);
+    const postPage = await fetch(`${siteBase()}/blog/${postSlug}`);
+    if (!(await postPage.text()).includes(post.coverImage)) {
+      throw new Error("The public blog page does not show the cover.");
+    }
+    const reviewForm = new FormData();
+    reviewForm.set("id", String(reviewId));
+    reviewForm.set("name", "Office media review");
+    reviewForm.set("location", "Check");
+    reviewForm.set("text", "Office media review stays.");
+    reviewForm.set("rating", "5");
+    reviewForm.set("avatar", "");
+    reviewForm.set("avatarPhoto", jpegFile("avatar.jpg"));
+    const reviewSave = await officePost("/api/office/reviews", reviewForm, editorCookie);
+    if (reviewSave.status !== 200 || !reviewSave.body.ok) {
+      throw new Error(`A review photo was not saved: ${reviewSave.status} ${reviewSave.body.error ?? ""}`);
+    }
+    const [withAvatar] = await db.select().from(reviews).where(eq(reviews.id, reviewId)).limit(1);
+    if (!withAvatar?.avatar || !officeMediaPath(withAvatar.avatar)?.endsWith(".jpg")) {
+      throw new Error("The review photo was not stored as a public media file.");
+    }
+    uploaded.push(withAvatar.avatar);
+    const home = await fetch(`${siteBase()}/`);
+    if (!(await home.text()).includes(withAvatar.avatar)) {
+      throw new Error("The public page does not show the review photo.");
+    }
+    const clearForm = new FormData();
+    clearForm.set("id", String(reviewId));
+    clearForm.set("name", "Office media review");
+    clearForm.set("location", "Check");
+    clearForm.set("text", "Office media review stays.");
+    clearForm.set("rating", "5");
+    clearForm.set("avatar", "");
+    const cleared = await officePost("/api/office/reviews", clearForm, editorCookie);
+    if (cleared.status !== 200 || !cleared.body.ok) {
+      throw new Error(`The review photo could not be cleared: ${cleared.status} ${cleared.body.error ?? ""}`);
+    }
+    const [kept] = await db.select().from(reviews).where(eq(reviews.id, reviewId)).limit(1);
+    if (!kept || kept.text !== "Office media review stays." || kept.avatar !== "") {
+      throw new Error("Clearing the photo removed the review.");
+    }
+    if ((await fetch(withAvatar.avatar)).ok) {
+      throw new Error("Clearing the photo left the office file in storage.");
+    }
+    if (!existsSync(shippedFile(shipped))) {
+      throw new Error("An office upload deleted a shipped picture.");
+    }
+    const placeBack = new FormData();
+    placeBack.set("slug", placeSlug);
+    placeBack.set("title", "Office media place");
+    placeBack.set("excerpt", "Office media place");
+    placeBack.set("location", "Check");
+    placeBack.set("bannerImage", shipped);
+    placeBack.set("content", "[]");
+    const placeRestored = await officePost("/api/office/places", placeBack, editorCookie);
+    if (placeRestored.status !== 200 || !placeRestored.body.ok) {
+      throw new Error(`The place banner could not be put back: ${placeRestored.status} ${placeRestored.body.error ?? ""}`);
+    }
+    const [placeKept] = await db.select().from(places).where(eq(places.slug, placeSlug)).limit(1);
+    if (!placeKept || placeKept.bannerImage !== shipped) throw new Error("Replacing the banner removed the place.");
+    if ((await fetch(place.bannerImage)).ok) throw new Error("Replacing the banner left the office file in storage.");
+    const postBack = new FormData();
+    postBack.set("slug", postSlug);
+    postBack.set("title", "Office media post");
+    postBack.set("excerpt", "Office media post");
+    postBack.set("author", "Office");
+    postBack.set("date", "2026-10-13");
+    postBack.set("coverImage", shipped);
+    postBack.set("content", "[]");
+    const postRestored = await officePost("/api/office/posts", postBack, editorCookie);
+    if (postRestored.status !== 200 || !postRestored.body.ok) {
+      throw new Error(`The blog cover could not be put back: ${postRestored.status} ${postRestored.body.error ?? ""}`);
+    }
+    const [postKept] = await db.select().from(posts).where(eq(posts.slug, postSlug)).limit(1);
+    if (!postKept || postKept.coverImage !== shipped) throw new Error("Replacing the cover removed the post.");
+    if ((await fetch(post.coverImage)).ok) throw new Error("Replacing the cover left the office file in storage.");
+  } finally {
+    const placeBack = new FormData();
+    placeBack.set("slug", placeSlug);
+    placeBack.set("title", "Office media place");
+    placeBack.set("excerpt", "Office media place");
+    placeBack.set("location", "Check");
+    placeBack.set("bannerImage", shipped);
+    placeBack.set("content", "[]");
+    await officePost("/api/office/places", placeBack, editorCookie);
+    const postBack = new FormData();
+    postBack.set("slug", postSlug);
+    postBack.set("title", "Office media post");
+    postBack.set("excerpt", "Office media post");
+    postBack.set("author", "Office");
+    postBack.set("date", "2026-10-13");
+    postBack.set("coverImage", shipped);
+    postBack.set("content", "[]");
+    await officePost("/api/office/posts", postBack, editorCookie);
+    const removeReview = new FormData();
+    removeReview.set("id", String(reviewId));
+    await officePost("/api/office/reviews/delete", removeReview, editorCookie);
+    await db.delete(places).where(eq(places.slug, placeSlug));
+    await db.delete(posts).where(eq(posts.slug, postSlug));
+    await db.delete(reviews).where(eq(reviews.id, reviewId));
+  }
+}
+
 async function assertOfficeMedia(editorCookie: string, managerCookie: string, ownerCookie: string) {
   assertMediaGuards();
   const rows = await db.select().from(tours);
@@ -300,6 +480,7 @@ async function assertOfficeMedia(editorCookie: string, managerCookie: string, ow
     if (!existsSync(shippedFile(shipped))) {
       throw new Error("Deleting the tour deleted a shipped picture.");
     }
+    await assertPlaceBlogReview(editorCookie, shipped);
   } finally {
     const form = new FormData();
     form.set("id", "office-media-check");
