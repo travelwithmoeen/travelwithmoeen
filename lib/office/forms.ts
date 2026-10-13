@@ -15,6 +15,7 @@ import {
   saveReviewAs,
   saveSlideAs,
   saveUploadedImage,
+  saveUploadedPdf,
   updatePlaceAs,
   updatePostAs,
   updateSiteSettingsAs,
@@ -37,6 +38,27 @@ async function applyUploadedImage(actor: SessionUser, file: File): Promise<strin
   } catch (error) {
     return { ok: false, error: error instanceof Error ? error.message : "The photo could not be saved." };
   }
+}
+
+async function applyUploadedPdf(actor: SessionUser, file: File): Promise<string | ActionResult> {
+  try {
+    return await saveUploadedPdf(actor, file);
+  } catch (error) {
+    return { ok: false, error: error instanceof Error ? error.message : "The PDF could not be saved." };
+  }
+}
+
+function uploadedFile(formData: FormData, name: string) {
+  const file = formData.get(name);
+  return file instanceof File && file.size > 0 ? file : null;
+}
+
+function stringList(formData: FormData, name: string) {
+  return formData
+    .getAll(name)
+    .filter((value): value is string => typeof value === "string")
+    .map((value) => value.trim())
+    .filter(Boolean);
 }
 
 export async function loginFromForm(formData: FormData): Promise<ActionResult> {
@@ -82,11 +104,26 @@ export async function savePriceFromForm(actor: SessionUser, formData: FormData):
 
 export async function updateTourFromForm(actor: SessionUser, formData: FormData): Promise<ActionResult> {
   let image = String(formData.get("image") ?? "");
-  const file = formData.get("photo");
-  if (file instanceof File && file.size > 0) {
+  const file = uploadedFile(formData, "photo");
+  if (file) {
     const uploaded = await applyUploadedImage(actor, file);
     if (typeof uploaded !== "string") return uploaded;
     image = uploaded;
+  }
+  let pdf = String(formData.get("pdf") ?? "");
+  const pdfFile = uploadedFile(formData, "pdfFile");
+  if (pdfFile) {
+    const uploaded = await applyUploadedPdf(actor, pdfFile);
+    if (typeof uploaded !== "string") return uploaded;
+    pdf = uploaded;
+  }
+  const galleryImages =
+    formData.get("galleryImageSet") === "1" ? stringList(formData, "galleryImage") : lines(String(formData.get("galleryImages") ?? ""));
+  const extraPhoto = uploadedFile(formData, "extraPhoto");
+  if (extraPhoto) {
+    const uploaded = await applyUploadedImage(actor, extraPhoto);
+    if (typeof uploaded !== "string") return uploaded;
+    galleryImages.push(uploaded);
   }
   let itinerary: TourEditInput["itinerary"];
   try {
@@ -102,8 +139,8 @@ export async function updateTourFromForm(actor: SessionUser, formData: FormData)
     description: String(formData.get("description") ?? ""),
     duration: Number(formData.get("duration") ?? 0),
     image,
-    pdf: String(formData.get("pdf") ?? ""),
-    galleryImages: lines(String(formData.get("galleryImages") ?? "")),
+    pdf,
+    galleryImages,
     categories: lines(String(formData.get("categories") ?? "")) as TourEditInput["categories"],
     packageTypes: lines(String(formData.get("packageTypes") ?? "")) as TourEditInput["packageTypes"],
     transport: String(formData.get("transport") ?? ""),
@@ -125,11 +162,25 @@ export async function updatePlaceFromForm(actor: SessionUser, formData: FormData
   } catch {
     return { ok: false, error: "The place text could not be read." };
   }
+  let bannerImage = String(formData.get("bannerImage") ?? "");
+  const bannerPhoto = uploadedFile(formData, "bannerPhoto");
+  if (bannerPhoto) {
+    const uploaded = await applyUploadedImage(actor, bannerPhoto);
+    if (typeof uploaded !== "string") return uploaded;
+    bannerImage = uploaded;
+  }
+  for (let index = 0; index < content.length; index += 1) {
+    const sectionPhoto = uploadedFile(formData, `sectionPhoto_${index}`);
+    if (!sectionPhoto) continue;
+    const uploaded = await applyUploadedImage(actor, sectionPhoto);
+    if (typeof uploaded !== "string") return uploaded;
+    content[index] = { ...content[index], image: uploaded };
+  }
   return updatePlaceAs(actor, {
     slug: String(formData.get("slug") ?? ""),
     title: String(formData.get("title") ?? ""),
     excerpt: String(formData.get("excerpt") ?? ""),
-    bannerImage: String(formData.get("bannerImage") ?? ""),
+    bannerImage,
     location: String(formData.get("location") ?? ""),
     content,
   });
@@ -142,13 +193,27 @@ export async function updatePostFromForm(actor: SessionUser, formData: FormData)
   } catch {
     return { ok: false, error: "The post text could not be read." };
   }
+  let coverImage = String(formData.get("coverImage") ?? "");
+  const coverPhoto = uploadedFile(formData, "coverPhoto");
+  if (coverPhoto) {
+    const uploaded = await applyUploadedImage(actor, coverPhoto);
+    if (typeof uploaded !== "string") return uploaded;
+    coverImage = uploaded;
+  }
+  for (let index = 0; index < content.length; index += 1) {
+    const sectionPhoto = uploadedFile(formData, `sectionPhoto_${index}`);
+    if (!sectionPhoto) continue;
+    const uploaded = await applyUploadedImage(actor, sectionPhoto);
+    if (typeof uploaded !== "string") return uploaded;
+    content[index] = { ...content[index], image: uploaded };
+  }
   return updatePostAs(actor, {
     slug: String(formData.get("slug") ?? ""),
     title: String(formData.get("title") ?? ""),
     excerpt: String(formData.get("excerpt") ?? ""),
     author: String(formData.get("author") ?? ""),
     date: String(formData.get("date") ?? ""),
-    coverImage: String(formData.get("coverImage") ?? ""),
+    coverImage,
     content,
   });
 }
@@ -178,10 +243,17 @@ export async function deletePhotoFromForm(actor: SessionUser, formData: FormData
 
 export async function saveReviewFromForm(actor: SessionUser, formData: FormData): Promise<ActionResult> {
   const idValue = String(formData.get("id") ?? "");
+  let avatar = String(formData.get("avatar") ?? "");
+  const avatarPhoto = uploadedFile(formData, "avatarPhoto");
+  if (avatarPhoto) {
+    const uploaded = await applyUploadedImage(actor, avatarPhoto);
+    if (typeof uploaded !== "string") return uploaded;
+    avatar = uploaded;
+  }
   return saveReviewAs(actor, {
     id: idValue ? Number(idValue) : undefined,
     name: String(formData.get("name") ?? ""),
-    avatar: String(formData.get("avatar") ?? ""),
+    avatar,
     location: String(formData.get("location") ?? ""),
     text: String(formData.get("text") ?? ""),
     rating: Number(formData.get("rating") ?? 5),

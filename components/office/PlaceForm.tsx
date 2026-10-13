@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { officeFormAction } from "@/lib/http/office-client";
+import { postOfficeForm } from "@/lib/http/office-client";
 import type { ActionResult } from "@/lib/http/result";
 import type { Destination, DestinationSection } from "@/data/destinations";
 
@@ -25,7 +25,11 @@ function toDraft(section: DestinationSection): DraftSection {
 
 export function PlaceForm({ place }: { place: Destination }) {
   const [sections, setSections] = useState(place.content.map(toDraft));
-  const [state, action, pending] = useActionState(officeFormAction("/api/office/places"), null as ActionResult | null);
+  const [state, action, pending] = useActionState(async (previous: ActionResult | null, formData: FormData) => {
+    const result = await postOfficeForm("/api/office/places", formData);
+    if (result.ok) window.location.reload();
+    return result;
+  }, null as ActionResult | null);
   const content = sections.map((section) => ({
     heading: section.heading,
     body: section.body,
@@ -56,6 +60,10 @@ export function PlaceForm({ place }: { place: Destination }) {
         Banner photo
         <input className={inputClass} name="bannerImage" defaultValue={place.bannerImage} />
       </label>
+      <label className="block text-sm font-medium">
+        Upload banner
+        <input className={inputClass} name="bannerPhoto" type="file" accept="image/jpeg,image/png,image/webp" />
+      </label>
       {sections.map((section, index) => (
         <div key={index} className="space-y-2 rounded-md border p-4">
           <p className="text-sm font-medium">Section {index + 1}</p>
@@ -84,6 +92,10 @@ export function PlaceForm({ place }: { place: Destination }) {
               setSections((current) => current.map((item, itemIndex) => (itemIndex === index ? { ...item, image: event.target.value } : item)))
             }
           />
+          <label className="block text-sm">
+            Upload section photo
+            <input className={inputClass} name={`sectionPhoto_${index}`} type="file" accept="image/jpeg,image/png,image/webp" />
+          </label>
           <textarea
             className={inputClass}
             rows={3}
@@ -95,6 +107,13 @@ export function PlaceForm({ place }: { place: Destination }) {
               )
             }
           />
+          <button
+            className="text-sm text-red-700"
+            type="button"
+            onClick={() => setSections((current) => current.filter((item, itemIndex) => itemIndex !== index))}
+          >
+            Remove section
+          </button>
         </div>
       ))}
       <button
