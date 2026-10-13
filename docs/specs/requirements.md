@@ -2,7 +2,7 @@
 
 **Spec:** TWM-SPEC-REQ  
 **Proposal:** TWM-SOW-001, version 1.3, September 29, 2026  
-**Status:** Baseline built. The Meadow prototype (BR-81) is on `main`. The remaining next-sprint work is office media, before Phase 2 and Phase 3.
+**Status:** Baseline and office media are built. The next sprint is the Meadow office, promised to Moeen. Phase 2 starts after that. Phase 3 starts after Phase 2.
 
 This file says what the first delivery must do, and what is planned after it. What is already in the code is listed in `docs/audit/after-step03.md`.
 
@@ -120,7 +120,7 @@ The first delivery is the baseline. These items stay out of it.
 
 ## 8a. Office media, before Phase 2 and Phase 3
 
-Asked for on 13 October 2026. This work is the remaining part of the next sprint. The Meadow prototype in T-36 is already on `main` and meets BR-81. Office media finishes before Phase 2 and before Phase 3. Do not start Phase 2 or Phase 3 while BR-75 to BR-80 are open.
+Asked for on 13 October 2026. Office media is built. The next sprint is BR-82, the Meadow office promised to Moeen. Do not start Phase 2 or Phase 3 while BR-82 is open.
 
 A path may stay in the field. The office must also be able to upload a file and to remove that file. Removing a picture takes it off the page and deletes the stored file when this office saved that file. A picture that shipped with the site, under `/images/` or `/pdfs/`, is unlinked only. It is not deleted from the repo.
 
@@ -138,13 +138,14 @@ Pictures and PDFs use the public media store for that environment, through `@ver
 | BR-78 | One tour extra photo, one place section, one blog section, the place banner, the blog cover, and the review avatar can be removed without deleting the tour, the place, the post, or the review. A place section can already be added. A blog section can be added and removed. |
 | BR-79 | Replacing or removing an office-uploaded file deletes that stored file. This includes a gallery photo, a home slide, a tour main photo, a tour extra photo, a tour PDF, and the files on a place section or a blog section. Deleting a tour deletes the office files that tour used. A path under `/images/` or `/pdfs/` is not deleted from the repo. |
 | BR-80 | The public page shows the new file on the preview site after a refresh. The page layout does not change. |
-| BR-81 | The Meadow prototype is the clickable file `docs/office-design/meadow.html`. It is on `main`. The Owner, Manager, and Editor links match BR-01 to BR-07. The quote screen includes the night edit and the day edit. The zip is that same folder. No file under `app/`, `components/`, or `lib/` changes. Building that look into the live office is not this sprint. |
+| BR-81 | The Meadow prototype is the clickable file `docs/office-design/meadow.html`. It is on `main`. The Owner, Manager, and Editor links match BR-01 to BR-07. The quote screen includes the night edit and the day edit. The zip is that same folder. Moeen receives this file before the live office is rebuilt. |
+| BR-82 | The next sprint builds the Meadow look into the live office at `/office`. The screens match `docs/office-design/meadow.html`. The public site look does not change. Login, roles, quotes, guest requests, and media uploads stay as they are. The prototype bar that switches role without a password is not part of the live office. |
 
 Creating a new tour, place, or blog post is not part of this work. Deleting a price row stays BR-03 and is not part of this work. The prototype changes no running route, so it does not repeat the four security tests. T-35 does.
 
 ## 9. Phase 3, after the baseline, office media, and Phase 2
 
-These were asked for on September 29, 2026. They are kept in the plan. They are sprint 4. They are not built in the baseline, in office media, or in the Meadow prototype. Phase 2 is accepted before Phase 3 starts. The Meadow prototype is already accepted. Office media is accepted before Phase 2 starts.
+These were asked for on September 29, 2026. They are kept in the plan. They are sprint 4. They are not built in the baseline, in office media, or in the Meadow prototype. Phase 2 is accepted before Phase 3 starts. Office media is accepted. The Meadow office, BR-82, is accepted before Phase 2 starts.
 
 - Season plans by month. Blossom is in April, and the exact April dates still need to be named. Summer is May through September. Autumn is 10 October through 30 November. Winter is 1 December through 30 March.
 - Fuel by kilometers. A Gli car uses 1 liter for each 14 km. A Prado uses 1 liter for each 5 km. One petrol rate and one diesel rate update every quote.
@@ -167,7 +168,7 @@ Step 3 is done when a test contact and a test booking stay in the office list, W
 
 Office media is done when BR-75 to BR-80 pass. An Editor can upload and remove a tour extra photo, a tour PDF, a place banner, a place section photo, a blog cover, a blog section photo, and a review avatar. A blog section can be added and removed. A place section can be removed. A Manager upload is refused. A file that is not a PDF is refused in the PDF field. A PDF over 10 MB is refused. A picture over 5 MB is refused. The public page on the preview site shows the file. Replacing or removing an office file deletes that file, including the office files on a deleted tour. A path under `/images/` or `/pdfs/` still loads.
 
-The Meadow prototype is done. BR-81 passes on `main`.
+The Meadow prototype file is done. BR-81 passes on `main`. Moeen still needs that file. The live Meadow office is done when BR-82 passes: `/office` matches `docs/office-design/meadow.html`, the public site look is unchanged, and a person cannot change role without signing in.
 
 ## 11. Security
 

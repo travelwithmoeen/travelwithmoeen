@@ -227,7 +227,7 @@ The route list in requirements section 13 is the authorization list for the whol
 
 ## 7c. Office media
 
-This is the remaining work in the next sprint. The Meadow prototype, T-36 and BR-81, is already on `main`. Office media finishes before Phase 2 and Phase 3. The media rules are BR-75 to BR-80. T-36 does not change the live office.
+Office media is built. The rules are BR-75 to BR-80. The Meadow file, T-36 and BR-81, is on `main`. The next sprint builds that look into `/office`, rule BR-82, before Phase 2 and Phase 3.
 
 What the office can do today:
 
@@ -272,9 +272,9 @@ The first delivery does not promise a new uptime number. If the site is down, ch
 
 ## 10. Later phases
 
-The Meadow prototype, T-36 and BR-81, is accepted. The remaining next-sprint work is office media in section 7c. It is accepted before Phase 2.
+The next sprint is the Meadow office, BR-82. Moeen gets `docs/office-design/meadow.html` first. Then `/office` is rebuilt to match that file. The public site look stays. The prototype control that switches Owner, Manager, and Editor without a password stays out of the live office. This sprint is accepted before Phase 2.
 
-Phase 2 is sprint 3. It is hours per stop, the labels Comfort, Luxury, Adventure, and Exploration, and the Kashmir, Swat, and Chitral jeep products. The four jeep lines in BR-27 stay in the baseline. T-36 is the clickable file in `docs/office-design/`. Building that look into the live office is not part of T-36, Phase 2, or Phase 3.
+Phase 2 is sprint 3. It is hours per stop, the labels Comfort, Luxury, Adventure, and Exploration, and the Kashmir, Swat, and Chitral jeep products. The four jeep lines in BR-27 stay in the baseline. Phase 2 does not start until BR-82 is accepted.
 
 Phase 3 is sprint 4. These are not built in the baseline, in the next sprint, or in Phase 2.
 
