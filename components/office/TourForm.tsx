@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { officeFormAction } from "@/lib/http/office-client";
+import { officeFormAction, postOfficeForm } from "@/lib/http/office-client";
 import type { ActionResult } from "@/lib/http/result";
 import type { Tour } from "@/data/tours";
 
@@ -15,7 +15,13 @@ export function TourForm({ tour, canDelete }: { tour: Tour; canDelete: boolean }
       highlights: day.highlights.join("\n"),
     })),
   );
-  const [state, action, pending] = useActionState(officeFormAction("/api/office/tours"), null as ActionResult | null);
+  const [extras, setExtras] = useState(tour.galleryImages);
+  const [pdf, setPdf] = useState(tour.pdf);
+  const [state, action, pending] = useActionState(async (previous: ActionResult | null, formData: FormData) => {
+    const result = await postOfficeForm("/api/office/tours", formData);
+    if (result.ok) window.location.reload();
+    return result;
+  }, null as ActionResult | null);
   const [deleteState, deleteAction, deletePending] = useActionState(
     officeFormAction("/api/office/tours/delete", "/office/tours"),
     null as ActionResult | null,
@@ -72,16 +78,53 @@ export function TourForm({ tour, canDelete }: { tour: Tour; canDelete: boolean }
         </label>
         <label className="block text-sm font-medium">
           Replace photo
-          <input className={inputClass} name="photo" type="file" accept="image/*" />
+          <input className={inputClass} name="photo" type="file" accept="image/jpeg,image/png,image/webp" />
         </label>
-        <label className="block text-sm font-medium">
-          More photos, one path per line
-          <textarea className={inputClass} name="galleryImages" rows={4} defaultValue={tour.galleryImages.join("\n")} />
-        </label>
+        <div className="space-y-2">
+          <p className="text-sm font-medium">More photos</p>
+          <input type="hidden" name="galleryImageSet" value="1" />
+          {extras.map((photo, index) => (
+            <div key={`${photo}-${index}`} className="flex gap-2">
+              <input
+                className={inputClass}
+                name="galleryImage"
+                value={photo}
+                onChange={(event) =>
+                  setExtras((current) => current.map((item, itemIndex) => (itemIndex === index ? event.target.value : item)))
+                }
+              />
+              <button
+                className="text-sm text-red-700"
+                type="button"
+                onClick={() => setExtras((current) => current.filter((item, itemIndex) => itemIndex !== index))}
+              >
+                Remove photo
+              </button>
+            </div>
+          ))}
+          <label className="block text-sm font-medium">
+            Add a photo
+            <input className={inputClass} name="extraPhoto" type="file" accept="image/jpeg,image/png,image/webp" />
+          </label>
+          <button
+            className="text-sm underline"
+            type="button"
+            onClick={() => setExtras((current) => [...current, ""])}
+          >
+            Add a path
+          </button>
+        </div>
         <label className="block text-sm font-medium">
           PDF
-          <input className={inputClass} name="pdf" defaultValue={tour.pdf} />
+          <input className={inputClass} name="pdf" value={pdf} onChange={(event) => setPdf(event.target.value)} />
         </label>
+        <label className="block text-sm font-medium">
+          Upload PDF
+          <input className={inputClass} name="pdfFile" type="file" accept="application/pdf" />
+        </label>
+        <button className="text-sm text-red-700" type="button" onClick={() => setPdf("")}>
+          Remove PDF
+        </button>
         <label className="block text-sm font-medium">
           Categories, one per line
           <textarea className={inputClass} name="categories" rows={3} defaultValue={tour.categories.join("\n")} />

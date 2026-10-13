@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { officeFormAction } from "@/lib/http/office-client";
+import { postOfficeForm } from "@/lib/http/office-client";
 import type { ActionResult } from "@/lib/http/result";
 import type { Blog, BlogSection } from "@/data/blog";
 
@@ -25,7 +25,11 @@ function toDraft(section: BlogSection): DraftSection {
 
 export function PostForm({ post }: { post: Blog }) {
   const [sections, setSections] = useState(post.content.map(toDraft));
-  const [state, action, pending] = useActionState(officeFormAction("/api/office/posts"), null as ActionResult | null);
+  const [state, action, pending] = useActionState(async (previous: ActionResult | null, formData: FormData) => {
+    const result = await postOfficeForm("/api/office/posts", formData);
+    if (result.ok) window.location.reload();
+    return result;
+  }, null as ActionResult | null);
   const content = sections.map((section) => ({
     heading: section.heading,
     body: section.body,
@@ -62,6 +66,10 @@ export function PostForm({ post }: { post: Blog }) {
         Cover photo
         <input className={inputClass} name="coverImage" defaultValue={post.coverImage} />
       </label>
+      <label className="block text-sm font-medium">
+        Upload cover
+        <input className={inputClass} name="coverPhoto" type="file" accept="image/jpeg,image/png,image/webp" />
+      </label>
       {sections.map((section, index) => (
         <div key={index} className="space-y-2 rounded-md border p-4">
           <p className="text-sm font-medium">Section {index + 1}</p>
@@ -88,6 +96,10 @@ export function PostForm({ post }: { post: Blog }) {
               setSections((current) => current.map((item, itemIndex) => (itemIndex === index ? { ...item, image: event.target.value } : item)))
             }
           />
+          <label className="block text-sm">
+            Upload section photo
+            <input className={inputClass} name={`sectionPhoto_${index}`} type="file" accept="image/jpeg,image/png,image/webp" />
+          </label>
           <textarea
             className={inputClass}
             rows={3}
@@ -98,8 +110,22 @@ export function PostForm({ post }: { post: Blog }) {
               )
             }
           />
+          <button
+            className="text-sm text-red-700"
+            type="button"
+            onClick={() => setSections((current) => current.filter((item, itemIndex) => itemIndex !== index))}
+          >
+            Remove section
+          </button>
         </div>
       ))}
+      <button
+        className="text-sm underline"
+        type="button"
+        onClick={() => setSections((current) => [...current, { heading: "", body: "", image: "", highlights: "" }])}
+      >
+        Add section
+      </button>
       {state ? <p className={state.ok ? "text-sm text-green-700" : "text-sm text-red-700"}>{state.ok ? state.message : state.error}</p> : null}
       <button className="rounded-md bg-slate-900 px-4 py-2 text-white" type="submit" disabled={pending}>
         {pending ? "Saving..." : "Save post"}

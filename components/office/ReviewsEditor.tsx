@@ -1,14 +1,19 @@
 "use client";
 
-import { useActionState } from "react";
-import { officeFormAction } from "@/lib/http/office-client";
+import { useActionState, useState } from "react";
+import { officeFormAction, postOfficeForm } from "@/lib/http/office-client";
 import type { ActionResult } from "@/lib/http/result";
 import type { Testimonial } from "@/data/testimonials";
 
 const inputClass = "mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm";
 
 function ReviewFields({ review }: { review?: Testimonial }) {
-  const [state, action, pending] = useActionState(officeFormAction("/api/office/reviews"), null as ActionResult | null);
+  const [avatar, setAvatar] = useState(review?.avatar ?? "");
+  const [state, action, pending] = useActionState(async (previous: ActionResult | null, formData: FormData) => {
+    const result = await postOfficeForm("/api/office/reviews", formData);
+    if (result.ok) window.location.reload();
+    return result;
+  }, null as ActionResult | null);
   const [removed, remove, removing] = useActionState(
     officeFormAction("/api/office/reviews/delete"),
     null as ActionResult | null,
@@ -28,8 +33,15 @@ function ReviewFields({ review }: { review?: Testimonial }) {
         </label>
         <label className="block text-sm font-medium">
           Photo
-          <input className={inputClass} name="avatar" defaultValue={review?.avatar ?? ""} />
+          <input className={inputClass} name="avatar" value={avatar} onChange={(event) => setAvatar(event.target.value)} />
         </label>
+        <label className="block text-sm font-medium">
+          Upload photo
+          <input className={inputClass} name="avatarPhoto" type="file" accept="image/jpeg,image/png,image/webp" />
+        </label>
+        <button className="text-sm text-red-700" type="button" onClick={() => setAvatar("")}>
+          Clear photo
+        </button>
         <label className="block text-sm font-medium">
           Review
           <textarea className={inputClass} name="text" rows={4} defaultValue={review?.text ?? ""} required />
