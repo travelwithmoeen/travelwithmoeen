@@ -45,7 +45,7 @@ The public website stays. The office gets a private area on that same site. Gues
 | BR-19 | Road trips start from Lahore or Islamabad only. A guest from Karachi joins a road trip in one of those two cities. |
 | BR-20 | Air trips start from Karachi, Lahore, or Islamabad. |
 | BR-21 | Until the office changes them, the Islamabad air ticket is 60,000 rupees, the Lahore air extra is 10,000 rupees, and the Karachi air extra is 30,000 rupees on top of the Islamabad ticket. |
-| BR-22 | Off-season profit is 15 percent. In-season profit is 20 percent. Only the Owner and the Manager can switch it. The active rate is shown on the quote screen. |
+| BR-22 | Off-season profit is 15 percent. In-season profit is 20 percent. Only the Owner and the Manager can switch it. The active rate is shown on the quote screen. The Meadow office, BR-82, replaces this switch with any whole percent from 0 to 100. Until that office is live, the running site still uses 15 or 20. |
 | BR-23 | Prado is the preferred vehicle where that car is offered. The Excel name Parado is the same car. Other vehicles can be turned on for a route. |
 | BR-24 | The office can choose Other and type a mix, for example a Gli car plus a jeep. |
 | BR-25 | A quote can add a paid extra on top of the main vehicle. The office types the name and the amount. Examples are a musical night, a BBQ and bonfire, fireworks, a honeymoon setup, or flowers. |
@@ -138,14 +138,14 @@ Pictures and PDFs use the public media store for that environment, through `@ver
 | BR-78 | One tour extra photo, one place section, one blog section, the place banner, the blog cover, and the review avatar can be removed without deleting the tour, the place, the post, or the review. A place section can already be added. A blog section can be added and removed. |
 | BR-79 | Replacing or removing an office-uploaded file deletes that stored file. This includes a gallery photo, a home slide, a tour main photo, a tour extra photo, a tour PDF, and the files on a place section or a blog section. Deleting a tour deletes the office files that tour used. A path under `/images/` or `/pdfs/` is not deleted from the repo. |
 | BR-80 | The public page shows the new file on the preview site after a refresh. The page layout does not change. |
-| BR-81 | The Meadow prototype is the clickable file `docs/office-design/meadow.html`. It is on `main`. The Owner, Manager, and Editor links match BR-01 to BR-07. The quote screen includes the night edit and the day edit. The zip is that same folder. Moeen receives this file before the live office is rebuilt. |
+| BR-81 | The Meadow prototype is the clickable file `docs/office-design/meadow.html`. On the preview site it is also `https://new.travelwithmoeen.com/meadow`. That path is not `/office`. The Owner, Manager, and Editor links match BR-01 to BR-07. Profit is any whole percent from 0 to 100. The hotel catalog is City, then Hotel, then Room, then Occupancy, and the rate fills from that row. Each night can pick its own city, hotel, and room. A day edit changes that quote. The guest figure is one total. The staff figure lists the nights and the profit. Changing the number of days sets hotel nights to days minus one. Trip plans show Phase 2 and Phase 3 for review. The layout fits a computer and a phone. The zip is that same folder. Moeen receives this file before the live office is rebuilt. |
 | BR-82 | The next sprint builds the Meadow look into the live office at `/office`. The screens match `docs/office-design/meadow.html`. The public site look does not change. Login, roles, quotes, guest requests, and media uploads stay as they are. The prototype bar that switches role without a password is not part of the live office. |
 
 Creating a new tour, place, or blog post is not part of this work. Deleting a price row stays BR-03 and is not part of this work. The prototype changes no running route, so it does not repeat the four security tests. T-35 does.
 
 ## 9. Phase 3, after the baseline, office media, and Phase 2
 
-These were asked for on September 29, 2026. They are kept in the plan. They are sprint 4. They are not built in the baseline, in office media, or in the Meadow prototype. Phase 2 is accepted before Phase 3 starts. Office media is accepted. The Meadow office, BR-82, is accepted before Phase 2 starts.
+These were asked for on September 29, 2026. They are kept in the plan. They are sprint 4. They are not built in the baseline or in office media. The Meadow file shows them on Trip plans so they can be reviewed. They are not part of the live office until Phase 2 and Phase 3. Phase 2 is accepted before Phase 3 starts. Office media is accepted. The Meadow office, BR-82, is accepted before Phase 2 starts.
 
 - Season plans by month. Blossom is in April, and the exact April dates still need to be named. Summer is May through September. Autumn is 10 October through 30 November. Winter is 1 December through 30 March.
 - Fuel by kilometers. A Gli car uses 1 liter for each 14 km. A Prado uses 1 liter for each 5 km. One petrol rate and one diesel rate update every quote.
@@ -249,6 +249,7 @@ This list is the whole project. A new office route is added to this list in the 
 | Call | Who |
 |---|---|
 | Public pages, including home, tours, places, blog, gallery, calculator, contact, and custom trip | Anyone. No session. |
+| `GET /meadow` | Anyone. No session. The clickable Meadow prototype. It is not the office and it does not read the database. |
 | `POST /api/quote` | Anyone. A guest response is one total and uses the season saved in the office. A signed-in Owner, Manager, or Editor also receives the lines and the profit. Only an Owner or a Manager can send a different season, a night edit, or a day edit. |
 | `POST /api/requests` | Anyone. No session. Saves a contact, a custom trip, or a booking. The response does not include the name, phone, email, or message. |
 | `GET /api/content/tours`, `/tours/[id]`, `/places`, `/places/[slug]`, `/posts`, `/posts/[slug]`, `/photos`, `/reviews`, `/slides`, `/site` | Anyone. No session. Read only. The same data the public pages show. |

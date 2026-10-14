@@ -79,7 +79,7 @@ Promised to Moeen. Do this before Phase 2. The clickable file is T-36. This task
 
 | ID | Task | Covers | Done when |
 |---|---|---|---|
-| T-37 | Send Moeen `docs/office-design/meadow.html`, then rebuild `/office` to match it. | BR-81, BR-82, BR-01 to BR-07, BR-75 to BR-80 | Moeen has the prototype file. The live office screens match that file, including Dashboard, Requests, Rates and quotes, the content screens, Users, and Backups. A person still signs in with email and password. The prototype role switch is not on the live office. The public site look is unchanged. Night and day edits, guest requests, and media uploads still work. `npm run check:step3` still passes, and the four security tests pass. |
+| T-37 | Send Moeen `docs/office-design/meadow.html`, then rebuild `/office` to match it. | BR-81, BR-82, BR-01 to BR-07, BR-75 to BR-80 | Moeen has the prototype file. That file prices each night, applies a day edit, and fits a phone. The live office screens match that file, including Dashboard, Requests, Rates and quotes, the content screens, Users, and Backups. A person still signs in with email and password. The prototype role switch is not on the live office. The public site look is unchanged. Night and day edits, guest requests, and media uploads still work. `npm run check:step3` still passes, and the four security tests pass. |
 
 ## Not in T-37
 

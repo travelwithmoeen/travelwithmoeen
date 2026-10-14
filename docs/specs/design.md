@@ -276,7 +276,7 @@ The next sprint is the Meadow office, BR-82. Moeen gets `docs/office-design/mead
 
 Phase 2 is sprint 3. It is hours per stop, the labels Comfort, Luxury, Adventure, and Exploration, and the Kashmir, Swat, and Chitral jeep products. The four jeep lines in BR-27 stay in the baseline. Phase 2 does not start until BR-82 is accepted.
 
-Phase 3 is sprint 4. These are not built in the baseline, in the next sprint, or in Phase 2.
+Phase 3 is sprint 4. These are not built in the baseline, in the next sprint, or in Phase 2. The Meadow file shows them on Trip plans for review. The live office does not.
 
 - Season trip plans by month. Blossom is in April. Summer is May through September. Autumn is 10 October through 30 November. Winter is 1 December through 30 March. The exact April dates are still to be named.
 - Fuel by kilometers. Gli uses 1 liter for each 14 km. Prado uses 1 liter for each 5 km. One petrol rate and one diesel rate update every quote.

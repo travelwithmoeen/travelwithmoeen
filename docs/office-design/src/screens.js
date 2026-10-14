@@ -3,11 +3,113 @@
   const O = window.OFFICE;
   const { V, S, can, ROLE_NAME, ME, esc, icon, art, rs, num, dt, rel, btn, badge, KIND, statusBadge, field, input, textarea, select, money, check, sw, drop, alert, empty, pageHead, tabs, savebar } = O;
   const D = () => S.data;
+  const citiesOf = () => [...new Set((D().catalog || []).map((row) => row.city))];
+  const hotelsOf = (city) => [...new Set((D().catalog || []).filter((row) => row.city === city).map((row) => row.hotel))];
+  const roomsOf = (city, hotel) => (D().catalog || []).filter((row) => row.city === city && row.hotel === hotel);
+  const roomOf = (city, hotel, room) => roomsOf(city, hotel).find((row) => row.room === room) || roomsOf(city, hotel)[0];
+  const tripOf = () => {
+    const trip = D().trip || {};
+    return {
+      place: trip.place || "Skardu Valley",
+      mode: trip.mode || "road",
+      start: trip.start || "Islamabad",
+      grade: trip.grade || "Deluxe",
+      vehicle: trip.vehicle || "Gli Car",
+      days: Number(trip.days) || ((D().nights || []).length ? D().nights.length + 1 : 5),
+      adults: Number(trip.adults) || 2,
+      children: Number(trip.children) || 0,
+      lapInfants: Number(trip.lapInfants) || 0,
+      seatInfants: Number(trip.seatInfants) || 0,
+      guide: !!trip.guide,
+      meals: !!trip.meals,
+    };
+  };
+  const hotelRow = (trip) => (D().hotels || []).find((row) => row.place === trip.place && row.start === trip.start && row.grade === trip.grade && row.offered !== false);
+  const vehicleRow = (trip, name) => (D().vehicles || []).find((row) => row.place === trip.place && row.vehicle === name && row.live) || (D().vehicles || []).find((row) => row.vehicle === name && row.live);
+  const nightCost = (night) => {
+    if (night.override != null && night.override !== "") return Number(night.override) || 0;
+    if (night.custom) {
+      const row = roomOf(night.city, night.hotel, night.room);
+      if (!row) return night.rate || 0;
+      return row.rate + (Number(night.mattresses) || 0) * row.mattress;
+    }
+    const hotel = hotelRow(tripOf());
+    return hotel ? hotel.twin : 0;
+  };
+  const quoteView = () => {
+    const trip = tripOf();
+    const pct = D().quotePct != null ? Number(D().quotePct) : Number(D().season) || 0;
+    const nights = (D().nights || []).map((night) => ({ ...night, cost: nightCost(night) }));
+    const seats = trip.adults + trip.children + trip.seatInfants;
+    const rooms = Math.max(1, Math.ceil((seats || 1) / 3));
+    const vehicle = vehicleRow(trip, trip.vehicle);
+    const rent = vehicle ? vehicle.rent : 0;
+    const fuel = vehicle ? vehicle.fuel : 0;
+    const toll = vehicle ? vehicle.toll : 0;
+    const vehicleCount = Math.max(1, Math.ceil((seats || 1) / (vehicle && vehicle.seats ? vehicle.seats : 1)));
+    const dayEdit = D().dayEdit;
+    let daily = 0;
+    let active = 0;
+    for (let day = 1; day <= trip.days; day += 1) {
+      if (dayEdit && Number(dayEdit.day) === day && dayEdit.kind === "clear") continue;
+      active += 1;
+      if (dayEdit && Number(dayEdit.day) === day && dayEdit.kind === "jeep") daily += (Number(dayEdit.rent) || 0) + (Number(dayEdit.fuel) || 0);
+      else if (dayEdit && Number(dayEdit.day) === day && dayEdit.kind === "vehicle") {
+        const named = vehicleRow(trip, dayEdit.vehicle);
+        daily += named ? named.rent + named.fuel : rent + fuel;
+      } else daily += rent + fuel;
+    }
+    const vehicleCost = vehicleCount * (daily + (active ? toll : 0));
+    const hotelCost = nights.reduce((sum, night) => sum + night.cost, 0) * rooms;
+    const guideCost = trip.guide ? 5000 * trip.days : 0;
+    const mealPeople = trip.adults + trip.children;
+    const mealRate = { Deluxe: 1200, Executive: 2000, Luxury: 2500, "Ultra Luxury": 3000 }[trip.grade] || 1200;
+    const mealCost = trip.meals ? mealRate * nights.length * mealPeople : 0;
+    const breakfastCost = trip.mode === "road" && trip.days > 1 ? 500 * mealPeople : 0;
+    const lahoreCost = trip.mode === "road" && String(trip.start).toLowerCase() === "lahore" && trip.days > 3 ? 5000 * (trip.days - 3) * vehicleCount : 0;
+    const air = D().air || {};
+    let ticketCost = 0, welcomeCost = 0, entryCost = 0, infantExtraCost = 0, stickerCost = 0;
+    if (trip.mode === "air") {
+      const adultFare = (air.islamabadTicket || 0) + (String(trip.start).toLowerCase() === "lahore" ? air.lahoreAdd || 0 : 0) + (String(trip.start).toLowerCase() === "karachi" ? air.karachiAdd || 0 : 0);
+      ticketCost = adultFare * trip.adults + Math.round((adultFare * 75) / 100) * trip.children + 1000 * trip.lapInfants + 5000 * trip.seatInfants;
+      welcomeCost = (air.welcomePack || 0) * mealPeople;
+      entryCost = (air.entry || 0) * mealPeople;
+      infantExtraCost = (air.infantExtra || 0) * (trip.lapInfants + trip.seatInfants);
+      stickerCost = (air.sticker || 0) * rooms;
+    }
+    const travelers = trip.adults + trip.children + trip.lapInfants + trip.seatInfants;
+    const jeepLines = (D().jeeps || []).filter((line) => line.live && line.baseline && line.place === trip.place && String(line.mode).toLowerCase() === trip.mode);
+    const lines = [{ label: "Vehicle", amount: vehicleCost }, { label: "Hotel", amount: hotelCost }];
+    if (guideCost) lines.push({ label: "Guide", amount: guideCost });
+    if (mealCost) lines.push({ label: "Meals", amount: mealCost });
+    if (breakfastCost) lines.push({ label: "Arrival breakfast", amount: breakfastCost });
+    if (lahoreCost) lines.push({ label: "Lahore road extra", amount: lahoreCost });
+    if (ticketCost) lines.push({ label: "Air tickets", amount: ticketCost });
+    if (welcomeCost) lines.push({ label: "Welcome pack", amount: welcomeCost });
+    if (entryCost) lines.push({ label: "Entry", amount: entryCost });
+    if (infantExtraCost) lines.push({ label: "Infant extra", amount: infantExtraCost });
+    if (stickerCost) lines.push({ label: "Sticker", amount: stickerCost });
+    jeepLines.forEach((line) => lines.push({ label: line.label, amount: line.amount * Math.ceil((travelers || 1) / 6) }));
+    if (D().paidExtra && D().paidExtra.amount) lines.push({ label: D().paidExtra.name || "Paid extra", amount: D().paidExtra.amount });
+    const sub = lines.reduce((sum, line) => sum + line.amount, 0);
+    const profit = Math.round((sub * pct) / 100);
+    const average = nights.length ? Math.round(nights.reduce((sum, night) => sum + night.cost, 0) / nights.length) : 0;
+    const untouched = nights.length === Math.max(0, trip.days - 1) && nights.every((night) => !night.custom && (night.override == null || night.override === "")) && !dayEdit && !trip.guide && !trip.meals && !(D().paidExtra && D().paidExtra.amount);
+    return { lines, sub, profit, guest: sub + profit, nights, pct, average, hotel: hotelCost, spec: untouched && sub === 117000 && pct === 20 };
+  };
+  const quotePanel = (saved) => {
+    const view = quoteView();
+    const trip = tripOf();
+    const staff = view.lines.map((line) => `<dt>${esc(line.label)}</dt><dd>${rs(line.amount)}</dd>`).join("");
+    const note = view.spec ? "This is the Skardu test. The subtotal is 117,000 and the guest total is 140,400 at 20 percent." : "A changed night uses that room's rate. The guest still sees one total.";
+    return `<div class="card-head"><div><h3>${saved ? "Quote saved" : "This quote"}</h3><p>${esc(trip.place)} · ${esc(trip.mode)} from ${esc(trip.start)} · ${esc(trip.vehicle)} · ${trip.days} days · ${trip.adults} adults</p></div></div><div class="card-body"><dl class="sum">${staff}<dt>Subtotal</dt><dd>${rs(view.sub)}</dd><dt>Profit, ${view.pct} percent</dt><dd>${rs(view.profit)}</dd><dt class="sum-total">Guest total</dt><dd class="sum-total">${rs(view.guest)}</dd>${view.average ? `<dt>Average nightly rate</dt><dd>${rs(view.average)}</dd>` : ""}</dl><p class="help">${note}</p></div>`;
+  };
+  const choose = (attr, value, options) => `<select class="select" ${attr}>${options.map((option) => `<option value="${esc(option)}" ${option === value ? "selected" : ""}>${esc(option)}</option>`).join("")}</select>`;
 
   /* ---------- Navigation model ---------- */
   const NAV = [
     ["Overview", [["dashboard", "Dashboard", "home", () => true], ["requests", "Requests", "inbox", () => true]]],
-    ["Sales", [["rates", "Rates and quotes", "tag", can.rates]]],
+    ["Sales", [["rates", "Rates and quotes", "tag", can.rates], ["plans", "Trip plans", "clock", can.rates]]],
     ["Content", [["tours", "Tours", "map", can.content], ["places", "Places", "pin", can.content], ["blog", "Blog", "file", can.content], ["gallery", "Gallery", "image", can.content], ["reviews", "Reviews", "star", can.content], ["slides", "Home slides", "slides", can.content], ["site", "Site details", "sliders", can.content]]],
     ["Admin", [["users", "Users", "users", can.users], ["backups", "Backups", "database", can.backup]]],
   ];
@@ -31,7 +133,7 @@
   const newMenu = () => {
     const items = [
       ...(can.rates() ? [["#/rates/quote", "calc", "New quote"]] : []),
-      ...(can.content() ? [["#/gallery/new", "image", "Gallery photo"], ["#/reviews/new", "star", "Review"], ["#/slides/new", "slides", "Home slide"]] : []),
+      ...(can.content() ? [["#/tours/new", "map", "New tour"], ["#/gallery/new", "image", "Gallery photo"], ["#/reviews/new", "star", "Review"], ["#/slides/new", "slides", "Home slide"]] : []),
       ...(can.users() ? [["#/users?create=1", "users", "Office login"]] : []),
     ];
     if (!items.length) return "";
@@ -201,9 +303,13 @@
       <div class="stats">
         ${stat("inbox", "New requests", nw.length, nw.length ? `Oldest ${rel(nw[nw.length - 1].at).toLowerCase()}` : "All caught up", "#/requests?status=new")}
         ${stat("clock", "In progress", prog.length, "Waiting on you or the guest", "#/requests?status=in_progress")}
-        ${can.rates() ? stat("tag", "Season profit", `${d.season}%`, "Used for guest quotes", "#/rates/season") : stat("map", "Tours live", d.tours.length, `${d.tours.filter((t) => t.featured).length} featured`, "#/tours")}
+        ${can.rates() ? stat("tag", "Profit margin", `${d.season}%`, "Guests see this on the total", "#/rates/season") : stat("map", "Tours live", d.tours.length, `${d.tours.filter((t) => t.featured).length} featured`, "#/tours")}
         ${can.backup() ? stat("database", "Last backup", dt(d.backups[0].at, { timeStyle: "short" }), dt(d.backups[0].at, { dateStyle: "medium" }), "#/backups") : stat("checkCircle", "Closed", R.filter((r) => r.status === "closed").length, "Requests done", "#/requests?status=closed")}
       </div>
+      ${can.rates() ? (() => { const view = quoteView(); return `<section class="card" style="margin-bottom:16px"><div class="card-head"><div><h3>Latest quote</h3><p>${view.nights.length ? `${view.nights.length} nights, then ${view.pct}% profit.` : "No hotel night. Then " + view.pct + "% profit."}</p></div>${btn("Open quote", { v: "ghost", size: "sm", href: "#/rates/quote" })}</div><div class="card-body"><div class="stats">
+        <div class="stat"><span class="stat-k">Guest sees</span><span class="stat-v">${rs(view.guest)}</span><span class="stat-m">One total. No lines and no profit.</span></div>
+        <div class="stat"><span class="stat-k">Staff sees</span><span class="stat-v">${rs(view.sub)}</span><span class="stat-m">${view.lines.map((line) => `${line.label} ${rs(line.amount)}`).join(". ")}. Profit ${rs(view.profit)}.</span></div>
+      </div></div></section>`; })() : ""}
       <div class="dash-grid">
         <section class="card"><div class="card-head"><div><h3>Latest requests</h3><p>Newest first</p></div>${btn("Open inbox", { v: "ghost", size: "sm", href: "#/requests" })}</div>
           <ul class="mini-list" role="list">${latest.map((r) => `<li><a href="#/requests/${r.id}"><span class="avatar sm" aria-hidden="true">${esc(r.name.slice(0, 1))}</span><span class="mini-main"><b>${esc(r.name)}</b><small>${esc(r.message.slice(0, 70))}${r.message.length > 70 ? "…" : ""}</small></span><span class="mini-meta"><small class="muted" title="${dt(r.at)}">${rel(r.at)}</small>${statusBadge(r.status)}</span></a></li>`).join("")}</ul></section>
@@ -214,7 +320,7 @@
         <section class="card"><div class="card-head"><div><h3>Recent activity</h3><p>Changes made in the office</p></div></div>
           <ol class="feed" role="list">${act.map((a) => `<li><span class="avatar sm" aria-hidden="true">${esc(a.who.slice(0, 2).toUpperCase())}</span><span class="feed-main"><a href="${a.href}">${esc(a.text)}</a><small>${esc(a.who)} · <time datetime="${a.at}" title="${dt(a.at)}">${rel(a.at)}</time></small></span></li>`).join("")}</ol></section>
         <section class="card"><div class="card-head"><div><h3>Quick actions</h3></div></div><div class="card-body quick">
-          ${can.rates() ? btn("New quote", { ic: "calc", href: "#/rates/quote" }) + btn("Edit hotel rates", { ic: "tag", href: "#/rates/hotels" }) : ""}
+          ${can.rates() ? btn("New quote", { ic: "calc", href: "#/rates/quote" }) + btn("Profit margin", { ic: "tag", href: "#/rates/season" }) : ""}
           ${can.content() ? btn("Edit a tour", { ic: "map", href: "#/tours" }) + btn("Add a gallery photo", { ic: "image", href: "#/gallery/new" }) : ""}
           ${can.users() ? btn("Create a login", { ic: "users", href: "#/users?create=1" }) : ""}
           ${btn("Keyboard shortcuts", { ic: "keyboard", a: { "data-action": "shortcuts" } })}
@@ -278,7 +384,7 @@
 
   /* Rates */
   const moneyCell = (name, v, label) => `<div class="money money-sm"><span class="affix" aria-hidden="true">Rs</span><input class="input" name="${esc(name)}" id="${esc(name)}" inputmode="numeric" autocomplete="off" value="${esc(num(v))}" data-money aria-label="${esc(label)}"></div>`;
-  const RATE_TABS = [["hotels", "Hotels"], ["vehicles", "Vehicles"], ["air", "Air extras"], ["jeeps", "Jeep lines"], ["season", "Season"], ["quote", "Quote"]];
+  const RATE_TABS = [["hotels", "Hotels"], ["catalog", "Hotel catalog"], ["vehicles", "Vehicles"], ["air", "Air extras"], ["jeeps", "Jeep lines"], ["season", "Profit margin"], ["quote", "Quote"]];
   SCREENS.rates = (tab = "hotels") => {
     const d = D();
     const head = pageHead("Rates and quotes", { desc: "Prices behind every guest quote. A saved change applies to new quotes at once.", actions: tab !== "quote" ? btn("New quote", { ic: "calc", href: "#/rates/quote" }) : "" });
@@ -306,28 +412,66 @@
       body = `<form data-form="jeeps" data-track novalidate><div class="tbl-wrap"><table class="tbl tbl-edit"><thead><tr><th scope="col">Jeep line</th><th scope="col">Place</th><th scope="col">Mode</th><th scope="col" class="r">Amount</th><th scope="col">On</th></tr></thead><tbody>
         ${d.jeeps.map((j) => `<tr><td data-label="Jeep line"><b>${esc(j.label)}</b></td><td data-label="Place">${esc(j.place)}</td><td data-label="Mode">${esc(j.mode)}</td><td data-label="Amount" class="r">${moneyCell(`amount_${j.id}`, j.amount, `Amount, ${j.label}`)}</td><td data-label="On">${sw(`live_${j.id}`, j.live, `On, ${j.label}`, true)}</td></tr>`).join("")}
         </tbody></table></div>${savebar()}</form>`;
+    } else if (tab === "catalog") {
+      const pick = d.pick || { city: d.catalog[0].city, hotel: d.catalog[0].hotel, room: d.catalog[0].room, occ: "room" };
+      const hotels = hotelsOf(pick.city);
+      const rooms = roomsOf(pick.city, pick.hotel);
+      const chosen = roomOf(pick.city, pick.hotel, pick.room);
+      const occ = pick.occ === "mattress" ? "mattress" : "room";
+      const occRate = chosen ? chosen.rate + (occ === "mattress" ? chosen.mattress : 0) : 0;
+      body = `${alert("info", "Hotel catalog", "Choose a city, then a hotel, then a room, then occupancy. The rate fills in from that row.")}
+        ${card("Find a rate", `<div class="form-grid">
+          ${field("City", choose('data-catalog="city"', pick.city, citiesOf()), { name: "city" })}
+          ${field("Hotel", choose('data-catalog="hotel"', pick.hotel, hotels), { name: "hotel" })}
+          ${field("Room", choose('data-catalog="room"', pick.room, rooms.map((row) => row.room)), { name: "room" })}
+          ${field("Occupancy", `<select class="select" data-catalog="occ" aria-label="Occupancy"><option value="room" ${occ === "room" ? "selected" : ""}>${chosen ? chosen.persons : 2} persons</option><option value="mattress" ${occ === "mattress" ? "selected" : ""}>${chosen ? chosen.persons : 2} persons + 1 mattress</option></select>`, { name: "occ" })}
+          ${field("Persons", `<input class="input" value="${chosen ? chosen.persons : ""}" readonly aria-label="Persons">`, { name: "persons" })}
+          ${field("Extra mattress", `<input class="input" value="${chosen ? rs(chosen.mattress) : ""}" readonly aria-label="Extra mattress">`, { name: "mattress" })}
+          ${field("Nightly rate", `<input class="input" value="${chosen ? rs(occRate) : ""}" readonly aria-label="Nightly rate">`, { name: "rate" })}
+        </div>`)}
+        <div class="tbl-wrap"><table class="tbl"><thead><tr><th scope="col">City</th><th scope="col">Hotel</th><th scope="col">Room</th><th scope="col" class="r">Persons</th><th scope="col" class="r">Extra mattress</th><th scope="col" class="r">Nightly rate</th></tr></thead><tbody>
+        ${d.catalog.map((row) => `<tr data-search="${esc((row.city + " " + row.hotel + " " + row.room).toLowerCase())}"><td data-label="City">${esc(row.city)}</td><td data-label="Hotel"><b>${esc(row.hotel)}</b></td><td data-label="Room">${esc(row.room)}</td><td data-label="Persons" class="r">${row.persons}</td><td data-label="Extra mattress" class="r">${rs(row.mattress)}</td><td data-label="Nightly rate" class="r">${rs(row.rate)}</td></tr>`).join("")}
+        </tbody></table></div>`;
     } else if (tab === "season") {
-      body = `<form data-form="season" novalidate>${card("Season profit", `<fieldset class="radios"><legend class="label">Profit used for guest quotes</legend>
-          <label class="radio-card"><input type="radio" name="percent" value="20" ${d.season === 20 ? "checked" : ""}><span><b>20 percent</b><small>Peak season</small></span></label>
-          <label class="radio-card"><input type="radio" name="percent" value="15" ${d.season === 15 ? "checked" : ""}><span><b>15 percent</b><small>Off season</small></span></label></fieldset>
-          <div class="row-actions">${btn("Save season", { v: "primary", a: { type: "submit" } })}</div>`, "A single quote can still use the other season.")}</form>`;
+      body = `<form data-form="season" novalidate>${card("Profit margin", `<div class="form-grid">
+          ${field("Percent", `<input class="input" name="percent" id="percent" type="number" min="0" max="100" inputmode="numeric" value="${d.season}">`, { name: "percent", help: "Any whole number from 0 to 100. Guests use this saved percent." })}
+          <label class="field"><span class="label">Slider</span><input class="range" name="slider" type="range" min="0" max="100" value="${d.season}" aria-label="Profit margin slider" oninput="this.form.percent.value=this.value"></label>
+        </div><div class="row-actions">${btn("Save profit margin", { v: "primary", a: { type: "submit" } })}</div>`, "A quote can still use a different percent for that one quote.")}</form>`;
     } else {
       const vehicles = [...new Set(d.vehicles.filter((v) => v.live).map((v) => v.vehicle))];
+      const trip = d.trip || {};
+      const tv = (name, fallback) => (trip[name] != null && trip[name] !== "" ? trip[name] : fallback);
       const countField = (label, name, value) => field(label, input(name, value, { inputmode: "numeric" }), { name });
-      body = `<div class="quote-grid"><form data-form="quote" novalidate>${card("Trip", `<div class="form-grid">
-          ${field("Place", select("place", "Skardu Valley", uniq(d.hotels.map((h) => h.place))), { name: "place" })}
-          ${field("Travel by", select("mode", "road", [["road", "Road"], ["air", "Air"]]), { name: "mode" })}
-          ${field("Start city", select("start", "Islamabad", ["Islamabad", "Lahore", "Karachi"]), { name: "start", help: "Karachi starts are by air only." })}
-          ${field("Grade", select("grade", "Deluxe", ["Deluxe", "Executive", "Luxury", "Ultra Luxury"]), { name: "grade" })}
-          ${field("Vehicle", select("vehicle", "Gli Car", vehicles), { name: "vehicle" })}
-          ${countField("Days", "days", "5")}
-          ${countField("Adults", "adults", "2")}
-          ${countField("Children", "children", "0")}
-          ${countField("Lap infants", "lapInfants", "0")}
-          ${countField("Infants with a seat", "seatInfants", "0")}
-          ${field("Season profit", select("season", String(d.season), [["20", "20 percent"], ["15", "15 percent"]]), { name: "season" })}
-          <div class="field">${check("guide", false, "Guide")}${check("meals", false, "Meals")}</div>
+      const quotePct = tv("season", d.season);
+      body = `<form data-form="quote" class="quote-form" novalidate><div class="quote-side">${card("Trip", `<div class="form-grid">
+          ${field("Place", select("place", tv("place", "Skardu Valley"), uniq(d.hotels.map((h) => h.place))), { name: "place" })}
+          ${field("Travel by", select("mode", tv("mode", "road"), [["road", "Road"], ["air", "Air"]]), { name: "mode" })}
+          ${field("Start city", select("start", tv("start", "Islamabad"), ["Islamabad", "Lahore", "Karachi"]), { name: "start", help: "Karachi starts are by air only." })}
+          ${field("Grade", select("grade", tv("grade", "Deluxe"), ["Deluxe", "Executive", "Luxury", "Ultra Luxury"]), { name: "grade" })}
+          ${field("Vehicle", select("vehicle", tv("vehicle", "Gli Car"), vehicles), { name: "vehicle" })}
+          ${countField("Days", "days", tv("days", "5"))}
+          ${countField("Adults", "adults", tv("adults", "2"))}
+          ${countField("Children", "children", tv("children", "0"))}
+          ${countField("Lap infants", "lapInfants", tv("lapInfants", "0"))}
+          ${countField("Infants with a seat", "seatInfants", tv("seatInfants", "0"))}
+          ${field("Profit margin", `<input class="input" name="season" id="season" type="number" min="0" max="100" inputmode="numeric" value="${quotePct}">`, { name: "season", help: "This quote only. Guests still use the saved margin." })}
+          <label class="field"><span class="label">Slider</span><input class="range" type="range" min="0" max="100" value="${quotePct}" aria-label="Quote profit slider" oninput="this.form.season.value=this.value"></label>
+          <div class="field">${check("guide", !!trip.guide, "Guide")}${check("meals", !!trip.meals, "Meals")}</div>
         </div>`)}
+        <section class="card quote-result" aria-live="polite" id="quote-result">${quotePanel(false)}</section></div><div class="quote-span">
+        ${card("Each night", `<div class="tbl-wrap"><table class="tbl"><thead><tr><th scope="col">Night</th><th scope="col">City</th><th scope="col">Hotel</th><th scope="col">Room</th><th scope="col" class="r">Mattresses</th><th scope="col" class="r">Rate</th><th scope="col"><span class="sr-only">Remove</span></th></tr></thead><tbody>
+          ${d.nights.map((night, index) => `<tr><td data-label="Night"><b>${index + 1}</b></td>
+            <td data-label="City">${choose(`data-night="${index}" data-field="city" aria-label="City, night ${index + 1}"`, night.city, citiesOf())}</td>
+            <td data-label="Hotel">${choose(`data-night="${index}" data-field="hotel" aria-label="Hotel, night ${index + 1}"`, night.hotel, hotelsOf(night.city))}</td>
+            <td data-label="Room">${choose(`data-night="${index}" data-field="room" aria-label="Room, night ${index + 1}"`, night.room, roomsOf(night.city, night.hotel).map((row) => row.room))}</td>
+            <td data-label="Mattresses" class="r"><input class="input input-sm seats" data-night="${index}" data-field="mattresses" inputmode="numeric" value="${night.mattresses}" aria-label="Mattresses, night ${index + 1}"></td>
+            <td data-label="Rate" class="r">${rs(nightCost(night))}</td>
+            <td data-label="Remove">${btn("Remove night", { v: "ghost", size: "sm", iconOnly: true, ic: "trash", a: { "data-action": "remove-night", "data-i": index } })}</td></tr>`).join("")}
+          </tbody></table></div><div class="row-actions">${btn("Add a night", { ic: "plus", a: { "data-action": "add-night" } })}</div>`, "Each night picks its own city, hotel, and room. The rate follows that room.")}
+        ${(() => { const view = quoteView(); return card("Who sees the price", `<div class="stats">
+          <div class="stat"><span class="stat-k">Guest sees</span><span class="stat-v">${rs(view.guest)}</span><span class="stat-m">One total. No lines and no profit.</span></div>
+          <div class="stat"><span class="stat-k">Staff sees</span><span class="stat-v">${rs(view.sub)}</span><span class="stat-m">${view.lines.map((line) => `${line.label} ${rs(line.amount)}`).join(". ")}. Profit ${view.pct}% is ${rs(view.profit)}.</span></div>
+        </div>`, (view.nights.length ? `Average nightly rate ${rs(view.average)}. ` : "A one-day trip has no hotel night. ") + (view.spec ? "No night has been changed, so this is the Skardu test: 140,400 at 20 percent." : "The total follows the nights and the days, then the profit.")); })()}
         ${card("One night or one day", `<div class="form-grid">
           ${countField("Night number", "night", "")}
           ${field("Night rate", money("nightRate", ""), { name: "nightRate", opt: true })}
@@ -347,8 +491,7 @@
           ${field("Other toll", money("otherToll", ""), { name: "otherToll", opt: true })}
           ${field("Other seats", input("otherSeats", "", { inputmode: "numeric" }), { name: "otherSeats", opt: true })}
         </div>`)}
-        <div class="row-actions">${btn("Save quote", { v: "primary", a: { type: "submit" } })}</div></form>
-        <section class="card quote-result" aria-live="polite" id="quote-result">${empty("calc", "No quote yet", "Fill in the trip and press Save quote.")}</section></div>`;
+        <div class="row-actions">${btn("Save quote", { v: "primary", a: { type: "submit" } })}</div></div></form>`;
     }
     return head + t + body;
   };
@@ -366,15 +509,25 @@
       cols: [["Tour", (t) => `<b>${esc(t.name)}</b>`], ["Code", (t) => t.code, "mono"], ["Days", (t) => t.duration, "r"], ["Travel", (t) => esc(t.transport)], ["Home page", (t) => (t.featured ? badge("Featured", "accent") : '<span class="muted">—</span>')]],
       current: code,
     };
-    const listHead = pageHead("Tours", { desc: `${T.length} tours on the website. Prices come from Rates.` });
+    const listHead = pageHead("Tours", { desc: `${T.length} tours on the website. Each tour points at one Place.`, actions: btn("New tour", { v: "primary", ic: "plus", href: "#/tours/new" }) });
     const listHtml = toolbar("Search tours, codes, places", filterSelect("transport", "Travel", [["", "Road and air"], ["By Road", "By road"], ["By Air", "By air"]]) + filterSelect("featured", "Featured", [["", "All tours"], ["yes", "Featured only"]]), { noun: "tours", sorts: [["name:asc", "Name, A to Z"], ["code:asc", "Code"], ["days:asc", "Shortest first"], ["days:desc", "Longest first"], ["updated:desc", "Recently saved"]] }) + listView(T, spec);
     if (!code) return listHead + listHtml;
+    if (code === "new") {
+      const form = `<form data-form="tour" data-id="new" novalidate>${card("Basics", `<div class="form-grid">
+        ${field("Title", input("name", "", { required: true }), { name: "name", full: true })}
+        ${field("Description", textarea("description", "", 4), { name: "description", full: true })}
+        ${field("Place", select("placeSlug", "", [["", "Choose a place"], ...D().places.map((p) => [p.slug, p.title])]), { name: "placeSlug", help: "The Place page is the source. Its title is what this tour shows." })}
+        ${field("Days", input("duration", "1", { inputmode: "numeric" }), { name: "duration" })}
+        ${field("Travel by", select("transport", "By Road", [["By Road", "Road"], ["By Air", "Air"]]), { name: "transport" })}
+      </div>`)}${savebar("Add tour")}</form>`;
+      return pageHead("New tour", { crumb: [["Tours", "#/tours"], ["New"]], desc: "The Owner or an Editor can add a tour. Only the Owner can delete one." }) + form;
+    }
     const t = T.find((x) => x.code === code);
     if (!t) return listHead + empty("map", "Tour not found", "It may have been deleted.", btn("Back to tours", { href: "#/tours" }));
     const form = `<form data-form="tour" data-id="${t.code}" data-track novalidate>
       ${card("Basics", `<div class="form-grid">${field("Title", input("name", t.name, { required: true, "data-bind-src": "name", "data-count": 90 }), { name: "name", full: true })}
         ${field("Description", textarea("description", t.description, 5, { "data-bind-src": "description", "data-count": 400 }), { name: "description", full: true, help: "Shown under the title on the tour page." })}
-        ${field("Location", input("location", t.location, { "data-bind-src": "location" }), { name: "location" })}${field("Region", input("region", t.region), { name: "region" })}
+        ${field("Place", select("placeSlug", t.placeSlug || "", [["", "Choose a place"], ...D().places.map((p) => [p.slug, p.title])]), { name: "placeSlug", help: "The Place page is the source. Its title is what this tour shows." })}${field("Region", input("region", t.region), { name: "region" })}
         ${field("Days", input("duration", t.duration, { inputmode: "numeric", "data-bind-src": "duration" }), { name: "duration" })}${field("Travel by", select("transport", t.transport, [["By Road", "Road"], ["By Air", "Air"]]), { name: "transport" })}</div>`, "Shown on the tour card and at the top of the tour page.")}
       ${card("Photos", `${field("Main photo", drop("photo", t.image), { name: "photo" })}${field("More photos, one path per line", textarea("gallery", lines(t.gallery), 3), { name: "gallery", opt: true })}`)}
       ${card("Day plan", repeat("days", t.days, (dd, i) => repItem("Day", i, `<div class="form-grid">${field("Title", input("day_title", dd.title || ""), { full: true })}${field("What happens", textarea("day_text", dd.text || "", 2), { full: true })}${field("Highlights, one per line", textarea("day_hl", lines(dd.highlights), 2), { full: true, opt: true })}</div>`), "Add day"), "One block per day, in order.")}
@@ -400,6 +553,7 @@
     if (!p) return listHead + empty("pin", "Place not found", "");
     const form = `<form data-form="place" data-id="${p.slug}" data-track novalidate>
       ${card("Basics", `<div class="form-grid">${field("Title", input("title", p.title, { required: true, "data-bind-src": "title" }), { name: "title", full: true })}${field("Short text", textarea("excerpt", p.excerpt, 5, { "data-bind-src": "excerpt", "data-count": 400 }), { name: "excerpt", full: true, help: "Shown on the place card." })}${field("Location", input("location", p.location, { "data-bind-src": "location" }), { name: "location" })}</div>`)}
+      ${card("Tours that use this place", D().tours.filter((tour) => tour.placeSlug === p.slug).length ? `<ul class="mini-list" role="list">${D().tours.filter((tour) => tour.placeSlug === p.slug).map((tour) => `<li><a href="#/tours/${tour.code}"><span class="mini-main"><b>${esc(tour.name)}</b><small>${tour.duration} days · ${esc(tour.transport)}</small></span></a></li>`).join("")}</ul>` : `<p class="help">No tour points here yet. Choose this place on a tour.</p>`, "Changing this title changes those tours. Editing a tour does not rewrite this page.")}
       ${card("Banner photo", field("Banner", drop("photo", p.banner), { name: "photo" }))}
       ${card("Sections", sectionsEditor(p.sections), "The page body, top to bottom.")}${savebar()}</form>`;
     const preview = `<div class="pv-card"><span class="pv-img tall" style="${art(p.title)}"><b class="pv-over" data-bind="title">${esc(p.title)}</b></span><div class="pv-body"><small>${icon("pin")}<span data-bind="location">${esc(p.location)}</span></small><p data-bind="excerpt">${esc(p.excerpt)}</p></div></div>`;
@@ -525,6 +679,36 @@
       </tbody></table></div>`;
   };
 
+  SCREENS.plans = (tab = "hours") => {
+    const head = pageHead("Trip plans", { desc: "Phase 2 and Phase 3, shown here for review. Nothing on these tabs is on the live site yet." });
+    const t = tabs([["hours", "Hours and labels"], ["jeeps", "Jeep products"], ["seasons", "Seasons and fuel"], ["files", "Quote files"]], tab, "#/plans/");
+    const plan = D().plans || {};
+    const hours = plan.stops || [];
+    const labels = [["Comfort", "Shorter drives and the hotel already on the rate row."], ["Luxury", "The higher hotel grade and a Prado."], ["Adventure", "Jeep days and the longer walks."], ["Exploration", "An extra place on the same trip."]];
+    const jeeps = [["Kashmir", "Road and air", "Jeep plus permit"], ["Swat", "Road", "Jeep to Mahodand"], ["Chitral", "Road and air", "Jeep to Kalash"]];
+    const seasons = [["Blossom", "April", "Dates still to be named"], ["Summer", "May through September", "The peak margin"], ["Autumn", "10 October through 30 November", ""], ["Winter", "1 December through 30 March", ""]];
+    let body = "";
+    if (tab === "jeeps") {
+      body = `<div class="tbl-wrap"><table class="tbl"><thead><tr><th scope="col">Place</th><th scope="col">Travel</th><th scope="col">Product</th></tr></thead><tbody>${jeeps.map((row) => `<tr><td data-label="Place"><b>${row[0]}</b></td><td data-label="Travel">${row[1]}</td><td data-label="Product">${row[2]}</td></tr>`).join("")}</tbody></table></div>`;
+    } else if (tab === "seasons") {
+      body = `${card("Season by month", `<div class="tbl-wrap"><table class="tbl"><thead><tr><th scope="col">Season</th><th scope="col">When</th><th scope="col">Note</th></tr></thead><tbody>${seasons.map((row) => `<tr><td data-label="Season"><b>${row[0]}</b></td><td data-label="When">${row[1]}</td><td data-label="Note">${row[2] || "—"}</td></tr>`).join("")}</tbody></table></div>`)}
+        <form data-form="plans" novalidate>${card("Fuel and guide", `<div class="form-grid">${field("Petrol, per liter", money("petrol", plan.petrol), { name: "petrol" })}${field("Diesel, per liter", money("diesel", plan.diesel), { name: "diesel" })}${field("Gli, km per liter", input("gli", plan.gli), { name: "gli" })}${field("Prado, km per liter", input("prado", plan.prado), { name: "prado" })}${field("Guide, Islamabad and Murree", money("guideNear", plan.guideNear), { name: "guideNear" })}${field("Guide, Skardu and Hunza", money("guideFar", plan.guideFar), { name: "guideFar" })}</div>`, "One petrol rate and one diesel rate update every quote. Gli uses 1 liter for each 14 km. Prado uses 1 liter for each 5 km.")}
+        ${card("Entry tickets and sticker", `<div class="form-grid">${field("Khunjerab entry", money("khunjerab", plan.khunjerab), { name: "khunjerab" })}${field("Deosai entry", money("deosai", plan.deosai), { name: "deosai" })}${field("Sticker", select("sticker", plan.sticker || "vehicle", [["vehicle", "Once per vehicle"], ["room", "Once per room"]]), { name: "sticker", help: "Phase 3 counts the sticker by vehicles. Until then the live office uses rooms." })}</div>`)}
+        <div class="row-actions">${btn("Save plan rates", { v: "primary", a: { type: "submit" } })}</div></form>`;
+    } else if (tab === "files") {
+      body = `${card("One quote, three files", `<div class="tbl-wrap"><table class="tbl"><thead><tr><th scope="col">File</th><th scope="col">Who</th><th scope="col">What they see</th></tr></thead><tbody>
+        <tr><td data-label="File"><b>Guest PDF</b></td><td data-label="Who">The guest</td><td data-label="What they see">One total. No lines and no profit.</td></tr>
+        <tr><td data-label="File"><b>Driver copy</b></td><td data-label="Who">Driver and field team</td><td data-label="What they see">Services, dates, flights, vehicles, and hotels. No rupee amount.</td></tr>
+        <tr><td data-label="File"><b>Live prices Excel</b></td><td data-label="Who">Owner or Manager</td><td data-label="What they see">The rate rows. An Editor cannot download it.</td></tr>
+      </tbody></table></div><p class="help">A tracking code is printed on the guest file and on the staff file.</p>`)}
+        <div class="row-actions">${btn("Guest PDF", { ic: "download", a: { "data-action": "preview-file", "data-kind": "guest" } })}${btn("Driver copy", { ic: "download", a: { "data-action": "preview-file", "data-kind": "driver" } })}${btn("Excel", { ic: "download", a: { "data-action": "preview-file", "data-kind": "excel" } })}</div>`;
+    } else {
+      body = `${card("Hours on each stop", `<form data-form="stops" novalidate><div class="tbl-wrap"><table class="tbl"><thead><tr><th scope="col">Place</th><th scope="col">Stop</th><th scope="col">Time there</th></tr></thead><tbody>${hours.map((row, index) => `<tr><td data-label="Place">${esc(row.place)}</td><td data-label="Stop"><b>${esc(row.stop)}</b></td><td data-label="Time there"><input class="input input-sm" name="stop_${index}" value="${esc(row.time)}" aria-label="Time at ${esc(row.stop)}"></td></tr>`).join("")}</tbody></table></div><div class="row-actions">${btn("Save hours", { v: "primary", a: { type: "submit" } })}</div></form>`)}
+        ${card("Trip labels", labels.map(([name, text]) => `<p><b>${name}.</b> ${text}</p>`).join(""), "One trip can carry one label. The price still comes from Rates.")}`;
+    }
+    return head + t + body;
+  };
+
   SCREENS.denied = (what) => `<div class="denied">${empty("lock", "You don't have access to this page", `You are signed in as ${S.role === "editor" ? "an Editor" : S.role === "manager" ? "a Manager" : "the Owner"}. ${what}`, btn("Go to dashboard", { href: "#/dashboard" }))}</div>`;
 
   SCREENS.login = () => `
@@ -533,7 +717,7 @@
       <div class="login-box">
         <div class="login-brand"><span class="logo" aria-hidden="true">TM</span><b>Travel With Moeen Office</b></div>
         <form class="card login-card" data-form="login" novalidate><div class="card-body">
-          <div><h1 tabindex="-1">Sign in</h1><p class="desc">Use the email and password for your office login.</p></div>
+          <div><h1 tabindex="-1">Sign in</h1><p class="desc">Use the email and password for your office login. A Manager uses the login the Owner created under Users.</p></div>
           <div data-login-error></div>
           ${field("Email", input("email", ME[S.role], { type: "email", autocomplete: "username", required: true }), { name: "email" })}
           ${field("Password", `<div class="pw"><input class="input" id="__ID__" name="password" type="password" autocomplete="current-password" required aria-describedby="__DESC__"><button type="button" class="btn btn-ghost btn-sm" data-action="toggle-pw" aria-pressed="false">${icon("eye")}<span>Show</span></button></div>`, { name: "password", help: "Try any password of 8 or more characters. Fewer shows the sign-in error." })}
@@ -544,4 +728,5 @@
     </main>`;
 
   O.SCREENS = SCREENS; O.shell = shell; O.card = card; O.navItems = navItems; O.stars = stars; O.listView = listView; O.demoBar = demoBar;
+  O.hotelsOf = hotelsOf; O.roomsOf = roomsOf; O.roomOf = roomOf; O.quoteView = quoteView; O.quotePanel = quotePanel;
 })();

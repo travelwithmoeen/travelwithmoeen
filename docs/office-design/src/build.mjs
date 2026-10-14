@@ -64,9 +64,12 @@ const seed = (() => {
   const round = (n) => Math.round(n / 500) * 500;
   let hid = 0;
   const hotels = ratePlaces.flatMap(([p, base]) => ["Islamabad", "Lahore"].flatMap((s) => grades.map(([g, m]) => ({ id: ++hid, place: p, start: s, grade: g, twin: round(base * m), triple: round(base * m * 1.3), hotel: `Sample ${g.toLowerCase()} hotel, ${p.split(" ")[0]}`, offered: !(g === "Ultra Luxury" && p === "Neelum Valley") }))));
+  for (const row of hotels) {
+    if (row.place === "Skardu Valley" && row.start === "Islamabad" && row.grade === "Deluxe") row.twin = 8700;
+  }
   let vid = 0;
   const vehicles = ratePlaces.flatMap(([p]) => [["Gli Car", 10000, 6000, 1200, 3], ["Prado", 22000, 9000, 1200, 6], ["Hiace", 18000, 8000, 1500, 12], ["Coaster", 28000, 11000, 2000, 22]].map(([v, r, f, t, s]) => ({ id: ++vid, place: p, start: "Islamabad", vehicle: v, rent: r, fuel: f, toll: t, seats: s, live: !(v === "Coaster" && p === "Neelum Valley") })));
-  const jeeps = [["Shigar and Cold Desert", "Skardu Valley", "Road", 8000], ["Deosai Plains", "Skardu Valley", "Road", 18000], ["Basho Valley", "Skardu Valley", "Air", 12000], ["Khunjerab Pass", "Hunza Valley", "Road", 14000], ["Hopper Glacier", "Hunza Valley", "Air", 7000], ["Lake Saif-ul-Malook", "Naran Kaghan", "Road", 6000], ["Fairy Meadows track", "Naran Kaghan", "Road", 15000], ["Mahodand Lake", "Swat Valley", "Road", 9000]].map(([label, place, mode, amount], i) => ({ id: i + 1, label, place, mode, amount, live: i !== 4 }));
+  const jeeps = [["Kalash and Chitral", "Chitral Valley", "Road", 90000, true], ["Minimarg", "Astor Valley", "Road", 90000, true], ["Kumrat", "Kumrat Valley", "Road", 16200, true], ["Fairy Meadows", "Naran Kaghan", "Road", 18200, true], ["Fairy Meadows", "Naran Kaghan", "Air", 18200, true], ["Shigar and Cold Desert", "Skardu Valley", "Road", 8000, false], ["Deosai Plains", "Skardu Valley", "Road", 18000, false], ["Basho Valley", "Skardu Valley", "Air", 12000, false], ["Khunjerab Pass", "Hunza Valley", "Road", 14000, false], ["Hopper Glacier", "Hunza Valley", "Air", 7000, false], ["Lake Saif-ul-Malook", "Naran Kaghan", "Road", 6000, false], ["Mahodand Lake", "Swat Valley", "Road", 9000, false]].map(([label, place, mode, amount, baseline], i) => ({ id: i + 1, label, place, mode, amount, baseline, live: label !== "Hopper Glacier" }));
   const backups = Array.from({ length: 8 }, (_, i) => { const d = new Date(Date.UTC(2026, 9, 9 - i, 0, 0, 12)); const at = d.toISOString(); return { name: `backups/preview-${at.replace(/[:.]/g, "-")}.json`, at, size: 1468006 - i * 9300, manual: false }; });
   const users = [
     { id: 1, email: "moeen@travelwithmoeen.com", role: "owner", lastSeen: "2026-10-09T09:20:00+05:00" },
@@ -82,8 +85,27 @@ const seed = (() => {
     { at: "2026-10-07T16:05:00+05:00", who: "sana.editor@travelwithmoeen.com", text: "Added a gallery photo", href: "#/gallery" },
     { at: "2026-10-07T11:00:00+05:00", who: "editor@travelwithmoeen.com", text: "Saved place Hunza Valley", href: "#/places/hunza-valley" },
   ];
-  return { activity, tours, places, posts, photos: content.photos, reviews, slides, site, requests, hotels, vehicles, jeeps, backups, users, season: 20,
-    air: { islamabadTicket: 48000, lahoreAdd: 15000, karachiAdd: 30000, welcomePack: 2500, entry: 1500, infantExtra: 5000, sticker: 1000 } };
+  const catalog = [
+    { city: "Skardu", hotel: "Shangrila", room: "Deluxe", persons: 2, mattress: 2500, rate: 18000 },
+    { city: "Skardu", hotel: "Shangrila", room: "Standard", persons: 2, mattress: 2000, rate: 12000 },
+    { city: "Skardu", hotel: "Himalaya", room: "Deluxe", persons: 2, mattress: 2500, rate: 16000 },
+    { city: "Hunza", hotel: "Hunza Embassy", room: "Deluxe", persons: 2, mattress: 3000, rate: 20000 },
+    { city: "Gilgit", hotel: "Serena Gilgit", room: "Deluxe", persons: 2, mattress: 2500, rate: 15000 },
+  ];
+  const nights = [1, 2, 3, 4].map((n) => ({ n, city: "Skardu", hotel: "Shangrila", room: "Deluxe", persons: 2, mattresses: 0, custom: false }));
+  for (const tour of tours) {
+    const hit = places.find((place) => {
+      const word = place.title.toLowerCase().split(" ")[0];
+      return tour.location.toLowerCase().includes(word) || place.title.toLowerCase().includes(String(tour.region).toLowerCase());
+    });
+    tour.placeSlug = hit ? hit.slug : "";
+  }
+  const plans = {
+    petrol: 280, diesel: 290, gli: 14, prado: 5, guideNear: 4000, guideFar: 7000, khunjerab: 1500, deosai: 800, sticker: "vehicle",
+    stops: [{ place: "Skardu", stop: "Shangrila", time: "2 hours" }, { place: "Skardu", stop: "Upper Kachura", time: "1 hour" }, { place: "Hunza", stop: "Attabad", time: "45 minutes" }, { place: "Hunza", stop: "Khunjerab", time: "3 hours" }, { place: "Gilgit", stop: "Serena Gilgit", time: "30 minutes" }],
+  };
+  return { activity, tours, places, posts, photos: content.photos, reviews, slides, site, requests, hotels, vehicles, jeeps, backups, users, season: 20, catalog, nights, pick: { city: "Skardu", hotel: "Shangrila", room: "Deluxe", occ: "room" }, plans,
+    air: { islamabadTicket: 60000, lahoreAdd: 10000, karachiAdd: 30000, welcomePack: 1500, entry: 4000, infantExtra: 1000, sticker: 500 } };
 })();
 
 /* ------------------------------------------------------------------ */

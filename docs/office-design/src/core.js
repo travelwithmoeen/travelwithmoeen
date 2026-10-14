@@ -24,6 +24,16 @@
     sideCollapsed: store.get("sideCollapsed", false),
     recent: store.get("recent", []),
   };
+  if (!S.data.catalog) S.data.catalog = clone(SEED.catalog);
+  if (!S.data.nights) S.data.nights = clone(SEED.nights);
+  if (!S.data.pick) S.data.pick = clone(SEED.pick);
+  if (!S.data.plans) S.data.plans = clone(SEED.plans);
+  if (!S.data.trip) S.data.trip = {};
+  const skardu = (S.data.hotels || []).find((row) => row.place === "Skardu Valley" && row.start === "Islamabad" && row.grade === "Deluxe");
+  if (skardu && skardu.twin === 9000) skardu.twin = 8700;
+  if (Array.isArray(S.data.nights) && S.data.nights.some((night) => night.custom == null && (night.city !== "Skardu" || night.hotel !== "Shangrila" || night.mattresses))) {
+    S.data.nights.forEach((night) => { if (night.custom == null) night.custom = true; });
+  }
   const save = () => store.set("data", S.data);
 
   /* ---------- Roles (mirror lib/auth/permissions.ts) ---------- */

@@ -17,7 +17,7 @@
   const CONTENT = ["tours", "places", "blog", "gallery", "reviews", "slides", "site"];
   const allowed = (k) => {
     if (CONTENT.includes(k)) return can.content() || "These pages are open to the Owner and Editors.";
-    if (k === "rates") return can.rates() || "Rates and quotes are open to the Owner and the Manager.";
+    if (k === "rates" || k === "plans") return can.rates() || "Rates, quotes, and trip plans are open to the Owner and the Manager.";
     if (k === "users" || k === "backups") return can.users() || "This page is open to the Owner only.";
     return true;
   };
@@ -175,21 +175,34 @@
       location.hash = "#/dashboard"; render();
     },
     tour(fd, form) {
-      const t = D().tours.find((x) => x.code === form.dataset.id), e = {};
+      const e = {};
       if (!String(fd.get("name")).trim()) e.name = "Enter a title.";
       const d = readCount(fd.get("duration"), 30); if (d.error) e.duration = d.error === "Enter a number." ? d.error : "Enter a number of days from 1 to 30.";
+      const place = D().places.find((item) => item.slug === fd.get("placeSlug"));
+      if (!place) e.placeSlug = "Choose a place.";
       if (form.dataset.fileError) e.photo = form.dataset.fileError;
       if (Object.keys(e).length) return showErrors(form, e);
-      Object.assign(t, { name: fd.get("name").trim(), description: fd.get("description").trim(), location: fd.get("location").trim(), region: fd.get("region").trim(), duration: d.value, transport: fd.get("transport"), gallery: lines(fd.get("gallery")), included: lines(fd.get("included")), notIncluded: lines(fd.get("notIncluded")), categories: lines(fd.get("categories")), packageTypes: lines(fd.get("packageTypes")), featured: fd.has("featured"), days: zip(fd, ["day_title", "day_text", "day_hl"], ["title", "text", "highlights"]) });
+      let t = D().tours.find((x) => x.code === form.dataset.id);
+      if (!t && form.dataset.id === "new") {
+        const code = `new-${Date.now()}`;
+        t = { code, id: code, name: "", location: "", region: "", duration: 1, transport: "By Road", description: "", image: "", gallery: [], included: [], notIncluded: [], categories: [], packageTypes: [], featured: false, days: [], placeSlug: "" };
+        D().tours.unshift(t);
+      }
+      if (!t) return;
+      Object.assign(t, { name: fd.get("name").trim(), description: String(fd.get("description") || "").trim(), location: place.title, region: String(fd.get("region") || place.title).trim(), placeSlug: place.slug, duration: d.value, transport: fd.get("transport") || t.transport, gallery: lines(fd.get("gallery")), included: lines(fd.get("included")), notIncluded: lines(fd.get("notIncluded")), categories: lines(fd.get("categories")), packageTypes: lines(fd.get("packageTypes")), featured: fd.has("featured"), days: zip(fd, ["day_title", "day_text", "day_hl"], ["title", "text", "highlights"]) });
       if (form.dataset.fileName) t.image = "/images/tours/" + form.dataset.fileName;
       stampIt(t); log(`Saved tour ${t.name}`, `#/tours/${t.code}`);
-      save(); done("Tour saved.", "The public tour page is updated.");
+      save();
+      if (form.dataset.id === "new") { location.hash = `#/tours/${t.code}`; return; }
+      done("Tour saved.", "The public tour page is updated.");
     },
     place(fd, form) {
       const p = D().places.find((x) => x.slug === form.dataset.id);
       if (!String(fd.get("title")).trim()) return showErrors(form, { title: "Enter a title." });
       if (form.dataset.fileError) return showErrors(form, { photo: form.dataset.fileError });
-      Object.assign(p, { title: fd.get("title").trim(), excerpt: fd.get("excerpt").trim(), location: fd.get("location").trim(), sections: zip(fd, ["sec_heading", "sec_body", "sec_image", "sec_hl"], ["heading", "body", "image", "highlights"]) });
+      const title = fd.get("title").trim();
+      Object.assign(p, { title, excerpt: fd.get("excerpt").trim(), location: fd.get("location").trim(), sections: zip(fd, ["sec_heading", "sec_body", "sec_image", "sec_hl"], ["heading", "body", "image", "highlights"]) });
+      D().tours.filter((tour) => tour.placeSlug === p.slug).forEach((tour) => { tour.location = title; });
       if (form.dataset.fileName) p.banner = "/images/destinations/" + form.dataset.fileName;
       stampIt(p); log(`Saved place ${p.title}`, `#/places/${p.slug}`);
       save(); done("Place saved.");
@@ -285,9 +298,35 @@
       D().jeeps.forEach((j) => { j.amount = readAmount(fd.get(`amount_${j.id}`)).value; j.live = fd.has(`live_${j.id}`); });
       save(); done("Jeep lines saved.");
     },
-    season(fd) {
-      const p = +fd.get("percent"); if (p !== 15 && p !== 20) return;
-      D().season = p; log(`Changed season profit to ${p} percent`, "#/rates/season"); save(); done("Season saved.", `Guest quotes now use ${p} percent profit.`);
+    plans(fd, form) {
+      const e = {};
+      ["petrol", "diesel", "guideNear", "guideFar", "khunjerab", "deosai"].forEach((name) => {
+        const amount = readAmount(String(fd.get(name) ?? "").replace(/,/g, ""));
+        if (amount.error) e[name] = amount.error;
+      });
+      ["gli", "prado"].forEach((name) => {
+        const raw = String(fd.get(name) ?? "").trim();
+        if (!/^\d+$/.test(raw) || +raw < 1 || +raw > 99) e[name] = "Enter kilometers per liter from 1 to 99.";
+      });
+      if (Object.keys(e).length) return showErrors(form, e);
+      const plan = D().plans;
+      ["petrol", "diesel", "guideNear", "guideFar", "khunjerab", "deosai"].forEach((name) => { plan[name] = readAmount(String(fd.get(name)).replace(/,/g, "")).value; });
+      plan.gli = +fd.get("gli"); plan.prado = +fd.get("prado"); plan.sticker = fd.get("sticker") || "vehicle";
+      save(); done("Plan rates saved.", "These rates are for the later phase. The live office does not use them yet.");
+    },
+    stops(fd, form) {
+      const stops = D().plans.stops || [];
+      stops.forEach((stop, index) => {
+        const time = String(fd.get(`stop_${index}`) ?? "").trim();
+        if (time) stop.time = time;
+      });
+      save(); done("Stop hours saved.");
+    },
+    season(fd, form) {
+      const raw = String(fd.get("percent") ?? "").trim();
+      const p = Number(raw);
+      if (!/^\d+$/.test(raw) || p > 100) return showErrors(form, { percent: "Enter a whole percent from 0 to 100." });
+      D().season = p; log(`Changed profit margin to ${p} percent`, "#/rates/season"); save(); done("Profit margin saved.", `Guest quotes now use ${p} percent.`);
     },
     "request-status"(fd, form) {
       const r = D().requests.find((x) => String(x.id) === form.dataset.id);
@@ -358,26 +397,30 @@
         const amount = amountOrBlank(fd.get(name));
         if (amount.error) e[name] = amount.error;
       });
+      if (night && night.n > D().nights.length) e.night = "Hotel nights are days minus one. That night is not on this trip.";
       if (Object.keys(e).length) return showErrors(form, e);
       clearErrors(form);
-      const pct = +fd.get("season");
-      const otherNote = String(fd.get("otherNote") ?? "").trim();
-      const plain = !night && !dayLabel && !(extraName || extraAmount.value != null) && !otherNote;
-      const isSpec = plain && fd.get("place") === "Skardu Valley" && fd.get("mode") === "road" && fd.get("start") === "Islamabad" && fd.get("grade") === "Deluxe" && fd.get("vehicle") === "Gli Car" && days.value === 5 && adults.value === 2 && children === 0 && laps === 0 && seatInfants === 0 && !fd.has("guide") && !fd.has("meals");
-      const lines = [
-        night ? `<dt>Night ${night.n}</dt><dd>${rs(night.rate)}${night.hotel ? ` · ${esc(night.hotel)}` : ""}</dd>` : "",
-        dayLabel ? `<dt>Day ${dayNumber}</dt><dd>${esc(dayLabel)}</dd>` : "",
-        extraName || extraAmount.value != null ? `<dt>${esc(extraName || "Paid extra")}</dt><dd>${rs(extraAmount.value)}</dd>` : "",
-        otherNote ? `<dt>Other mix</dt><dd>${esc(otherNote)}</dd>` : "",
-      ].join("");
+      const pctRaw = String(fd.get("season") ?? "").trim();
+      const pct = /^\d+$/.test(pctRaw) && +pctRaw <= 100 ? +pctRaw : D().season;
+      if (night) {
+        const row = D().nights[night.n - 1];
+        if (row) { row.override = night.rate; if (night.hotel) row.hotelNote = night.hotel; }
+      }
+      D().dayEdit = dayLabel ? { day: dayNumber, kind: dayChange, vehicle: dayLabel, rent: amountOrBlank(fd.get("dayRent")).value || 0, fuel: amountOrBlank(fd.get("dayFuel")).value || 0 } : null;
+      D().paidExtra = extraAmount.value ? { name: extraName || "Paid extra", amount: extraAmount.value } : null;
+      D().quotePct = pct;
+      D().trip = { place: fd.get("place"), mode: fd.get("mode"), start: fd.get("start"), grade: fd.get("grade"), vehicle: fd.get("vehicle"), days: days.value, adults: adults.value, children, lapInfants: laps, seatInfants, season: pct, guide: fd.has("guide"), meals: fd.has("meals") };
+      save();
+      const view = O.quoteView();
       const out = $("#quote-result");
-      if (isSpec) {
-        const sub = 117000, profit = Math.round(sub * pct / 100), total = sub + profit;
-        out.innerHTML = `<div class="card-head"><div><h3>Quote saved</h3><p>Skardu Valley · road from Islamabad · Deluxe · Gli Car · 5 days · 2 adults</p></div></div><div class="card-body">
-          <dl class="sum"><dt>Subtotal</dt><dd>${rs(sub)}</dd><dt>Profit, ${pct} percent</dt><dd>${rs(profit)}</dd><dt class="sum-total">Total</dt><dd class="sum-total">${rs(total)}</dd><dt>Per adult</dt><dd>${rs(total / 2)}</dd></dl>
-          <p class="help">This is the Skardu test quote from design section 5: 117,000 before profit, ${pct === 20 ? "140,400 at 20 percent" : "134,550 at 15 percent"}.</p></div>`;
-      } else {
-        out.innerHTML = `<div class="card-head"><div><h3>Quote saved</h3></div></div><div class="card-body">${lines ? `<dl class="sum">${lines}</dl>` : ""}${alert("info", "Priced by the office server", "The real office prices every trip with the one quote function in <b>lib/quote.ts</b>. This prototype only prices the spec example: Skardu Valley, Road, Islamabad, Deluxe, Gli Car, 5 days, 2 adults.")}</div>`;
+      out.innerHTML = O.quotePanel(true);
+      const views = form.querySelectorAll(".stat-v");
+      const notes = form.querySelectorAll(".stat-m");
+      if (views.length >= 2) {
+        views[0].textContent = rs(view.guest);
+        views[1].textContent = rs(view.sub);
+        notes[0].textContent = "One total. No lines and no profit.";
+        notes[1].textContent = `${view.lines.map((line) => `${line.label} ${rs(line.amount)}`).join(". ")}. Profit ${view.pct}% is ${rs(view.profit)}.`;
       }
       out.querySelector("h3").setAttribute("tabindex", "-1"); out.querySelector("h3").focus();
     },
@@ -390,6 +433,33 @@
     toast(`${label} removed.`, { undo: () => { arr.splice(idx, 0, item); save(); render({ keepFocus: true }); } });
   };
   const actions = {
+    "add-night"() {
+      const last = D().nights[D().nights.length - 1];
+      D().nights.push({ n: D().nights.length + 1, city: last?.city || "Skardu", hotel: last?.hotel || "Shangrila", room: last?.room || "Deluxe", persons: 2, mattresses: 0, rate: last?.rate || 0 });
+      save(); render({ keepScroll: true });
+    },
+    "remove-night"(el) {
+      if (D().nights.length < 2) return toast("Keep at least one night.", { tone: "info" });
+      D().nights.splice(Number(el.dataset.i), 1);
+      D().nights.forEach((night, index) => { night.n = index + 1; });
+      save(); render({ keepScroll: true });
+    },
+    "preview-file"(el) {
+      const view = O.quoteView();
+      const kind = el.dataset.kind;
+      if (kind === "guest") {
+        dialog({ title: "Guest PDF", confirm: "Close", tone: "secondary", icon: "download", body: `<p>Tracking code <b>TWM-1042</b></p><p class="stat-v">${rs(view.guest)}</p><p>One total. The lines and the profit are not on this file.</p>` });
+        return;
+      }
+      if (kind === "driver") {
+        const trip = D().trip || { vehicle: "Gli Car", days: (D().nights || []).length + 1, start: "Islamabad", mode: "road", place: "Skardu Valley" };
+        const rows = view.nights.length ? view.nights.map((night) => `<tr><td>Night ${night.n}</td><td>${esc(night.city)}</td><td>${esc(night.hotel)}</td><td>${esc(night.room)}</td></tr>`).join("") : "<tr><td colspan=\"4\">No hotel night</td></tr>";
+        dialog({ title: "Driver copy", confirm: "Close", tone: "secondary", icon: "download", body: `<p>Services, dates, vehicle, and hotels. No rupee amount.</p><p>${esc(trip.place || "Skardu Valley")} · ${esc(trip.mode || "road")} from ${esc(trip.start || "Islamabad")} · ${esc(trip.vehicle || "Gli Car")} · ${esc(String(trip.days || ""))} days</p><table class="tbl"><tbody>${rows}</tbody></table>` });
+        return;
+      }
+      const rates = D().hotels.slice(0, 6).map((row) => `<tr><td>${esc(row.place)}</td><td>${esc(row.grade)}</td><td>${rs(row.twin)}</td></tr>`).join("");
+      dialog({ title: "Live prices", confirm: "Close", tone: "secondary", icon: "download", body: `<p>Owner and Manager only. An Editor does not see this button.</p><table class="tbl"><tbody>${rates}</tbody></table>` });
+    },
     "toggle-side"() { S.sideCollapsed = !S.sideCollapsed; store.set("sideCollapsed", S.sideCollapsed); render({ keepFocus: true, keepScroll: true }); $("[data-action=toggle-side]")?.focus(); },
     "set-theme"(el) { S.theme = el.dataset.v; store.set("theme", S.theme); render({ keepFocus: true, keepScroll: true }); toast(`Appearance: ${el.textContent.trim()}.`, { tone: "info", body: "Saved for your login." }); },
     "set-density"(el) { S.density = el.dataset.v; store.set("density", S.density); render({ keepFocus: true, keepScroll: true }); toast(`Density: ${el.textContent.trim()}.`, { tone: "info" }); },
@@ -595,8 +665,29 @@
     if (t.dataset.bindSrc) $$(`[data-bind="${t.dataset.bindSrc}"]`).forEach((el) => (el.textContent = t.value || "—"));
     if (t.dataset.bindRot) { const v = parseInt(t.value, 10); if (!isNaN(v) && Math.abs(v) <= 30) $$("[data-rot]").forEach((el) => (el.style.transform = `rotate(${v}deg)`)); }
   });
+  const fitNights = (days) => {
+    const want = Math.max(0, days - 1);
+    const nights = D().nights;
+    while (nights.length < want) {
+      const last = nights[nights.length - 1];
+      nights.push({ n: nights.length + 1, city: last?.city || "Skardu", hotel: last?.hotel || "Shangrila", room: last?.room || "Deluxe", persons: 2, mattresses: 0 });
+    }
+    nights.length = want;
+    nights.forEach((night, index) => { night.n = index + 1; });
+  };
   document.addEventListener("change", (e) => {
     const t = e.target;
+    if (t.closest("form[data-form=quote]") && t.name && !t.matches("[data-night]")) {
+      const trip = D().trip || (D().trip = {});
+      trip[t.name] = t.type === "checkbox" ? t.checked : t.value;
+      if (t.name === "days") {
+        const days = parseInt(t.value, 10);
+        if (days >= 1 && days <= 30) fitNights(days);
+      }
+      save();
+      if (t.name === "days") render({ keepScroll: true });
+      return;
+    }
     if (t.matches("[data-filter-key], [data-sort]")) return applyFilters();
     if (t.matches("[data-file]")) return checkFile(t);
     if (t.matches("[data-demo]")) {
@@ -613,6 +704,36 @@
       render({ keepFocus: true, keepScroll: true });
       $(`[data-instant-status][data-id="${r.id}"][value="${r.status}"]`)?.focus();
       toast(`${r.name}: ${O.STATUS[r.status][0]}.`, { undo: () => { r.status = from; save(); render({ keepFocus: true, keepScroll: true }); } });
+      return;
+    }
+    if (t.matches("[data-catalog]")) {
+      const pick = D().pick;
+      pick[t.dataset.catalog] = t.value;
+      if (t.dataset.catalog === "city") {
+        pick.hotel = O.hotelsOf(pick.city)[0];
+        pick.room = O.roomsOf(pick.city, pick.hotel)[0]?.room;
+        pick.occ = "room";
+      }
+      if (t.dataset.catalog === "hotel" || t.dataset.catalog === "room") pick.occ = "room";
+      render({ keepScroll: true });
+      return;
+    }
+    if (t.matches("[data-night]")) {
+      const night = D().nights[Number(t.dataset.night)];
+      if (!night) return;
+      if (t.dataset.field === "mattresses") night.mattresses = Math.max(0, parseInt(t.value, 10) || 0);
+      else night[t.dataset.field] = t.value;
+      if (t.dataset.field === "city" || t.dataset.field === "hotel" || t.dataset.field === "room" || t.dataset.field === "mattresses") {
+        night.custom = true;
+        delete night.override;
+      }
+      if (t.dataset.field === "city") {
+        night.hotel = O.hotelsOf(night.city)[0];
+        night.room = O.roomsOf(night.city, night.hotel)[0]?.room;
+      }
+      if (t.dataset.field === "hotel") night.room = O.roomsOf(night.city, night.hotel)[0]?.room;
+      save();
+      render({ keepScroll: true });
       return;
     }
     if (t.matches("[data-action-change=change-role]")) {
