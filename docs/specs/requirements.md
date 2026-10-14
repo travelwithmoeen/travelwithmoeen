@@ -140,8 +140,9 @@ Pictures and PDFs use the public media store for that environment, through `@ver
 | BR-80 | The public page shows the new file on the preview site after a refresh. The page layout does not change. |
 | BR-81 | The Meadow prototype is the clickable file `docs/office-design/meadow.html`. On the preview site it is also `https://new.travelwithmoeen.com/meadow`. That path is not `/office`. The Owner, Manager, and Editor links match BR-01 to BR-07. Profit is any whole percent from 0 to 100. The hotel catalog is City, then Hotel, then Room, then Occupancy, and the rate fills from that row. Each night can pick its own city, hotel, and room. A day edit changes that quote. The guest figure is one total. The staff figure lists the nights and the profit. Changing the number of days sets hotel nights to days minus one. Trip plans show Phase 2 and Phase 3 for review. The layout fits a computer and a phone. The zip is that same folder. Moeen receives this file before the live office is rebuilt. |
 | BR-82 | The next sprint builds the Meadow look into the live office at `/office`. The screens match `docs/office-design/meadow.html`. The public site look does not change. Login, roles, quotes, guest requests, and media uploads stay as they are. The prototype bar that switches role without a password is not part of the live office. |
+| BR-83 | The Owner and the Editor can add a tour from `/office/tours` and amend a tour from that list. Only the Owner can delete a tour. That stays BR-03 and BR-06. A tour can link to one or more places. The office and the public tour page list those places, and the office and the public place page list those tours. The tour name stays on the tour. The place title stays on the place. Saving a tour does not rewrite the place guide. Saving a place title updates a linked tour's location line only when that tour links to this place alone and that line is the previous title. |
 
-Creating a new tour, place, or blog post is not part of this work. Deleting a price row stays BR-03 and is not part of this work. The prototype changes no running route, so it does not repeat the four security tests. T-35 does.
+Creating a new tour, place, or blog post is not part of the office-media work. Adding a tour from the tours list is BR-83. Deleting a price row stays BR-03 and is not part of this work. The prototype changes no running route, so it does not repeat the four security tests. T-35 does.
 
 ## 9. Phase 3, after the baseline, office media, and Phase 2
 
@@ -256,6 +257,7 @@ This list is the whole project. A new office route is added to this list in the 
 | `POST /api/office/login` | Anyone. The failure rules in BR-67 and BR-68 apply. |
 | `POST /api/office/logout` and `GET /api/office/session` | A signed-in Owner, Manager, or Editor. |
 | Tour, place, post, photo, review, slide, and site-detail writes | Owner or Editor. |
+| `POST /api/office/tours/create` | Owner or Editor. Adds a tour. It does not set a rupee amount. |
 | Rates, season, vehicles, jeep lines, paid extras, and the live price Excel download | Owner or Manager. |
 | Create a login, remove a login, change a role, delete a tour, delete a price row, delete a guest request | Owner only. |
 | `GET /api/office/requests` | A signed-in Owner, Manager, or Editor. |

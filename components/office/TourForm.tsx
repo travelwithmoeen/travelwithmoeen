@@ -7,7 +7,17 @@ import type { Tour } from "@/data/tours";
 
 const inputClass = "mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm";
 
-export function TourForm({ tour, canDelete }: { tour: Tour; canDelete: boolean }) {
+export function TourForm({
+  tour,
+  canDelete,
+  places,
+  mode,
+}: {
+  tour: Tour;
+  canDelete: boolean;
+  places: { slug: string; title: string }[];
+  mode: "create" | "edit";
+}) {
   const [days, setDays] = useState(
     tour.itinerary.map((day) => ({
       title: day.title,
@@ -17,9 +27,13 @@ export function TourForm({ tour, canDelete }: { tour: Tour; canDelete: boolean }
   );
   const [extras, setExtras] = useState(tour.galleryImages);
   const [pdf, setPdf] = useState(tour.pdf);
+  const savePath = mode === "create" ? "/api/office/tours/create" : "/api/office/tours";
   const [state, action, pending] = useActionState(async (previous: ActionResult | null, formData: FormData) => {
-    const result = await postOfficeForm("/api/office/tours", formData);
-    if (result.ok) window.location.reload();
+    const result = await postOfficeForm(savePath, formData);
+    if (result.ok) {
+      if (result.href) window.location.assign(result.href);
+      else window.location.reload();
+    }
     return result;
   }, null as ActionResult | null);
   const [deleteState, deleteAction, deletePending] = useActionState(
@@ -27,6 +41,7 @@ export function TourForm({ tour, canDelete }: { tour: Tour; canDelete: boolean }
     null as ActionResult | null,
   );
 
+  const selectedPlaces = new Set((tour.places ?? []).map((place) => place.slug));
   const itinerary = days.map((day, index) => ({
     day: index + 1,
     title: day.title,
@@ -40,9 +55,10 @@ export function TourForm({ tour, canDelete }: { tour: Tour; canDelete: boolean }
   return (
     <div className="space-y-8">
       <form action={action} className="space-y-4 rounded-xl bg-white p-6 shadow">
-        <input type="hidden" name="id" value={tour.id} />
+        {mode === "edit" ? <input type="hidden" name="id" value={tour.id} /> : null}
         <input type="hidden" name="itinerary" value={JSON.stringify(itinerary)} />
-        <p className="text-sm text-slate-500">Code {tour.code}</p>
+        <input type="hidden" name="placeSet" value="1" />
+        <p className="text-sm text-slate-500">{mode === "edit" ? `Code ${tour.code}` : "A code is assigned when you save."}</p>
         <label className="block text-sm font-medium">
           Title
           <input className={inputClass} name="name" defaultValue={tour.name} required />
@@ -58,7 +74,7 @@ export function TourForm({ tour, canDelete }: { tour: Tour; canDelete: boolean }
           </label>
           <label className="block text-sm font-medium">
             Region
-            <input className={inputClass} name="region" defaultValue={tour.region} />
+            <input className={inputClass} name="region" defaultValue={tour.region} required />
           </label>
           <label className="block text-sm font-medium">
             Days
@@ -72,6 +88,18 @@ export function TourForm({ tour, canDelete }: { tour: Tour; canDelete: boolean }
             </select>
           </label>
         </div>
+        <fieldset className="space-y-2">
+          <legend className="text-sm font-medium">Places</legend>
+          <p className="text-sm text-slate-500">
+            This tour uses these places. The place page lists this tour, and the tour page lists the places. Saving a tour does not change the place guide.
+          </p>
+          {places.map((place) => (
+            <label key={place.slug} className="flex items-center gap-2 text-sm">
+              <input type="checkbox" name="placeSlug" value={place.slug} defaultChecked={selectedPlaces.has(place.slug)} />
+              {place.title}
+            </label>
+          ))}
+        </fieldset>
         <label className="block text-sm font-medium">
           Main photo
           <input className={inputClass} name="image" defaultValue={tour.image} />
@@ -200,11 +228,11 @@ export function TourForm({ tour, canDelete }: { tour: Tour; canDelete: boolean }
 
         {state ? <p className={state.ok ? "text-sm text-green-700" : "text-sm text-red-700"}>{state.ok ? state.message : state.error}</p> : null}
         <button className="rounded-md bg-slate-900 px-4 py-2 text-white" type="submit" disabled={pending}>
-          {pending ? "Saving..." : "Save tour"}
+          {pending ? "Saving..." : mode === "create" ? "Add tour" : "Save tour"}
         </button>
       </form>
 
-      {canDelete ? (
+      {mode === "edit" && canDelete ? (
         <form action={deleteAction} className="rounded-xl bg-white p-6 shadow">
           <input type="hidden" name="id" value={tour.id} />
           {deleteState && !deleteState.ok ? <p className="mb-3 text-sm text-red-700">{deleteState.error}</p> : null}

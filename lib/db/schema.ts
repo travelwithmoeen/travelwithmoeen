@@ -8,6 +8,7 @@ import {
   text,
   timestamp,
   index,
+  primaryKey,
   uniqueIndex,
 } from "drizzle-orm/pg-core";
 import type { BlogSection } from "@/data/blog";
@@ -84,6 +85,20 @@ export const places = pgTable("places", {
   listingNumber: integer("listing_number").notNull(),
   content: jsonb("content").$type<DestinationSection[]>().notNull(),
 });
+
+export const tourPlaces = pgTable(
+  "tour_places",
+  {
+    tourId: text("tour_id")
+      .notNull()
+      .references(() => tours.id, { onDelete: "cascade" }),
+    placeSlug: text("place_slug")
+      .notNull()
+      .references(() => places.slug, { onDelete: "cascade" }),
+    sortOrder: integer("sort_order").notNull().default(0),
+  },
+  (table) => [primaryKey({ columns: [table.tourId, table.placeSlug] })],
+);
 
 export const posts = pgTable("posts", {
   slug: text("slug").primaryKey(),

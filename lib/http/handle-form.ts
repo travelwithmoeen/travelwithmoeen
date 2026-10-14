@@ -4,7 +4,7 @@ import type { ActionResult } from "@/lib/http/result";
 export async function handleOfficeForm(
   request: Request,
   run: (actor: SessionUser, formData: FormData) => Promise<ActionResult>,
-  refresh?: (formData: FormData) => void,
+  refresh?: (formData: FormData, result: Extract<ActionResult, { ok: true }>) => void,
 ) {
   let actor: SessionUser;
   try {
@@ -14,7 +14,7 @@ export async function handleOfficeForm(
   }
   const formData = await request.formData();
   const result = await run(actor, formData);
-  if (result.ok && refresh) refresh(formData);
+  if (result.ok && refresh) refresh(formData, result);
   if (!result.ok && result.status === 403) {
     return Response.json({ ok: false, error: result.error }, { status: 403 });
   }

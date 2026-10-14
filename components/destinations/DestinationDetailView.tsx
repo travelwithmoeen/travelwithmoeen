@@ -18,6 +18,8 @@ export default function DestinationDetail({ destination }: { destination: Destin
     return () => clearTimeout(timer);
   }, []);
 
+  const linkedTours = destination?.tours ?? [];
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
@@ -53,18 +55,19 @@ export default function DestinationDetail({ destination }: { destination: Destin
             {/* Content */}
             <DestinationContent sections={destination.content} />
 
-            {/* Bottom CTA */}
-            <div className="mt-12 rounded-lg bg-secondary p-8 text-center">
-              <h3 className="mb-2 text-xl font-bold text-secondary-foreground">
-                Ready to Explore {destination.title}?
-              </h3>
-              <p className="mb-4 text-secondary-foreground/80">
-                Browse our curated tours to this amazing destination.
-              </p>
-              <Button asChild>
-                <Link href="/tours">View Tours</Link>
-              </Button>
-            </div>
+            {linkedTours.length === 0 ? (
+              <div className="mt-12 rounded-lg bg-secondary p-8 text-center">
+                <h3 className="mb-2 text-xl font-bold text-secondary-foreground">
+                  Ready to Explore {destination.title}?
+                </h3>
+                <p className="mb-4 text-secondary-foreground/80">
+                  Browse our curated tours to this amazing destination.
+                </p>
+                <Button asChild>
+                  <Link href="/tours">View Tours</Link>
+                </Button>
+              </div>
+            ) : null}
           </article>
         ) : (
           <div className="py-16 text-center">
@@ -79,6 +82,29 @@ export default function DestinationDetail({ destination }: { destination: Destin
             </Button>
           </div>
         )}
+        {destination && linkedTours.length > 0 ? (
+          <section aria-label={`Tours for ${destination.title}`} className="mx-auto mt-12 max-w-4xl rounded-lg bg-secondary p-8 text-center">
+            <h3 className="mb-2 text-xl font-bold text-secondary-foreground">
+              Ready to Explore {destination.title}?
+            </h3>
+            <ul className="mb-4 space-y-2 text-left">
+              {linkedTours.map((tour) => (
+                <li key={tour.id}>
+                  <Link className="underline" href={`/tours/${tour.id}`}>
+                    {tour.name}
+                  </Link>
+                  <span className="text-secondary-foreground/80">
+                    {" "}
+                    · {tour.duration} {tour.duration === 1 ? "day" : "days"} · {tour.transport}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <Button asChild>
+              <Link href="/tours">View Tours</Link>
+            </Button>
+          </section>
+        ) : null}
       </div>
     </div>
   );

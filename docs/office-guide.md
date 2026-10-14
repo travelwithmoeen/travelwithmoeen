@@ -46,6 +46,8 @@ Only the Owner opens **Users**. Under **Create a login**, type an email and a pa
 
 ## Public pages an Editor can change
 
-**Tours**, **Places**, **Blog**, **Gallery**, **Reviews**, **Home slides**, and **Site details** edit the public site. Open a tour and click **Save tour** only when the new title or photo should go live.
+**Tours**, **Places**, **Blog**, **Gallery**, **Reviews**, **Home slides**, and **Site details** edit the public site. On **Tours**, **Add tour** creates a tour. **Edit** opens that tour. Click **Save tour** only when the new title or photo should go live. **Delete tour** is shown to the Owner. An Editor does not see it.
 
 A tour main photo, a tour extra photo, a tour PDF, a place banner, a place section photo, a blog cover, a blog section photo, a gallery photo, a home slide, and a review photo can be replaced with a file. A path such as `/images/...` can still be typed. **Remove photo**, **Remove PDF**, **Remove section**, or **Clear photo**, then **Save**, takes that file off the page. A file this office uploaded is deleted. A path under `/images/` or `/pdfs/` stays in the project. A picture must be JPEG, PNG, or WebP, and 5 MB or under. A tour PDF must be a PDF, and 10 MB or under. The Owner or an Editor can upload. A Manager cannot. Only the Owner can delete a whole tour. On a blog post, **Add section** adds a section and **Remove section** takes one away. A place section can be removed the same way.
+
+On a tour, **Places** chooses the place pages that tour belongs to. The public tour page links to those places. The place page lists those tours. Change the place guide on the place, not on the tour. If a tour uses only one place and its location line is that place's title, saving a new title updates the location line. A tour that uses two places keeps its own location line.

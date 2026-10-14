@@ -1,6 +1,6 @@
-import { eq, max } from "drizzle-orm";
+import { eq, inArray, max } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { photos, places, posts, reviews, siteSettings, slides, tourDays, tours } from "@/lib/db/schema";
+import { photos, places, posts, reviews, siteSettings, slides, tourDays, tourPlaces, tours } from "@/lib/db/schema";
 import { canDeleteTour, canEditContent, canEditRates } from "@/lib/auth/permissions";
 import type { SessionUser } from "@/lib/auth/session";
 import type { BlogSection } from "@/data/blog";
@@ -8,6 +8,7 @@ import type { DestinationSection } from "@/data/destinations";
 import type { PackageType, TourCategory, TourDay } from "@/data/tours";
 import { forbidden, type ActionResult } from "@/lib/http/result";
 import { deleteOfficeFiles, droppedOfficeFiles } from "@/lib/office/media";
+import { tourIdFromName, uniquePlaceSlugs } from "@/lib/office/tour-places";
 
 export { saveUploadedImage, saveUploadedPdf } from "@/lib/office/media";
 
@@ -37,7 +38,30 @@ export type TourEditInput = {
   notIncluded: string[];
   featured: boolean;
   itinerary: TourDay[];
+  placeSlugs?: string[];
 };
+
+async function rejectUnknownPlaces(slugs: string[]): Promise<ActionResult | null> {
+  if (slugs.length === 0) return null;
+  const rows = await db.select({ slug: places.slug }).from(places).where(inArray(places.slug, slugs));
+  const found = new Set(rows.map((row) => row.slug));
+  if (slugs.every((slug) => found.has(slug))) return null;
+  return { ok: false, error: "Choose a place from the list." };
+}
+
+async function writeTourPlaces(
+  tx: { delete: typeof db.delete; insert: typeof db.insert },
+  tourId: string,
+  slugs: string[],
+) {
+  await tx.delete(tourPlaces).where(eq(tourPlaces.tourId, tourId));
+  if (slugs.length === 0) return;
+  await tx.insert(tourPlaces).values(slugs.map((placeSlug, sortOrder) => ({ tourId, placeSlug, sortOrder })));
+}
+
+function sameTitle(left: string, right: string) {
+  return left.trim().toLowerCase() === right.trim().toLowerCase();
+}
 
 export async function savePriceAs(actor: SessionUser): Promise<ActionResult> {
   if (!canEditRates(actor.role)) {
@@ -59,6 +83,11 @@ export async function updateTourAs(actor: SessionUser, input: TourEditInput): Pr
   }
   if (!Number.isInteger(input.duration) || input.duration < 1 || input.duration > 60) {
     return { ok: false, error: "Enter a trip of 1 to 60 days." };
+  }
+  const placeSlugs = input.placeSlugs === undefined ? undefined : uniquePlaceSlugs(input.placeSlugs);
+  if (placeSlugs) {
+    const unknown = await rejectUnknownPlaces(placeSlugs);
+    if (unknown) return unknown;
   }
   const [existing] = await db
     .select({ image: tours.image, pdf: tours.pdf, galleryImages: tours.galleryImages })
@@ -105,8 +134,93 @@ export async function updateTourAs(actor: SessionUser, input: TourEditInput): Pr
         })),
       );
     }
+    if (placeSlugs) await writeTourPlaces(tx, input.id, placeSlugs);
   });
-  return { ok: true, message: "Tour saved." };
+  return { ok: true, message: "Tour saved.", tourIds: [input.id] };
+}
+
+export async function createTourAs(actor: SessionUser, input: Omit<TourEditInput, "id">): Promise<ActionResult> {
+  if (!canEditContent(actor.role)) {
+    return forbidden("You cannot add a tour.");
+  }
+  const name = input.name.trim();
+  if (!name) return { ok: false, error: "Enter a tour title." };
+  if (!input.image.trim()) return { ok: false, error: "Enter a photo." };
+  if (!input.region.trim()) return { ok: false, error: "Enter a region." };
+  if (input.transport !== "By Road" && input.transport !== "By Air") {
+    return { ok: false, error: "Choose road or air." };
+  }
+  if (!Number.isInteger(input.duration) || input.duration < 1 || input.duration > 60) {
+    return { ok: false, error: "Enter a trip of 1 to 60 days." };
+  }
+  const placeSlugs = uniquePlaceSlugs(input.placeSlugs ?? []);
+  const unknown = await rejectUnknownPlaces(placeSlugs);
+  if (unknown) return unknown;
+  let location = input.location.trim();
+  if (!location && placeSlugs.length === 1) {
+    const [place] = await db.select({ title: places.title }).from(places).where(eq(places.slug, placeSlugs[0])).limit(1);
+    location = place?.title ?? "";
+  }
+  if (!location) return { ok: false, error: "Enter a location." };
+
+  const baseId = tourIdFromName(name);
+  let id = baseId;
+  let suffix = 2;
+  while (true) {
+    const [found] = await db.select({ id: tours.id }).from(tours).where(eq(tours.id, id)).limit(1);
+    if (!found) break;
+    id = `${baseId}-${suffix}`;
+    suffix += 1;
+  }
+  const codeRows = await db.select({ code: tours.code }).from(tours);
+  let maxCode = 0;
+  for (const row of codeRows) {
+    if (/^\d+$/.test(row.code)) {
+      const value = Number(row.code);
+      if (value > maxCode) maxCode = value;
+    }
+  }
+  const [orderRow] = await db.select({ value: max(tours.sortOrder) }).from(tours);
+  const sortOrder = (orderRow?.value ?? 0) + 1;
+  const code = String(maxCode + 1);
+
+  await db.transaction(async (tx) => {
+    await tx.insert(tours).values({
+      id,
+      name,
+      location,
+      region: input.region.trim(),
+      description: input.description,
+      duration: input.duration,
+      image: input.image.trim(),
+      pdf: input.pdf.trim(),
+      code,
+      galleryImages: input.galleryImages,
+      categories: input.categories,
+      packageTypes: input.packageTypes,
+      transport: input.transport,
+      basePrice: 0,
+      packages: [],
+      included: input.included,
+      notIncluded: input.notIncluded,
+      featured: input.featured,
+      priceSource: "excel",
+      sortOrder,
+    });
+    if (input.itinerary.length > 0) {
+      await tx.insert(tourDays).values(
+        input.itinerary.map((day, index) => ({
+          tourId: id,
+          dayNumber: index + 1,
+          title: day.title,
+          description: day.description,
+          highlights: day.highlights,
+        })),
+      );
+    }
+    await writeTourPlaces(tx, id, placeSlugs);
+  });
+  return { ok: true, message: "Tour added.", href: `/office/tours/${id}`, tourIds: [id] };
 }
 
 export async function deleteTourAs(actor: SessionUser, tourId: string): Promise<ActionResult> {
@@ -144,7 +258,7 @@ export async function updatePlaceAs(
     return { ok: false, error: "Enter a title." };
   }
   const [existing] = await db
-    .select({ bannerImage: places.bannerImage, content: places.content })
+    .select({ title: places.title, bannerImage: places.bannerImage, content: places.content })
     .from(places)
     .where(eq(places.slug, input.slug))
     .limit(1);
@@ -154,17 +268,31 @@ export async function updatePlaceAs(
     const removed = await removeDroppedFiles(previous, next);
     if (removed) return removed;
   }
-  await db
-    .update(places)
-    .set({
-      title: input.title.trim(),
-      excerpt: input.excerpt,
-      bannerImage: input.bannerImage.trim(),
-      location: input.location.trim() || null,
-      content: input.content,
-    })
-    .where(eq(places.slug, input.slug));
-  return { ok: true, message: "Place saved." };
+  const title = input.title.trim();
+  const linkedTourIds = await db.transaction(async (tx) => {
+    await tx
+      .update(places)
+      .set({
+        title,
+        excerpt: input.excerpt,
+        bannerImage: input.bannerImage.trim(),
+        location: input.location.trim() || null,
+        content: input.content,
+      })
+      .where(eq(places.slug, input.slug));
+    const links = await tx.select({ tourId: tourPlaces.tourId }).from(tourPlaces).where(eq(tourPlaces.placeSlug, input.slug));
+    const ids = links.map((link) => link.tourId);
+    if (!existing || sameTitle(existing.title, title)) return ids;
+    for (const tourId of ids) {
+      const rows = await tx.select({ placeSlug: tourPlaces.placeSlug }).from(tourPlaces).where(eq(tourPlaces.tourId, tourId));
+      if (rows.length !== 1) continue;
+      const [tour] = await tx.select({ location: tours.location }).from(tours).where(eq(tours.id, tourId)).limit(1);
+      if (!tour || !sameTitle(tour.location, existing.title)) continue;
+      await tx.update(tours).set({ location: title }).where(eq(tours.id, tourId));
+    }
+    return ids;
+  });
+  return { ok: true, message: "Place saved.", tourIds: linkedTourIds };
 }
 
 export async function updatePostAs(
