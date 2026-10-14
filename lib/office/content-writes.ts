@@ -1,6 +1,3 @@
-import { randomBytes } from "crypto";
-import { mkdir, writeFile } from "fs/promises";
-import path from "path";
 import { eq, max } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { photos, places, posts, reviews, siteSettings, slides, tourDays, tours } from "@/lib/db/schema";
@@ -10,6 +7,18 @@ import type { BlogSection } from "@/data/blog";
 import type { DestinationSection } from "@/data/destinations";
 import type { PackageType, TourCategory, TourDay } from "@/data/tours";
 import { forbidden, type ActionResult } from "@/lib/http/result";
+import { deleteOfficeFiles, droppedOfficeFiles } from "@/lib/office/media";
+
+export { saveUploadedImage, saveUploadedPdf } from "@/lib/office/media";
+
+async function removeDroppedFiles(before: string[], after: string[]): Promise<ActionResult | null> {
+  try {
+    await deleteOfficeFiles(droppedOfficeFiles(before, after));
+    return null;
+  } catch (error) {
+    return { ok: false, error: error instanceof Error ? error.message : "The file could not be removed." };
+  }
+}
 
 export type TourEditInput = {
   id: string;
@@ -51,10 +60,19 @@ export async function updateTourAs(actor: SessionUser, input: TourEditInput): Pr
   if (!Number.isInteger(input.duration) || input.duration < 1 || input.duration > 60) {
     return { ok: false, error: "Enter a trip of 1 to 60 days." };
   }
-  const [existing] = await db.select({ id: tours.id }).from(tours).where(eq(tours.id, input.id)).limit(1);
+  const [existing] = await db
+    .select({ image: tours.image, pdf: tours.pdf, galleryImages: tours.galleryImages })
+    .from(tours)
+    .where(eq(tours.id, input.id))
+    .limit(1);
   if (!existing) {
     return { ok: false, error: "That tour was not found." };
   }
+  const removed = await removeDroppedFiles(
+    [existing.image, existing.pdf, ...existing.galleryImages],
+    [input.image.trim(), input.pdf.trim(), ...input.galleryImages],
+  );
+  if (removed) return removed;
   await db.transaction(async (tx) => {
     await tx
       .update(tours)
@@ -95,6 +113,15 @@ export async function deleteTourAs(actor: SessionUser, tourId: string): Promise<
   if (!canDeleteTour(actor.role)) {
     return forbidden("Only the Owner can delete a tour.");
   }
+  const [existing] = await db
+    .select({ image: tours.image, pdf: tours.pdf, galleryImages: tours.galleryImages })
+    .from(tours)
+    .where(eq(tours.id, tourId))
+    .limit(1);
+  if (existing) {
+    const removed = await removeDroppedFiles([existing.image, existing.pdf, ...existing.galleryImages], []);
+    if (removed) return removed;
+  }
   await db.delete(tours).where(eq(tours.id, tourId));
   return { ok: true, message: "Tour deleted." };
 }
@@ -115,6 +142,17 @@ export async function updatePlaceAs(
   }
   if (!input.title.trim()) {
     return { ok: false, error: "Enter a title." };
+  }
+  const [existing] = await db
+    .select({ bannerImage: places.bannerImage, content: places.content })
+    .from(places)
+    .where(eq(places.slug, input.slug))
+    .limit(1);
+  if (existing) {
+    const previous = [existing.bannerImage, ...existing.content.map((section) => section.image ?? "")];
+    const next = [input.bannerImage.trim(), ...input.content.map((section) => section.image ?? "")];
+    const removed = await removeDroppedFiles(previous, next);
+    if (removed) return removed;
   }
   await db
     .update(places)
@@ -147,6 +185,17 @@ export async function updatePostAs(
   if (!input.title.trim()) {
     return { ok: false, error: "Enter a title." };
   }
+  const [existing] = await db
+    .select({ coverImage: posts.coverImage, content: posts.content })
+    .from(posts)
+    .where(eq(posts.slug, input.slug))
+    .limit(1);
+  if (existing) {
+    const previous = [existing.coverImage, ...existing.content.map((section) => section.image ?? "")];
+    const next = [input.coverImage.trim(), ...input.content.map((section) => section.image ?? "")];
+    const removed = await removeDroppedFiles(previous, next);
+    if (removed) return removed;
+  }
   await db
     .update(posts)
     .set({
@@ -176,6 +225,11 @@ export async function savePhotoAs(
   }
   const span = input.span === "tall" || input.span === "wide" || input.span === "large" ? input.span : null;
   if (input.id) {
+    const [existing] = await db.select({ src: photos.src }).from(photos).where(eq(photos.id, input.id)).limit(1);
+    if (existing) {
+      const removed = await removeDroppedFiles([existing.src], [input.src.trim()]);
+      if (removed) return removed;
+    }
     await db
       .update(photos)
       .set({
@@ -205,6 +259,11 @@ export async function deletePhotoAs(actor: SessionUser, id: number): Promise<Act
   if (!canEditContent(actor.role)) {
     return forbidden("You cannot edit the gallery.");
   }
+  const [existing] = await db.select({ src: photos.src }).from(photos).where(eq(photos.id, id)).limit(1);
+  if (existing) {
+    const removed = await removeDroppedFiles([existing.src], []);
+    if (removed) return removed;
+  }
   await db.delete(photos).where(eq(photos.id, id));
   return { ok: true, message: "Photo removed." };
 }
@@ -224,6 +283,11 @@ export async function saveReviewAs(
   }
   const rating = input.rating;
   if (input.id) {
+    const [existing] = await db.select({ avatar: reviews.avatar }).from(reviews).where(eq(reviews.id, input.id)).limit(1);
+    if (existing) {
+      const removed = await removeDroppedFiles([existing.avatar], [input.avatar.trim()]);
+      if (removed) return removed;
+    }
     await db
       .update(reviews)
       .set({
@@ -252,6 +316,11 @@ export async function deleteReviewAs(actor: SessionUser, id: number): Promise<Ac
   if (!canEditContent(actor.role)) {
     return forbidden("You cannot edit reviews.");
   }
+  const [existing] = await db.select({ avatar: reviews.avatar }).from(reviews).where(eq(reviews.id, id)).limit(1);
+  if (existing) {
+    const removed = await removeDroppedFiles([existing.avatar], []);
+    if (removed) return removed;
+  }
   await db.delete(reviews).where(eq(reviews.id, id));
   return { ok: true, message: "Review removed." };
 }
@@ -267,6 +336,11 @@ export async function saveSlideAs(
     return { ok: false, error: "Enter a photo and a title." };
   }
   if (input.id) {
+    const [existing] = await db.select({ image: slides.image }).from(slides).where(eq(slides.id, input.id)).limit(1);
+    if (existing) {
+      const removed = await removeDroppedFiles([existing.image], [input.image.trim()]);
+      if (removed) return removed;
+    }
     await db
       .update(slides)
       .set({
@@ -293,6 +367,11 @@ export async function saveSlideAs(
 export async function deleteSlideAs(actor: SessionUser, id: number): Promise<ActionResult> {
   if (!canEditContent(actor.role)) {
     return forbidden("You cannot edit home slides.");
+  }
+  const [existing] = await db.select({ image: slides.image }).from(slides).where(eq(slides.id, id)).limit(1);
+  if (existing) {
+    const removed = await removeDroppedFiles([existing.image], []);
+    if (removed) return removed;
   }
   await db.delete(slides).where(eq(slides.id, id));
   return { ok: true, message: "Slide removed." };
@@ -332,47 +411,3 @@ export async function updateSiteSettingsAs(
   return { ok: true, message: "Site details saved." };
 }
 
-const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
-
-function imageKind(bytes: Buffer): "jpg" | "png" | "webp" | null {
-  if (bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) return "jpg";
-  if (
-    bytes.length >= 8 &&
-    bytes[0] === 0x89 &&
-    bytes[1] === 0x50 &&
-    bytes[2] === 0x4e &&
-    bytes[3] === 0x47 &&
-    bytes[4] === 0x0d &&
-    bytes[5] === 0x0a &&
-    bytes[6] === 0x1a &&
-    bytes[7] === 0x0a
-  ) {
-    return "png";
-  }
-  if (bytes.length >= 12 && bytes.toString("ascii", 0, 4) === "RIFF" && bytes.toString("ascii", 8, 12) === "WEBP") {
-    return "webp";
-  }
-  return null;
-}
-
-export async function saveUploadedImage(actor: SessionUser, file: File): Promise<string | ActionResult> {
-  if (!canEditContent(actor.role)) {
-    return forbidden("You cannot edit a photo.");
-  }
-  if (file.size > MAX_UPLOAD_BYTES) {
-    throw new Error("The file is larger than 5 MB.");
-  }
-  const bytes = Buffer.from(await file.arrayBuffer());
-  if (bytes.length > MAX_UPLOAD_BYTES) {
-    throw new Error("The file is larger than 5 MB.");
-  }
-  const kind = imageKind(bytes);
-  if (!kind) {
-    throw new Error("Use a JPEG, PNG, or WebP file.");
-  }
-  const filename = `${Date.now()}-${randomBytes(8).toString("hex")}.${kind}`;
-  const dir = path.join(process.cwd(), "public", "uploads");
-  await mkdir(dir, { recursive: true });
-  await writeFile(path.join(dir, filename), bytes);
-  return `/uploads/${filename}`;
-}

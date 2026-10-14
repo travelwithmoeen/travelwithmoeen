@@ -76,12 +76,12 @@ function isBackupName(name: string) {
 }
 
 async function pruneOldBackups() {
-  const { blobs } = await list({ prefix: PREFIX });
+  const { blobs } = await list({ prefix: PREFIX, token: process.env.BLOB_READ_WRITE_TOKEN });
   const old = blobs
     .sort((left, right) => right.uploadedAt.getTime() - left.uploadedAt.getTime())
     .slice(KEEP)
     .map((blob) => blob.url);
-  if (old.length > 0) await del(old);
+  if (old.length > 0) await del(old, { token: process.env.BLOB_READ_WRITE_TOKEN });
 }
 
 export async function runBackup(): Promise<ActionResult> {
@@ -93,9 +93,11 @@ export async function runBackup(): Promise<ActionResult> {
     file.tables[name] = await db.select().from(table);
   }
   const stamp = file.createdAt.replace(/[:.]/g, "-");
-  const name = `${PREFIX}preview-${stamp}.json`;
+  const target = process.env.VERCEL_ENV === "production" ? "production" : "preview";
+  const name = `${PREFIX}${target}-${stamp}.json`;
   await put(name, JSON.stringify(file), {
     access: "private",
+    token: process.env.BLOB_READ_WRITE_TOKEN,
     contentType: "application/json",
     addRandomSuffix: false,
   });
@@ -118,7 +120,7 @@ export async function listBackupsAs(actor: SessionUser) {
   if (!storageReady()) {
     return { ok: true as const, backups: [] as BackupRow[] };
   }
-  const { blobs } = await list({ prefix: PREFIX });
+  const { blobs } = await list({ prefix: PREFIX, token: process.env.BLOB_READ_WRITE_TOKEN });
   const backups: BackupRow[] = blobs
     .sort((left, right) => right.uploadedAt.getTime() - left.uploadedAt.getTime())
     .map((blob) => ({ name: blob.pathname, size: blob.size, uploadedAt: blob.uploadedAt.toISOString() }));
@@ -132,7 +134,7 @@ export async function readBackupAs(actor: SessionUser, name: string) {
   if (!storageReady() || !isBackupName(name)) {
     return { ok: false as const, error: "That backup was not found." };
   }
-  const result = await get(name, { access: "private" });
+  const result = await get(name, { access: "private", token: process.env.BLOB_READ_WRITE_TOKEN });
   if (!result || result.statusCode !== 200) {
     return { ok: false as const, error: "That backup was not found." };
   }

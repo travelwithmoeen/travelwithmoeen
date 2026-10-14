@@ -1,6 +1,4 @@
 import { spawn } from "child_process";
-import { unlink } from "fs/promises";
-import path from "path";
 import { eq } from "drizzle-orm";
 import { db } from "../lib/db";
 import { hotelRates, loginFailures, photos, tours, users } from "../lib/db/schema";
@@ -105,27 +103,32 @@ function photoForm(name: string, bytes: Buffer, alt: string, browserType: string
   return form;
 }
 
+function mediaPath(src: string) {
+  try {
+    const pathname = decodeURIComponent(new URL(src).pathname).replace(/^\/+/, "");
+    if (pathname.startsWith("backups/")) return "";
+    return pathname;
+  } catch {
+    return "";
+  }
+}
+
 async function savedPhoto(alt: string) {
   const [row] = await db.select().from(photos).where(eq(photos.alt, alt)).limit(1);
   if (!row) throw new Error(`The ${alt} photo was not saved.`);
-  const base = path.basename(row.src);
-  if (base !== row.src.replace(/^\/uploads\//, "") || base.includes("..") || row.src.includes("\\")) {
-    throw new Error(`The stored photo name has a folder path: ${row.src}`);
-  }
-  if (!/^\/uploads\/\d+-[a-f0-9]{16}\.(jpg|png|webp)$/.test(row.src)) {
-    throw new Error(`The stored photo name was not a plain file name: ${row.src}`);
+  if (!/^media\/\d+-[a-f0-9]{16}\.(jpg|png|webp)$/.test(mediaPath(row.src))) {
+    throw new Error(`The stored photo was not a public media file: ${row.src}`);
   }
   return row;
 }
 
-async function removePhoto(id: number, src: string, cookie: string) {
+async function removePhoto(id: number, cookie: string) {
   const form = new FormData();
   form.set("id", String(id));
   const removed = await officePost("/api/office/photos/delete", form, cookie);
   if (removed.status !== 200 || !removed.body.ok) {
-    throw new Error(`The test photo could not be removed: ${removed.status}`);
+    throw new Error(`The test photo could not be removed: ${removed.status} ${removed.body.error ?? ""}`);
   }
-  await unlink(path.join(process.cwd(), "public", "uploads", path.basename(src))).catch(() => undefined);
 }
 
 async function main() {
@@ -297,7 +300,7 @@ async function main() {
     }
   } finally {
     for (const photo of saved) {
-      await removePhoto(photo.id, photo.src, editorCookie).catch(() => undefined);
+      await removePhoto(photo.id, editorCookie).catch(() => undefined);
     }
     await db.delete(photos).where(eq(photos.alt, "step2-jpeg"));
     await db.delete(photos).where(eq(photos.alt, "step2-png"));

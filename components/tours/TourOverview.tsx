@@ -133,6 +133,15 @@ export function TourOverview({
                     View File
                   </a>
                 </Button>
+                <Button
+                  asChild
+                  variant="outline"
+                  className="flex-1 border-white bg-transparent text-white hover:bg-white hover:text-navy"
+                >
+                  <a href={pdf} target="_blank" rel="noopener noreferrer">
+                    Open PDF
+                  </a>
+                </Button>
                 {/* <Button
                   asChild
                   className="flex-1 bg-gold text-black hover:bg-gold/90"

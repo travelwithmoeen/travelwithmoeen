@@ -225,6 +225,33 @@ Task T-28 is part of Step 2. It runs four tests: lint on the code, `npm run chec
 
 The route list in requirements section 13 is the authorization list for the whole project. A new office route is added to that list in the same change. A route that is not on the list is refused.
 
+## 7c. Office media
+
+Office media is built. The rules are BR-75 to BR-80. The Meadow file, T-36 and BR-81, is on `main`. The next sprint builds that look into `/office`, rule BR-82, before Phase 2 and Phase 3.
+
+What the office can do today:
+
+| Screen | Path | Upload | Remove |
+|---|---|---|---|
+| Tour main photo | Yes | Yes | Clear the path, or the Owner deletes the tour. The file stays. |
+| Tour extra photos | One path per line | No | Delete a line. The file stays. |
+| Tour PDF | Yes | No | Clear the path. |
+| Place banner and section photo | Yes | No | A section can be added. It cannot be removed. |
+| Blog cover and section photo | Yes | No | A section cannot be added or removed. |
+| Gallery | Yes | Yes | Remove photo. The file stays. |
+| Home slide | Yes | Yes | Remove slide. The file stays. |
+| Review avatar | Yes | No | Remove deletes the whole review. |
+
+What this build adds:
+
+- The same upload control on every row that is missing it in the table above.
+- Remove on a tour extra photo, a place section, a blog section, a banner, a cover, and a review avatar. The tour, place, post, and review stay.
+- Add and remove for a blog section. A place section can already be added. This build adds remove.
+- A stored file that this office uploaded is deleted when that picture is replaced or removed. The same delete runs for a gallery photo, a home slide, a tour extra photo, a tour PDF, a section photo, and every office file on a tour when that tour is deleted.
+- The file is saved with `put` from `@vercel/blob`, `access: "public"`, under `media/` plus one file name, using `MEDIA_READ_WRITE_TOKEN` for this environment. The page stores the returned public URL and loads that URL. `del` deletes it. Backups stay on this environment's private store, `put` with `access: "private"` under `backups/`, using `BLOB_READ_WRITE_TOKEN`. A media URL cannot read a backup. A missing `MEDIA_READ_WRITE_TOKEN` fails the save. `public/uploads` on the server disk is not the store. A PDF is at most 10 MB. Preview and Production do not share a Blob store or a Neon database.
+
+These saves use the office routes that already exist: tours, places, posts, photos, reviews, and slides. A new route is added to requirements section 13 in the same change. The role check stays in `lib/`. The screen does not import `lib/office` or `lib/auth`. An Editor or the Owner may upload and remove these files. A Manager is refused. Only the Owner may delete a whole tour.
+
 ## 8. Guest requests
 
 | Form | Save | Also |
@@ -239,15 +266,17 @@ A guest name is at most 200 characters, a phone is at most 40, an email is at mo
 
 ## 9. Backups
 
-The database is backed up once a day. A restore is done only when the data is damaged, and the client is told. The backup file is not committed and is not placed under `public/`.
+The database is backed up once a day. A restore is done only when the data is damaged, and the client is told. The backup file is not committed and is not placed under `public/`. Preview backups go to the Preview private store. Production backups go to the Production private store. Each environment also has its own public media store and its own Neon database.
 
 The first delivery does not promise a new uptime number. If the site is down, check the host, fix a fault that is inside this work, and restore from the daily backup if the data is damaged.
 
 ## 10. Later phases
 
-Phase 2 is sprint 3. It is hours per stop, the labels Comfort, Luxury, Adventure, and Exploration, and the Kashmir, Swat, and Chitral jeep products. The four jeep lines in BR-27 stay in the baseline.
+The next sprint is the Meadow office, BR-82. Moeen gets `docs/office-design/meadow.html` first. Then `/office` is rebuilt to match that file. The public site look stays. The prototype control that switches Owner, Manager, and Editor without a password stays out of the live office. This sprint is accepted before Phase 2.
 
-Phase 3 is sprint 4. These are not built in sprints 1 to 3.
+Phase 2 is sprint 3. It is hours per stop, the labels Comfort, Luxury, Adventure, and Exploration, and the Kashmir, Swat, and Chitral jeep products. The four jeep lines in BR-27 stay in the baseline. Phase 2 does not start until BR-82 is accepted.
+
+Phase 3 is sprint 4. These are not built in the baseline, in the next sprint, or in Phase 2. The Meadow file shows them on Trip plans for review. The live office does not.
 
 - Season trip plans by month. Blossom is in April. Summer is May through September. Autumn is 10 October through 30 November. Winter is 1 December through 30 March. The exact April dates are still to be named.
 - Fuel by kilometers. Gli uses 1 liter for each 14 km. Prado uses 1 liter for each 5 km. One petrol rate and one diesel rate update every quote.

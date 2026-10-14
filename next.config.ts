@@ -11,6 +11,9 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: projectRoot,
   },
+  outputFileTracingIncludes: {
+    "/meadow": ["./docs/office-design/meadow.html"],
+  },
 };
 
 export default nextConfig;

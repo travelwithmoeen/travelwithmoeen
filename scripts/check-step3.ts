@@ -1,10 +1,12 @@
-import { readFileSync } from "fs";
+import { existsSync, readFileSync } from "fs";
+import path from "path";
 import { spawn } from "child_process";
-import { eq } from "drizzle-orm";
+import { eq, max } from "drizzle-orm";
 import { db, sql } from "../lib/db";
-import { guestRequests, loginFailures, tours, users } from "../lib/db/schema";
+import { guestRequests, loginFailures, places, posts, reviews, tours, users } from "../lib/db/schema";
 import { authenticate } from "../lib/auth/authenticate";
 import { createUserAs, removeUserAs } from "../lib/office/users";
+import { officeMediaPath } from "../lib/office/media";
 import { GUEST_EMAIL_LIMIT, GUEST_MESSAGE_LIMIT, GUEST_NAME_LIMIT, GUEST_PHONE_LIMIT } from "../lib/requests";
 
 const EDITOR_EMAIL = "editor-step3-requests@travelwithmoeen.test";
@@ -125,6 +127,368 @@ async function assertBookingOnOfficeList(id: number, message: string) {
   }
 }
 
+const JPEG = Buffer.from(
+  "/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=",
+  "base64",
+);
+
+function shippedFile(urlPath: string) {
+  return path.join(process.cwd(), "public", urlPath.replace(/^\/+/, ""));
+}
+
+function assertMediaGuards() {
+  if (officeMediaPath("https://example.public.blob.vercel-storage.com/backups/preview-2026.json") !== null) {
+    throw new Error("A media check accepted a backup path.");
+  }
+  if (officeMediaPath("/images/tours/a.jpg") !== null) {
+    throw new Error("A media check would delete a shipped picture.");
+  }
+  if (officeMediaPath("/pdfs/tour.pdf") !== null) {
+    throw new Error("A media check would delete a shipped PDF.");
+  }
+  const kept = officeMediaPath("https://example.public.blob.vercel-storage.com/media/1710000000000-ab12cd34ef567890.jpg");
+  if (kept !== "media/1710000000000-ab12cd34ef567890.jpg") {
+    throw new Error("A public media file was not recognized.");
+  }
+}
+
+function tourForm(
+  tour: typeof tours.$inferSelect,
+  extras: { image?: string; pdf?: string; gallery?: string[]; photo?: File; extra?: File; pdfFile?: File } = {},
+) {
+  const form = new FormData();
+  form.set("id", tour.id);
+  form.set("name", tour.name);
+  form.set("location", tour.location);
+  form.set("region", tour.region);
+  form.set("description", tour.description);
+  form.set("duration", String(tour.duration));
+  form.set("image", extras.image ?? tour.image);
+  form.set("pdf", extras.pdf ?? tour.pdf);
+  form.set("categories", tour.categories.join("\n"));
+  form.set("packageTypes", tour.packageTypes.join("\n"));
+  form.set("transport", tour.transport);
+  form.set("included", tour.included.join("\n"));
+  form.set("notIncluded", tour.notIncluded.join("\n"));
+  form.set("itinerary", "[]");
+  form.set("galleryImageSet", "1");
+  for (const photo of extras.gallery ?? tour.galleryImages) form.append("galleryImage", photo);
+  if (extras.photo) form.set("photo", extras.photo);
+  if (extras.extra) form.set("extraPhoto", extras.extra);
+  if (extras.pdfFile) form.set("pdfFile", extras.pdfFile);
+  return form;
+}
+
+function jpegFile(name: string) {
+  return new File([new Uint8Array(JPEG)], name, { type: "image/jpeg" });
+}
+
+async function assertPlaceBlogReview(editorCookie: string, shipped: string) {
+  const placeSlug = "office-media-place";
+  const postSlug = "office-media-post";
+  await db.delete(places).where(eq(places.slug, placeSlug));
+  await db.delete(posts).where(eq(posts.slug, postSlug));
+  const [idRow] = await db.select({ value: max(reviews.id) }).from(reviews);
+  const reviewId = (idRow?.value ?? 0) + 1;
+  await db.insert(places).values({
+    slug: placeSlug,
+    title: "Office media place",
+    excerpt: "Office media place",
+    bannerImage: shipped,
+    location: "Check",
+    listingNumber: 99001,
+    content: [],
+  });
+  await db.insert(posts).values({
+    slug: postSlug,
+    title: "Office media post",
+    excerpt: "Office media post",
+    author: "Office",
+    date: "2026-10-13",
+    coverImage: shipped,
+    content: [],
+  });
+  await db.insert(reviews).values({
+    id: reviewId,
+    name: "Office media review",
+    avatar: "",
+    location: "Check",
+    text: "Office media review stays.",
+    rating: 5,
+  });
+  const uploaded: string[] = [];
+  try {
+    const placeForm = new FormData();
+    placeForm.set("slug", placeSlug);
+    placeForm.set("title", "Office media place");
+    placeForm.set("excerpt", "Office media place");
+    placeForm.set("location", "Check");
+    placeForm.set("bannerImage", shipped);
+    placeForm.set("content", "[]");
+    placeForm.set("bannerPhoto", jpegFile("banner.jpg"));
+    const placeSave = await officePost("/api/office/places", placeForm, editorCookie);
+    if (placeSave.status !== 200 || !placeSave.body.ok) {
+      throw new Error(`A place banner was not saved: ${placeSave.status} ${placeSave.body.error ?? ""}`);
+    }
+    const [place] = await db.select().from(places).where(eq(places.slug, placeSlug)).limit(1);
+    if (!place?.bannerImage || !officeMediaPath(place.bannerImage)?.endsWith(".jpg")) {
+      throw new Error("The place banner was not stored as a public media file.");
+    }
+    uploaded.push(place.bannerImage);
+    const placePage = await fetch(`${siteBase()}/destinations/${placeSlug}`);
+    if (!(await placePage.text()).includes(place.bannerImage)) {
+      throw new Error("The public place page does not show the banner.");
+    }
+    const postForm = new FormData();
+    postForm.set("slug", postSlug);
+    postForm.set("title", "Office media post");
+    postForm.set("excerpt", "Office media post");
+    postForm.set("author", "Office");
+    postForm.set("date", "2026-10-13");
+    postForm.set("coverImage", shipped);
+    postForm.set("content", "[]");
+    postForm.set("coverPhoto", jpegFile("cover.jpg"));
+    const postSave = await officePost("/api/office/posts", postForm, editorCookie);
+    if (postSave.status !== 200 || !postSave.body.ok) {
+      throw new Error(`A blog cover was not saved: ${postSave.status} ${postSave.body.error ?? ""}`);
+    }
+    const [post] = await db.select().from(posts).where(eq(posts.slug, postSlug)).limit(1);
+    if (!post?.coverImage || !officeMediaPath(post.coverImage)?.endsWith(".jpg")) {
+      throw new Error("The blog cover was not stored as a public media file.");
+    }
+    uploaded.push(post.coverImage);
+    const postPage = await fetch(`${siteBase()}/blog/${postSlug}`);
+    if (!(await postPage.text()).includes(post.coverImage)) {
+      throw new Error("The public blog page does not show the cover.");
+    }
+    const reviewForm = new FormData();
+    reviewForm.set("id", String(reviewId));
+    reviewForm.set("name", "Office media review");
+    reviewForm.set("location", "Check");
+    reviewForm.set("text", "Office media review stays.");
+    reviewForm.set("rating", "5");
+    reviewForm.set("avatar", "");
+    reviewForm.set("avatarPhoto", jpegFile("avatar.jpg"));
+    const reviewSave = await officePost("/api/office/reviews", reviewForm, editorCookie);
+    if (reviewSave.status !== 200 || !reviewSave.body.ok) {
+      throw new Error(`A review photo was not saved: ${reviewSave.status} ${reviewSave.body.error ?? ""}`);
+    }
+    const [withAvatar] = await db.select().from(reviews).where(eq(reviews.id, reviewId)).limit(1);
+    if (!withAvatar?.avatar || !officeMediaPath(withAvatar.avatar)?.endsWith(".jpg")) {
+      throw new Error("The review photo was not stored as a public media file.");
+    }
+    uploaded.push(withAvatar.avatar);
+    const home = await fetch(`${siteBase()}/`);
+    if (!(await home.text()).includes(withAvatar.avatar)) {
+      throw new Error("The public page does not show the review photo.");
+    }
+    const clearForm = new FormData();
+    clearForm.set("id", String(reviewId));
+    clearForm.set("name", "Office media review");
+    clearForm.set("location", "Check");
+    clearForm.set("text", "Office media review stays.");
+    clearForm.set("rating", "5");
+    clearForm.set("avatar", "");
+    const cleared = await officePost("/api/office/reviews", clearForm, editorCookie);
+    if (cleared.status !== 200 || !cleared.body.ok) {
+      throw new Error(`The review photo could not be cleared: ${cleared.status} ${cleared.body.error ?? ""}`);
+    }
+    const [kept] = await db.select().from(reviews).where(eq(reviews.id, reviewId)).limit(1);
+    if (!kept || kept.text !== "Office media review stays." || kept.avatar !== "") {
+      throw new Error("Clearing the photo removed the review.");
+    }
+    if ((await fetch(withAvatar.avatar)).ok) {
+      throw new Error("Clearing the photo left the office file in storage.");
+    }
+    if (!existsSync(shippedFile(shipped))) {
+      throw new Error("An office upload deleted a shipped picture.");
+    }
+    const placeBack = new FormData();
+    placeBack.set("slug", placeSlug);
+    placeBack.set("title", "Office media place");
+    placeBack.set("excerpt", "Office media place");
+    placeBack.set("location", "Check");
+    placeBack.set("bannerImage", shipped);
+    placeBack.set("content", "[]");
+    const placeRestored = await officePost("/api/office/places", placeBack, editorCookie);
+    if (placeRestored.status !== 200 || !placeRestored.body.ok) {
+      throw new Error(`The place banner could not be put back: ${placeRestored.status} ${placeRestored.body.error ?? ""}`);
+    }
+    const [placeKept] = await db.select().from(places).where(eq(places.slug, placeSlug)).limit(1);
+    if (!placeKept || placeKept.bannerImage !== shipped) throw new Error("Replacing the banner removed the place.");
+    if ((await fetch(place.bannerImage)).ok) throw new Error("Replacing the banner left the office file in storage.");
+    const postBack = new FormData();
+    postBack.set("slug", postSlug);
+    postBack.set("title", "Office media post");
+    postBack.set("excerpt", "Office media post");
+    postBack.set("author", "Office");
+    postBack.set("date", "2026-10-13");
+    postBack.set("coverImage", shipped);
+    postBack.set("content", "[]");
+    const postRestored = await officePost("/api/office/posts", postBack, editorCookie);
+    if (postRestored.status !== 200 || !postRestored.body.ok) {
+      throw new Error(`The blog cover could not be put back: ${postRestored.status} ${postRestored.body.error ?? ""}`);
+    }
+    const [postKept] = await db.select().from(posts).where(eq(posts.slug, postSlug)).limit(1);
+    if (!postKept || postKept.coverImage !== shipped) throw new Error("Replacing the cover removed the post.");
+    if ((await fetch(post.coverImage)).ok) throw new Error("Replacing the cover left the office file in storage.");
+  } finally {
+    const placeBack = new FormData();
+    placeBack.set("slug", placeSlug);
+    placeBack.set("title", "Office media place");
+    placeBack.set("excerpt", "Office media place");
+    placeBack.set("location", "Check");
+    placeBack.set("bannerImage", shipped);
+    placeBack.set("content", "[]");
+    await officePost("/api/office/places", placeBack, editorCookie);
+    const postBack = new FormData();
+    postBack.set("slug", postSlug);
+    postBack.set("title", "Office media post");
+    postBack.set("excerpt", "Office media post");
+    postBack.set("author", "Office");
+    postBack.set("date", "2026-10-13");
+    postBack.set("coverImage", shipped);
+    postBack.set("content", "[]");
+    await officePost("/api/office/posts", postBack, editorCookie);
+    const removeReview = new FormData();
+    removeReview.set("id", String(reviewId));
+    await officePost("/api/office/reviews/delete", removeReview, editorCookie);
+    await db.delete(places).where(eq(places.slug, placeSlug));
+    await db.delete(posts).where(eq(posts.slug, postSlug));
+    await db.delete(reviews).where(eq(reviews.id, reviewId));
+  }
+}
+
+async function assertOfficeMedia(editorCookie: string, managerCookie: string, ownerCookie: string) {
+  assertMediaGuards();
+  const rows = await db.select().from(tours);
+  const shipped = rows.flatMap((tour) => [tour.image, ...tour.galleryImages]).find((item) => item.startsWith("/images/") && existsSync(shippedFile(item)));
+  if (!shipped) throw new Error("The media check needs a shipped picture under /images/.");
+  await db.delete(tours).where(eq(tours.id, "office-media-check"));
+  const [sample] = rows;
+  if (!sample) throw new Error("There is no tour to copy for the media check.");
+  await db.insert(tours).values({
+    id: "office-media-check",
+    name: "Office media check",
+    location: sample.location,
+    region: sample.region,
+    duration: 1,
+    description: "Office media check",
+    image: shipped,
+    pdf: "",
+    code: "office-media-check",
+    galleryImages: [shipped],
+    categories: sample.categories,
+    packageTypes: sample.packageTypes,
+    transport: sample.transport,
+    basePrice: 0,
+    packages: [],
+    included: [],
+    notIncluded: [],
+    featured: false,
+    priceSource: "website",
+  });
+  const [created] = await db.select().from(tours).where(eq(tours.id, "office-media-check")).limit(1);
+  if (!created) throw new Error("The media check tour was not created.");
+  try {
+    const jpeg = new File([new Uint8Array(JPEG)], "photo.jpg", { type: "image/jpeg" });
+    const managerPhoto = await officePost("/api/office/tours", tourForm(created, { extra: jpeg }), managerCookie);
+    if (managerPhoto.status !== 403 || managerPhoto.body.error !== "You cannot edit a photo.") {
+      throw new Error(`A Manager was not refused a photo upload: ${managerPhoto.status} ${managerPhoto.body.error ?? ""}`);
+    }
+    const textPdf = new File([Buffer.from("hello")], "notes.pdf", { type: "application/pdf" });
+    const badPdf = await officePost("/api/office/tours", tourForm(created, { pdfFile: textPdf }), editorCookie);
+    if (badPdf.status !== 400 || badPdf.body.error !== "Use a PDF file.") {
+      throw new Error(`A text file in the PDF field was not refused: ${badPdf.status} ${badPdf.body.error ?? ""}`);
+    }
+    const oversized = Buffer.alloc(10 * 1024 * 1024 + 1);
+    oversized.write("%PDF-");
+    const bigPdf = new File([new Uint8Array(oversized)], "large.pdf", { type: "application/pdf" });
+    const big = await officePost("/api/office/tours", tourForm(created, { pdfFile: bigPdf }), editorCookie);
+    if (big.status !== 400 || big.body.error !== "The file is larger than 10 MB.") {
+      throw new Error(`A PDF over 10 MB was not refused: ${big.status} ${big.body.error ?? ""}`);
+    }
+    const extra = await officePost("/api/office/tours", tourForm(created, { extra: jpeg }), editorCookie);
+    if (extra.status !== 200 || !extra.body.ok) {
+      throw new Error(`An Editor JPEG was not saved: ${extra.status} ${extra.body.error ?? ""}`);
+    }
+    const [withPhoto] = await db.select().from(tours).where(eq(tours.id, created.id)).limit(1);
+    const photoUrl = withPhoto?.galleryImages.find((item) => officeMediaPath(item)?.endsWith(".jpg"));
+    if (!photoUrl || !withPhoto.galleryImages.includes(shipped)) {
+      throw new Error("The extra photo was not stored beside the shipped picture.");
+    }
+    const page = await fetch(`${siteBase()}/tours/${created.id}`);
+    const html = await page.text();
+    if (!html.includes(photoUrl) || !html.includes(shipped)) {
+      throw new Error("The public tour page does not show the extra photo and the shipped picture.");
+    }
+    const cleared = await officePost("/api/office/tours", tourForm(withPhoto, { gallery: [shipped], image: shipped, pdf: "" }), editorCookie);
+    if (cleared.status !== 200 || !cleared.body.ok) {
+      throw new Error(`The extra photo could not be removed: ${cleared.status} ${cleared.body.error ?? ""}`);
+    }
+    const [withoutPhoto] = await db.select().from(tours).where(eq(tours.id, created.id)).limit(1);
+    if (!withoutPhoto || withoutPhoto.galleryImages.includes(photoUrl)) {
+      throw new Error("Removing a photo left it on the tour.");
+    }
+    if ((await fetch(photoUrl)).ok) {
+      throw new Error("Removing a photo left the office file in storage.");
+    }
+    if (!existsSync(shippedFile(shipped))) {
+      throw new Error("Removing an office photo deleted a shipped picture.");
+    }
+    const pdfBytes = Buffer.from("%PDF-1.1\n1 0 obj<<>>endobj\ntrailer<<>>\n%%EOF\n");
+    const pdfFile = new File([new Uint8Array(pdfBytes)], "tour.pdf", { type: "application/pdf" });
+    const pdfSave = await officePost("/api/office/tours", tourForm(withoutPhoto, { gallery: [shipped], pdfFile }), editorCookie);
+    if (pdfSave.status !== 200 || !pdfSave.body.ok) {
+      throw new Error(`An Editor PDF was not saved: ${pdfSave.status} ${pdfSave.body.error ?? ""}`);
+    }
+    const [withPdf] = await db.select().from(tours).where(eq(tours.id, created.id)).limit(1);
+    if (!withPdf?.pdf || !officeMediaPath(withPdf.pdf)?.endsWith(".pdf")) {
+      throw new Error("The tour PDF was not stored as a public media file.");
+    }
+    const pdfPage = await fetch(`${siteBase()}/tours/${created.id}`);
+    if (!(await pdfPage.text()).includes(withPdf.pdf)) {
+      throw new Error("The public tour page does not open the PDF.");
+    }
+    const replacement = new File([new Uint8Array(JPEG)], "main.jpg", { type: "image/jpeg" });
+    const firstMain = await officePost("/api/office/tours", tourForm(withPdf, { gallery: [shipped], photo: replacement }), editorCookie);
+    if (firstMain.status !== 200) throw new Error(`The main photo was not replaced: ${firstMain.body.error ?? firstMain.status}`);
+    const [mainOne] = await db.select().from(tours).where(eq(tours.id, created.id)).limit(1);
+    if (!mainOne?.image || !officeMediaPath(mainOne.image)) throw new Error("The replacement photo was not a public media file.");
+    const secondMain = await officePost(
+      "/api/office/tours",
+      tourForm(mainOne, { gallery: [shipped], image: mainOne.image, photo: replacement }),
+      editorCookie,
+    );
+    if (secondMain.status !== 200) throw new Error(`The main photo was not replaced again: ${secondMain.body.error ?? secondMain.status}`);
+    const [mainTwo] = await db.select().from(tours).where(eq(tours.id, created.id)).limit(1);
+    if (!mainTwo || mainTwo.image === mainOne.image) throw new Error("Replacing a photo kept the old file on the tour.");
+    if ((await fetch(mainOne.image)).ok) throw new Error("Replacing a photo left the old office file in storage.");
+    const deleteForm = new FormData();
+    deleteForm.set("id", created.id);
+    const editorDelete = await officePost("/api/office/tours/delete", deleteForm, editorCookie);
+    if (editorDelete.status !== 403) throw new Error(`An Editor delete of a tour returned ${editorDelete.status}.`);
+    const removed = await officePost("/api/office/tours/delete", deleteForm, ownerCookie);
+    if (removed.status !== 200 || !removed.body.ok) {
+      throw new Error(`The Owner could not delete the media check tour: ${removed.status} ${removed.body.error ?? ""}`);
+    }
+    const [gone] = await db.select().from(tours).where(eq(tours.id, created.id)).limit(1);
+    if (gone) throw new Error("Deleting the tour left the row.");
+    if ((await fetch(mainTwo.image)).ok || (await fetch(withPdf.pdf)).ok) {
+      throw new Error("Deleting the tour left an office file in storage.");
+    }
+    if (!existsSync(shippedFile(shipped))) {
+      throw new Error("Deleting the tour deleted a shipped picture.");
+    }
+    await assertPlaceBlogReview(editorCookie, shipped);
+  } finally {
+    const form = new FormData();
+    form.set("id", "office-media-check");
+    await officePost("/api/office/tours/delete", form, ownerCookie);
+    await db.delete(tours).where(eq(tours.id, "office-media-check"));
+  }
+}
+
 async function assertOfficeRequests(savedIds: number[]) {
   const ownerEmail = process.env.OWNER_EMAIL?.trim().toLowerCase();
   const ownerPassword = process.env.OWNER_PASSWORD;
@@ -235,6 +599,7 @@ async function assertOfficeRequests(savedIds: number[]) {
     const ownerLogin = await signIn(ownerEmail, ownerPassword);
     const ownerCookie = sessionCookie(ownerLogin.response);
     if (!ownerCookie) throw new Error("The Owner did not get a session.");
+    await assertOfficeMedia(editorCookie, managerCookie, ownerCookie);
     const ownerDelete = await officePost("/api/office/requests/delete", deleteForm, ownerCookie);
     if (ownerDelete.status !== 200 || !ownerDelete.body.ok) {
       throw new Error(`An Owner delete returned ${ownerDelete.status}.`);

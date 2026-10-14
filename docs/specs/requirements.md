@@ -2,9 +2,9 @@
 
 **Spec:** TWM-SPEC-REQ  
 **Proposal:** TWM-SOW-001, version 1.3, September 29, 2026  
-**Status:** Ready to build  
+**Status:** Baseline and office media are built. The next sprint is the Meadow office, promised to Moeen. Phase 2 starts after that. Phase 3 starts after Phase 2.
 
-This file says what the first delivery must do.
+This file says what the first delivery must do, and what is planned after it. What is already in the code is listed in `docs/audit/after-step03.md`.
 
 **Also read:** `docs/specs/design.md`, `docs/specs/tasks.md`, `docs/rules/project-structure.md`, and `docs/rules/coding-standards.md`
 
@@ -45,7 +45,7 @@ The public website stays. The office gets a private area on that same site. Gues
 | BR-19 | Road trips start from Lahore or Islamabad only. A guest from Karachi joins a road trip in one of those two cities. |
 | BR-20 | Air trips start from Karachi, Lahore, or Islamabad. |
 | BR-21 | Until the office changes them, the Islamabad air ticket is 60,000 rupees, the Lahore air extra is 10,000 rupees, and the Karachi air extra is 30,000 rupees on top of the Islamabad ticket. |
-| BR-22 | Off-season profit is 15 percent. In-season profit is 20 percent. Only the Owner and the Manager can switch it. The active rate is shown on the quote screen. |
+| BR-22 | Off-season profit is 15 percent. In-season profit is 20 percent. Only the Owner and the Manager can switch it. The active rate is shown on the quote screen. The Meadow office, BR-82, replaces this switch with any whole percent from 0 to 100. Until that office is live, the running site still uses 15 or 20. |
 | BR-23 | Prado is the preferred vehicle where that car is offered. The Excel name Parado is the same car. Other vehicles can be turned on for a route. |
 | BR-24 | The office can choose Other and type a mix, for example a Gli car plus a jeep. |
 | BR-25 | A quote can add a paid extra on top of the main vehicle. The office types the name and the amount. Examples are a musical night, a BBQ and bonfire, fireworks, a honeymoon setup, or flowers. |
@@ -116,10 +116,36 @@ The first delivery is the baseline. These items stay out of it.
 - Card payment on the website.
 - A login for guests.
 - Deleting the Excel file.
+- Office media controls beyond the three screens that already upload. Those controls are section 8a. They are the next sprint, with the Meadow prototype. They are not part of the first delivery.
 
-## 9. Phase 3, after the baseline and Phase 2
+## 8a. Office media, before Phase 2 and Phase 3
 
-These were asked for on September 29, 2026. They are kept in the plan. They are sprint 4. They are not built in sprints 1 to 3. Sprint 4 starts after sprint 3 is accepted.
+Asked for on 13 October 2026. Office media is built. The next sprint is BR-82, the Meadow office promised to Moeen. Do not start Phase 2 or Phase 3 while BR-82 is open.
+
+A path may stay in the field. The office must also be able to upload a file and to remove that file. Removing a picture takes it off the page and deletes the stored file when this office saved that file. A picture that shipped with the site, under `/images/` or `/pdfs/`, is unlinked only. It is not deleted from the repo.
+
+Preview and Production each have their own Vercel Blob stores and their own Neon database. A token or a connection string from one environment is never copied into the other.
+
+Pictures and PDFs use the public media store for that environment, through `@vercel/blob` and `MEDIA_READ_WRITE_TOKEN`. A picture or a PDF is saved with `access: "public"` and a name `media/` plus one file name, such as `media/1710000000000-ab12cd34ef567890.jpg`. The file name has no slash. The database stores the public URL that `put` returns. `del` removes it. Backups use the private backup store for that environment, `BLOB_READ_WRITE_TOKEN`, and `access: "private"` under `backups/`. A media URL cannot read a backup. If `MEDIA_READ_WRITE_TOKEN` is missing, the save fails and says storage is not connected. Do not write the file under `public/uploads`, and do not commit it.
+
+`DATABASE_URL` on Preview points at the Preview Neon database. Production gets its own Neon database and its own `DATABASE_URL` when this app is what Production deploys. The two databases are not the same database.
+
+| ID | Requirement |
+|---|---|
+| BR-75 | An office upload of a picture still follows BR-59: JPEG, PNG, or WebP, read from the bytes, 5 MB or under. It is stored as a public Vercel Blob under `media/` in that environment's media store, and the page stores that public URL. The Owner or the Editor may upload. The Manager is refused. |
+| BR-76 | A tour PDF upload is a PDF, read from the bytes, 10 MB or under. Any other type is refused. |
+| BR-77 | Tour extra photos, the tour PDF, the place banner, each place section photo, the blog cover, each blog section photo, and the review avatar can be uploaded. A path can still be typed. |
+| BR-78 | One tour extra photo, one place section, one blog section, the place banner, the blog cover, and the review avatar can be removed without deleting the tour, the place, the post, or the review. A place section can already be added. A blog section can be added and removed. |
+| BR-79 | Replacing or removing an office-uploaded file deletes that stored file. This includes a gallery photo, a home slide, a tour main photo, a tour extra photo, a tour PDF, and the files on a place section or a blog section. Deleting a tour deletes the office files that tour used. A path under `/images/` or `/pdfs/` is not deleted from the repo. |
+| BR-80 | The public page shows the new file on the preview site after a refresh. The page layout does not change. |
+| BR-81 | The Meadow prototype is the clickable file `docs/office-design/meadow.html`. On the preview site it is also `https://new.travelwithmoeen.com/meadow`. That path is not `/office`. The Owner, Manager, and Editor links match BR-01 to BR-07. Profit is any whole percent from 0 to 100. The hotel catalog is City, then Hotel, then Room, then Occupancy, and the rate fills from that row. Each night can pick its own city, hotel, and room. A day edit changes that quote. The guest figure is one total. The staff figure lists the nights and the profit. Changing the number of days sets hotel nights to days minus one. Trip plans show Phase 2 and Phase 3 for review. The layout fits a computer and a phone. The zip is that same folder. Moeen receives this file before the live office is rebuilt. |
+| BR-82 | The next sprint builds the Meadow look into the live office at `/office`. The screens match `docs/office-design/meadow.html`. The public site look does not change. Login, roles, quotes, guest requests, and media uploads stay as they are. The prototype bar that switches role without a password is not part of the live office. |
+
+Creating a new tour, place, or blog post is not part of this work. Deleting a price row stays BR-03 and is not part of this work. The prototype changes no running route, so it does not repeat the four security tests. T-35 does.
+
+## 9. Phase 3, after the baseline, office media, and Phase 2
+
+These were asked for on September 29, 2026. They are kept in the plan. They are sprint 4. They are not built in the baseline or in office media. The Meadow file shows them on Trip plans so they can be reviewed. They are not part of the live office until Phase 2 and Phase 3. Phase 2 is accepted before Phase 3 starts. Office media is accepted. The Meadow office, BR-82, is accepted before Phase 2 starts.
 
 - Season plans by month. Blossom is in April, and the exact April dates still need to be named. Summer is May through September. Autumn is 10 October through 30 November. Winter is 1 December through 30 March.
 - Fuel by kilometers. A Gli car uses 1 liter for each 14 km. A Prado uses 1 liter for each 5 km. One petrol rate and one diesel rate update every quote.
@@ -139,6 +165,10 @@ Step 1 is done when an Editor can change a tour title and a photo and the public
 Step 2 is done when the test quote equals 140,400 rupees at 20 percent, 15 percent changes only the profit, Premier is not offered, a road quote cannot start from Karachi, a Karachi air quote includes 30,000 rupees, Taobat uses Swat rates, Naran still uses the Naran rates for now, Ratti Gali still shows the website price, a night-two hotel edit changes only that night and the average, removing one day's vehicle removes that day's rent, and BR-59, BR-68, BR-70, and BR-71 through BR-74 pass. Step 2 is not done if a renamed text file or an oversized file can still be saved as a photo, or if an 11th failed sign-in inside 15 minutes is still accepted.
 
 Step 3 is done when a test contact and a test booking stay in the office list, WhatsApp still opens, an Editor can read the list and cannot delete an item, an Owner can delete a test item, and a public page response does not include the test phone number.
+
+Office media is done when BR-75 to BR-80 pass. An Editor can upload and remove a tour extra photo, a tour PDF, a place banner, a place section photo, a blog cover, a blog section photo, and a review avatar. A blog section can be added and removed. A place section can be removed. A Manager upload is refused. A file that is not a PDF is refused in the PDF field. A PDF over 10 MB is refused. A picture over 5 MB is refused. The public page on the preview site shows the file. Replacing or removing an office file deletes that file, including the office files on a deleted tour. A path under `/images/` or `/pdfs/` still loads.
+
+The Meadow prototype file is done. BR-81 passes on `main`. Moeen still needs that file. The live Meadow office is done when BR-82 passes: `/office` matches `docs/office-design/meadow.html`, the public site look is unchanged, and a person cannot change role without signing in.
 
 ## 11. Security
 
@@ -180,7 +210,7 @@ The backup closes in T-23. Sprint 4 downloads close in the same sprint that buil
 
 ## 12. Security tests
 
-Four tests are the minimum. The same four run at the end of Step 2, again before Step 3 is accepted, and again before T-25 is accepted. Sprint 4 does not replace them with a different set. A step is not done if any of the four fails. Do not hide a failure with an ignore flag unless the step note names the package, the finding, and why it cannot be fixed in that step.
+Four tests are the minimum. The same four run at the end of Step 2, again before Step 3 is accepted, again before T-25 is accepted, and again before T-35 is accepted. Sprint 4 does not replace them with a different set. A step is not done if any of the four fails. Do not hide a failure with an ignore flag unless the step note names the package, the finding, and why it cannot be fixed in that step.
 
 | ID | Test | Minimum |
 |---|---|---|
@@ -208,6 +238,8 @@ Step 2 adds, and later runs keep them: a renamed text file is refused, a file ov
 
 Step 3 adds, and later runs keep them: a message over 4,000 characters is refused, and the public home page does not contain the test guest phone.
 
+Office media adds, and later runs keep them: a Manager upload returns 403, a file that is not a PDF is refused in the PDF field, and the public page shows an Editor upload.
+
 Sprint 4 adds: the driver copy has no rupee amount. The guest download has one total. An Editor cannot download the live price Excel file.
 
 ## 13. Who may call what
@@ -217,6 +249,7 @@ This list is the whole project. A new office route is added to this list in the 
 | Call | Who |
 |---|---|
 | Public pages, including home, tours, places, blog, gallery, calculator, contact, and custom trip | Anyone. No session. |
+| `GET /meadow` | Anyone. No session. The clickable Meadow prototype. It is not the office and it does not read the database. |
 | `POST /api/quote` | Anyone. A guest response is one total and uses the season saved in the office. A signed-in Owner, Manager, or Editor also receives the lines and the profit. Only an Owner or a Manager can send a different season, a night edit, or a day edit. |
 | `POST /api/requests` | Anyone. No session. Saves a contact, a custom trip, or a booking. The response does not include the name, phone, email, or message. |
 | `GET /api/content/tours`, `/tours/[id]`, `/places`, `/places/[slug]`, `/posts`, `/posts/[slug]`, `/photos`, `/reviews`, `/slides`, `/site` | Anyone. No session. Read only. The same data the public pages show. |
