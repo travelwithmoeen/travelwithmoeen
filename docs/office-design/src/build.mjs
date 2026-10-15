@@ -135,8 +135,8 @@ const VERSIONS = [
     principles: [["Stay in flow", "Edit without leaving the list. Move to the next record with j, close with Esc, and you are where you were."], ["Keyboard first, mouse friendly", "Every common action has a shortcut, and every shortcut has a button."], ["Always show the state", "Unsaved changes are counted and marked, saves and status changes can be undone, and every change is logged with who made it."], ["Calm by default", "Low-contrast chrome, strong contrast where it matters: text, fields, focus."], ["Point to the next step", "The dashboard lists what needs attention, and every empty or no-match screen says what to do."]],
     fontNote: "Inter with stylistic sets for clearer 1, l, and I. Tight letter spacing on headings. JetBrains Mono for codes.",
     shapeNote: "8 px controls, 12 px cards, 16 px dialogs. Soft two-layer shadows.",
-    type: [["Page title · 600 24/32", "font:600 var(--text-title)/var(--leading-32) var(--font);letter-spacing:var(--tracking-tight)", "Requests"], ["Section · 600 16/24", "font:600 var(--text-lg)/var(--leading-24) var(--font)", "Latest requests"], ["Body · 400 14/20", "font:400 var(--text-body)/var(--leading-20) var(--font)", "Family of 5, Hunza and Khunjerab, 7 days in late October."], ["Label · 500 14/20", "font:500 var(--text-body)/var(--leading-20) var(--font)", "Twin room rate"], ["Nav · 500 13.5", "font:500 var(--text-nav)/var(--leading-20) var(--font)", "Rates and quotes"], ["Code · JetBrains Mono 13", "font:400 var(--text-ui)/var(--leading-20) var(--font-mono)", "backups/preview-2026-10-09.json"]],
-    patterns: [["Navigation", "Light sidebar with groups and an icon-rail mode ( [ ); command bar ( Ctrl K ); New menu for quick create; account menu for appearance, density, shortcuts, and sign out. Under 960 px the sidebar becomes a drawer."], ["Lists", "Rows with thumbnail, details, and badges; search ( / ), filters, sort, a live count, and a No matches state with Clear filters."], ["Editing", "Right-hand drawer over the list: position and previous or next ( j k ), View on site, Expand, section chips, last saved by. Changed fields are marked, the save bar counts them, Ctrl S saves, and leaving asks first."], ["Requests", "Inbox split view with Call, WhatsApp, and Email; status is a segmented control that saves at once with Undo. On phones, list and message are separate screens."], ["Dashboard", "Counts, latest requests, Needs attention, recent activity, and quick actions, all filtered by role."], ["Deletes", "Confirm dialog for tours, logins, and roles; Undo for photos, reviews, slides, requests, and status changes."], ["Tabs", "Segmented control for rate types and request statuses."]],
+    type: [["Page title · 600 24 / 1.35", "font:600 var(--text-2xl)/var(--leading-snug) var(--font);letter-spacing:var(--tracking-tight)", "Requests"], ["Section · 600 16 / 1.5", "font:600 var(--text-md)/var(--leading-body) var(--font)", "Latest requests"], ["Body · 400 14 / 1.5", "font:400 var(--text-sm)/var(--leading-body) var(--font)", "Family of 5, Hunza and Khunjerab, 7 days in late October."], ["Label · 500 14 / 1.5", "font:500 var(--text-sm)/var(--leading-body) var(--font)", "Twin room rate"], ["Nav · 500 14", "font:500 var(--text-sm)/var(--leading-body) var(--font)", "Rates and quotes"], ["Code · JetBrains Mono 12", "font:400 var(--text-xs)/var(--leading-body) var(--font-mono)", "backups/preview-2026-10-09.json"]],
+    patterns: [["Navigation", "Light sidebar with groups and an icon-rail mode ( [ ); command bar ( Ctrl K ); New menu for quick create; account menu for appearance, density, shortcuts, and sign out. Below the tablet breakpoint the sidebar becomes a drawer."], ["Lists", "Rows with thumbnail, details, and badges; search ( / ), filters, sort, a live count, and a No matches state with Clear filters."], ["Editing", "Right-hand drawer over the list: position and previous or next ( j k ), View on site, Expand, section chips, last saved by. Changed fields are marked, the save bar counts them, Ctrl S saves, and leaving asks first."], ["Requests", "Inbox split view with Call, WhatsApp, and Email; status is a segmented control that saves at once with Undo. On phones, list and message are separate screens."], ["Dashboard", "Counts, latest requests, Needs attention, recent activity, and quick actions, all filtered by role."], ["Deletes", "Confirm dialog for tours, logins, and roles; Undo for photos, reviews, slides, requests, and status changes."], ["Tabs", "Segmented control for rate types and request statuses."]],
     tokens: {
       light: { canvas: "#fbfbfa", surface: "#ffffff", "surface-2": "#f4f4f2", "surface-hover": "#f0f0ee", selected: "#e3f3ef", "field-bg": "#ffffff", border: "#e6e6e3", "border-strong": "#7e848e", "card-line": "#e6e6e3", text: "#1d2025", "text-2": "#4a515c", "text-3": "#5f6672", link: "#0b6b62",
         primary: "#0f766e", "primary-hover": "#115e59", "on-primary": "#ffffff", "primary-soft": "#e3f3ef", "primary-soft-text": "#0b5a53", focus: "#0f766e",
@@ -196,7 +196,15 @@ const themeCss = (v) => [
   `:root[data-theme="hc"] {\n${block(v.tokens.hc)}\n  color-scheme: light;\n}`,
 ].join("\n");
 const js = (o) => JSON.stringify(o).replace(/</g, "\\u003c");
-const base = read("base.css"), engine = [read("core.js"), read("screens.js"), read("app.js")].join("\n");
+const BREAKPOINTS = { "bp-phone": "720px", "bp-tablet": "960px", "bp-wide": "1100px" };
+const substituteBreakpoints = (css) => css.replace(/@media\s*([^{]+)\{/g, (full, prelude) => {
+  let next = prelude;
+  for (const [name, value] of Object.entries(BREAKPOINTS)) next = next.split(`var(--${name})`).join(value);
+  return `@media ${next}{`;
+});
+const withBreakpointTokens = (css) => css.replace(":root {", `:root {\n  --bp-phone: ${BREAKPOINTS["bp-phone"]}; --bp-tablet: ${BREAKPOINTS["bp-tablet"]}; --bp-wide: ${BREAKPOINTS["bp-wide"]};`);
+const base = withBreakpointTokens(substituteBreakpoints(read("base.css")));
+const engine = [read("core.js"), read("screens.js"), read("app.js")].join("\n");
 
 for (const v of VERSIONS) {
   const tcss = themeCss(v);
@@ -214,7 +222,7 @@ for (const v of VERSIONS) {
 <style>
 ${tcss}
 ${base}
-${read(`${v.id}.css`)}
+${substituteBreakpoints(read(`${v.id}.css`))}
 </style>
 </head>
 <body>
@@ -222,7 +230,7 @@ ${read(`${v.id}.css`)}
 <div id="toasts" class="toasts"></div>
 <div id="dlg-root"></div>
 <div id="pal-root"></div>
-<noscript><p style="padding:var(--space-24)">This prototype needs JavaScript.</p></noscript>
+<noscript><p style="padding:var(--space-6)">This prototype needs JavaScript.</p></noscript>
 <script>window.VERSION=${js(cfg)};window.TWM_SEED=${js(seed)};window.CONTRAST_PAIRS=${js(PAIRS)};window.TOKEN_CSS=${js(tcss)};</script>
 <script>
 ${engine}
