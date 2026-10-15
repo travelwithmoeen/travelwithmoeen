@@ -13,7 +13,7 @@ export interface Destination {
   location?: string;
   listingNumber: number;
   content: DestinationSection[];
-
+  tours?: { id: string; name: string; duration: number; transport: string }[];
 }
 
 export const destinations: Destination[] = [

@@ -37,6 +37,11 @@ export function DestinationCard({ destination }: DestinationCardProps) {
         <p className="mb-4 line-clamp-2 text-sm text-muted-foreground">
           {destination.excerpt}
         </p>
+        {destination.tours && destination.tours.length > 0 ? (
+          <p className="mb-4 text-sm text-navy">
+            {destination.tours.length} {destination.tours.length === 1 ? "tour" : "tours"}
+          </p>
+        ) : null}
         <Button asChild  className="w-full bg-gold hover:bg-gold-hover hover:opacity-100 text-black">
           <Link className="" href={`/destinations/${destination.slug}`}>View Details</Link>
         </Button>

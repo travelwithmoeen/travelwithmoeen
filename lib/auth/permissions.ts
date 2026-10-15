@@ -19,7 +19,7 @@ export function canManageUsers(role: Role) {
 }
 
 export function canDeleteTour(role: Role) {
-  return role === "owner";
+  return role === "owner" || role === "editor";
 }
 
 export function canUpdateRequestStatus(role: Role) {

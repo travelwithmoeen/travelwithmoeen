@@ -15,7 +15,10 @@ export default async function OfficePlacesPage() {
         {places.map((place) => (
           <li key={place.slug}>
             <Link className="block rounded-lg bg-white px-4 py-3 shadow hover:bg-slate-50" href={`/office/places/${place.slug}`}>
-              {place.title}
+              <span className="font-medium">{place.title}</span>
+              <span className="ml-2 text-sm text-slate-500">
+                {place.tours && place.tours.length > 0 ? `${place.tours.length} ${place.tours.length === 1 ? "tour" : "tours"}` : "No tour"}
+              </span>
             </Link>
           </li>
         ))}

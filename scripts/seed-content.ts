@@ -1,6 +1,7 @@
 import { count } from "drizzle-orm";
 import { db } from "../lib/db";
-import { photos, places, posts, reviews, siteSettings, slides, tourDays, tours } from "../lib/db/schema";
+import { photos, places, posts, reviews, siteSettings, slides, tourDays, tourPlaces, tours } from "../lib/db/schema";
+import { ensureTourPlacesTable, linkInferredTourPlaces } from "../lib/office/tour-places";
 import { tours as tourFile } from "../data/tours";
 import { destinations } from "../data/destinations";
 import { blogs } from "../data/blog";
@@ -33,6 +34,8 @@ async function rowCount(table: typeof tours | typeof tourDays | typeof places | 
 }
 
 async function main() {
+  await ensureTourPlacesTable();
+  await db.delete(tourPlaces);
   await db.delete(tourDays);
   await db.delete(tours);
   await db.delete(places);
@@ -129,6 +132,8 @@ async function main() {
 
   await db.insert(slides).values(homeSlides);
   await db.insert(siteSettings).values(site);
+  const links = await linkInferredTourPlaces();
+  console.log(`tour_places inserted: ${links.inserted}; left unlinked: ${links.unlinked.length}`);
 
   const expected = {
     tours: tourFile.length,

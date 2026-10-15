@@ -250,7 +250,7 @@ What this build adds:
 - A stored file that this office uploaded is deleted when that picture is replaced or removed. The same delete runs for a gallery photo, a home slide, a tour extra photo, a tour PDF, a section photo, and every office file on a tour when that tour is deleted.
 - The file is saved with `put` from `@vercel/blob`, `access: "public"`, under `media/` plus one file name, using `MEDIA_READ_WRITE_TOKEN` for this environment. The page stores the returned public URL and loads that URL. `del` deletes it. Backups stay on this environment's private store, `put` with `access: "private"` under `backups/`, using `BLOB_READ_WRITE_TOKEN`. A media URL cannot read a backup. A missing `MEDIA_READ_WRITE_TOKEN` fails the save. `public/uploads` on the server disk is not the store. A PDF is at most 10 MB. Preview and Production do not share a Blob store or a Neon database.
 
-These saves use the office routes that already exist: tours, places, posts, photos, reviews, and slides. A new route is added to requirements section 13 in the same change. The role check stays in `lib/`. The screen does not import `lib/office` or `lib/auth`. An Editor or the Owner may upload and remove these files. A Manager is refused. Only the Owner may delete a whole tour.
+These saves use the office routes that already exist: tours, places, posts, photos, reviews, and slides. A new route is added to requirements section 13 in the same change. The role check stays in `lib/`. The screen does not import `lib/office` or `lib/auth`. An Editor or the Owner may upload and remove these files. A Manager is refused. The Owner or an Editor may delete a whole tour. A Manager may not.
 
 ## 8. Guest requests
 
