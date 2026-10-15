@@ -988,7 +988,7 @@ td.is-changed { background: var(--warning-soft) !important; }
 .message-k { display: block; font-size: 12px; font-weight: 600; color: var(--text-2); margin-bottom: 6px; }
 .status-row { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px; padding-top: 16px; border-top: 1px solid var(--border); }
 .seg-status { border: 0; margin: 0; padding: 0; display: grid; gap: 6px; }
-.seg-track { display: flex; flex-wrap: wrap; padding: 3px; gap: 2px; border: 1px solid var(--border-strong); border-radius: 10px; background: var(--surface-2); max-width: 100%; }
+.seg-track { display: flex; flex-wrap: wrap; width: 100%; box-sizing: border-box; padding: 3px; gap: 2px; border: 1px solid var(--border-strong); border-radius: 10px; background: var(--surface-2); max-width: 100%; }
 .place-picks { display: grid; gap: 8px; border: 0; margin: 0; padding: 0; }
 .place-picks .check { align-items: center; min-height: 40px; }
 .guest-totals { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -1008,7 +1008,6 @@ td.is-changed { background: var(--warning-soft) !important; }
 
 @media (max-width: 960px) {
   .tabs { flex-wrap: nowrap; overflow-x: auto; }
-  .quote-form { grid-template-columns: 1fr; }
   .side-toggle { display: none; }
   .is-collapsed { --side-w: 248px; }
   .drawer, .drawer.is-wide { width: 100%; }
@@ -1024,6 +1023,9 @@ td.is-changed { background: var(--warning-soft) !important; }
 .quote-side { display: grid; gap: var(--gap); align-content: start; }
 .quote-span { grid-column: 1 / -1; }
 .quote-form .quote-result { position: static; }
+@media (max-width: 960px) {
+  .quote-form { grid-template-columns: 1fr; }
+}
 form[data-form="quote"] .tbl { width: 100%; }
 form[data-form="quote"] .tbl .select { min-width: 0; width: 100%; }
 .stat-m, .stat-v, .help, .desc { overflow-wrap: anywhere; }
@@ -1040,6 +1042,7 @@ form[data-form="quote"] .tbl .select { min-width: 0; width: 100%; }
   .tbl-edit input[name^="hotel_"], .tbl .seats, .tbl .select, .tbl .input, .tbl .money { width: 100%; max-width: 100%; min-width: 0; }
   .tbl-wrap.flat { overflow-x: auto; }
   .stats { grid-template-columns: 1fr; }
+  .seg-opt { flex-basis: 100%; }
   .page-head .ph-actions, .row-actions { width: 100%; }
   .row-actions .btn { flex: 1 1 auto; justify-content: center; }
   .pop, .pop-right, .pop-up { max-width: calc(100vw - 24px); }
