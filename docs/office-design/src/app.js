@@ -626,13 +626,29 @@
 
   /* ---------- Design-system page ---------- */
   const TOKENS = [
-    ["Surfaces", ["canvas", "surface", "surface-2", "surface-hover", "selected"]],
-    ["Text", ["text", "text-2", "text-3", "link"]],
-    ["Lines", ["border", "border-strong", "focus"]],
-    ["Brand", ["primary", "primary-hover", "on-primary", "primary-soft", "accent", "accent-soft"]],
-    ["Status", ["success-soft", "success-text", "warning-soft", "warning-text", "danger", "danger-soft", "danger-text", "info-soft", "info-text"]],
-    ["Navigation", ["nav-bg", "nav-text", "nav-active", "nav-active-text", "nav-indicator"]],
+    ["Surfaces", ["canvas", "surface", "surface-2", "surface-3", "surface-hover", "selected", "field-bg", "overlay"]],
+    ["Text", ["text", "text-2", "text-3", "link", "ink-inverse", "ink-warm", "hc-ink"]],
+    ["Lines", ["border", "border-strong", "card-line", "focus"]],
+    ["Brand", ["primary", "primary-hover", "on-primary", "primary-soft", "primary-soft-text", "accent", "accent-soft", "accent-text", "accent-ink"]],
+    ["Status", ["success-soft", "success-text", "warning-soft", "warning-text", "warning-dot", "warning-fallback", "danger", "on-danger", "danger-soft", "danger-text", "info-soft", "info-text"]],
+    ["Navigation", ["nav-bg", "nav-text", "nav-muted", "nav-hover", "nav-active", "nav-active-text", "nav-indicator", "nav-line", "logo-bg", "logo-ink", "topbar-bg"]],
+    ["Demo bar", ["demo-bg", "demo-fg", "demo-muted", "demo-ctl", "demo-field", "demo-line", "demo-link"]],
+    ["Scrims", ["photo-scrim", "photo-cap", "hero-scrim-strong", "hero-scrim-mid", "hero-scrim-fade", "scrim-35", "scrim-45", "scrim-50", "highlight"]],
   ];
+  const TYPE_SCALE = ["text-2xs", "text-xs", "text-caption", "text-sm", "text-meta", "text-ui", "text-nav", "text-body", "text-message", "text-md", "text-lg", "text-xl", "text-2xl", "text-title-sm", "text-title", "text-display-sm", "text-display", "text-code"];
+  const LEADING = ["leading-none", "leading-tight", "leading-snug", "leading-ui", "leading-copy", "leading-title", "leading-body", "leading-loose", "leading-16", "leading-18", "leading-20", "leading-21", "leading-24", "leading-26", "leading-28", "leading-30", "leading-32", "leading-36"];
+  const TRACKING = ["tracking-none", "tracking-body", "tracking-snug", "tracking-tight", "tracking-label", "tracking-nav", "tracking-star", "h1", "h1-ls", "font", "font-mono", "font-demo"];
+  const SPACE = ["space-1", "space-2", "space-3", "space-4", "space-5", "space-6", "space-7", "space-8", "space-9", "space-10", "space-12", "space-14", "space-15", "space-16", "space-17", "space-18", "space-20", "space-22", "space-24", "space-26", "space-28", "space-30", "space-32", "space-34", "space-36", "space-38", "space-40", "space-42", "space-44", "space-46", "space-48", "space-54", "space-56", "space-60", "space-64", "space-76", "space-80", "space-84", "space-90", "space-96", "space-110", "space-120", "space-128", "space-130", "space-150", "space-180", "space-200", "space-220", "space-240", "space-260", "space-280", "space-300", "space-320", "space-340", "space-380", "space-420", "space-480", "space-560", "space-600", "space-620", "space-640", "space-680", "space-760", "space-1040", "space-1240"];
+  const RADII = ["r-2xs", "r-xs", "r-kbd", "r-s", "radius-segment", "r-m", "r-logo", "radius-tab", "r-l", "r-card", "r-btn", "r-input", "r-badge", "radius-bn", "r-xl", "radius-slide", "r-pill"];
+  const tokenGrid = (names, kind) => `<div class="ds-tokens">${names.map((n) => {
+    const sample = kind === "color" ? `<span class="token-swatch" style="background:var(--${n})"></span>`
+      : kind === "bar" ? `<span class="token-bar" style="width:var(--${n})"></span>`
+      : kind === "radius" ? `<span class="token-radius" style="border-radius:var(--${n})"></span>`
+      : kind === "shadow" ? `<span class="token-shadow" style="box-shadow:var(--${n});border-color:transparent"></span>`
+      : kind === "type" ? `<span style="font-size:var(--${n});line-height:var(--leading-body)">Ag</span>`
+      : "";
+    return `<div class="ds-token">${sample}<code>--${n}</code><small data-measure="${n}"></small></div>`;
+  }).join("")}</div>`;
   const PAIRS = window.CONTRAST_PAIRS;
   const SYSTEM = () => {
     const comp = `
@@ -650,11 +666,14 @@
       </div>
       ${card("Color tokens", `<p class="help">Values for the theme you are viewing. Switch the theme in the bar at the top.</p>${TOKENS.map(([g, ks]) => `<h4 class="ds-h">${g}</h4><div class="swatches">${ks.map((k) => `<div class="swatch"><span class="sw-chip" style="background:var(--${k})"></span><code>--${k}</code><small data-hex="${k}"></small></div>`).join("")}</div>`).join("")}`)}
       ${card("Contrast audit", `<p class="help">Measured live with the WCAG 2.2 formula. Text needs 4.5:1, field outlines and focus rings need 3:1.</p><div class="tbl-wrap flat"><table class="tbl tbl-plain"><thead><tr><th scope="col">Pair</th><th scope="col">Sample</th><th scope="col" class="r">Ratio</th><th scope="col">Needs</th><th scope="col">Result</th></tr></thead><tbody id="ds-contrast"></tbody></table></div><p class="help" id="ds-contrast-sum"></p>`)}
-      ${card("Typography", `<p class="help">${esc(V.fontNote)}</p>${V.type.map(([n, css, s]) => `<div class="type-row"><small class="type-meta">${esc(n)}</small><span style="${css}">${esc(s)}</span></div>`).join("")}`)}
-      ${card("Shape, space, motion", `<div class="ds-row">${["r-s", "r-m", "r-l", "r-xl"].map((r) => `<div class="shape"><span style="border-radius:var(--${r})"></span><code>--${r}</code></div>`).join("")}${["shadow-1", "shadow-2", "shadow-3"].map((s) => `<div class="shape"><span style="box-shadow:var(--${s});border-color:transparent"></span><code>--${s}</code></div>`).join("")}</div><p class="help">${esc(V.shapeNote)} Focus offset is <code>--focus-offset</code> (<span data-measure="focus-offset"></span>). The top bar height is <code>--topbar-h</code> (<span data-measure="topbar-h"></span>). The quote total sticks that far below the demo bar.</p>`)}
+      ${card("Typography", `<p class="help">${esc(V.fontNote)}</p>${V.type.map(([n, css, s]) => `<div class="type-row"><small class="type-meta">${esc(n)}</small><span style="${css}">${esc(s)}</span></div>`).join("")}<h4 class="ds-h">Type scale</h4>${tokenGrid(TYPE_SCALE, "type")}<h4 class="ds-h">Line height</h4>${tokenGrid(LEADING, "")}<h4 class="ds-h">Tracking and families</h4>${tokenGrid(TRACKING, "")}`)}
+      ${card("Space", `<p class="help">Stable lengths. Compact density still changes only <code>--control-h</code>, <code>--row-h</code>, <code>--pad</code>, and <code>--gap</code>.</p>${tokenGrid(SPACE, "bar")}`)}
+      ${card("Radius", `<p class="help">${esc(V.shapeNote)} Tab tracks use <code>--radius-tab</code>. Segments, tabs, and nav items use <code>--radius-segment</code>.</p>${tokenGrid(RADII, "radius")}`)}
+      ${card("Border, focus, and shadow", `${tokenGrid(["border-w", "border-w-md", "border-w-lg", "border-w-xl", "focus-w", "focus-offset", "focus-offset-field", "focus-offset-inset", "demo-focus-w", "icon-stroke", "blur-topbar"], "")}<div class="ds-tokens" style="margin-top:var(--space-12)">${["shadow-1", "shadow-2", "shadow-3"].map((s) => `<div class="ds-token"><span class="token-shadow" style="box-shadow:var(--${s});border-color:transparent"></span><code>--${s}</code><small data-measure="${s}"></small></div>`).join("")}</div>`)}
+      ${card("Layout", `<p class="help">The quote total sticks <code>--demo-h</code> plus <code>--topbar-h</code> below the top of the page. Breakpoints are documented here and repeated in the media queries, because a media query cannot read a custom property.</p>${tokenGrid(["topbar-h", "side-w", "demo-h", "control-h", "control-sm", "control-lg", "row-h", "pad", "gap", "quote-aside-min", "quote-aside-max", "bp-phone", "bp-tablet", "bp-wide", "z-raise", "z-save", "z-topbar", "z-scrim", "z-sticky", "z-pop", "z-demo", "z-drawer-scrim", "z-drawer", "z-dialog", "z-palette", "z-toast", "z-skip", "dur", "dur-spin", "dur-leave", "ease"], "")}`)}
       ${card("Components", comp)}
       ${card("Layout and patterns", `<div class="tbl-wrap flat"><table class="tbl tbl-plain"><tbody>${V.patterns.map(([a, b]) => `<tr><th scope="row">${esc(a)}</th><td>${esc(b)}</td></tr>`).join("")}</tbody></table></div>`)}
-      ${card("Standards", `<ul class="ds-list"><li><b>WCAG 2.2 AA:</b> contrast checked above for every theme, 2 px focus ring (3 px in high contrast), 32 px smallest target, errors named in words with an error summary, status messages announced.</li><li><b>WAI-ARIA 1.2:</b> dialogs trap focus and close with Esc, tabs and switches use their roles, the palette is a combobox.</li><li><b>ISO 9241-110:</b> save bar shows state, deletes confirm or undo, forms keep what you typed.</li><li><b>Unicode CLDR:</b> Rs amounts, dates, and times in Asia/Karachi through Intl.</li></ul>`)}
+      ${card("Standards", `<ul class="ds-list"><li><b>WCAG 2.2 AA:</b> contrast checked above for every theme, focus ring <code>--focus-w</code> (2px, 3px in high contrast), smallest target <code>--control-sm</code>, errors named in words with an error summary, status messages announced.</li><li><b>WAI-ARIA 1.2:</b> dialogs trap focus and close with Esc, tabs and switches use their roles, the palette is a combobox.</li><li><b>ISO 9241-110:</b> save bar shows state, deletes confirm or undo, forms keep what you typed.</li><li><b>Unicode CLDR:</b> Rs amounts, dates, and times in Asia/Karachi through Intl.</li></ul>`)}
       ${card("Tokens for the codebase", `<p class="help">Paste into <code>app/office/office-theme.css</code>, scoped under <code>.office</code>.</p><pre class="code" tabindex="0">${esc(window.TOKEN_CSS)}</pre>`)}`;
   };
   const hexOf = (k) => getComputedStyle(document.documentElement).getPropertyValue(`--${k}`).trim();
@@ -666,7 +685,7 @@
     let pass = 0;
     $("#ds-contrast").innerHTML = PAIRS.map(([n, f, b, need]) => {
       const r = ratio(hexOf(f), hexOf(b)), ok = r >= need; if (ok) pass++;
-      const sample = need === 3 ? `<span class="pair" style="background:var(--${b});border:2px solid var(--${f})"></span>` : `<span class="pair" style="background:var(--${b});color:var(--${f})">Aa</span>`;
+      const sample = need === 3 ? `<span class="pair" style="background:var(--${b});border:var(--border-w-lg) solid var(--${f})"></span>` : `<span class="pair" style="background:var(--${b});color:var(--${f})">Aa</span>`;
       return `<tr><td data-label="Pair">${esc(n)}<small class="cell-sub"><code>--${f}</code> on <code>--${b}</code></small></td><td data-label="Sample">${sample}</td><td data-label="Ratio" class="r num">${r.toFixed(2)}:1</td><td data-label="Needs">${need}:1</td><td data-label="Result">${ok ? `<span class="pass">${icon("check")}Pass</span>` : `<span class="fail">${icon("x")}Fail</span>`}</td></tr>`;
     }).join("");
     $("#ds-contrast-sum").textContent = `${pass} of ${PAIRS.length} pairs pass in this theme. The build checks Light, Dark, and High contrast before writing the file.`;
