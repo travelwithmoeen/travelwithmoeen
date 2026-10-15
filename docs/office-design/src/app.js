@@ -639,7 +639,7 @@
   const LEADING = ["leading-none", "leading-tight", "leading-snug", "leading-body", "leading-loose"];
   const TRACKING = ["tracking-none", "tracking-body", "tracking-snug", "tracking-tight", "tracking-label", "tracking-nav", "tracking-star", "h1", "h1-ls", "font", "font-mono", "font-demo"];
   const SPACE = ["space-0", "space-half", "space-1", "space-2", "space-3", "space-4", "space-5", "space-6", "space-8", "space-10", "space-12", "space-16", "space-20", "space-24"];
-  const LAYOUT = ["size-sm", "size-md", "size-lg", "icon-sm", "icon-md", "icon-lg", "w-xs", "w-sm", "w-md", "w-lg", "w-xl", "topbar-h", "side-w", "demo-h", "pad", "gap", "bp-phone", "bp-tablet", "bp-wide"];
+  const LAYOUT = ["size-sm", "size-md", "size-lg", "icon-sm", "icon-md", "icon-lg", "w-xs", "w-sm", "w-md", "w-lg", "w-xl", "topbar-h", "side-w", "demo-h", "pad", "gap", "stack", "bp-phone", "bp-tablet", "bp-wide"];
   const RADII = ["r-0", "r-xs", "r-s", "r-m", "r-l", "r-pill"];
   const tokenGrid = (names, kind) => `<div class="ds-tokens">${names.map((n) => {
     const sample = kind === "color" ? `<span class="token-swatch" style="background:var(--${n})"></span>`
@@ -668,15 +668,76 @@
       ${card("Color tokens", `<p class="help">Values for the theme you are viewing. Switch the theme in the bar at the top.</p>${TOKENS.map(([g, ks]) => `<h4 class="ds-h">${g}</h4><div class="swatches">${ks.map((k) => `<div class="swatch"><span class="sw-chip" style="background:var(--${k})"></span><code>--${k}</code><small data-hex="${k}"></small></div>`).join("")}</div>`).join("")}`)}
       ${card("Contrast audit", `<p class="help">Measured live with the WCAG 2.2 formula. Text needs 4.5:1, field outlines and focus rings need 3:1.</p><div class="tbl-wrap flat" tabindex="0" aria-label="Contrast pairs"><table class="tbl tbl-plain"><thead><tr><th scope="col">Pair</th><th scope="col">Sample</th><th scope="col" class="r">Ratio</th><th scope="col">Needs</th><th scope="col">Result</th></tr></thead><tbody id="ds-contrast"></tbody></table></div><p class="help" id="ds-contrast-sum"></p>`)}
       ${card("Typography", `<p class="help">${esc(V.fontNote)}</p>${V.type.map(([n, css, s]) => `<div class="type-row"><small class="type-meta">${esc(n)}</small><span style="${css}">${esc(s)}</span></div>`).join("")}<h4 class="ds-h">Type scale</h4>${tokenGrid(TYPE_SCALE, "type")}<h4 class="ds-h">Line height</h4>${tokenGrid(LEADING, "")}<h4 class="ds-h">Tracking and families</h4>${tokenGrid(TRACKING, "")}`)}
-      ${card("Space", `<p class="help">A 4px scale: 0, 4, 8, 12, 16, 20, 24, then 32, 40, 48, 64, 80, and 96. <code>--space-half</code> is the only 2px step, for hairline gaps. <code>--pad</code> and <code>--gap</code> point at this scale and still change with compact density.</p>${tokenGrid(SPACE, "bar")}`)}
+      ${card("Space", `<p class="help">A 4px scale: 0, 4, 8, 12, 16, 20, 24, then 32, 40, 48, 64, 80, and 96. <code>--space-half</code> is the only 2px step, for hairline gaps. <code>--pad</code> and <code>--gap</code> point at this scale and still change with compact density. <code>--stack</code> is the gap between sections, banners, cards, toolbars, and tables. It follows <code>--gap</code>, so compact density tightens every stack together.</p>${tokenGrid(SPACE, "bar")}`)}
+      ${card("Section spacing", `<p class="help">The check measures adjacent blocks inside each stack: the page, a drawer, a form, a card, a quote column, and a stat row. A vertical or horizontal gap under <code>--stack</code> fails. Gallery tiles, field labels, tab chips, and the needs-attention rows keep their own smaller steps.</p><p class="help" id="ds-spacing-sum"></p><div class="tbl-wrap flat" tabindex="0" aria-label="Section spacing"><table class="tbl tbl-plain"><thead><tr><th scope="col">Pair</th><th scope="col">Axis</th><th scope="col" class="r">Gap</th><th scope="col" class="r">Needs</th></tr></thead><tbody id="ds-spacing"></tbody></table></div>`)}
       ${card("Radius", `<p class="help">${esc(V.shapeNote)} The scale is 0, 4, 8, 12, 16, and a pill. Tabs, segments, keys, and the old 3, 6, 9, 10, 14, and 18 radii sit on the nearest step.</p>${tokenGrid(RADII, "radius")}`)}
-      ${card("Border, focus, and shadow", `${tokenGrid(["border-w", "border-w-md", "border-w-lg", "border-w-xl", "focus-w", "focus-offset", "focus-offset-field", "focus-offset-inset", "demo-focus-w", "icon-stroke", "blur-topbar"], "")}<div class="ds-tokens" style="margin-top:var(--space-3)">${["shadow-1", "shadow-2", "shadow-3"].map((s) => `<div class="ds-token"><span class="token-shadow" style="box-shadow:var(--${s});border-color:transparent"></span><code>--${s}</code><small data-measure="${s}"></small></div>`).join("")}</div>`)}
-      ${card("Layout", `<p class="help">Controls and rows use <code>--size-sm</code> 32, <code>--size-md</code> 40, and <code>--size-lg</code> 48. Compact density steps <code>--size-md</code> and <code>--size-lg</code> down one step and leaves <code>--size-sm</code> at 32. Icons are 16, 20, and 24. Page, dialog, and preview shells use <code>--w-xs</code> 320 through <code>--w-xl</code> 1240. Grid cells and toolbars are sums of the space scale. The gallery row is 152px on a desktop and 132px on a phone, and a phone search is not capped by a container width. The quote aside stays between 280 and 360. The top bar, sidebar, and demo bar stay named. <code>--pad</code> and <code>--gap</code> follow the space scale and still change with compact density. The quote total sticks <code>--demo-h</code> plus <code>--topbar-h</code> below the top of the page. Breakpoints are declared once in the build (<code>--bp-phone</code>, <code>--bp-tablet</code>, <code>--bp-wide</code>). Source media queries say <code>var(--bp-tablet)</code>, and the build writes the literal, because a media query cannot read a custom property. CSS keywords such as 0, auto, 100%, currentColor, transparent, and CanvasText are not tokens. The 1px clip on visually hidden text stays a raw length. Viewport fractions and character measures (vh, vw, ch) stay relative to the screen and the font.</p>${tokenGrid(LAYOUT, "")}<h4 class="ds-h">Stacking and motion</h4>${tokenGrid(["z-base", "z-raised", "z-sticky", "z-overlay", "z-modal", "z-toast", "z-skip", "dur", "dur-spin", "dur-leave", "ease"], "")}`)}
+      ${card("Border, focus, and shadow", `${tokenGrid(["border-w", "border-w-md", "border-w-lg", "border-w-xl", "focus-w", "focus-offset", "focus-offset-field", "focus-offset-inset", "demo-focus-w", "icon-stroke", "blur-topbar"], "")}<div class="ds-tokens">${["shadow-1", "shadow-2", "shadow-3"].map((s) => `<div class="ds-token"><span class="token-shadow" style="box-shadow:var(--${s});border-color:transparent"></span><code>--${s}</code><small data-measure="${s}"></small></div>`).join("")}</div>`)}
+      ${card("Layout", `<p class="help">Controls and rows use <code>--size-sm</code> 32, <code>--size-md</code> 40, and <code>--size-lg</code> 48. Compact density steps <code>--size-md</code> and <code>--size-lg</code> down one step and leaves <code>--size-sm</code> at 32. Icons are 16, 20, and 24. Page, dialog, and preview shells use <code>--w-xs</code> 320 through <code>--w-xl</code> 1240. Grid cells and toolbars are sums of the space scale. The gallery row is 152px on a desktop and 132px on a phone, and a phone search is not capped by a container width. The quote aside stays between 280 and 360. The top bar, sidebar, and demo bar stay named. <code>--pad</code>, <code>--gap</code>, and <code>--stack</code> follow the space scale and still change with compact density. The quote total sticks <code>--demo-h</code> plus <code>--topbar-h</code> below the top of the page. Breakpoints are declared once in the build (<code>--bp-phone</code>, <code>--bp-tablet</code>, <code>--bp-wide</code>). Source media queries say <code>var(--bp-tablet)</code>, and the build writes the literal, because a media query cannot read a custom property. CSS keywords such as 0, auto, 100%, currentColor, transparent, and CanvasText are not tokens. The 1px clip on visually hidden text stays a raw length. Viewport fractions and character measures (vh, vw, ch) stay relative to the screen and the font.</p>${tokenGrid(LAYOUT, "")}<h4 class="ds-h">Stacking and motion</h4>${tokenGrid(["z-base", "z-raised", "z-sticky", "z-overlay", "z-modal", "z-toast", "z-skip", "dur", "dur-spin", "dur-leave", "ease"], "")}`)}
       ${card("Components", comp)}
       ${card("Layout and patterns", `<div class="tbl-wrap flat" tabindex="0" aria-label="Layout and patterns"><table class="tbl tbl-plain"><tbody>${V.patterns.map(([a, b]) => `<tr><th scope="row">${esc(a)}</th><td>${esc(b)}</td></tr>`).join("")}</tbody></table></div>`)}
       ${card("Standards", `<ul class="ds-list"><li><b>WCAG 2.2 AA:</b> contrast checked above for every theme, focus ring <code>--focus-w</code> (2px, 3px in high contrast), smallest target <code>--size-sm</code> (32px, and compact does not step it down), errors named in words with an error summary, status messages announced.</li><li><b>WAI-ARIA 1.2:</b> dialogs trap focus and close with Esc, tabs and switches use their roles, the palette is a combobox.</li><li><b>ISO 9241-110:</b> save bar shows state, deletes confirm or undo, forms keep what you typed.</li><li><b>Unicode CLDR:</b> Rs amounts, dates, and times in Asia/Karachi through Intl.</li></ul>`)}
       ${card("Tokens for the codebase", `<p class="help">Paste into <code>app/office/office-theme.css</code>, scoped under <code>.office</code>.</p><pre class="code" tabindex="0">${esc(window.TOKEN_CSS)}</pre>`)}`;
   };
+  const spacingAudit = (root = document) => {
+    const stack = Math.round(parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--stack")) || 16);
+    const parents = root.querySelectorAll([
+      "main.main", ".drawer-body", ".login-box", ".quote-span",
+      "form[data-form]:not(.quote-form)", ".quote-side", ".quote-form",
+      ".card-body", ".dash-grid", ".ds-grid", ".ds-stack", ".req-detail",
+      ".slide-list", ".repeat", ".stats", ".inbox", ".board", ".edit-split",
+      ".feed", ".form-grid", ".board-col > ul", ".tbl-wrap .tbl tbody",
+    ].join(","));
+    const sig = (el) => {
+      const cls = typeof el.className === "string" ? el.className.trim().split(/\s+/).filter(Boolean).slice(0, 2).join(".") : "";
+      return `${el.tagName.toLowerCase()}${cls ? "." + cls : ""}`;
+    };
+    const box = (el) => el.getBoundingClientRect();
+    const shown = (el) => {
+      const cs = getComputedStyle(el);
+      if (cs.display === "none" || cs.visibility === "hidden") return false;
+      if (cs.position === "fixed" || cs.position === "absolute") return false;
+      if (cs.display === "table-row" || cs.display === "table-cell") return false;
+      const r = box(el);
+      return r.width >= 48 && r.height >= 12;
+    };
+    const between = (mid, a, b, axis) => {
+      const r = box(mid), ar = box(a), br = box(b);
+      if (axis === "v") {
+        const above = ar.bottom <= br.top ? ar : br;
+        const below = above === ar ? br : ar;
+        const overlap = Math.min(above.right, below.right, r.right) - Math.max(above.left, below.left, r.left);
+        return r.top >= above.bottom - 1 && r.bottom <= below.top + 1 && overlap > 24;
+      }
+      const left = ar.right <= br.left ? ar : br;
+      const right = left === ar ? br : ar;
+      const overlap = Math.min(left.bottom, right.bottom, r.bottom) - Math.max(left.top, right.top, r.top);
+      return r.left >= left.right - 1 && r.right <= right.left + 1 && overlap > 24;
+    };
+    const hits = [];
+    parents.forEach((parent) => {
+      if (!shown(parent) && box(parent).height < 12) return;
+      const kids = [...parent.childNodes].filter((n) => n.nodeType === 1 && shown(n));
+      for (let i = 0; i < kids.length; i++) {
+        for (let j = i + 1; j < kids.length; j++) {
+          const a = box(kids[i]), b = box(kids[j]);
+          const overlapX = Math.min(a.right, b.right) - Math.max(a.left, b.left);
+          const overlapY = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top);
+          let axis = "", gap = 0, first = kids[i], second = kids[j];
+          if (b.top >= a.bottom - 1 && overlapX >= 24) { axis = "vertical"; gap = b.top - a.bottom; }
+          else if (a.top >= b.bottom - 1 && overlapX >= 24) { axis = "vertical"; gap = a.top - b.bottom; first = kids[j]; second = kids[i]; }
+          else if (b.left >= a.right - 1 && overlapY >= 24) { axis = "horizontal"; gap = b.left - a.right; }
+          else if (a.left >= b.right - 1 && overlapY >= 24) { axis = "horizontal"; gap = a.left - b.right; first = kids[j]; second = kids[i]; }
+          else continue;
+          if (kids.some((k, n) => n !== i && n !== j && between(k, kids[i], kids[j], axis === "vertical" ? "v" : "h"))) continue;
+          const px = Math.round(gap);
+          if (px >= stack - 1) continue;
+          hits.push({ parent: sig(parent), a: sig(first), b: sig(second), axis, gap: px, stack });
+        }
+      }
+    });
+    return hits;
+  };
+  window.spacingAudit = spacingAudit;
   const hexOf = (k) => getComputedStyle(document.documentElement).getPropertyValue(`--${k}`).trim();
   const lum = (h) => { const m = h.replace("#", ""); const [r, g, b] = [0, 2, 4].map((i) => parseInt(m.slice(i, i + 2), 16) / 255).map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4)); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
   const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((m, n) => n - m); return (x + 0.05) / (y + 0.05); };
@@ -690,6 +751,10 @@
       return `<tr><td data-label="Pair">${esc(n)}<small class="cell-sub"><code>--${f}</code> on <code>--${b}</code></small></td><td data-label="Sample">${sample}</td><td data-label="Ratio" class="r num">${r.toFixed(2)}:1</td><td data-label="Needs">${need}:1</td><td data-label="Result">${ok ? `<span class="pass">${icon("check")}Pass</span>` : `<span class="fail">${icon("x")}Fail</span>`}</td></tr>`;
     }).join("");
     $("#ds-contrast-sum").textContent = `${pass} of ${PAIRS.length} pairs pass in this theme. The build checks Light, Dark, and High contrast before writing the file.`;
+    const gaps = spacingAudit(document);
+    const need = Math.round(parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--stack")) || 16);
+    $("#ds-spacing").innerHTML = gaps.length ? gaps.map((g) => `<tr><td data-label="Pair">${esc(g.a)} then ${esc(g.b)}<small class="cell-sub">${esc(g.parent)}</small></td><td data-label="Axis">${esc(g.axis)}</td><td data-label="Gap" class="r num">${g.gap}px</td><td data-label="Needs" class="r">${need}px</td></tr>`).join("") : `<tr><td colspan="4"><span class="pass">${icon("check")}No section pair on this page sits closer than --stack.</span></td></tr>`;
+    $("#ds-spacing-sum").textContent = gaps.length ? `${gaps.length} section ${gaps.length === 1 ? "pair sits" : "pairs sit"} closer than --stack (${need}px) on this page.` : `Every measured section pair on this page is at least --stack (${need}px).`;
   };
 
   /* ---------- Events ---------- */

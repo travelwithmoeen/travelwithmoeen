@@ -131,7 +131,7 @@ td.is-changed { background: var(--warning-soft) !important; }
 .todo-warning .todo-ic { background: var(--warning-soft); color: var(--warning-text); }
 .todo-success .todo-ic { background: var(--success-soft); color: var(--success-text); }
 .todo-t { flex: 1; min-width: 0; }
-.feed { list-style: none; margin: 0; padding: var(--space-2) var(--pad) var(--pad); display: grid; gap: var(--space-4); }
+.feed { list-style: none; margin: 0; padding: var(--space-2) var(--pad) var(--pad); display: grid; gap: var(--stack); }
 .feed li { display: flex; gap: var(--space-3); align-items: flex-start; }
 .feed-main { display: grid; min-width: 0; }
 .feed-main a { color: var(--text); text-decoration: none; font-weight: 500; }
@@ -181,9 +181,9 @@ td.is-changed { background: var(--warning-soft) !important; }
 .brand-text b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tbl-edit input[name^="hotel_"] { min-width: 0; width: 100%; max-width: calc(var(--space-24) * 2 + var(--space-20) + var(--space-2)); }
 .tbl .select, .tbl .input, .tbl .money { max-width: 100%; }
-.quote-form { display: grid; grid-template-columns: minmax(0, 1fr) minmax(min(100%, calc(var(--space-24) * 2 + var(--space-20) + var(--space-2))), calc(var(--space-20) * 4 + var(--space-10))); gap: var(--gap); align-items: start; }
+.quote-form { display: grid; grid-template-columns: minmax(0, 1fr) minmax(min(100%, calc(var(--space-24) * 2 + var(--space-20) + var(--space-2))), calc(var(--space-20) * 4 + var(--space-10))); gap: var(--stack); align-items: start; }
 .quote-side, .quote-span { min-width: 0; }
-.quote-side { display: grid; gap: var(--gap); align-content: start; }
+.quote-side { display: grid; gap: var(--stack); align-content: start; }
 .quote-side > .card, .quote-form > .quote-result { margin-bottom: 0; }
 .quote-span { grid-column: 1 / -1; }
 .quote-form .quote-result { position: sticky; top: calc(var(--demo-h) + var(--topbar-h)); }
