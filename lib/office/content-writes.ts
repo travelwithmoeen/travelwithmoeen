@@ -225,7 +225,7 @@ export async function createTourAs(actor: SessionUser, input: Omit<TourEditInput
 
 export async function deleteTourAs(actor: SessionUser, tourId: string): Promise<ActionResult> {
   if (!canDeleteTour(actor.role)) {
-    return forbidden("Only the Owner can delete a tour.");
+    return forbidden("You cannot delete a tour.");
   }
   const [existing] = await db
     .select({ image: tours.image, pdf: tours.pdf, galleryImages: tours.galleryImages })

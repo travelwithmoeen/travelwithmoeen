@@ -16,10 +16,10 @@ The public website stays. The office gets a private area on that same site. Gues
 |---|---|
 | BR-01 | There are three roles: Owner, Manager, and Editor. Each login has one role. |
 | BR-02 | Only the Owner can create a login, remove a login, or change a role. A seed script may create the first Owner on a development machine. That password is not stored in the repo. |
-| BR-03 | Only the Owner can delete a tour, a price row, or a guest request. |
+| BR-03 | Only the Owner can delete a price row or a guest request. The Owner and the Editor can delete a tour. A Manager cannot. |
 | BR-04 | The Owner and the Manager can edit hotel rates, vehicle rates, air extras, and jeep lines. They can turn a vehicle on or off for a route, add an Other vehicle, add a paid extra, and switch the season profit between 15 percent and 20 percent. |
 | BR-05 | The Owner and the Editor can edit tours, day plans, places, blog posts, the gallery, reviews, home slides, and the phone, address, and social links. They can mark a tour as featured. The Editor can read guest requests. The Owner and the Manager can update a guest request status. The Editor cannot. |
-| BR-06 | The Editor cannot change any rupee amount and cannot delete a tour or a guest request. |
+| BR-06 | The Editor cannot change any rupee amount and cannot delete a guest request. The Editor can delete a tour. |
 | BR-07 | The Manager cannot edit public page text and cannot create logins. |
 | BR-08 | A person who is not logged in cannot open the office area. |
 
@@ -140,7 +140,7 @@ Pictures and PDFs use the public media store for that environment, through `@ver
 | BR-80 | The public page shows the new file on the preview site after a refresh. The page layout does not change. |
 | BR-81 | The Meadow prototype is the clickable file `docs/office-design/meadow.html`. On the preview site it is also `https://new.travelwithmoeen.com/meadow`. That path is not `/office`. The Owner, Manager, and Editor links match BR-01 to BR-07. Profit is any whole percent from 0 to 100. The hotel catalog is City, then Hotel, then Room, then Occupancy, and the rate fills from that row. Each night can pick its own city, hotel, and room. A day edit changes that quote. The guest figure is one total. The staff figure lists the nights and the profit. Changing the number of days sets hotel nights to days minus one. Trip plans show Phase 2 and Phase 3 for review. The layout fits a computer and a phone. The zip is that same folder. Moeen receives this file before the live office is rebuilt. |
 | BR-82 | The next sprint builds the Meadow look into the live office at `/office`. The screens match `docs/office-design/meadow.html`. The public site look does not change. Login, roles, quotes, guest requests, and media uploads stay as they are. The prototype bar that switches role without a password is not part of the live office. |
-| BR-83 | The Owner and the Editor can add a tour from `/office/tours` and amend a tour from that list. Only the Owner can delete a tour. That stays BR-03 and BR-06. A tour can link to one or more places. The office and the public tour page list those places, and the office and the public place page list those tours. The tour name stays on the tour. The place title stays on the place. Saving a tour does not rewrite the place guide. Saving a place title updates a linked tour's location line only when that tour links to this place alone and that line is the previous title. |
+| BR-83 | The Owner and the Editor can add a tour from `/office/tours`, amend a tour from that list, and delete a tour. A Manager cannot. A price row and a guest request stay with the Owner, which is BR-03 and BR-06. A tour can link to one or more places. The office and the public tour page list those places, and the office and the public place page list those tours. The tour name stays on the tour. The place title stays on the place. Saving a tour does not rewrite the place guide. Saving a place title updates a linked tour's location line only when that tour links to this place alone and that line is the previous title. |
 
 Creating a new tour, place, or blog post is not part of the office-media work. Adding a tour from the tours list is BR-83. Deleting a price row stays BR-03 and is not part of this work. The prototype changes no running route, so it does not repeat the four security tests. T-35 does.
 
@@ -259,7 +259,8 @@ This list is the whole project. A new office route is added to this list in the 
 | Tour, place, post, photo, review, slide, and site-detail writes | Owner or Editor. |
 | `POST /api/office/tours/create` | Owner or Editor. Adds a tour. It does not set a rupee amount. |
 | Rates, season, vehicles, jeep lines, paid extras, and the live price Excel download | Owner or Manager. |
-| Create a login, remove a login, change a role, delete a tour, delete a price row, delete a guest request | Owner only. |
+| `POST /api/office/tours/delete` | Owner or Editor. Deletes a tour. A Manager is refused. |
+| Create a login, remove a login, change a role, delete a price row, delete a guest request | Owner only. |
 | `GET /api/office/requests` | A signed-in Owner, Manager, or Editor. |
 | `GET /api/office/rates` | Owner or Manager. |
 | `POST /api/office/requests/status` | Owner or Manager. |

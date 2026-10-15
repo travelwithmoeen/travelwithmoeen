@@ -468,10 +468,8 @@ async function assertOfficeMedia(editorCookie: string, managerCookie: string, ow
     const deleteForm = new FormData();
     deleteForm.set("id", created.id);
     const editorDelete = await officePost("/api/office/tours/delete", deleteForm, editorCookie);
-    if (editorDelete.status !== 403) throw new Error(`An Editor delete of a tour returned ${editorDelete.status}.`);
-    const removed = await officePost("/api/office/tours/delete", deleteForm, ownerCookie);
-    if (removed.status !== 200 || !removed.body.ok) {
-      throw new Error(`The Owner could not delete the media check tour: ${removed.status} ${removed.body.error ?? ""}`);
+    if (editorDelete.status !== 200 || !editorDelete.body.ok) {
+      throw new Error(`An Editor could not delete the media check tour: ${editorDelete.status} ${editorDelete.body.error ?? ""}`);
     }
     const [gone] = await db.select().from(tours).where(eq(tours.id, created.id)).limit(1);
     if (gone) throw new Error("Deleting the tour left the row.");
@@ -577,8 +575,8 @@ async function assertTourPlaceOffice(editorCookie: string, managerCookie: string
   try {
     const editorList = await fetch(`${siteBase()}/office/tours`, { headers: { cookie: editorCookie } });
     const editorHtml = await editorList.text();
-    if (editorList.status !== 200 || !editorHtml.includes("Add tour") || editorHtml.includes("Delete tour")) {
-      throw new Error("The Editor tours list does not offer add and edit without delete.");
+    if (editorList.status !== 200 || !editorHtml.includes("Add tour") || !editorHtml.includes("Delete tour")) {
+      throw new Error("The Editor tours list does not offer add and delete.");
     }
     const ownerList = await fetch(`${siteBase()}/office/tours`, { headers: { cookie: ownerCookie } });
     const ownerHtml = await ownerList.text();
@@ -703,10 +701,14 @@ async function assertTourPlaceOffice(editorCookie: string, managerCookie: string
       throw new Error("A tour linked to two places took a single place title as its location.");
     }
 
+    const managerDelete = await officePost("/api/office/tours/delete", deleteFormFor(tour.id), managerCookie);
+    if (managerDelete.status !== 403 || managerDelete.body.error !== "You cannot delete a tour.") {
+      throw new Error(`A Manager was not refused a tour delete: ${managerDelete.status} ${managerDelete.body.error ?? ""}`);
+    }
     const editorDelete = await officePost("/api/office/tours/delete", deleteFormFor(tour.id), editorCookie);
-    if (editorDelete.status !== 403) throw new Error(`An Editor delete of a new tour returned ${editorDelete.status}.`);
-    const removed = await officePost("/api/office/tours/delete", deleteFormFor(tour.id), ownerCookie);
-    if (removed.status !== 200 || !removed.body.ok) throw new Error("The Owner could not delete the new tour.");
+    if (editorDelete.status !== 200 || !editorDelete.body.ok) {
+      throw new Error(`An Editor could not delete the new tour: ${editorDelete.status} ${editorDelete.body.error ?? ""}`);
+    }
     const [gone] = await db.select().from(tours).where(eq(tours.id, tour.id)).limit(1);
     if (gone) throw new Error("The deleted tour is still stored.");
     const leftover = await db.select().from(tourPlaces).where(eq(tourPlaces.tourId, tour.id));

@@ -18,7 +18,7 @@ export default async function OfficeToursPage() {
         </Link>
       </div>
       <p className="mb-4 text-sm text-slate-600">
-        Add a tour here, open one to amend it, or delete one. Only the Owner can delete a tour. A tour can point at one or more places.
+        Add a tour here, open one to amend it, or delete one. The Owner or an Editor can delete a tour. A tour can point at one or more places.
       </p>
       <ul className="space-y-2">
         {tours.map((tour) => (

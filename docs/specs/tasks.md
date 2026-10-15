@@ -93,7 +93,7 @@ Asked for on the live office, not on the Meadow prototype. This does not rebuild
 
 | ID | Task | Covers | Done when |
 |---|---|---|---|
-| T-38 | From `/office/tours`, the Owner and the Editor can add a tour and amend a tour. Only the Owner can delete a tour. A tour links to its place or places. The office and the public site show the link on both the tour and the place. | BR-83, BR-03, BR-05, BR-06 | An Editor adds a tour and cannot delete it. The Owner deletes it. A renamed place title shows on the linked tour. A renamed tour shows on the place. The place guide is not replaced by the tour. `npm run check:step3` still passes. |
+| T-38 | From `/office/tours`, the Owner and the Editor can add a tour, amend a tour, and delete a tour. A Manager cannot. A tour links to its place or places. The office and the public site show the link on both the tour and the place. | BR-83, BR-03, BR-05, BR-06 | An Editor adds a tour and deletes it. A Manager cannot add, amend, or delete a tour. A renamed place title shows on the linked tour. A renamed tour shows on the place. The place guide is not replaced by the tour. `npm run check:step3` still passes. |
 
 Sprint 3, Phase 2. Starts after T-37 is accepted.
 
