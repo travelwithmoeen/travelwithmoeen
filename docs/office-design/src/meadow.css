@@ -4,7 +4,7 @@
   --font-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
   --h1: 600 24px/32px var(--font); --h1-ls: -.02em;
   --r-s: 6px; --r-m: 8px; --r-l: 12px; --r-xl: 16px; --r-card: 12px; --r-btn: 8px; --r-input: 8px; --r-badge: 6px; --r-logo: 9px;
-  --side-w: 244px; --control-h: 36px; --row-h: 56px;
+  --side-w: 244px; --control-h: 36px; --row-h: 56px; --focus-offset: 2px; --topbar-h: 56px;
 }
 :root[data-density="compact"] { --control-h: 32px; --row-h: 44px; }
 body { font-size: 14px; letter-spacing: -.003em; font-feature-settings: "cv11", "ss01"; }
@@ -39,7 +39,7 @@ body { font-size: 14px; letter-spacing: -.003em; font-feature-settings: "cv11", 
 .btn { font-size: 13.5px; }
 .btn-primary { box-shadow: 0 1px 0 rgba(255,255,255,.15) inset, var(--shadow-1); }
 .range { width: 100%; accent-color: var(--primary); height: var(--control-h); }
-.range:focus-visible { outline: var(--focus-w) solid var(--focus); outline-offset: 2px; }
+.range:focus-visible { outline: var(--focus-w) solid var(--focus); outline-offset: var(--focus-offset); }
 .badge { height: 22px; font-size: 12px; }
 .inbox-list { border-radius: 12px; }
 .inbox-detail { box-shadow: var(--shadow-1); }
@@ -155,12 +155,12 @@ td.is-changed { background: var(--warning-soft) !important; }
 .stat.is-current:hover { border-color: var(--primary); }
 .seg-opt { position: relative; }
 .seg-opt input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
-.seg-opt span { display: inline-flex; align-items: center; justify-content: center; min-height: 32px; padding: 0 14px; border-radius: 7px; font-weight: 500; font-size: 13.5px; color: var(--text-2); text-align: center; }
+.seg-opt span { display: inline-flex; align-items: center; justify-content: center; min-height: var(--control-sm); padding: 0 14px; border-radius: 7px; font-weight: 500; font-size: 13.5px; color: var(--text-2); text-align: center; }
 .quote-form .seg-track { display: flex; flex-wrap: wrap; width: 100%; }
 .quote-form .seg-opt { flex: 1 1 0; min-width: 0; }
 .quote-form .seg-opt span { width: 100%; min-height: var(--control-h); }
 .seg-opt input:checked + span { background: var(--primary); color: var(--on-primary); box-shadow: var(--shadow-1); }
-.seg-opt input:focus-visible + span { outline: var(--focus-w) solid var(--focus); outline-offset: 2px; }
+.seg-opt input:focus-visible + span { outline: var(--focus-w) solid var(--focus); outline-offset: var(--focus-offset); }
 .seg-opt input:not(:checked):hover + span { background: var(--surface-hover); color: var(--text); }
 
 /* Shortcuts dialog */
@@ -186,7 +186,7 @@ td.is-changed { background: var(--warning-soft) !important; }
 .quote-side { display: grid; gap: var(--gap); align-content: start; }
 .quote-side > .card, .quote-form > .quote-result { margin-bottom: 0; }
 .quote-span { grid-column: 1 / -1; }
-.quote-form .quote-result { position: sticky; top: calc(var(--demo-h) + 56px); }
+.quote-form .quote-result { position: sticky; top: calc(var(--demo-h) + var(--topbar-h)); }
 @media (max-width: 960px) {
   .quote-form { grid-template-columns: 1fr; }
   .quote-form .quote-result { position: static; }
