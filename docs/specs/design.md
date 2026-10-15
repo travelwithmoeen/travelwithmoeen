@@ -93,7 +93,7 @@ The office area lives at `/office`. A person who is not logged in is sent to `/o
 | Places | Editor, Owner | Place guides. |
 | Blog, gallery, reviews, home slides | Editor, Owner | Public content. |
 | Site details | Editor, Owner | Phone, address, social links. |
-| Rates | Manager, Owner | Hotels, vehicles, air extras, jeep lines, season switch. |
+| Rates | Manager, Owner | Hotels, vehicles, air extras, jeep lines, profit margin. |
 | Quote | Manager, Owner | Build a quote, then edit one night or one day. |
 | Requests | all three roles | Read the list. The Owner and the Manager can update status. Only the Owner can delete. The Editor cannot change status or delete. |
 
@@ -114,7 +114,7 @@ Main records:
 | Vehicle rate | Place, start city, road or air, vehicle, rent, fuel, toll, seats, on or off. |
 | Air extra | Islamabad ticket, Lahore add, Karachi add, welcome pack, entry, infant extra, sticker. |
 | Jeep line | Place, road or air, label, people per jeep, amount, on or off. |
-| Season | 15 or 20. One active value. |
+| Profit margin | A whole percent from 0 to 100. One active value. The prototype default is 20 percent, pending Moeen sign-off. |
 | Quote | The inputs, the night lines, the day lines, the extras, the total. |
 | Guest request | Contact, custom trip, or booking. Status. |
 
@@ -149,21 +149,25 @@ One function. Do not keep a second copy of the math in the React components. Do 
 8. A Lahore road trip longer than three days adds 5,000 rupees times (days minus 3) times the vehicle count. This is not added to an air quote.
 9. An air quote adds, for each adult and each child, a welcome pack of 1,500 and entry tickets of 4,000. Each infant adds 800. The sticker is 500 times rooms. Tickets are the adult fare times adults, 75 percent of that fare times children, 1,000 for each lap infant, and 5,000 for each infant with a seat.
 10. A jeep line that is turned on, and that matches the place and road or air, is added once for each group of six travelers, at the full amount on the line. Do not multiply 90,000 by 3.
-11. Subtotal is the sum of those lines. Total equals subtotal times (1 plus the season rate). Use 1.15 or 1.20. Do not divide by 1.20.
+11. Subtotal is the sum of those lines. Total equals subtotal times (1 plus the profit margin). The margin is a whole percent from 0 to 100. The Skardu test uses 20 percent, which is 1.20. Do not divide by 1.20.
 
 The guest builder keeps today's minimum trip length for each place. That limit is not applied to an office quote. The Skardu test is 5 days even though the public road minimum for Skardu is 6.
 
-The test quote is Islamabad, Skardu Valley, 5 days, 2 adults, Gli car, Deluxe, no guide, no meals, 20 percent, and no night or day edit. The total must be 140,400. That is a subtotal of 117,000 times 1.20.
+The test quote is Islamabad, Skardu Valley, 5 days, 2 adults, Gli car, Deluxe, no guide, no meals, a profit margin of 20 percent, and no night or day edit. The package includes a hotel and transport. The total must be 140,400. That is a subtotal of 117,000 times 1.20.
+
+### Hotel package, pending Moeen sign-off
+
+The quote has three hotel choices. With hotel is the default and includes a hotel and other services. No hotel keeps the other services and drops the hotel line, nights, rooms, meals, stickers, and the road breakfast. Hotel only asks for the city and the number of nights, and drops the vehicle, day edits, toll, jeeps, guide, extras, breakfast, the Lahore extra, and, on air, the tickets, welcome pack, and entry. Under With hotel, Same hotel all nights is the default: one catalog pick for every night. Change per night is one click and shows the catalog pick on each night. A package with neither a hotel nor other services is refused. Guests get the same three choices and see only the final total. Staff see the lines and one total for each mode. Hotel cost, when a catalog pick has been changed, follows city, then hotel, then room, then occupancy. Grade is a label on the hotel. Until that pick is changed, the untouched quote uses the published twin rate so the Skardu test stays 140,400. These defaults are pending Moeen sign-off.
 
 ### Couple price on a tour card
 
-Use the same function with Deluxe, 2 adults, 1 twin room, Islamabad, the tour's days, the tour's road or air choice, no guide, no meals, and the active season. This is what `components/TourCard.tsx` does today. The road vehicle for 2 adults is Gli car. The air vehicle for 2 adults is Prado. If the function returns no price, show `basePrice`.
+Use the same function with Deluxe, 2 adults, 1 twin room, Islamabad, the tour's days, the tour's road or air choice, no guide, no meals, and the active profit margin. This is what `components/TourCard.tsx` does today. The road vehicle for 2 adults is Gli car. The air vehicle for 2 adults is Prado. If the function returns no price, show `basePrice`.
 
 Ratti Gali, code 201, does not use this function for the card. Show the stored website price, 150,000, until the office changes that tour.
 
 ### Edits
 
-An office save can replace the rate on one night line, and the hotel name on that night, or replace or clear the vehicle on one day line. Other lines stay. The total is calculated again from the lines, then the season profit is applied.
+An office save can replace the rate on one night line, and the hotel name on that night, or replace or clear the vehicle on one day line. Other lines stay. The total is calculated again from the lines, then the profit margin is applied.
 
 Average nightly rate equals the sum of the rates saved on the night lines, after edits, divided by the number of nights. The screen shows that number next to the hotel category it sits in. The match uses the twin rate on the loaded hotel table for that place. If no grade is an exact match, the screen still shows the average and the nearest grade. The example is 20,000 with the 20,000 category.
 

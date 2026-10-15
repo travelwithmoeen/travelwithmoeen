@@ -29,6 +29,14 @@
   if (!S.data.pick) S.data.pick = clone(SEED.pick);
   if (!S.data.plans) S.data.plans = clone(SEED.plans);
   if (!S.data.trip) S.data.trip = {};
+  if (S.data.margin == null) S.data.margin = S.data.season != null ? Number(S.data.season) : 20;
+  if (S.data.hotelMode !== "none" && S.data.hotelMode !== "only") S.data.hotelMode = "with";
+  if (S.data.hotelPlan !== "per") S.data.hotelPlan = "same";
+  if (!S.data.hotelOnly) S.data.hotelOnly = { city: "Skardu", nights: (S.data.nights || []).length || 4 };
+  (S.data.tours || []).forEach((tour) => {
+    if (!Array.isArray(tour.placeSlugs) || !tour.placeSlugs.length) tour.placeSlugs = tour.placeSlug ? [tour.placeSlug] : [];
+  });
+  (S.data.catalog || []).forEach((row) => { if (!row.grade) row.grade = "Deluxe"; });
   const skardu = (S.data.hotels || []).find((row) => row.place === "Skardu Valley" && row.start === "Islamabad" && row.grade === "Deluxe");
   if (skardu && skardu.twin === 9000) skardu.twin = 8700;
   if (Array.isArray(S.data.nights) && S.data.nights.some((night) => night.custom == null && (night.city !== "Skardu" || night.hotel !== "Shangrila" || night.mattresses))) {
@@ -42,7 +50,7 @@
     rates: () => S.role === "owner" || S.role === "manager",
     users: () => S.role === "owner",
     backup: () => S.role === "owner",
-    deleteTour: () => S.role === "owner",
+    deleteTour: () => S.role === "owner" || S.role === "editor",
     requestStatus: () => S.role === "owner" || S.role === "manager",
     requestDelete: () => S.role === "owner",
   };

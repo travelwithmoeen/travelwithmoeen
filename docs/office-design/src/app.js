@@ -178,18 +178,20 @@
       const e = {};
       if (!String(fd.get("name")).trim()) e.name = "Enter a title.";
       const d = readCount(fd.get("duration"), 30); if (d.error) e.duration = d.error === "Enter a number." ? d.error : "Enter a number of days from 1 to 30.";
-      const place = D().places.find((item) => item.slug === fd.get("placeSlug"));
-      if (!place) e.placeSlug = "Choose a place.";
+      const slugs = fd.getAll("placeSlugs").map((slug) => String(slug)).filter((slug) => D().places.some((item) => item.slug === slug));
+      if (!slugs.length) e.placeSlugs = "Choose a place.";
       if (form.dataset.fileError) e.photo = form.dataset.fileError;
       if (Object.keys(e).length) return showErrors(form, e);
+      const primary = D().places.find((item) => item.slug === slugs[0]);
       let t = D().tours.find((x) => x.code === form.dataset.id);
       if (!t && form.dataset.id === "new") {
         const code = `new-${Date.now()}`;
-        t = { code, id: code, name: "", location: "", region: "", duration: 1, transport: "By Road", description: "", image: "", gallery: [], included: [], notIncluded: [], categories: [], packageTypes: [], featured: false, days: [], placeSlug: "" };
+        t = { code, id: code, name: "", location: "", region: "", duration: 1, transport: "By Road", description: "", image: "", gallery: [], included: [], notIncluded: [], categories: [], packageTypes: [], featured: false, days: [], placeSlug: "", placeSlugs: [] };
         D().tours.unshift(t);
       }
       if (!t) return;
-      Object.assign(t, { name: fd.get("name").trim(), description: String(fd.get("description") || "").trim(), location: place.title, region: String(fd.get("region") || place.title).trim(), placeSlug: place.slug, duration: d.value, transport: fd.get("transport") || t.transport, gallery: lines(fd.get("gallery")), included: lines(fd.get("included")), notIncluded: lines(fd.get("notIncluded")), categories: lines(fd.get("categories")), packageTypes: lines(fd.get("packageTypes")), featured: fd.has("featured"), days: zip(fd, ["day_title", "day_text", "day_hl"], ["title", "text", "highlights"]) });
+      const location = slugs.length === 1 || !t.location ? primary.title : t.location;
+      Object.assign(t, { name: fd.get("name").trim(), description: String(fd.get("description") || "").trim(), location, region: String(fd.get("region") || location).trim(), placeSlug: primary.slug, placeSlugs: slugs, duration: d.value, transport: fd.get("transport") || t.transport, gallery: lines(fd.get("gallery")), included: lines(fd.get("included")), notIncluded: lines(fd.get("notIncluded")), categories: lines(fd.get("categories")), packageTypes: lines(fd.get("packageTypes")), featured: fd.has("featured"), days: zip(fd, ["day_title", "day_text", "day_hl"], ["title", "text", "highlights"]) });
       if (form.dataset.fileName) t.image = "/images/tours/" + form.dataset.fileName;
       stampIt(t); log(`Saved tour ${t.name}`, `#/tours/${t.code}`);
       save();
@@ -200,9 +202,13 @@
       const p = D().places.find((x) => x.slug === form.dataset.id);
       if (!String(fd.get("title")).trim()) return showErrors(form, { title: "Enter a title." });
       if (form.dataset.fileError) return showErrors(form, { photo: form.dataset.fileError });
+      const previous = p.title;
       const title = fd.get("title").trim();
       Object.assign(p, { title, excerpt: fd.get("excerpt").trim(), location: fd.get("location").trim(), sections: zip(fd, ["sec_heading", "sec_body", "sec_image", "sec_hl"], ["heading", "body", "image", "highlights"]) });
-      D().tours.filter((tour) => tour.placeSlug === p.slug).forEach((tour) => { tour.location = title; });
+      D().tours.forEach((tour) => {
+        const slugs = Array.isArray(tour.placeSlugs) && tour.placeSlugs.length ? tour.placeSlugs : (tour.placeSlug ? [tour.placeSlug] : []);
+        if (slugs.length === 1 && slugs[0] === p.slug && tour.location === previous) tour.location = title;
+      });
       if (form.dataset.fileName) p.banner = "/images/destinations/" + form.dataset.fileName;
       stampIt(p); log(`Saved place ${p.title}`, `#/places/${p.slug}`);
       save(); done("Place saved.");
@@ -322,11 +328,11 @@
       });
       save(); done("Stop hours saved.");
     },
-    season(fd, form) {
+    margin(fd, form) {
       const raw = String(fd.get("percent") ?? "").trim();
       const p = Number(raw);
       if (!/^\d+$/.test(raw) || p > 100) return showErrors(form, { percent: "Enter a whole percent from 0 to 100." });
-      D().season = p; log(`Changed profit margin to ${p} percent`, "#/rates/season"); save(); done("Profit margin saved.", `Guest quotes now use ${p} percent.`);
+      D().margin = p; log(`Changed the profit margin to ${p} percent`, "#/rates/margin"); save(); done("Profit margin saved.", `Guest quotes now use ${p} percent.`);
     },
     "request-status"(fd, form) {
       const r = D().requests.find((x) => String(x.id) === form.dataset.id);
@@ -335,6 +341,27 @@
     },
     quote(fd, form) {
       const e = {};
+      const hotelMode = fd.get("hotelMode") || D().hotelMode || "with";
+      if (hotelMode === "only") {
+        const rawNights = String(fd.get("onlyNights") ?? "").trim();
+        const onlyCity = String(fd.get("onlyCity") || (D().hotelOnly && D().hotelOnly.city) || "Skardu");
+        if (!/^\d+$/.test(rawNights) || +rawNights > 30) e.onlyNights = "Enter a number of nights from 0 to 30.";
+        else if (+rawNights < 1) e.onlyNights = "A package needs a hotel or other services. Hotel only with no nights is refused.";
+        if (Object.keys(e).length) return showErrors(form, e);
+        D().hotelMode = "only";
+        D().hotelOnly = { city: onlyCity, nights: +rawNights };
+        const pctRaw = String(fd.get("margin") ?? "").trim();
+        if (pctRaw) {
+          if (!/^\d+$/.test(pctRaw) || +pctRaw > 100) return showErrors(form, { margin: "Enter a whole percent from 0 to 100." });
+          D().quotePct = +pctRaw;
+        }
+        save();
+        render({ keepScroll: true });
+        const heading = $("#quote-result h3");
+        if (heading) { heading.tabIndex = -1; heading.focus(); }
+        toast("Quote saved.", { body: "Hotel only. The guest sees one total." });
+        return;
+      }
       const days = readCount(fd.get("days"), 30), adults = readCount(fd.get("adults"), 50);
       const countFromZero = (raw, name, max) => {
         const t = String(raw ?? "").trim();
@@ -397,32 +424,28 @@
         const amount = amountOrBlank(fd.get(name));
         if (amount.error) e[name] = amount.error;
       });
+      if (hotelMode === "none" && night) e.night = "No hotel has no night to edit.";
       if (night && night.n > D().nights.length) e.night = "Hotel nights are days minus one. That night is not on this trip.";
+      const pctRaw = String(fd.get("margin") ?? "").trim();
+      if (pctRaw && (!/^\d+$/.test(pctRaw) || +pctRaw > 100)) e.margin = "Enter a whole percent from 0 to 100.";
       if (Object.keys(e).length) return showErrors(form, e);
       clearErrors(form);
-      const pctRaw = String(fd.get("season") ?? "").trim();
-      const pct = /^\d+$/.test(pctRaw) && +pctRaw <= 100 ? +pctRaw : D().season;
-      if (night) {
+      const pct = pctRaw ? +pctRaw : D().margin;
+      if (night && hotelMode !== "none") {
         const row = D().nights[night.n - 1];
         if (row) { row.override = night.rate; if (night.hotel) row.hotelNote = night.hotel; }
       }
       D().dayEdit = dayLabel ? { day: dayNumber, kind: dayChange, vehicle: dayLabel, rent: amountOrBlank(fd.get("dayRent")).value || 0, fuel: amountOrBlank(fd.get("dayFuel")).value || 0 } : null;
       D().paidExtra = extraAmount.value ? { name: extraName || "Paid extra", amount: extraAmount.value } : null;
+      D().hotelMode = hotelMode === "none" ? "none" : "with";
       D().quotePct = pct;
-      D().trip = { place: fd.get("place"), mode: fd.get("mode"), start: fd.get("start"), grade: fd.get("grade"), vehicle: fd.get("vehicle"), days: days.value, adults: adults.value, children, lapInfants: laps, seatInfants, season: pct, guide: fd.has("guide"), meals: fd.has("meals") };
+      D().trip = { place: fd.get("place"), mode: fd.get("mode"), start: fd.get("start"), grade: (D().trip && D().trip.grade) || "Deluxe", vehicle: fd.get("vehicle"), days: days.value, adults: adults.value, children, lapInfants: laps, seatInfants, margin: pct, guide: fd.has("guide"), meals: hotelMode !== "none" && fd.has("meals") };
       save();
+      render({ keepScroll: true });
+      const heading = $("#quote-result h3");
+      if (heading) { heading.tabIndex = -1; heading.focus(); }
       const view = O.quoteView();
-      const out = $("#quote-result");
-      out.innerHTML = O.quotePanel(true);
-      const views = form.querySelectorAll(".stat-v");
-      const notes = form.querySelectorAll(".stat-m");
-      if (views.length >= 2) {
-        views[0].textContent = rs(view.guest);
-        views[1].textContent = rs(view.sub);
-        notes[0].textContent = "One total. No lines and no profit.";
-        notes[1].textContent = `${view.lines.map((line) => `${line.label} ${rs(line.amount)}`).join(". ")}. Profit ${view.pct}% is ${rs(view.profit)}.`;
-      }
-      out.querySelector("h3").setAttribute("tabindex", "-1"); out.querySelector("h3").focus();
+      toast(view.refused ? "Package refused." : "Quote saved.", { body: view.refused ? "A package needs a hotel or other services." : `Guest total ${rs(view.guest)}.` });
     },
   };
 
@@ -500,6 +523,7 @@
     "rep-up"(el) { const it = el.closest(".rep-item"); if (it.previousElementSibling) { it.parentElement.insertBefore(it, it.previousElementSibling); renumber(it.parentElement); bumpStructural(el.closest("form")); el.focus(); } },
     "rep-down"(el) { const it = el.closest(".rep-item"); if (it.nextElementSibling) { it.parentElement.insertBefore(it.nextElementSibling, it); renumber(it.parentElement); bumpStructural(el.closest("form")); el.focus(); } },
     "delete-tour"(el) {
+      if (!can.deleteTour()) return toast("A Manager cannot delete a tour.", { tone: "info" });
       const t = D().tours.find((x) => x.code === el.dataset.id);
       dialog({ title: `Delete “${t.name}”?`, body: `<p>The tour page, its photo list, and its day plan will be removed from the website. Bookings already saved stay in Requests. This can't be undone.</p>`, confirm: "Delete tour", tone: "danger", icon: "trash", alertdialog: true,
         onConfirm: () => { D().tours = D().tours.filter((x) => x !== t); save(); const f = dirtyForm(); if (f) delete f.dataset.dirty; location.hash = "#/tours"; toast("Tour deleted.", { body: t.name }); } });
@@ -614,7 +638,7 @@
         <div class="field"><label class="label" for="x4">Toll</label><div class="money"><span class="affix" aria-hidden="true">Rs</span><input class="input" id="x4" value="-500" aria-invalid="true" aria-describedby="x4-err"></div><p class="err" id="x4-err">${icon("errorCircle")}<span>Enter an amount that is not negative.</span></p></div></div>
       <div class="ds-row">${O.check("x5", true, "Featured on the home page")}${O.sw("x6", true, "Gli Car")}${O.sw("x7", false, "Prado")}</div>
       <div class="ds-row">${O.statusBadge("new")}${O.statusBadge("in_progress")}${O.statusBadge("closed")}${badge("Booking", "outline")}${badge("★ Featured", "accent")}${badge("Off", "danger", true)}${badge("Offered", "success", true)}</div>
-      <div class="ds-stack">${alert("info", "Season profit is 20 percent", "Change it under Rates, Season.")}${alert("success", "Import finished", "412 rates loaded.")}${alert("warning", "Season is at 15 percent", "Guest quotes use the lower profit.")}${alert("danger", "2 fields need a fix", "Toll: enter an amount that is not negative.")}</div>
+      <div class="ds-stack">${alert("info", "Profit margin is 20 percent", "Change it under Rates, Profit margin.")}${alert("success", "Import finished", "412 rates loaded.")}${alert("warning", "Profit margin is at 15 percent", "Guest quotes use the lower profit.")}${alert("danger", "2 fields need a fix", "Toll: enter an amount that is not negative.")}</div>
       <div class="toast t-success static" role="presentation">${icon("checkCircle")}<div><b>Tour saved.</b><p>The public tour page is updated.</p></div><span class="toast-actions"><button class="btn btn-ghost btn-sm">${icon("undo")}<span>Undo</span></button></span></div>`;
     return `${pageHead(`${V.name} design system`, { desc: esc(V.summary), actions: btn("Open the dashboard", { v: "primary", href: "#/dashboard" }) })}
       <div class="ds-grid">
@@ -677,7 +701,48 @@
   };
   document.addEventListener("change", (e) => {
     const t = e.target;
+    if (t.matches("[data-margin-slider]")) {
+      const raw = String(t.value);
+      const box = t.form && t.form.margin;
+      if (box) box.value = raw;
+      if (/^\d+$/.test(raw) && +raw <= 100) D().quotePct = +raw;
+      save();
+      render({ keepScroll: true });
+      document.querySelector("[data-margin-slider]")?.focus();
+      return;
+    }
     if (t.closest("form[data-form=quote]") && t.name && !t.matches("[data-night]")) {
+      if (t.name === "hotelMode") {
+        D().hotelMode = t.value;
+        save();
+        render({ keepScroll: true });
+        document.querySelector(`[name="hotelMode"][value="${t.value}"]`)?.focus();
+        return;
+      }
+      if (t.name === "hotelPlan") {
+        D().hotelPlan = t.value;
+        save();
+        render({ keepScroll: true });
+        document.querySelector(`[name="hotelPlan"][value="${t.value}"]`)?.focus();
+        return;
+      }
+      if (t.name === "onlyCity" || t.name === "onlyNights") {
+        const only = D().hotelOnly || (D().hotelOnly = { city: "Skardu", nights: (D().nights || []).length });
+        if (t.name === "onlyCity") only.city = t.value;
+        else only.nights = /^\d+$/.test(String(t.value).trim()) ? +t.value : 0;
+        save();
+        render({ keepScroll: true });
+        document.querySelector(`[name="${t.name}"]`)?.focus();
+        return;
+      }
+      if (t.name === "margin") {
+        const raw = String(t.value).trim();
+        if (/^\d+$/.test(raw) && +raw <= 100) D().quotePct = +raw;
+        save();
+        render({ keepScroll: true });
+        document.querySelector("[name=margin]")?.focus();
+        return;
+      }
       const trip = D().trip || (D().trip = {});
       trip[t.name] = t.type === "checkbox" ? t.checked : t.value;
       if (t.name === "days") {
@@ -685,7 +750,7 @@
         if (days >= 1 && days <= 30) fitNights(days);
       }
       save();
-      if (t.name === "days") render({ keepScroll: true });
+      if (t.name === "days" || t.name === "place" || t.name === "mode" || t.name === "start" || t.name === "vehicle" || t.type === "checkbox") render({ keepScroll: true });
       return;
     }
     if (t.matches("[data-filter-key], [data-sort]")) return applyFilters();
@@ -706,16 +771,35 @@
       toast(`${r.name}: ${O.STATUS[r.status][0]}.`, { undo: () => { r.status = from; save(); render({ keepFocus: true, keepScroll: true }); } });
       return;
     }
-    if (t.matches("[data-catalog]")) {
-      const pick = D().pick;
-      pick[t.dataset.catalog] = t.value;
-      if (t.dataset.catalog === "city") {
+    if (t.matches("[data-catalog], [data-stay]")) {
+      const key = t.dataset.catalog || t.dataset.stay;
+      const pick = D().pick || (D().pick = { city: "Skardu", hotel: "Shangrila", room: "Deluxe", occ: "room", changed: false });
+      pick[key] = t.value;
+      if (key === "city") {
         pick.hotel = O.hotelsOf(pick.city)[0];
         pick.room = O.roomsOf(pick.city, pick.hotel)[0]?.room;
         pick.occ = "room";
       }
-      if (t.dataset.catalog === "hotel" || t.dataset.catalog === "room") pick.occ = "room";
+      if (key === "hotel") {
+        pick.room = O.roomsOf(pick.city, pick.hotel)[0]?.room;
+        pick.occ = "room";
+      }
+      if (key === "room") pick.occ = "room";
+      if (t.dataset.stay) {
+        pick.changed = !(pick.city === "Skardu" && pick.hotel === "Shangrila" && pick.room === "Deluxe" && pick.occ !== "mattress");
+        const mattresses = pick.occ === "mattress" ? 1 : 0;
+        (D().nights || []).forEach((night) => {
+          night.city = pick.city;
+          night.hotel = pick.hotel;
+          night.room = pick.room;
+          night.mattresses = mattresses;
+          night.custom = !!pick.changed;
+          if (pick.changed) delete night.override;
+        });
+      }
+      save();
       render({ keepScroll: true });
+      document.querySelector(`[data-stay="${key}"], [data-catalog="${key}"]`)?.focus();
       return;
     }
     if (t.matches("[data-night]")) {
@@ -738,8 +822,8 @@
     }
     if (t.matches("[data-action-change=change-role]")) {
       const u = D().users.find((x) => String(x.id) === t.dataset.id), to = t.value;
-      dialog({ title: `Make ${u.email} ${to === "editor" ? "an" : "a"} ${ROLE_NAME[to]}?`, body: `<p>${{ owner: "Owners can do everything, including logins and backups.", manager: "Managers change rates, quotes, and request status. They can't edit website text.", editor: "Editors change website content. They can't open Rates." }[to]}</p>`, confirm: "Change role", icon: "users", alertdialog: true,
-        onConfirm: () => { u.role = to; save(); render({ keepFocus: true }); toast("Role saved.", { body: `${u.email} is now ${ROLE_NAME[to] === "Owner" ? "an" : "a"} ${ROLE_NAME[to]}.` }); },
+      dialog({ title: `Make ${u.email} ${to === "editor" ? "an" : "a"} ${ROLE_NAME[to]}?`, body: `<p>${{ owner: "Owners can do everything, including logins and backups. An Owner can delete a tour.", manager: "Managers change rates, quotes, and request status. They can't edit website text or delete a tour.", editor: "Editors change website content and can delete a tour. They can't open Rates." }[to]}</p>`, confirm: "Change role", icon: "users", alertdialog: true,
+        onConfirm: () => { u.role = to; save(); render({ keepFocus: true }); toast("Role saved.", { body: `${u.email} is now ${ROLE_NAME[to] === "Owner" ? "an" : "a"} ${ROLE_NAME[to]}. ${to === "manager" ? "A Manager cannot delete a tour." : "The Owner and an Editor can delete a tour."}` }); },
         onCancel: () => { t.value = u.role; t.focus(); } });
     }
   });

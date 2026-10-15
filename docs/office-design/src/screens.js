@@ -7,6 +7,9 @@
   const hotelsOf = (city) => [...new Set((D().catalog || []).filter((row) => row.city === city).map((row) => row.hotel))];
   const roomsOf = (city, hotel) => (D().catalog || []).filter((row) => row.city === city && row.hotel === hotel);
   const roomOf = (city, hotel, room) => roomsOf(city, hotel).find((row) => row.room === room) || roomsOf(city, hotel)[0];
+  const hotelModeOf = () => (D().hotelMode === "none" || D().hotelMode === "only" ? D().hotelMode : "with");
+  const hotelPlanOf = () => (D().hotelPlan === "per" ? "per" : "same");
+  const MODE_LABEL = { with: "With hotel", none: "No hotel", only: "Hotel only" };
   const tripOf = () => {
     const trip = D().trip || {};
     return {
@@ -25,86 +28,134 @@
     };
   };
   const hotelRow = (trip) => (D().hotels || []).find((row) => row.place === trip.place && row.start === trip.start && row.grade === trip.grade && row.offered !== false);
+  const placeForCity = (city) => {
+    const places = [...new Set((D().hotels || []).map((row) => row.place))];
+    return places.find((place) => place.toLowerCase().startsWith(String(city || "").toLowerCase())) || tripOf().place;
+  };
   const vehicleRow = (trip, name) => (D().vehicles || []).find((row) => row.place === trip.place && row.vehicle === name && row.live) || (D().vehicles || []).find((row) => row.vehicle === name && row.live);
-  const nightCost = (night) => {
-    if (night.override != null && night.override !== "") return Number(night.override) || 0;
-    if (night.custom) {
-      const row = roomOf(night.city, night.hotel, night.room);
-      if (!row) return night.rate || 0;
-      return row.rate + (Number(night.mattresses) || 0) * row.mattress;
-    }
+  const catalogNightCost = (city, hotel, room, mattresses) => {
+    const row = roomOf(city, hotel, room);
+    if (!row) return 0;
+    return row.rate + (Number(mattresses) || 0) * row.mattress;
+  };
+  const publishedNightRate = () => {
     const hotel = hotelRow(tripOf());
     return hotel ? hotel.twin : 0;
   };
-  const quoteView = () => {
+  const samePickRate = () => {
+    const pick = D().pick || {};
+    if (!pick.changed) return publishedNightRate();
+    return catalogNightCost(pick.city, pick.hotel, pick.room, pick.occ === "mattress" ? 1 : 0);
+  };
+  const nightCost = (night) => {
+    if (night.override != null && night.override !== "") return Number(night.override) || 0;
+    if (hotelPlanOf() === "same") return samePickRate();
+    if (night.custom) return catalogNightCost(night.city, night.hotel, night.room, night.mattresses);
+    return publishedNightRate();
+  };
+  const gradeLabel = (city, hotel) => {
+    const row = (D().catalog || []).find((item) => item.city === city && item.hotel === hotel && item.grade);
+    return row ? row.grade : tripOf().grade;
+  };
+  const quotePercent = () => {
+    if (D().quotePct != null && D().quotePct !== "") return Number(D().quotePct) || 0;
+    if (D().margin != null) return Number(D().margin) || 0;
+    return 0;
+  };
+  const quoteView = (forcedMode) => {
     const trip = tripOf();
-    const pct = D().quotePct != null ? Number(D().quotePct) : Number(D().season) || 0;
+    const mode = forcedMode || hotelModeOf();
+    const hotelOn = mode === "with" || mode === "only";
+    const transportOn = mode === "with" || mode === "none";
+    const pct = quotePercent();
     const nights = (D().nights || []).map((night) => ({ ...night, cost: nightCost(night) }));
+    const onlyNights = D().hotelOnly && D().hotelOnly.nights != null ? Number(D().hotelOnly.nights) : nights.length;
+    const onlyCity = (D().hotelOnly && D().hotelOnly.city) || (D().pick && D().pick.city) || "Skardu";
     const seats = trip.adults + trip.children + trip.seatInfants;
     const rooms = Math.max(1, Math.ceil((seats || 1) / 3));
-    const vehicle = vehicleRow(trip, trip.vehicle);
-    const rent = vehicle ? vehicle.rent : 0;
-    const fuel = vehicle ? vehicle.fuel : 0;
-    const toll = vehicle ? vehicle.toll : 0;
-    const vehicleCount = Math.max(1, Math.ceil((seats || 1) / (vehicle && vehicle.seats ? vehicle.seats : 1)));
-    const dayEdit = D().dayEdit;
-    let daily = 0;
-    let active = 0;
-    for (let day = 1; day <= trip.days; day += 1) {
-      if (dayEdit && Number(dayEdit.day) === day && dayEdit.kind === "clear") continue;
-      active += 1;
-      if (dayEdit && Number(dayEdit.day) === day && dayEdit.kind === "jeep") daily += (Number(dayEdit.rent) || 0) + (Number(dayEdit.fuel) || 0);
-      else if (dayEdit && Number(dayEdit.day) === day && dayEdit.kind === "vehicle") {
-        const named = vehicleRow(trip, dayEdit.vehicle);
-        daily += named ? named.rent + named.fuel : rent + fuel;
-      } else daily += rent + fuel;
-    }
-    const vehicleCost = vehicleCount * (daily + (active ? toll : 0));
-    const hotelCost = nights.reduce((sum, night) => sum + night.cost, 0) * rooms;
-    const guideCost = trip.guide ? 5000 * trip.days : 0;
     const mealPeople = trip.adults + trip.children;
-    const mealRate = { Deluxe: 1200, Executive: 2000, Luxury: 2500, "Ultra Luxury": 3000 }[trip.grade] || 1200;
-    const mealCost = trip.meals ? mealRate * nights.length * mealPeople : 0;
-    const breakfastCost = trip.mode === "road" && trip.days > 1 ? 500 * mealPeople : 0;
-    const lahoreCost = trip.mode === "road" && String(trip.start).toLowerCase() === "lahore" && trip.days > 3 ? 5000 * (trip.days - 3) * vehicleCount : 0;
-    const air = D().air || {};
-    let ticketCost = 0, welcomeCost = 0, entryCost = 0, infantExtraCost = 0, stickerCost = 0;
-    if (trip.mode === "air") {
-      const adultFare = (air.islamabadTicket || 0) + (String(trip.start).toLowerCase() === "lahore" ? air.lahoreAdd || 0 : 0) + (String(trip.start).toLowerCase() === "karachi" ? air.karachiAdd || 0 : 0);
-      ticketCost = adultFare * trip.adults + Math.round((adultFare * 75) / 100) * trip.children + 1000 * trip.lapInfants + 5000 * trip.seatInfants;
-      welcomeCost = (air.welcomePack || 0) * mealPeople;
-      entryCost = (air.entry || 0) * mealPeople;
-      infantExtraCost = (air.infantExtra || 0) * (trip.lapInfants + trip.seatInfants);
-      stickerCost = (air.sticker || 0) * rooms;
+    const lines = [];
+    let hotelCost = 0;
+    let average = 0;
+    if (mode === "only") {
+      const onlyPlace = placeForCity(onlyCity);
+      const onlyHotel = (D().hotels || []).find((row) => row.place === onlyPlace && row.start === trip.start && row.grade === trip.grade && row.offered !== false);
+      const rate = onlyHotel ? onlyHotel.twin : 0;
+      hotelCost = onlyNights > 0 ? rate * onlyNights * rooms : 0;
+      average = onlyNights > 0 ? rate : 0;
+      if (onlyNights > 0) lines.push({ label: "Hotel", amount: hotelCost });
+    } else if (hotelOn) {
+      hotelCost = nights.reduce((sum, night) => sum + night.cost, 0) * rooms;
+      average = nights.length ? Math.round(nights.reduce((sum, night) => sum + night.cost, 0) / nights.length) : 0;
+      lines.push({ label: "Hotel", amount: hotelCost });
     }
-    const travelers = trip.adults + trip.children + trip.lapInfants + trip.seatInfants;
-    const jeepLines = (D().jeeps || []).filter((line) => line.live && line.baseline && line.place === trip.place && String(line.mode).toLowerCase() === trip.mode);
-    const lines = [{ label: "Vehicle", amount: vehicleCost }, { label: "Hotel", amount: hotelCost }];
-    if (guideCost) lines.push({ label: "Guide", amount: guideCost });
-    if (mealCost) lines.push({ label: "Meals", amount: mealCost });
-    if (breakfastCost) lines.push({ label: "Arrival breakfast", amount: breakfastCost });
-    if (lahoreCost) lines.push({ label: "Lahore road extra", amount: lahoreCost });
-    if (ticketCost) lines.push({ label: "Air tickets", amount: ticketCost });
-    if (welcomeCost) lines.push({ label: "Welcome pack", amount: welcomeCost });
-    if (entryCost) lines.push({ label: "Entry", amount: entryCost });
-    if (infantExtraCost) lines.push({ label: "Infant extra", amount: infantExtraCost });
-    if (stickerCost) lines.push({ label: "Sticker", amount: stickerCost });
-    jeepLines.forEach((line) => lines.push({ label: line.label, amount: line.amount * Math.ceil((travelers || 1) / 6) }));
-    if (D().paidExtra && D().paidExtra.amount) lines.push({ label: D().paidExtra.name || "Paid extra", amount: D().paidExtra.amount });
+    if (transportOn) {
+      const vehicle = vehicleRow(trip, trip.vehicle);
+      const rent = vehicle ? vehicle.rent : 0;
+      const fuel = vehicle ? vehicle.fuel : 0;
+      const toll = vehicle ? vehicle.toll : 0;
+      const vehicleCount = Math.max(1, Math.ceil((seats || 1) / (vehicle && vehicle.seats ? vehicle.seats : 1)));
+      const dayEdit = D().dayEdit;
+      let daily = 0;
+      let active = 0;
+      for (let day = 1; day <= trip.days; day += 1) {
+        if (dayEdit && Number(dayEdit.day) === day && dayEdit.kind === "clear") continue;
+        active += 1;
+        if (dayEdit && Number(dayEdit.day) === day && dayEdit.kind === "jeep") daily += (Number(dayEdit.rent) || 0) + (Number(dayEdit.fuel) || 0);
+        else if (dayEdit && Number(dayEdit.day) === day && dayEdit.kind === "vehicle") {
+          const named = vehicleRow(trip, dayEdit.vehicle);
+          daily += named ? named.rent + named.fuel : rent + fuel;
+        } else daily += rent + fuel;
+      }
+      lines.push({ label: "Vehicle", amount: vehicleCount * (daily + (active ? toll : 0)) });
+      if (trip.guide) lines.push({ label: "Guide", amount: 5000 * trip.days });
+      if (mode === "with" && trip.meals) {
+        const mealRate = { Deluxe: 1200, Executive: 2000, Luxury: 2500, "Ultra Luxury": 3000 }[trip.grade] || 1200;
+        lines.push({ label: "Meals", amount: mealRate * nights.length * mealPeople });
+      }
+      if (mode === "with" && trip.mode === "road" && trip.days > 1) lines.push({ label: "Arrival breakfast", amount: 500 * mealPeople });
+      if (trip.mode === "road" && String(trip.start).toLowerCase() === "lahore" && trip.days > 3) lines.push({ label: "Lahore road extra", amount: 5000 * (trip.days - 3) * vehicleCount });
+      if (trip.mode === "air") {
+        const air = D().air || {};
+        const adultFare = (air.islamabadTicket || 0) + (String(trip.start).toLowerCase() === "lahore" ? air.lahoreAdd || 0 : 0) + (String(trip.start).toLowerCase() === "karachi" ? air.karachiAdd || 0 : 0);
+        lines.push({ label: "Air tickets", amount: adultFare * trip.adults + Math.round((adultFare * 75) / 100) * trip.children + 1000 * trip.lapInfants + 5000 * trip.seatInfants });
+        lines.push({ label: "Welcome pack", amount: (air.welcomePack || 0) * mealPeople });
+        lines.push({ label: "Entry", amount: (air.entry || 0) * mealPeople });
+        if (trip.lapInfants + trip.seatInfants) lines.push({ label: "Infant extra", amount: (air.infantExtra || 0) * (trip.lapInfants + trip.seatInfants) });
+        if (mode === "with") lines.push({ label: "Sticker", amount: (air.sticker || 0) * rooms });
+      }
+      const travelers = trip.adults + trip.children + trip.lapInfants + trip.seatInfants;
+      (D().jeeps || []).filter((line) => line.live && line.baseline && line.place === trip.place && String(line.mode).toLowerCase() === trip.mode).forEach((line) => lines.push({ label: line.label, amount: line.amount * Math.ceil((travelers || 1) / 6) }));
+      if (D().paidExtra && D().paidExtra.amount) lines.push({ label: D().paidExtra.name || "Paid extra", amount: D().paidExtra.amount });
+    }
+    const hotelPresent = mode === "only" ? onlyNights > 0 : hotelOn;
+    const refused = !hotelPresent && !transportOn;
     const sub = lines.reduce((sum, line) => sum + line.amount, 0);
     const profit = Math.round((sub * pct) / 100);
-    const average = nights.length ? Math.round(nights.reduce((sum, night) => sum + night.cost, 0) / nights.length) : 0;
-    const untouched = nights.length === Math.max(0, trip.days - 1) && nights.every((night) => !night.custom && (night.override == null || night.override === "")) && !dayEdit && !trip.guide && !trip.meals && !(D().paidExtra && D().paidExtra.amount);
-    return { lines, sub, profit, guest: sub + profit, nights, pct, average, hotel: hotelCost, spec: untouched && sub === 117000 && pct === 20 };
+    const dayEdit = transportOn ? D().dayEdit : null;
+    const untouched = mode === "with" && hotelPlanOf() === "same" && !(D().pick && D().pick.changed) && nights.length === Math.max(0, trip.days - 1) && nights.every((night) => !night.custom && (night.override == null || night.override === "")) && !dayEdit && !trip.guide && !trip.meals && !(D().paidExtra && D().paidExtra.amount);
+    const summary = mode === "only"
+      ? `${onlyCity} · ${Math.max(0, onlyNights)} nights`
+      : `${trip.place} · ${trip.mode} from ${trip.start} · ${trip.vehicle} · ${trip.days} days · ${trip.adults} adults${mode === "none" ? " · no hotel" : ""}`;
+    return { lines, sub, profit, guest: refused ? null : sub + profit, nights, pct, average, hotel: hotelCost, spec: !refused && untouched && sub === 117000 && pct === 20, refused, mode, summary, onlyCity, onlyNights };
   };
   const quotePanel = (saved) => {
     const view = quoteView();
-    const trip = tripOf();
+    if (view.refused) {
+      return `<div class="card-head"><div><h3>Package refused</h3><p>Neither a hotel nor other services</p></div></div><div class="card-body">${alert("danger", "This package is refused", "A package needs a hotel or other services. Hotel only with no nights has neither.")}</div>`;
+    }
     const staff = view.lines.map((line) => `<dt>${esc(line.label)}</dt><dd>${rs(line.amount)}</dd>`).join("");
-    const note = view.spec ? "This is the Skardu test. The subtotal is 117,000 and the guest total is 140,400 at 20 percent." : "A changed night uses that room's rate. The guest still sees one total.";
-    return `<div class="card-head"><div><h3>${saved ? "Quote saved" : "This quote"}</h3><p>${esc(trip.place)} · ${esc(trip.mode)} from ${esc(trip.start)} · ${esc(trip.vehicle)} · ${trip.days} days · ${trip.adults} adults</p></div></div><div class="card-body"><dl class="sum">${staff}<dt>Subtotal</dt><dd>${rs(view.sub)}</dd><dt>Profit, ${view.pct} percent</dt><dd>${rs(view.profit)}</dd><dt class="sum-total">Guest total</dt><dd class="sum-total">${rs(view.guest)}</dd>${view.average ? `<dt>Average nightly rate</dt><dd>${rs(view.average)}</dd>` : ""}</dl><p class="help">${note}</p></div>`;
+    const note = view.spec ? "This is the Skardu test. The subtotal is 117,000 and the guest total is 140,400 at 20 percent." : view.mode === "none" ? "No hotel. The guest still sees one total." : view.mode === "only" ? "Hotel only. The guest still sees one total." : "A changed hotel uses the catalog rate. The guest still sees one total.";
+    return `<div class="card-head"><div><h3>${saved ? "Quote saved" : "This quote"}</h3><p>${esc(view.summary)}</p></div></div><div class="card-body"><dl class="sum">${staff}<dt>Subtotal</dt><dd>${rs(view.sub)}</dd><dt>Profit, ${view.pct} percent</dt><dd>${rs(view.profit)}</dd><dt class="sum-total">Guest total</dt><dd class="sum-total">${rs(view.guest)}</dd>${view.average ? `<dt>Average nightly rate</dt><dd>${rs(view.average)}</dd>` : ""}</dl><p class="help">${note}</p></div>`;
   };
-  const choose = (attr, value, options) => `<select class="select" ${attr}>${options.map((option) => `<option value="${esc(option)}" ${option === value ? "selected" : ""}>${esc(option)}</option>`).join("")}</select>`;
+  const choose = (attr, value, options) => `<select class="select" ${attr}>${options.map((option) => { const label = Array.isArray(option) ? option[1] : option; const stored = Array.isArray(option) ? option[0] : option; return `<option value="${esc(stored)}" ${stored === value ? "selected" : ""}>${esc(label)}</option>`; }).join("")}</select>`;
+  const segment = (name, value, options, label) => `<fieldset class="seg-status"><legend class="label">${esc(label)}</legend><div class="seg-track" role="radiogroup" aria-label="${esc(label)}">${options.map(([v, l]) => `<label class="seg-opt"><input type="radio" name="${esc(name)}" value="${esc(v)}" ${value === v ? "checked" : ""}><span>${esc(l)}</span></label>`).join("")}</div></fieldset>`;
+  const guestTotals = () => ["with", "none", "only"].map((mode) => {
+    const view = quoteView(mode);
+    const current = mode === hotelModeOf();
+    const figure = view.refused ? "Refused" : rs(view.guest);
+    return `<div class="stat${current ? " is-current" : ""}" data-mode-total="${mode}"><span class="stat-k">${MODE_LABEL[mode]}</span><span class="stat-v">${figure}</span><span class="stat-m">${view.refused ? "Neither a hotel nor other services." : "One total."}</span></div>`;
+  }).join("");
 
   /* ---------- Navigation model ---------- */
   const NAV = [
@@ -299,15 +350,16 @@
     }
     const act = (d.activity || []).slice(0, 6);
     const greet = "Good morning";
-    return `${pageHead(greet, { desc: `${dt("2026-10-09T09:30:00+05:00", { dateStyle: "full" })} · signed in as ${ROLE_NAME[S.role]}` })}
+    return `${pageHead(greet, { desc: `${dt("2026-10-09T09:30:00+05:00", { dateStyle: "full" })} · signed in as ${ROLE_NAME[S.role]}. The Owner and an Editor can delete a tour. A Manager cannot.` })}
+      ${alert("info", "Costing file", "The mismatch with the costing file is being checked.")}
       <div class="stats">
         ${stat("inbox", "New requests", nw.length, nw.length ? `Oldest ${rel(nw[nw.length - 1].at).toLowerCase()}` : "All caught up", "#/requests?status=new")}
         ${stat("clock", "In progress", prog.length, "Waiting on you or the guest", "#/requests?status=in_progress")}
-        ${can.rates() ? stat("tag", "Profit margin", `${d.season}%`, "Guests see this on the total", "#/rates/season") : stat("map", "Tours live", d.tours.length, `${d.tours.filter((t) => t.featured).length} featured`, "#/tours")}
+        ${can.rates() ? stat("tag", "Profit margin", `${d.margin}%`, "Guests see this on the total", "#/rates/margin") : stat("map", "Tours live", d.tours.length, `${d.tours.filter((t) => t.featured).length} featured`, "#/tours")}
         ${can.backup() ? stat("database", "Last backup", dt(d.backups[0].at, { timeStyle: "short" }), dt(d.backups[0].at, { dateStyle: "medium" }), "#/backups") : stat("checkCircle", "Closed", R.filter((r) => r.status === "closed").length, "Requests done", "#/requests?status=closed")}
       </div>
       ${can.rates() ? (() => { const view = quoteView(); return `<section class="card" style="margin-bottom:16px"><div class="card-head"><div><h3>Latest quote</h3><p>${view.nights.length ? `${view.nights.length} nights, then ${view.pct}% profit.` : "No hotel night. Then " + view.pct + "% profit."}</p></div>${btn("Open quote", { v: "ghost", size: "sm", href: "#/rates/quote" })}</div><div class="card-body"><div class="stats">
-        <div class="stat"><span class="stat-k">Guest sees</span><span class="stat-v">${rs(view.guest)}</span><span class="stat-m">One total. No lines and no profit.</span></div>
+        <div class="stat"><span class="stat-k">Guest sees</span><span class="stat-v">${view.refused ? "Refused" : rs(view.guest)}</span><span class="stat-m">${view.refused ? "Neither a hotel nor other services." : "One total. No lines and no profit."}</span></div>
         <div class="stat"><span class="stat-k">Staff sees</span><span class="stat-v">${rs(view.sub)}</span><span class="stat-m">${view.lines.map((line) => `${line.label} ${rs(line.amount)}`).join(". ")}. Profit ${rs(view.profit)}.</span></div>
       </div></div></section>`; })() : ""}
       <div class="dash-grid">
@@ -320,7 +372,7 @@
         <section class="card"><div class="card-head"><div><h3>Recent activity</h3><p>Changes made in the office</p></div></div>
           <ol class="feed" role="list">${act.map((a) => `<li><span class="avatar sm" aria-hidden="true">${esc(a.who.slice(0, 2).toUpperCase())}</span><span class="feed-main"><a href="${a.href}">${esc(a.text)}</a><small>${esc(a.who)} · <time datetime="${a.at}" title="${dt(a.at)}">${rel(a.at)}</time></small></span></li>`).join("")}</ol></section>
         <section class="card"><div class="card-head"><div><h3>Quick actions</h3></div></div><div class="card-body quick">
-          ${can.rates() ? btn("New quote", { ic: "calc", href: "#/rates/quote" }) + btn("Profit margin", { ic: "tag", href: "#/rates/season" }) : ""}
+          ${can.rates() ? btn("New quote", { ic: "calc", href: "#/rates/quote" }) + btn("Profit margin", { ic: "tag", href: "#/rates/margin" }) : ""}
           ${can.content() ? btn("Edit a tour", { ic: "map", href: "#/tours" }) + btn("Add a gallery photo", { ic: "image", href: "#/gallery/new" }) : ""}
           ${can.users() ? btn("Create a login", { ic: "users", href: "#/users?create=1" }) : ""}
           ${btn("Keyboard shortcuts", { ic: "keyboard", a: { "data-action": "shortcuts" } })}
@@ -384,7 +436,7 @@
 
   /* Rates */
   const moneyCell = (name, v, label) => `<div class="money money-sm"><span class="affix" aria-hidden="true">Rs</span><input class="input" name="${esc(name)}" id="${esc(name)}" inputmode="numeric" autocomplete="off" value="${esc(num(v))}" data-money aria-label="${esc(label)}"></div>`;
-  const RATE_TABS = [["hotels", "Hotels"], ["catalog", "Hotel catalog"], ["vehicles", "Vehicles"], ["air", "Air extras"], ["jeeps", "Jeep lines"], ["season", "Profit margin"], ["quote", "Quote"]];
+  const RATE_TABS = [["hotels", "Hotels"], ["catalog", "Hotel catalog"], ["vehicles", "Vehicles"], ["air", "Air extras"], ["jeeps", "Jeep lines"], ["margin", "Profit margin"], ["quote", "Quote"]];
   SCREENS.rates = (tab = "hotels") => {
     const d = D();
     const head = pageHead("Rates and quotes", { desc: "Prices behind every guest quote. A saved change applies to new quotes at once.", actions: tab !== "quote" ? btn("New quote", { ic: "calc", href: "#/rates/quote" }) : "" });
@@ -392,7 +444,8 @@
     const uniq = (a) => [...new Set(a)];
     let body = "";
     if (tab === "hotels") {
-      body = `${toolbar("Search hotel or place", filterSelect("place", "Place", [["", "All places"], ...uniq(d.hotels.map((h) => h.place)).map((p) => [p, p])]) + filterSelect("grade", "Grade", [["", "All grades"], ...["Deluxe", "Executive", "Luxury", "Ultra Luxury"].map((g) => [g, g])]), { noun: "hotel rates" })}
+      body = `${alert("info", "Grade is a label", "A quote prices the hotel from the catalog: city, then hotel, then room, then occupancy. Grade stays on the hotel as a label. An untouched quote still uses the published twin rate.")}
+        ${toolbar("Search hotel or place", filterSelect("place", "Place", [["", "All places"], ...uniq(d.hotels.map((h) => h.place)).map((p) => [p, p])]) + filterSelect("grade", "Grade", [["", "All grades"], ...["Deluxe", "Executive", "Luxury", "Ultra Luxury"].map((g) => [g, g])]), { noun: "hotel rates" })}
         <form data-form="hotels" data-track novalidate><div class="tbl-wrap"><table class="tbl tbl-edit"><thead><tr><th scope="col">Place</th><th scope="col">Start</th><th scope="col">Grade</th><th scope="col" class="r">Twin</th><th scope="col" class="r">3-share</th><th scope="col">Hotel</th><th scope="col">Offered</th></tr></thead><tbody>
         ${d.hotels.map((h) => { const L = `${h.place}, ${h.start}, ${h.grade}`; return `<tr data-search="${esc((h.place + " " + h.hotel).toLowerCase())}" data-f-place="${esc(h.place)}" data-f-grade="${esc(h.grade)}"><td data-label="Place">${esc(h.place)}</td><td data-label="Start">${esc(h.start)}</td><td data-label="Grade">${esc(h.grade)}</td>
           <td data-label="Twin" class="r">${moneyCell(`twin_${h.id}`, h.twin, `Twin rate, ${L}`)}</td><td data-label="3-share" class="r">${moneyCell(`triple_${h.id}`, h.triple, `3-share rate, ${L}`)}</td>
@@ -419,70 +472,87 @@
       const chosen = roomOf(pick.city, pick.hotel, pick.room);
       const occ = pick.occ === "mattress" ? "mattress" : "room";
       const occRate = chosen ? chosen.rate + (occ === "mattress" ? chosen.mattress : 0) : 0;
-      body = `${alert("info", "Hotel catalog", "Choose a city, then a hotel, then a room, then occupancy. The rate fills in from that row.")}
+      const hotelOptions = hotels.map((name) => [name, `${name} · ${gradeLabel(pick.city, name)}`]);
+      body = `${alert("info", "Hotel catalog", "Choose a city, then a hotel, then a room, then occupancy. The rate fills in from that row. Grade is a label on the hotel.")}
         ${card("Find a rate", `<div class="form-grid">
           ${field("City", choose('data-catalog="city"', pick.city, citiesOf()), { name: "city" })}
-          ${field("Hotel", choose('data-catalog="hotel"', pick.hotel, hotels), { name: "hotel" })}
+          ${field("Hotel", choose('data-catalog="hotel"', pick.hotel, hotelOptions), { name: "hotel" })}
+          ${field("Grade", `<input class="input" id="__ID__" value="${esc(gradeLabel(pick.city, pick.hotel))}" readonly aria-label="Grade">`, { name: "grade" })}
           ${field("Room", choose('data-catalog="room"', pick.room, rooms.map((row) => row.room)), { name: "room" })}
           ${field("Occupancy", `<select class="select" data-catalog="occ" aria-label="Occupancy"><option value="room" ${occ === "room" ? "selected" : ""}>${chosen ? chosen.persons : 2} persons</option><option value="mattress" ${occ === "mattress" ? "selected" : ""}>${chosen ? chosen.persons : 2} persons + 1 mattress</option></select>`, { name: "occ" })}
           ${field("Persons", `<input class="input" value="${chosen ? chosen.persons : ""}" readonly aria-label="Persons">`, { name: "persons" })}
           ${field("Extra mattress", `<input class="input" value="${chosen ? rs(chosen.mattress) : ""}" readonly aria-label="Extra mattress">`, { name: "mattress" })}
           ${field("Nightly rate", `<input class="input" value="${chosen ? rs(occRate) : ""}" readonly aria-label="Nightly rate">`, { name: "rate" })}
         </div>`)}
-        <div class="tbl-wrap"><table class="tbl"><thead><tr><th scope="col">City</th><th scope="col">Hotel</th><th scope="col">Room</th><th scope="col" class="r">Persons</th><th scope="col" class="r">Extra mattress</th><th scope="col" class="r">Nightly rate</th></tr></thead><tbody>
-        ${d.catalog.map((row) => `<tr data-search="${esc((row.city + " " + row.hotel + " " + row.room).toLowerCase())}"><td data-label="City">${esc(row.city)}</td><td data-label="Hotel"><b>${esc(row.hotel)}</b></td><td data-label="Room">${esc(row.room)}</td><td data-label="Persons" class="r">${row.persons}</td><td data-label="Extra mattress" class="r">${rs(row.mattress)}</td><td data-label="Nightly rate" class="r">${rs(row.rate)}</td></tr>`).join("")}
+        <div class="tbl-wrap"><table class="tbl"><thead><tr><th scope="col">City</th><th scope="col">Hotel</th><th scope="col">Grade</th><th scope="col">Room</th><th scope="col" class="r">Persons</th><th scope="col" class="r">Extra mattress</th><th scope="col" class="r">Nightly rate</th></tr></thead><tbody>
+        ${d.catalog.map((row) => `<tr data-search="${esc((row.city + " " + row.hotel + " " + row.room + " " + (row.grade || "")).toLowerCase())}"><td data-label="City">${esc(row.city)}</td><td data-label="Hotel"><b>${esc(row.hotel)}</b></td><td data-label="Grade">${esc(row.grade || "")}</td><td data-label="Room">${esc(row.room)}</td><td data-label="Persons" class="r">${row.persons}</td><td data-label="Extra mattress" class="r">${rs(row.mattress)}</td><td data-label="Nightly rate" class="r">${rs(row.rate)}</td></tr>`).join("")}
         </tbody></table></div>`;
-    } else if (tab === "season") {
-      body = `<form data-form="season" novalidate>${card("Profit margin", `<div class="form-grid">
-          ${field("Percent", `<input class="input" name="percent" id="percent" type="number" min="0" max="100" inputmode="numeric" value="${d.season}">`, { name: "percent", help: "Any whole number from 0 to 100. Guests use this saved percent." })}
-          <label class="field"><span class="label">Slider</span><input class="range" name="slider" type="range" min="0" max="100" value="${d.season}" aria-label="Profit margin slider" oninput="this.form.percent.value=this.value"></label>
+    } else if (tab === "margin") {
+      body = `<form data-form="margin" novalidate>${card("Profit margin", `<div class="form-grid">
+          ${field("Percent", `<input class="input" name="percent" id="__ID__" type="number" min="0" max="100" inputmode="numeric" value="${d.margin}" oninput="if(this.form.slider) this.form.slider.value=this.value">`, { name: "percent", help: "Any whole number from 0 to 100. Guests use this saved percent." })}
+          <label class="field"><span class="label">Slider</span><input class="range" name="slider" type="range" min="0" max="100" value="${d.margin}" aria-label="Profit margin slider" oninput="this.form.percent.value=this.value"></label>
         </div><div class="row-actions">${btn("Save profit margin", { v: "primary", a: { type: "submit" } })}</div>`, "A quote can still use a different percent for that one quote.")}</form>`;
     } else {
       const vehicles = [...new Set(d.vehicles.filter((v) => v.live).map((v) => v.vehicle))];
       const trip = d.trip || {};
+      const mode = hotelModeOf();
+      const plan = hotelPlanOf();
       const tv = (name, fallback) => (trip[name] != null && trip[name] !== "" ? trip[name] : fallback);
       const countField = (label, name, value) => field(label, input(name, value, { inputmode: "numeric" }), { name });
-      const quotePct = tv("season", d.season);
-      body = `<form data-form="quote" class="quote-form" novalidate><div class="quote-side">${card("Trip", `<div class="form-grid">
-          ${field("Place", select("place", tv("place", "Skardu Valley"), uniq(d.hotels.map((h) => h.place))), { name: "place" })}
-          ${field("Travel by", select("mode", tv("mode", "road"), [["road", "Road"], ["air", "Air"]]), { name: "mode" })}
-          ${field("Start city", select("start", tv("start", "Islamabad"), ["Islamabad", "Lahore", "Karachi"]), { name: "start", help: "Karachi starts are by air only." })}
-          ${field("Grade", select("grade", tv("grade", "Deluxe"), ["Deluxe", "Executive", "Luxury", "Ultra Luxury"]), { name: "grade" })}
-          ${field("Vehicle", select("vehicle", tv("vehicle", "Gli Car"), vehicles), { name: "vehicle" })}
-          ${countField("Days", "days", tv("days", "5"))}
-          ${countField("Adults", "adults", tv("adults", "2"))}
+      const quotePct = d.quotePct != null && d.quotePct !== "" ? d.quotePct : d.margin;
+      const pick = d.pick || { city: "Skardu", hotel: "Shangrila", room: "Deluxe", occ: "room" };
+      const stayHotels = hotelsOf(pick.city).map((name) => [name, `${name} · ${gradeLabel(pick.city, name)}`]);
+      const stayRooms = roomsOf(pick.city, pick.hotel);
+      const stayChosen = roomOf(pick.city, pick.hotel, pick.room);
+      const only = d.hotelOnly || { city: "Skardu", nights: d.nights.length };
+      const marginFields = `${field("Profit margin", `<input class="input" name="margin" id="__ID__" type="number" min="0" max="100" inputmode="numeric" value="${quotePct}">`, { name: "margin", help: "This quote only. Guests still use the saved margin." })}
+          <label class="field"><span class="label">Slider</span><input class="range" data-margin-slider type="range" min="0" max="100" value="${quotePct}" aria-label="Quote profit slider" oninput="const box=this.form.margin; if(box) box.value=this.value"></label>`;
+      const partyFields = `${countField("Adults", "adults", tv("adults", "2"))}
           ${countField("Children", "children", tv("children", "0"))}
           ${countField("Lap infants", "lapInfants", tv("lapInfants", "0"))}
-          ${countField("Infants with a seat", "seatInfants", tv("seatInfants", "0"))}
-          ${field("Profit margin", `<input class="input" name="season" id="season" type="number" min="0" max="100" inputmode="numeric" value="${quotePct}">`, { name: "season", help: "This quote only. Guests still use the saved margin." })}
-          <label class="field"><span class="label">Slider</span><input class="range" type="range" min="0" max="100" value="${quotePct}" aria-label="Quote profit slider" oninput="this.form.season.value=this.value"></label>
-          <div class="field">${check("guide", !!trip.guide, "Guide")}${check("meals", !!trip.meals, "Meals")}</div>
-        </div>`)}
-        <section class="card quote-result" aria-live="polite" id="quote-result">${quotePanel(false)}</section></div><div class="quote-span">
-        ${card("Each night", `<div class="tbl-wrap"><table class="tbl"><thead><tr><th scope="col">Night</th><th scope="col">City</th><th scope="col">Hotel</th><th scope="col">Room</th><th scope="col" class="r">Mattresses</th><th scope="col" class="r">Rate</th><th scope="col"><span class="sr-only">Remove</span></th></tr></thead><tbody>
+          ${countField("Infants with a seat", "seatInfants", tv("seatInfants", "0"))}`;
+      const transportFields = `${field("Place", select("place", tv("place", "Skardu Valley"), uniq(d.hotels.map((h) => h.place))), { name: "place" })}
+          ${field("Travel by", select("mode", tv("mode", "road"), [["road", "Road"], ["air", "Air"]]), { name: "mode" })}
+          ${field("Start city", select("start", tv("start", "Islamabad"), ["Islamabad", "Lahore", "Karachi"]), { name: "start", help: "Karachi starts are by air only." })}
+          ${field("Vehicle", select("vehicle", tv("vehicle", "Gli Car"), vehicles), { name: "vehicle" })}
+          ${countField("Days", "days", tv("days", "5"))}
+          ${partyFields}
+          ${marginFields}
+          <div class="field">${check("guide", !!trip.guide, "Guide")}${mode === "with" ? check("meals", !!trip.meals, "Meals") : ""}</div>`;
+      const onlyFields = `${field("City", select("onlyCity", only.city || "Skardu", citiesOf()), { name: "onlyCity" })}
+          ${countField("Nights", "onlyNights", only.nights != null ? only.nights : d.nights.length)}
+          ${field("Grade", `<input class="input" id="__ID__" value="${esc(tv("grade", "Deluxe"))}" readonly aria-label="Grade">`, { name: "gradeLabel", help: "Grade is a label on the hotel. Hotel only asks for the city and the nights." })}`;
+      const tripFields = mode === "only" ? onlyFields : transportFields;
+      const active = quoteView();
+      const websiteTotal = active.refused ? "Refused" : rs(active.guest);
+      const sameHotel = mode === "with" && plan === "same" ? card("Same hotel all nights", `<div class="form-grid">
+          ${field("City", choose('data-stay="city" aria-label="City"', pick.city, citiesOf()), { name: "stayCity" })}
+          ${field("Hotel", choose('data-stay="hotel" aria-label="Hotel"', pick.hotel, stayHotels), { name: "stayHotel" })}
+          ${field("Grade", `<input class="input" id="__ID__" value="${esc(gradeLabel(pick.city, pick.hotel))}" readonly aria-label="Grade">`, { name: "stayGrade" })}
+          ${field("Room", choose('data-stay="room" aria-label="Room"', pick.room, stayRooms.map((row) => row.room)), { name: "stayRoom" })}
+          ${field("Occupancy", `<select class="select" data-stay="occ" aria-label="Occupancy"><option value="room" ${pick.occ !== "mattress" ? "selected" : ""}>${stayChosen ? stayChosen.persons : 2} persons</option><option value="mattress" ${pick.occ === "mattress" ? "selected" : ""}>${stayChosen ? stayChosen.persons : 2} persons + 1 mattress</option></select>`, { name: "stayOcc" })}
+          ${field("Nightly rate", `<input class="input" value="${rs(samePickRate())}" readonly aria-label="Nightly rate">`, { name: "stayRate" })}
+        </div>`, pick.changed ? "Every night uses this catalog row." : "Every night uses the published rate until you change this hotel.") : "";
+      const perNight = mode === "with" && plan === "per" ? card("Change per night", `<div class="tbl-wrap"><table class="tbl"><thead><tr><th scope="col">Night</th><th scope="col">City</th><th scope="col">Hotel</th><th scope="col">Room</th><th scope="col" class="r">Mattresses</th><th scope="col" class="r">Rate</th><th scope="col"><span class="sr-only">Remove</span></th></tr></thead><tbody>
           ${d.nights.map((night, index) => `<tr><td data-label="Night"><b>${index + 1}</b></td>
             <td data-label="City">${choose(`data-night="${index}" data-field="city" aria-label="City, night ${index + 1}"`, night.city, citiesOf())}</td>
-            <td data-label="Hotel">${choose(`data-night="${index}" data-field="hotel" aria-label="Hotel, night ${index + 1}"`, night.hotel, hotelsOf(night.city))}</td>
+            <td data-label="Hotel">${choose(`data-night="${index}" data-field="hotel" aria-label="Hotel, night ${index + 1}"`, night.hotel, hotelsOf(night.city).map((name) => [name, `${name} · ${gradeLabel(night.city, name)}`]))}</td>
             <td data-label="Room">${choose(`data-night="${index}" data-field="room" aria-label="Room, night ${index + 1}"`, night.room, roomsOf(night.city, night.hotel).map((row) => row.room))}</td>
             <td data-label="Mattresses" class="r"><input class="input input-sm seats" data-night="${index}" data-field="mattresses" inputmode="numeric" value="${night.mattresses}" aria-label="Mattresses, night ${index + 1}"></td>
             <td data-label="Rate" class="r">${rs(nightCost(night))}</td>
             <td data-label="Remove">${btn("Remove night", { v: "ghost", size: "sm", iconOnly: true, ic: "trash", a: { "data-action": "remove-night", "data-i": index } })}</td></tr>`).join("")}
-          </tbody></table></div><div class="row-actions">${btn("Add a night", { ic: "plus", a: { "data-action": "add-night" } })}</div>`, "Each night picks its own city, hotel, and room. The rate follows that room.")}
-        ${(() => { const view = quoteView(); return card("Who sees the price", `<div class="stats">
-          <div class="stat"><span class="stat-k">Guest sees</span><span class="stat-v">${rs(view.guest)}</span><span class="stat-m">One total. No lines and no profit.</span></div>
-          <div class="stat"><span class="stat-k">Staff sees</span><span class="stat-v">${rs(view.sub)}</span><span class="stat-m">${view.lines.map((line) => `${line.label} ${rs(line.amount)}`).join(". ")}. Profit ${view.pct}% is ${rs(view.profit)}.</span></div>
-        </div>`, (view.nights.length ? `Average nightly rate ${rs(view.average)}. ` : "A one-day trip has no hotel night. ") + (view.spec ? "No night has been changed, so this is the Skardu test: 140,400 at 20 percent." : "The total follows the nights and the days, then the profit.")); })()}
-        ${card("One night or one day", `<div class="form-grid">
-          ${countField("Night number", "night", "")}
+          </tbody></table></div><div class="row-actions">${btn("Add a night", { ic: "plus", a: { "data-action": "add-night" } })}</div>`, "Each night picks its own city, hotel, and room. Grade is a label on the hotel.") : "";
+      const dayCard = mode !== "only" ? card("One night or one day", `<div class="form-grid">
+          ${mode === "with" ? `${countField("Night number", "night", "")}
           ${field("Night rate", money("nightRate", ""), { name: "nightRate", opt: true })}
-          ${field("Night hotel", input("nightHotel", ""), { name: "nightHotel", full: true, opt: true })}
+          ${field("Night hotel", input("nightHotel", ""), { name: "nightHotel", full: true, opt: true })}` : ""}
           ${countField("Day", "day", "")}
           ${field("That day", select("dayChange", "", [["", "Leave the vehicle"], ["clear", "No vehicle"], ["jeep", "Jeep"], ["vehicle", "Higher vehicle"]]), { name: "dayChange" })}
           ${field("Higher vehicle", select("dayVehicle", "", [["", "Choose a vehicle"], ...vehicles]), { name: "dayVehicle" })}
           ${field("Jeep rent", money("dayRent", ""), { name: "dayRent", opt: true })}
           ${field("Jeep fuel", money("dayFuel", ""), { name: "dayFuel", opt: true })}
-        </div>`, "Leave these blank to keep the saved hotel and the trip vehicle.")}
-        ${card("Extras", `<div class="form-grid">
+        </div>`, mode === "with" ? "Leave these blank to keep the saved hotel and the trip vehicle." : "No hotel. A day edit still changes the vehicle.") : "";
+      const extraCard = mode !== "only" ? card("Extras", `<div class="form-grid">
           ${field("Paid extra", input("extraName", ""), { name: "extraName", opt: true })}
           ${field("Extra amount", money("extraAmount", ""), { name: "extraAmount", opt: true })}
           ${field("Other mix", input("otherNote", "", { placeholder: "Use vehicle Other, then type the mix" }), { name: "otherNote", full: true, opt: true })}
@@ -490,7 +560,19 @@
           ${field("Other fuel", money("otherFuel", ""), { name: "otherFuel", opt: true })}
           ${field("Other toll", money("otherToll", ""), { name: "otherToll", opt: true })}
           ${field("Other seats", input("otherSeats", "", { inputmode: "numeric" }), { name: "otherSeats", opt: true })}
+        </div>`) : "";
+      body = `<form data-form="quote" class="quote-form" novalidate><div class="quote-side">${card("Trip", `<div class="form-grid">
+          <div class="field full">${segment("hotelMode", mode, [["with", "With hotel"], ["none", "No hotel"], ["only", "Hotel only"]], "Hotel")}</div>
+          ${mode === "with" ? `<div class="field full">${segment("hotelPlan", plan, [["same", "Same hotel all nights"], ["per", "Change per night"]], "Nights")}</div>` : ""}
+          ${tripFields}
         </div>`)}
+        <section class="card quote-result" aria-live="polite" id="quote-result">${quotePanel(false)}</section></div><div class="quote-span">
+        ${sameHotel}
+        ${perNight}
+        ${card("Guest totals", `<div class="stats guest-totals">${guestTotals()}</div>`, "One total for each hotel choice. A package with neither a hotel nor other services is refused.")}
+        ${card("On the website", `<p class="stat-v" data-guest-total="website">${websiteTotal}</p><p class="help">Guests get With hotel, No hotel, and Hotel only. They see only this final total.</p>`, active.refused ? "This package is refused." : "No lines and no profit.")}
+        ${dayCard}
+        ${extraCard}
         <div class="row-actions">${btn("Save quote", { v: "primary", a: { type: "submit" } })}</div></div></form>`;
     }
     return head + t + body;
@@ -509,36 +591,44 @@
       cols: [["Tour", (t) => `<b>${esc(t.name)}</b>`], ["Code", (t) => t.code, "mono"], ["Days", (t) => t.duration, "r"], ["Travel", (t) => esc(t.transport)], ["Home page", (t) => (t.featured ? badge("Featured", "accent") : '<span class="muted">—</span>')]],
       current: code,
     };
-    const listHead = pageHead("Tours", { desc: `${T.length} tours on the website. Each tour points at one Place.`, actions: btn("New tour", { v: "primary", ic: "plus", href: "#/tours/new" }) });
+    const listHead = pageHead("Tours", { desc: `${T.length} tours on the website. A tour can link to more than one place.`, actions: btn("New tour", { v: "primary", ic: "plus", href: "#/tours/new" }) });
     const listHtml = toolbar("Search tours, codes, places", filterSelect("transport", "Travel", [["", "Road and air"], ["By Road", "By road"], ["By Air", "By air"]]) + filterSelect("featured", "Featured", [["", "All tours"], ["yes", "Featured only"]]), { noun: "tours", sorts: [["name:asc", "Name, A to Z"], ["code:asc", "Code"], ["days:asc", "Shortest first"], ["days:desc", "Longest first"], ["updated:desc", "Recently saved"]] }) + listView(T, spec);
     if (!code) return listHead + listHtml;
+    const placeSlugsOf = (tour) => (tour && Array.isArray(tour.placeSlugs) && tour.placeSlugs.length ? tour.placeSlugs : (tour && tour.placeSlug ? [tour.placeSlug] : []));
+    const placePicker = (selected) => {
+      const chosen = new Set(selected);
+      return `<fieldset class="place-picks"><legend class="label">Places</legend>${D().places.map((p) => `<label class="check"><input type="checkbox" name="placeSlugs" value="${esc(p.slug)}" ${chosen.has(p.slug) ? "checked" : ""}><span>${esc(p.title)}</span></label>`).join("")}<p class="help">Choose one or more places. Each place lists this tour.</p></fieldset>`;
+    };
+    const placeLinks = (slugs) => (slugs.length ? `<ul class="mini-list" role="list">${slugs.map((slug) => { const place = D().places.find((item) => item.slug === slug); return place ? `<li><a href="#/places/${esc(place.slug)}"><span class="mini-main"><b>${esc(place.title)}</b><small>Open this place</small></span></a></li>` : ""; }).join("")}</ul>` : `<p class="help">No place is selected yet.</p>`);
     if (code === "new") {
       const form = `<form data-form="tour" data-id="new" novalidate>${card("Basics", `<div class="form-grid">
         ${field("Title", input("name", "", { required: true }), { name: "name", full: true })}
         ${field("Description", textarea("description", "", 4), { name: "description", full: true })}
-        ${field("Place", select("placeSlug", "", [["", "Choose a place"], ...D().places.map((p) => [p.slug, p.title])]), { name: "placeSlug", help: "The Place page is the source. Its title is what this tour shows." })}
         ${field("Days", input("duration", "1", { inputmode: "numeric" }), { name: "duration" })}
         ${field("Travel by", select("transport", "By Road", [["By Road", "Road"], ["By Air", "Air"]]), { name: "transport" })}
-      </div>`)}${savebar("Add tour")}</form>`;
-      return pageHead("New tour", { crumb: [["Tours", "#/tours"], ["New"]], desc: "The Owner or an Editor can add a tour. Only the Owner can delete one." }) + form;
+      </div>`)}
+      ${card("Places", placePicker([]))}
+      ${savebar("Add tour")}</form>`;
+      return pageHead("New tour", { crumb: [["Tours", "#/tours"], ["New"]], desc: "The Owner or an Editor can add a tour and can delete a tour. A Manager cannot." }) + form;
     }
     const t = T.find((x) => x.code === code);
     if (!t) return listHead + empty("map", "Tour not found", "It may have been deleted.", btn("Back to tours", { href: "#/tours" }));
     const form = `<form data-form="tour" data-id="${t.code}" data-track novalidate>
       ${card("Basics", `<div class="form-grid">${field("Title", input("name", t.name, { required: true, "data-bind-src": "name", "data-count": 90 }), { name: "name", full: true })}
         ${field("Description", textarea("description", t.description, 5, { "data-bind-src": "description", "data-count": 400 }), { name: "description", full: true, help: "Shown under the title on the tour page." })}
-        ${field("Place", select("placeSlug", t.placeSlug || "", [["", "Choose a place"], ...D().places.map((p) => [p.slug, p.title])]), { name: "placeSlug", help: "The Place page is the source. Its title is what this tour shows." })}${field("Region", input("region", t.region), { name: "region" })}
+        ${field("Region", input("region", t.region), { name: "region" })}
         ${field("Days", input("duration", t.duration, { inputmode: "numeric", "data-bind-src": "duration" }), { name: "duration" })}${field("Travel by", select("transport", t.transport, [["By Road", "Road"], ["By Air", "Air"]]), { name: "transport" })}</div>`, "Shown on the tour card and at the top of the tour page.")}
       ${card("Photos", `${field("Main photo", drop("photo", t.image), { name: "photo" })}${field("More photos, one path per line", textarea("gallery", lines(t.gallery), 3), { name: "gallery", opt: true })}`)}
       ${card("Day plan", repeat("days", t.days, (dd, i) => repItem("Day", i, `<div class="form-grid">${field("Title", input("day_title", dd.title || ""), { full: true })}${field("What happens", textarea("day_text", dd.text || "", 2), { full: true })}${field("Highlights, one per line", textarea("day_hl", lines(dd.highlights), 2), { full: true, opt: true })}</div>`), "Add day"), "One block per day, in order.")}
       ${card("What's included", `<div class="form-grid">${field("Included, one per line", textarea("included", lines(t.included), 4), { name: "included" })}${field("Not included, one per line", textarea("notIncluded", lines(t.notIncluded), 4), { name: "notIncluded" })}${field("Categories, one per line", textarea("categories", lines(t.categories), 3), { name: "categories", opt: true })}${field("Package types, one per line", textarea("packageTypes", lines(t.packageTypes), 3), { name: "packageTypes", opt: true })}</div>`)}
+      ${card("Places", `${placePicker(placeSlugsOf(t))}${placeLinks(placeSlugsOf(t))}`, "The same places appear on this tour and on each place page.")}
       ${card("Visibility", check("featured", t.featured, "Featured on the home page", "Shows in the home page tour row."))}
       ${savebar()}</form>`;
     const danger = can.deleteTour() ? dangerCard("Delete this tour", "Removes the tour page from the website. Saved bookings stay in Requests.", btn("Delete tour", { v: "danger-outline", ic: "trash", a: { "data-action": "delete-tour", "data-id": t.code } })) : "";
     const preview = `<div class="pv-card"><span class="pv-img" style="${art(t.location)}">${t.featured ? badge("★ Featured", "accent") : ""}</span><div class="pv-body"><b data-bind="name">${esc(t.name)}</b><small>${icon("pin")}<span data-bind="location">${esc(t.location)}</span> · <span data-bind="duration">${t.duration}</span> days</small><p data-bind="description">${esc(t.description)}</p><span class="pv-price">From the rate sheet</span></div></div>`;
     return editorFrame({ title: t.name, crumb: [["Tours", "#/tours"], [`Code ${t.code}`]], listHtml, listHead, form, preview, danger, back: "#/tours", badgeHtml: t.featured ? badge("Featured", "accent") : "", desc: `Code ${t.code} · ${t.duration} ${t.duration === 1 ? "day" : "days"} · ${esc(t.transport)}`,
       nav: neighbors(T, T.indexOf(t), spec.href), site: `https://travelwithmoeen.com/tours/${encodeURIComponent(t.id || t.code)}`, meta: savedMeta(t),
-      sections: [["sec-basics", "Basics"], ["sec-photos", "Photos"], ["sec-day-plan", "Day plan"], ["sec-what-s-included", "Included"], ["sec-visibility", "Visibility"]] });
+      sections: [["sec-basics", "Basics"], ["sec-photos", "Photos"], ["sec-day-plan", "Day plan"], ["sec-what-s-included", "Included"], ["sec-places", "Places"], ["sec-visibility", "Visibility"]] });
   };
 
   const sectionsEditor = (sections, withPlaceholders = true) => repeat("sections", sections, (s, i) => repItem("Section", i, `<div class="form-grid">${field("Heading", input("sec_heading", s.heading || ""), { full: true })}${field("Text", textarea("sec_body", s.body || "", 4), { full: true })}${field("Photo path", input("sec_image", s.image || ""), { opt: true })}${field("Highlights, one per line", textarea("sec_hl", lines(s.highlights), 2), { opt: true })}</div>`), "Add section");
@@ -553,13 +643,13 @@
     if (!p) return listHead + empty("pin", "Place not found", "");
     const form = `<form data-form="place" data-id="${p.slug}" data-track novalidate>
       ${card("Basics", `<div class="form-grid">${field("Title", input("title", p.title, { required: true, "data-bind-src": "title" }), { name: "title", full: true })}${field("Short text", textarea("excerpt", p.excerpt, 5, { "data-bind-src": "excerpt", "data-count": 400 }), { name: "excerpt", full: true, help: "Shown on the place card." })}${field("Location", input("location", p.location, { "data-bind-src": "location" }), { name: "location" })}</div>`)}
-      ${card("Tours that use this place", D().tours.filter((tour) => tour.placeSlug === p.slug).length ? `<ul class="mini-list" role="list">${D().tours.filter((tour) => tour.placeSlug === p.slug).map((tour) => `<li><a href="#/tours/${tour.code}"><span class="mini-main"><b>${esc(tour.name)}</b><small>${tour.duration} days · ${esc(tour.transport)}</small></span></a></li>`).join("")}</ul>` : `<p class="help">No tour points here yet. Choose this place on a tour.</p>`, "Changing this title changes those tours. Editing a tour does not rewrite this page.")}
+      ${card("Tours at this place", (() => { const here = D().tours.filter((tour) => { const slugs = Array.isArray(tour.placeSlugs) && tour.placeSlugs.length ? tour.placeSlugs : (tour.placeSlug ? [tour.placeSlug] : []); return slugs.includes(p.slug); }); return here.length ? `<ul class="mini-list" role="list">${here.map((tour) => `<li><a href="#/tours/${tour.code}"><span class="mini-main"><b>${esc(tour.name)}</b><small>${tour.duration} days · ${esc(tour.transport)}</small></span></a></li>`).join("")}</ul>` : `<p class="help">No tour points here yet. Choose this place on a tour.</p>`; })(), "A tour can link to more than one place. Saving a tour does not rewrite this page.")}
       ${card("Banner photo", field("Banner", drop("photo", p.banner), { name: "photo" }))}
       ${card("Sections", sectionsEditor(p.sections), "The page body, top to bottom.")}${savebar()}</form>`;
     const preview = `<div class="pv-card"><span class="pv-img tall" style="${art(p.title)}"><b class="pv-over" data-bind="title">${esc(p.title)}</b></span><div class="pv-body"><small>${icon("pin")}<span data-bind="location">${esc(p.location)}</span></small><p data-bind="excerpt">${esc(p.excerpt)}</p></div></div>`;
     return editorFrame({ title: p.title, crumb: [["Places", "#/places"], [p.title]], listHtml, listHead, form, preview, back: "#/places", desc: esc(p.location),
       nav: neighbors(P, P.indexOf(p), spec.href), site: `https://travelwithmoeen.com/destinations/${encodeURIComponent(p.slug)}`, meta: savedMeta(p),
-      sections: [["sec-basics", "Basics"], ["sec-banner-photo", "Banner"], ["sec-sections", "Sections"]] });
+      sections: [["sec-basics", "Basics"], ["sec-tours-at-this-place", "Tours"], ["sec-banner-photo", "Banner"], ["sec-sections", "Sections"]] });
   };
 
   SCREENS.blog = (slug) => {
@@ -664,7 +754,7 @@
     return `${pageHead("Users", { desc: "Office logins and their roles. Only the Owner sees this page.", actions: btn("Create login", { v: "primary", ic: "plus", a: { "data-action": "create-user" } }) })}
       <div class="tbl-wrap"><table class="tbl"><thead><tr><th scope="col">Login</th><th scope="col">Role</th><th scope="col">Last sign in</th><th scope="col" class="r"><span class="sr-only">Actions</span></th></tr></thead><tbody>${rows}</tbody></table></div>
       <section class="card roles-card"><div class="card-head"><div><h3>What each role can do</h3></div></div><div class="card-body"><div class="tbl-wrap flat"><table class="tbl tbl-plain"><thead><tr><th scope="col">Area</th><th scope="col">Owner</th><th scope="col">Manager</th><th scope="col">Editor</th></tr></thead><tbody>
-        ${[["Requests, read", 1, 1, 1], ["Request status", 1, 1, 0], ["Delete a request", 1, 0, 0], ["Rates and quotes", 1, 1, 0], ["Website content", 1, 0, 1], ["Delete a tour", 1, 0, 0], ["Users and backups", 1, 0, 0]].map(([a, ...r]) => `<tr><td data-label="Area">${a}</td>${r.map((x, i) => `<td data-label="${["Owner", "Manager", "Editor"][i]}">${x ? `${icon("check", "yes")}<span class="sr-only">Yes</span>` : `<span class="muted" aria-label="No">—</span>`}</td>`).join("")}</tr>`).join("")}
+        ${[["Requests, read", 1, 1, 1], ["Request status", 1, 1, 0], ["Delete a request", 1, 0, 0], ["Rates and quotes", 1, 1, 0], ["Website content", 1, 0, 1], ["Delete a tour", 1, 0, 1], ["Users and backups", 1, 0, 0]].map(([a, ...r]) => `<tr><td data-label="Area">${a}</td>${r.map((x, i) => `<td data-label="${["Owner", "Manager", "Editor"][i]}">${x ? `${icon("check", "yes")}<span class="sr-only">Yes</span>` : `<span class="muted" aria-label="No">—</span>`}</td>`).join("")}</tr>`).join("")}
       </tbody></table></div></div></section>`;
   };
 
@@ -681,17 +771,17 @@
 
   SCREENS.plans = (tab = "hours") => {
     const head = pageHead("Trip plans", { desc: "Phase 2 and Phase 3, shown here for review. Nothing on these tabs is on the live site yet." });
-    const t = tabs([["hours", "Hours and labels"], ["jeeps", "Jeep products"], ["seasons", "Seasons and fuel"], ["files", "Quote files"]], tab, "#/plans/");
+    const t = tabs([["hours", "Hours and labels"], ["jeeps", "Jeep products"], ["month", "Month and fuel"], ["files", "Quote files"]], tab, "#/plans/");
     const plan = D().plans || {};
     const hours = plan.stops || [];
     const labels = [["Comfort", "Shorter drives and the hotel already on the rate row."], ["Luxury", "The higher hotel grade and a Prado."], ["Adventure", "Jeep days and the longer walks."], ["Exploration", "An extra place on the same trip."]];
     const jeeps = [["Kashmir", "Road and air", "Jeep plus permit"], ["Swat", "Road", "Jeep to Mahodand"], ["Chitral", "Road and air", "Jeep to Kalash"]];
-    const seasons = [["Blossom", "April", "Dates still to be named"], ["Summer", "May through September", "The peak margin"], ["Autumn", "10 October through 30 November", ""], ["Winter", "1 December through 30 March", ""]];
+    const monthRows = [["Blossom", "April", "Dates still to be named"], ["Summer", "May through September", "The peak margin"], ["Autumn", "10 October through 30 November", ""], ["Winter", "1 December through 30 March", ""]];
     let body = "";
     if (tab === "jeeps") {
       body = `<div class="tbl-wrap"><table class="tbl"><thead><tr><th scope="col">Place</th><th scope="col">Travel</th><th scope="col">Product</th></tr></thead><tbody>${jeeps.map((row) => `<tr><td data-label="Place"><b>${row[0]}</b></td><td data-label="Travel">${row[1]}</td><td data-label="Product">${row[2]}</td></tr>`).join("")}</tbody></table></div>`;
-    } else if (tab === "seasons") {
-      body = `${card("Season by month", `<div class="tbl-wrap"><table class="tbl"><thead><tr><th scope="col">Season</th><th scope="col">When</th><th scope="col">Note</th></tr></thead><tbody>${seasons.map((row) => `<tr><td data-label="Season"><b>${row[0]}</b></td><td data-label="When">${row[1]}</td><td data-label="Note">${row[2] || "—"}</td></tr>`).join("")}</tbody></table></div>`)}
+    } else if (tab === "month") {
+      body = `${card("Season by month", `<div class="tbl-wrap"><table class="tbl"><thead><tr><th scope="col">Season</th><th scope="col">When</th><th scope="col">Note</th></tr></thead><tbody>${monthRows.map((row) => `<tr><td data-label="Season"><b>${row[0]}</b></td><td data-label="When">${row[1]}</td><td data-label="Note">${row[2] || "—"}</td></tr>`).join("")}</tbody></table></div>`)}
         <form data-form="plans" novalidate>${card("Fuel and guide", `<div class="form-grid">${field("Petrol, per liter", money("petrol", plan.petrol), { name: "petrol" })}${field("Diesel, per liter", money("diesel", plan.diesel), { name: "diesel" })}${field("Gli, km per liter", input("gli", plan.gli), { name: "gli" })}${field("Prado, km per liter", input("prado", plan.prado), { name: "prado" })}${field("Guide, Islamabad and Murree", money("guideNear", plan.guideNear), { name: "guideNear" })}${field("Guide, Skardu and Hunza", money("guideFar", plan.guideFar), { name: "guideFar" })}</div>`, "One petrol rate and one diesel rate update every quote. Gli uses 1 liter for each 14 km. Prado uses 1 liter for each 5 km.")}
         ${card("Entry tickets and sticker", `<div class="form-grid">${field("Khunjerab entry", money("khunjerab", plan.khunjerab), { name: "khunjerab" })}${field("Deosai entry", money("deosai", plan.deosai), { name: "deosai" })}${field("Sticker", select("sticker", plan.sticker || "vehicle", [["vehicle", "Once per vehicle"], ["room", "Once per room"]]), { name: "sticker", help: "Phase 3 counts the sticker by vehicles. Until then the live office uses rooms." })}</div>`)}
         <div class="row-actions">${btn("Save plan rates", { v: "primary", a: { type: "submit" } })}</div></form>`;

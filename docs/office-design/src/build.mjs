@@ -78,7 +78,7 @@ const seed = (() => {
     { id: 4, email: "sana.editor@travelwithmoeen.com", role: "editor", lastSeen: "" },
   ];
   const activity = [
-    { at: "2026-10-09T09:20:00+05:00", who: "moeen@travelwithmoeen.com", text: "Changed season profit to 20 percent", href: "#/rates/season" },
+    { at: "2026-10-09T09:20:00+05:00", who: "moeen@travelwithmoeen.com", text: "Changed the profit margin to 20 percent", href: "#/rates/margin" },
     { at: "2026-10-09T08:55:00+05:00", who: "manager@travelwithmoeen.com", text: "Saved 3 hotel rates for Skardu Valley", href: "#/rates/hotels" },
     { at: "2026-10-08T17:40:00+05:00", who: "manager@travelwithmoeen.com", text: "Moved Hamza Raza to In progress", href: "#/requests/2" },
     { at: "2026-10-08T12:10:00+05:00", who: "editor@travelwithmoeen.com", text: "Saved tour 3 Days By Road Trip to Naran Kaghan and Babusar Top", href: "#/tours/121" },
@@ -86,11 +86,11 @@ const seed = (() => {
     { at: "2026-10-07T11:00:00+05:00", who: "editor@travelwithmoeen.com", text: "Saved place Hunza Valley", href: "#/places/hunza-valley" },
   ];
   const catalog = [
-    { city: "Skardu", hotel: "Shangrila", room: "Deluxe", persons: 2, mattress: 2500, rate: 18000 },
-    { city: "Skardu", hotel: "Shangrila", room: "Standard", persons: 2, mattress: 2000, rate: 12000 },
-    { city: "Skardu", hotel: "Himalaya", room: "Deluxe", persons: 2, mattress: 2500, rate: 16000 },
-    { city: "Hunza", hotel: "Hunza Embassy", room: "Deluxe", persons: 2, mattress: 3000, rate: 20000 },
-    { city: "Gilgit", hotel: "Serena Gilgit", room: "Deluxe", persons: 2, mattress: 2500, rate: 15000 },
+    { city: "Skardu", hotel: "Shangrila", grade: "Luxury", room: "Deluxe", persons: 2, mattress: 2500, rate: 18000 },
+    { city: "Skardu", hotel: "Shangrila", grade: "Luxury", room: "Standard", persons: 2, mattress: 2000, rate: 12000 },
+    { city: "Skardu", hotel: "Himalaya", grade: "Deluxe", room: "Deluxe", persons: 2, mattress: 2500, rate: 16000 },
+    { city: "Hunza", hotel: "Hunza Embassy", grade: "Luxury", room: "Deluxe", persons: 2, mattress: 3000, rate: 20000 },
+    { city: "Gilgit", hotel: "Serena Gilgit", grade: "Executive", room: "Deluxe", persons: 2, mattress: 2500, rate: 15000 },
   ];
   const nights = [1, 2, 3, 4].map((n) => ({ n, city: "Skardu", hotel: "Shangrila", room: "Deluxe", persons: 2, mattresses: 0, custom: false }));
   for (const tour of tours) {
@@ -99,12 +99,13 @@ const seed = (() => {
       return tour.location.toLowerCase().includes(word) || place.title.toLowerCase().includes(String(tour.region).toLowerCase());
     });
     tour.placeSlug = hit ? hit.slug : "";
+    tour.placeSlugs = tour.placeSlug ? [tour.placeSlug] : [];
   }
   const plans = {
     petrol: 280, diesel: 290, gli: 14, prado: 5, guideNear: 4000, guideFar: 7000, khunjerab: 1500, deosai: 800, sticker: "vehicle",
     stops: [{ place: "Skardu", stop: "Shangrila", time: "2 hours" }, { place: "Skardu", stop: "Upper Kachura", time: "1 hour" }, { place: "Hunza", stop: "Attabad", time: "45 minutes" }, { place: "Hunza", stop: "Khunjerab", time: "3 hours" }, { place: "Gilgit", stop: "Serena Gilgit", time: "30 minutes" }],
   };
-  return { activity, tours, places, posts, photos: content.photos, reviews, slides, site, requests, hotels, vehicles, jeeps, backups, users, season: 20, catalog, nights, pick: { city: "Skardu", hotel: "Shangrila", room: "Deluxe", occ: "room" }, plans,
+  return { activity, tours, places, posts, photos: content.photos, reviews, slides, site, requests, hotels, vehicles, jeeps, backups, users, margin: 20, hotelMode: "with", hotelPlan: "same", hotelOnly: { city: "Skardu", nights: 4 }, catalog, nights, pick: { city: "Skardu", hotel: "Shangrila", room: "Deluxe", occ: "room", changed: false }, plans,
     air: { islamabadTicket: 60000, lahoreAdd: 10000, karachiAdd: 30000, welcomePack: 1500, entry: 4000, infantExtra: 1000, sticker: 500 } };
 })();
 

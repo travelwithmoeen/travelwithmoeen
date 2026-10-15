@@ -17,7 +17,7 @@ The public website stays. The office gets a private area on that same site. Gues
 | BR-01 | There are three roles: Owner, Manager, and Editor. Each login has one role. |
 | BR-02 | Only the Owner can create a login, remove a login, or change a role. A seed script may create the first Owner on a development machine. That password is not stored in the repo. |
 | BR-03 | Only the Owner can delete a price row or a guest request. The Owner and the Editor can delete a tour. A Manager cannot. |
-| BR-04 | The Owner and the Manager can edit hotel rates, vehicle rates, air extras, and jeep lines. They can turn a vehicle on or off for a route, add an Other vehicle, add a paid extra, and switch the season profit between 15 percent and 20 percent. |
+| BR-04 | The Owner and the Manager can edit hotel rates, vehicle rates, air extras, and jeep lines. They can turn a vehicle on or off for a route, add an Other vehicle, add a paid extra, and set the profit margin to any whole percent from 0 to 100. |
 | BR-05 | The Owner and the Editor can edit tours, day plans, places, blog posts, the gallery, reviews, home slides, and the phone, address, and social links. They can mark a tour as featured. The Editor can read guest requests. The Owner and the Manager can update a guest request status. The Editor cannot. |
 | BR-06 | The Editor cannot change any rupee amount and cannot delete a guest request. The Editor can delete a tour. |
 | BR-07 | The Manager cannot edit public page text and cannot create logins. |
@@ -29,7 +29,7 @@ The public website stays. The office gets a private area on that same site. Gues
 |---|---|
 | BR-09 | The public pages keep the same job they have today: home, tours, tour page, places, blog, gallery, package price, custom trip, contact, and Book Now. |
 | BR-10 | The pages in BR-09 read from the office system, not from the fixed files in `data/`. About, FAQ, and the legal pages in BR-58 stay on their current pages. |
-| BR-11 | A tour card shows the Deluxe couple price: 2 adults, 1 twin room, start city Islamabad, that tour's days and road or air choice, no guide, no meals, and the active season profit. If that price cannot be calculated, the card shows `basePrice`. Ratti Gali, code 201, shows 150,000. The package builder is the full quote for any group size. |
+| BR-11 | A tour card shows the Deluxe couple price: 2 adults, 1 twin room, start city Islamabad, that tour's days and road or air choice, no guide, no meals, and the active profit margin. If that price cannot be calculated, the card shows `basePrice`. Ratti Gali, code 201, shows 150,000. The package builder is the full quote for any group size. |
 | BR-12 | The contact form saves the message. It must not clear the message and then lose it. |
 | BR-13 | Book Now saves a booking request and still opens `https://wa.me/923339981177`. Do not use `tel:+1234567890`. |
 | BR-14 | The custom trip form saves the request. |
@@ -45,7 +45,7 @@ The public website stays. The office gets a private area on that same site. Gues
 | BR-19 | Road trips start from Lahore or Islamabad only. A guest from Karachi joins a road trip in one of those two cities. |
 | BR-20 | Air trips start from Karachi, Lahore, or Islamabad. |
 | BR-21 | Until the office changes them, the Islamabad air ticket is 60,000 rupees, the Lahore air extra is 10,000 rupees, and the Karachi air extra is 30,000 rupees on top of the Islamabad ticket. |
-| BR-22 | Off-season profit is 15 percent. In-season profit is 20 percent. Only the Owner and the Manager can switch it. The active rate is shown on the quote screen. The Meadow office, BR-82, replaces this switch with any whole percent from 0 to 100. Until that office is live, the running site still uses 15 or 20. |
+| BR-22 | The profit margin is any whole percent from 0 to 100. Only the Owner and the Manager can change it. The active margin is shown on the quote screen. The Meadow prototype starts at 20 percent. That default is pending Moeen sign-off. Until the Meadow office is live, the running site still uses 15 or 20. |
 | BR-23 | Prado is the preferred vehicle where that car is offered. The Excel name Parado is the same car. Other vehicles can be turned on for a route. |
 | BR-24 | The office can choose Other and type a mix, for example a Gli car plus a jeep. |
 | BR-25 | A quote can add a paid extra on top of the main vehicle. The office types the name and the amount. Examples are a musical night, a BBQ and bonfire, fireworks, a honeymoon setup, or flowers. |
@@ -61,20 +61,35 @@ These rules fill the quote before anyone edits a single night or a single day.
 
 | ID | Requirement |
 |---|---|
-| BR-31 | Hotel nights equal days minus one. A one-day trip has no hotel night. |
-| BR-32 | Vehicle cost equals the number of vehicles times ((daily rent plus daily fuel) times the number of days, plus the toll once). The toll is once per vehicle. |
+| BR-31 | When the package includes a hotel, hotel nights equal days minus one. A one-day trip has no hotel night. Hotel only asks for the city and the number of nights instead. No hotel has no hotel nights. |
+| BR-32 | When the package includes transport, vehicle cost equals the number of vehicles times ((daily rent plus daily fuel) times the number of days, plus the toll once). The toll is once per vehicle. Hotel only does not include transport, so it has no vehicle cost. |
 | BR-33 | If the group needs more seats than one vehicle has, the quote adds more vehicles. |
 | BR-34 | If the office does not type a room count, rooms equal the people who need a seat, divided by 3, rounded up. A seat is each adult, each child, and each infant with their own seat. An infant on a lap is not a seat. |
-| BR-35 | Hotel cost uses the twin rate. If more than two people share a room, it uses the 3-share rate. Then it multiplies by nights and by rooms. |
+| BR-35 | When the package includes a hotel, hotel cost follows the catalog chain: city, then hotel, then room, then occupancy. The nightly rate is that catalog row, including an extra mattress when occupancy asks for one. Grade is a label on the hotel, not the price. The cost is that nightly rate times nights times rooms. Until the catalog pick is changed, the untouched quote uses the published twin rate for the grade label. That default is pending Moeen sign-off. |
 | BR-36 | A guide, if selected, is 5,000 rupees per day. |
 | BR-37 | Meals, if selected, are per adult and per child, per night: Deluxe 1,200, Executive 2,000, Luxury 2,500, Ultra Luxury 3,000. |
-| BR-38 | On a road trip longer than one day, arrival breakfast is 500 rupees per adult and per child. |
-| BR-39 | An air quote adds a welcome pack of 1,500 rupees and entry tickets of 4,000 rupees for each adult and each child, plus 800 rupees for each infant. |
+| BR-38 | When the package includes transport and a hotel, on a road trip longer than one day, arrival breakfast is 500 rupees per adult and per child. No hotel does not add it. Hotel only does not add it. |
+| BR-39 | When the package includes transport, an air quote adds a welcome pack of 1,500 rupees and entry tickets of 4,000 rupees for each adult and each child, plus 800 rupees for each infant. Hotel only does not add the welcome pack or the entry tickets. |
 | BR-40 | A child air ticket is 75 percent of the adult fare. An infant on a lap is 1,000 rupees. An infant with a seat is 5,000 rupees. |
-| BR-41 | The air sticker is 500 rupees times the number of rooms. |
-| BR-42 | If a road trip starts in Lahore and is longer than three days, the quote adds 5,000 rupees for each day after day three, for each vehicle. |
-| BR-43 | Profit is added last, at 15 percent or 20 percent. |
-| BR-44 | Before live prices are switched, this example must total 140,400 rupees at 20 percent profit: Islamabad, Skardu Valley, 5 days, 2 adults, Gli car, Deluxe, no guide, no meals. No one-night or one-day edit is applied to this test. |
+| BR-41 | When the package includes transport and a hotel, the air sticker is 500 rupees times the number of rooms. No hotel does not add the sticker. Hotel only does not add it. |
+| BR-42 | When the package includes transport, if a road trip starts in Lahore and is longer than three days, the quote adds 5,000 rupees for each day after day three, for each vehicle. Hotel only does not add it. |
+| BR-43 | Profit is added last, at the active profit margin. The margin is a whole percent from 0 to 100. |
+| BR-44 | Before live prices are switched, this example must total 140,400 rupees. The profit margin in this test is 20 percent: Islamabad, Skardu Valley, 5 days, 2 adults, Gli car, Deluxe, no guide, no meals, with a hotel and with transport. No one-night or one-day edit is applied to this test. |
+
+### Hotel package, pending Moeen sign-off
+
+These defaults are pending Moeen sign-off. The Meadow prototype uses them so Moeen can sign off before the live office changes.
+
+- With hotel is the default. The package includes a hotel and other services.
+- No hotel keeps the other services. It has no hotel line, no nights, no rooms, no meals, no stickers, and no road breakfast.
+- Hotel only asks for the city and the number of nights. It has no vehicle, day edit, toll, jeep, guide, extra, breakfast, or Lahore extra. On air it has no tickets, welcome pack, or entry, and it does not add the sticker or the infant extra.
+- Under With hotel, Same hotel all nights is the default. One catalog pick covers every night. Change per night is one click and shows a catalog pick on each night.
+- A package with neither a hotel nor other services is refused. Hotel only with no nights is that package.
+- Guests on the website get the same three choices. They see only the final total. Staff see the lines and one total for each mode.
+- Until the catalog pick is changed, the untouched Skardu quote still uses the published Deluxe twin rate, so the test total stays 140,400 at a profit margin of 20 percent.
+- The profit margin starts at 20 percent. It is a whole percent from 0 to 100.
+- The dashboard note about the costing file is a placeholder while that mismatch is checked.
+- Hotel only still counts rooms from the party already on the quote. Two adults use one room.
 
 ## 5. One night or one day
 
@@ -84,8 +99,8 @@ These rules fill the quote before anyone edits a single night or a single day.
 | BR-46 | The Manager, and the Owner, can set a different hotel rate on one night. The other nights stay as they were. |
 | BR-47 | The Manager, and the Owner, can remove the vehicle on one day, set a jeep on one day, or set a higher vehicle on one day. |
 | BR-48 | The quote screen shows the average nightly rate. That average is the hotel rates for the nights, added up and divided by the number of nights. An average of 20,000 is shown with the 20,000 hotel category. If no grade is an exact match, the screen still shows the average and the nearest grade. |
-| BR-49 | After an edit, the total follows the edited nights and days, then the season profit. |
-| BR-50 | The guest package builder uses the starting quote only. The guest sees one total. The guest does not see each breakfast line and does not see the profit. Guests cannot edit one night or one day. A staff member who is logged in sees each line and the profit. |
+| BR-49 | After an edit, the total follows the edited nights and days, then the profit margin. |
+| BR-50 | The guest package builder uses the starting quote only. The guest gets With hotel, No hotel, and Hotel only, and sees one total for the choice they make. The guest does not see each line and does not see the profit. Guests cannot edit one night or one day. A staff member who is logged in sees each line, the profit, and one total for each mode. |
 
 ## 6. Excel load rules
 
@@ -138,7 +153,7 @@ Pictures and PDFs use the public media store for that environment, through `@ver
 | BR-78 | One tour extra photo, one place section, one blog section, the place banner, the blog cover, and the review avatar can be removed without deleting the tour, the place, the post, or the review. A place section can already be added. A blog section can be added and removed. |
 | BR-79 | Replacing or removing an office-uploaded file deletes that stored file. This includes a gallery photo, a home slide, a tour main photo, a tour extra photo, a tour PDF, and the files on a place section or a blog section. Deleting a tour deletes the office files that tour used. A path under `/images/` or `/pdfs/` is not deleted from the repo. |
 | BR-80 | The public page shows the new file on the preview site after a refresh. The page layout does not change. |
-| BR-81 | The Meadow prototype is the clickable file `docs/office-design/meadow.html`. On the preview site it is also `https://new.travelwithmoeen.com/meadow`. That path is not `/office`. The Owner, Manager, and Editor links match BR-01 to BR-07. Profit is any whole percent from 0 to 100. The hotel catalog is City, then Hotel, then Room, then Occupancy, and the rate fills from that row. Each night can pick its own city, hotel, and room. A day edit changes that quote. The guest figure is one total. The staff figure lists the nights and the profit. Changing the number of days sets hotel nights to days minus one. Trip plans show Phase 2 and Phase 3 for review. The layout fits a computer and a phone. The zip is that same folder. Moeen receives this file before the live office is rebuilt. |
+| BR-81 | The Meadow prototype is the clickable file `docs/office-design/meadow.html`. On the preview site it is also `https://new.travelwithmoeen.com/meadow`. That path is not `/office`. The Owner, Manager, and Editor links match BR-01 to BR-07. The Owner and the Editor can delete a tour. A Manager cannot. Profit margin is any whole percent from 0 to 100, with a slider. The hotel catalog is city, then hotel, then room, then occupancy, and the rate fills from that row. Grade is a label on the hotel. With hotel can use one catalog pick for every night, or a catalog pick on each night, in one click. The quote has With hotel, No hotel, and Hotel only. Each mode has one guest total. Guests on the website get those three choices and see only the final total. A package with neither a hotel nor other services is refused. A tour has a Places multi-select, and the place page lists Tours at this place. The dashboard says the mismatch with the costing file is being checked. A day edit changes a transport quote. Changing the number of days on a hotel-included quote sets hotel nights to days minus one. Trip plans show Phase 2 and Phase 3 for review, including the Season by month table. The layout fits a computer and a phone. The zip is that same folder. Moeen receives this file before the live office is rebuilt. |
 | BR-82 | The next sprint builds the Meadow look into the live office at `/office`. The screens match `docs/office-design/meadow.html`. The public site look does not change. Login, roles, quotes, guest requests, and media uploads stay as they are. The prototype bar that switches role without a password is not part of the live office. |
 | BR-83 | The Owner and the Editor can add a tour from `/office/tours`, amend a tour from that list, and delete a tour. A Manager cannot. A price row and a guest request stay with the Owner, which is BR-03 and BR-06. A tour can link to one or more places. The office and the public tour page list those places, and the office and the public place page list those tours. The tour name stays on the tour. The place title stays on the place. Saving a tour does not rewrite the place guide. Saving a place title updates a linked tour's location line only when that tour links to this place alone and that line is the previous title. |
 
@@ -251,14 +266,14 @@ This list is the whole project. A new office route is added to this list in the 
 |---|---|
 | Public pages, including home, tours, places, blog, gallery, calculator, contact, and custom trip | Anyone. No session. |
 | `GET /meadow` | Anyone. No session. The clickable Meadow prototype. It is not the office and it does not read the database. |
-| `POST /api/quote` | Anyone. A guest response is one total and uses the season saved in the office. A signed-in Owner, Manager, or Editor also receives the lines and the profit. Only an Owner or a Manager can send a different season, a night edit, or a day edit. |
+| `POST /api/quote` | Anyone. A guest response is one total and uses the profit margin saved in the office. A signed-in Owner, Manager, or Editor also receives the lines and the profit. Only an Owner or a Manager can send a different margin, a night edit, or a day edit. A package with neither a hotel nor other services is refused. |
 | `POST /api/requests` | Anyone. No session. Saves a contact, a custom trip, or a booking. The response does not include the name, phone, email, or message. |
 | `GET /api/content/tours`, `/tours/[id]`, `/places`, `/places/[slug]`, `/posts`, `/posts/[slug]`, `/photos`, `/reviews`, `/slides`, `/site` | Anyone. No session. Read only. The same data the public pages show. |
 | `POST /api/office/login` | Anyone. The failure rules in BR-67 and BR-68 apply. |
 | `POST /api/office/logout` and `GET /api/office/session` | A signed-in Owner, Manager, or Editor. |
 | Tour, place, post, photo, review, slide, and site-detail writes | Owner or Editor. |
 | `POST /api/office/tours/create` | Owner or Editor. Adds a tour. It does not set a rupee amount. |
-| Rates, season, vehicles, jeep lines, paid extras, and the live price Excel download | Owner or Manager. |
+| Rates, profit margin, vehicles, jeep lines, paid extras, and the live price Excel download | Owner or Manager. |
 | `POST /api/office/tours/delete` | Owner or Editor. Deletes a tour. A Manager is refused. |
 | Create a login, remove a login, change a role, delete a price row, delete a guest request | Owner only. |
 | `GET /api/office/requests` | A signed-in Owner, Manager, or Editor. |

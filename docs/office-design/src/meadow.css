@@ -146,10 +146,14 @@ td.is-changed { background: var(--warning-soft) !important; }
 .message-k { display: block; font-size: 12px; font-weight: 600; color: var(--text-2); margin-bottom: 6px; }
 .status-row { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px; padding-top: 16px; border-top: 1px solid var(--border); }
 .seg-status { border: 0; margin: 0; padding: 0; display: grid; gap: 6px; }
-.seg-track { display: inline-flex; padding: 3px; gap: 2px; border: 1px solid var(--border-strong); border-radius: 10px; background: var(--surface-2); }
-.seg-opt { position: relative; }
+.seg-track { display: flex; flex-wrap: wrap; padding: 3px; gap: 2px; border: 1px solid var(--border-strong); border-radius: 10px; background: var(--surface-2); max-width: 100%; }
+.place-picks { display: grid; gap: 8px; border: 0; margin: 0; padding: 0; }
+.place-picks .check { align-items: center; min-height: 40px; }
+.guest-totals { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.stat.is-current { outline: 2px solid var(--primary); outline-offset: 2px; }
+.seg-opt { position: relative; flex: 1 1 148px; }
 .seg-opt input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
-.seg-opt span { display: inline-flex; align-items: center; min-height: 32px; padding: 0 14px; border-radius: 7px; font-weight: 500; font-size: 13.5px; color: var(--text-2); }
+.seg-opt span { display: flex; align-items: center; justify-content: center; min-height: 40px; padding: 6px 12px; border-radius: 7px; font-weight: 500; font-size: 13.5px; color: var(--text-2); text-align: center; }
 .seg-opt input:checked + span { background: var(--primary); color: var(--on-primary); box-shadow: var(--shadow-1); }
 .seg-opt input:focus-visible + span { outline: var(--focus-w) solid var(--focus); outline-offset: 2px; }
 .seg-opt input:not(:checked):hover + span { background: var(--surface-hover); color: var(--text); }
