@@ -172,7 +172,8 @@ code, kbd, pre, .mono { font-family: var(--font-mono); font-size: var(--text-xs)
 .count { display: inline-grid; place-items: center; min-width: var(--space-5); height: var(--space-5); padding: 0 var(--space-2); border-radius: var(--r-pill); background: var(--accent); color: var(--accent-ink, var(--ink-warm)); font: 700 var(--text-xs)/var(--leading-none) var(--font); margin-left: auto; }
 .stars { color: var(--accent-text); letter-spacing: var(--tracking-star); white-space: nowrap; }
 .stars-off { color: var(--border-strong); }
-.alert { display: grid; grid-template-columns: var(--space-5) 1fr; gap: var(--space-3); padding: var(--space-3) var(--space-4); border-radius: var(--r-m); border: var(--border-w) solid var(--border); font-size: var(--text-sm); line-height: var(--leading-body); }
+.alert { display: grid; grid-template-columns: var(--space-5) 1fr; gap: var(--space-3); padding: var(--space-3) var(--space-4); border-radius: var(--r-m); border: var(--border-w) solid var(--border); font-size: var(--text-sm); line-height: var(--leading-body); margin-bottom: var(--gap); }
+.card-body .alert, .req-detail .alert, .ds-stack .alert { margin-bottom: 0; }
 .alert > .ic { width: var(--icon-md); height: var(--icon-md); }
 .alert b { display: block; font-weight: 600; }
 .alert p, .alert ul { margin: var(--space-half) 0 0; color: var(--text-2); }
