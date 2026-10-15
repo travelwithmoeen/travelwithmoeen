@@ -1510,7 +1510,8 @@ form[data-form="quote"] .tbl .select { min-width: 0; width: 100%; }
       return `<div class="card-head"><div><h3>Package refused</h3><p>Neither a hotel nor other services</p></div></div><div class="card-body">${alert("danger", "This package is refused", "A package needs a hotel or other services. Hotel only with no nights has neither.")}</div>`;
     }
     const staff = view.lines.map((line) => `<dt>${esc(line.label)}</dt><dd>${rs(line.amount)}</dd>`).join("");
-    const note = view.spec ? "This is the Skardu test. The subtotal is 117,000 and the guest total is 140,400 at 20 percent." : view.mode === "none" ? "No hotel. The guest still sees one total." : view.mode === "only" ? "Hotel only. The guest still sees one total." : "A changed hotel uses the catalog rate. The guest still sees one total.";
+    const catalogRate = !!(D().pick && D().pick.changed) || (D().nights || []).some((night) => night.custom || (night.override != null && night.override !== ""));
+    const note = view.spec ? "This is the Skardu test. The subtotal is 117,000 and the guest total is 140,400 at 20 percent." : view.mode === "none" ? "No hotel. The guest still sees one total." : view.mode === "only" ? "Hotel only. The guest still sees one total." : catalogRate ? "A changed hotel uses the catalog rate. The guest still sees one total." : "The guest still sees one total.";
     return `<div class="card-head"><div><h3>${saved ? "Quote saved" : "This quote"}</h3><p>${esc(view.summary)}</p></div></div><div class="card-body"><dl class="sum">${staff}<dt>Subtotal</dt><dd>${rs(view.sub)}</dd><dt>Profit, ${view.pct} percent</dt><dd>${rs(view.profit)}</dd><dt class="sum-total">Guest total</dt><dd class="sum-total">${rs(view.guest)}</dd>${view.average ? `<dt>Average nightly rate</dt><dd>${rs(view.average)}</dd>` : ""}</dl><p class="help">${note}</p></div>`;
   };
   const choose = (attr, value, options) => `<select class="select" ${attr}>${options.map((option) => { const label = Array.isArray(option) ? option[1] : option; const stored = Array.isArray(option) ? option[0] : option; return `<option value="${esc(stored)}" ${stored === value ? "selected" : ""}>${esc(label)}</option>`; }).join("")}</select>`;
@@ -2714,7 +2715,10 @@ form[data-form="quote"] .tbl .select { min-width: 0; width: 100%; }
       if (!can.deleteTour()) return toast("A Manager cannot delete a tour.", { tone: "info" });
       const t = D().tours.find((x) => x.code === el.dataset.id);
       dialog({ title: `Delete “${t.name}”?`, body: `<p>The tour page, its photo list, and its day plan will be removed from the website. Bookings already saved stay in Requests. This can't be undone.</p>`, confirm: "Delete tour", tone: "danger", icon: "trash", alertdialog: true,
-        onConfirm: () => { D().tours = D().tours.filter((x) => x !== t); save(); const f = dirtyForm(); if (f) delete f.dataset.dirty; location.hash = "#/tours"; toast("Tour deleted.", { body: t.name }); } });
+        onConfirm: () => {
+          if (!can.deleteTour()) return toast("A Manager cannot delete a tour.", { tone: "info" });
+          D().tours = D().tours.filter((x) => x !== t); save(); const f = dirtyForm(); if (f) delete f.dataset.dirty; location.hash = "#/tours"; toast("Tour deleted.", { body: t.name });
+        } });
     },
     "delete-photo"(el) { const a = D().photos, i = a.findIndex((x) => String(x.id) === el.dataset.id); undoable(a, i, a[i], "Photo", "#/gallery"); },
     "delete-review"(el) { const a = D().reviews, i = a.findIndex((x) => String(x.id) === el.dataset.id); undoable(a, i, a[i], "Review", "#/reviews"); },
@@ -2945,6 +2949,7 @@ form[data-form="quote"] .tbl .select { min-width: 0; width: 100%; }
     if (t.matches("[data-file]")) return checkFile(t);
     if (t.matches("[data-demo]")) {
       const k = t.dataset.demo; S[k] = t.value; store.set(k, t.value);
+      if (k === "role") closeDialog(true);
       if (k === "role" && !S.signedIn) return render();
       render({ keepFocus: true, keepScroll: true });
       $(`[data-demo="${k}"]`)?.focus();

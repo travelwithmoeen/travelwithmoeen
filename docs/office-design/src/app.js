@@ -526,7 +526,10 @@
       if (!can.deleteTour()) return toast("A Manager cannot delete a tour.", { tone: "info" });
       const t = D().tours.find((x) => x.code === el.dataset.id);
       dialog({ title: `Delete “${t.name}”?`, body: `<p>The tour page, its photo list, and its day plan will be removed from the website. Bookings already saved stay in Requests. This can't be undone.</p>`, confirm: "Delete tour", tone: "danger", icon: "trash", alertdialog: true,
-        onConfirm: () => { D().tours = D().tours.filter((x) => x !== t); save(); const f = dirtyForm(); if (f) delete f.dataset.dirty; location.hash = "#/tours"; toast("Tour deleted.", { body: t.name }); } });
+        onConfirm: () => {
+          if (!can.deleteTour()) return toast("A Manager cannot delete a tour.", { tone: "info" });
+          D().tours = D().tours.filter((x) => x !== t); save(); const f = dirtyForm(); if (f) delete f.dataset.dirty; location.hash = "#/tours"; toast("Tour deleted.", { body: t.name });
+        } });
     },
     "delete-photo"(el) { const a = D().photos, i = a.findIndex((x) => String(x.id) === el.dataset.id); undoable(a, i, a[i], "Photo", "#/gallery"); },
     "delete-review"(el) { const a = D().reviews, i = a.findIndex((x) => String(x.id) === el.dataset.id); undoable(a, i, a[i], "Review", "#/reviews"); },
@@ -757,6 +760,7 @@
     if (t.matches("[data-file]")) return checkFile(t);
     if (t.matches("[data-demo]")) {
       const k = t.dataset.demo; S[k] = t.value; store.set(k, t.value);
+      if (k === "role") closeDialog(true);
       if (k === "role" && !S.signedIn) return render();
       render({ keepFocus: true, keepScroll: true });
       $(`[data-demo="${k}"]`)?.focus();
