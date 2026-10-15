@@ -476,11 +476,11 @@
       const hotelOptions = hotels.map((name) => [name, `${name} · ${gradeLabel(pick.city, name)}`]);
       body = `${alert("info", "Hotel catalog", "Choose a city, then a hotel, then a room, then occupancy. The rate fills in from that row. Grade is a label on the hotel.")}
         ${card("Find a rate", `<div class="form-grid">
-          ${field("City", choose('data-catalog="city"', pick.city, citiesOf()), { name: "city" })}
-          ${field("Hotel", choose('data-catalog="hotel"', pick.hotel, hotelOptions), { name: "hotel" })}
+          ${field("City", choose('id="__ID__" data-catalog="city"', pick.city, citiesOf()), { name: "city" })}
+          ${field("Hotel", choose('id="__ID__" data-catalog="hotel"', pick.hotel, hotelOptions), { name: "hotel" })}
           ${field("Grade", `<input class="input" id="__ID__" value="${esc(gradeLabel(pick.city, pick.hotel))}" readonly aria-label="Grade">`, { name: "grade" })}
-          ${field("Room", choose('data-catalog="room"', pick.room, rooms.map((row) => row.room)), { name: "room" })}
-          ${field("Occupancy", `<select class="select" data-catalog="occ" aria-label="Occupancy"><option value="room" ${occ === "room" ? "selected" : ""}>${chosen ? chosen.persons : 2} persons</option><option value="mattress" ${occ === "mattress" ? "selected" : ""}>${chosen ? chosen.persons : 2} persons + 1 mattress</option></select>`, { name: "occ" })}
+          ${field("Room", choose('id="__ID__" data-catalog="room"', pick.room, rooms.map((row) => row.room)), { name: "room" })}
+          ${field("Occupancy", `<select class="select" id="__ID__" data-catalog="occ" aria-label="Occupancy"><option value="room" ${occ === "room" ? "selected" : ""}>${chosen ? chosen.persons : 2} persons</option><option value="mattress" ${occ === "mattress" ? "selected" : ""}>${chosen ? chosen.persons : 2} persons + 1 mattress</option></select>`, { name: "occ" })}
           ${field("Persons", `<input class="input" value="${chosen ? chosen.persons : ""}" readonly aria-label="Persons">`, { name: "persons" })}
           ${field("Extra mattress", `<input class="input" value="${chosen ? rs(chosen.mattress) : ""}" readonly aria-label="Extra mattress">`, { name: "mattress" })}
           ${field("Nightly rate", `<input class="input" value="${chosen ? rs(occRate) : ""}" readonly aria-label="Nightly rate">`, { name: "rate" })}
@@ -527,11 +527,11 @@
       const active = quoteView();
       const websiteTotal = active.refused ? "Refused" : rs(active.guest);
       const sameHotel = mode === "with" && plan === "same" ? card("Same hotel all nights", `<div class="form-grid">
-          ${field("City", choose('data-stay="city" aria-label="City"', pick.city, citiesOf()), { name: "stayCity" })}
-          ${field("Hotel", choose('data-stay="hotel" aria-label="Hotel"', pick.hotel, stayHotels), { name: "stayHotel" })}
+          ${field("City", choose('id="__ID__" data-stay="city" aria-label="City"', pick.city, citiesOf()), { name: "stayCity" })}
+          ${field("Hotel", choose('id="__ID__" data-stay="hotel" aria-label="Hotel"', pick.hotel, stayHotels), { name: "stayHotel" })}
           ${field("Grade", `<input class="input" id="__ID__" value="${esc(gradeLabel(pick.city, pick.hotel))}" readonly aria-label="Grade">`, { name: "stayGrade" })}
-          ${field("Room", choose('data-stay="room" aria-label="Room"', pick.room, stayRooms.map((row) => row.room)), { name: "stayRoom" })}
-          ${field("Occupancy", `<select class="select" data-stay="occ" aria-label="Occupancy"><option value="room" ${pick.occ !== "mattress" ? "selected" : ""}>${stayChosen ? stayChosen.persons : 2} persons</option><option value="mattress" ${pick.occ === "mattress" ? "selected" : ""}>${stayChosen ? stayChosen.persons : 2} persons + 1 mattress</option></select>`, { name: "stayOcc" })}
+          ${field("Room", choose('id="__ID__" data-stay="room" aria-label="Room"', pick.room, stayRooms.map((row) => row.room)), { name: "stayRoom" })}
+          ${field("Occupancy", `<select class="select" id="__ID__" data-stay="occ" aria-label="Occupancy"><option value="room" ${pick.occ !== "mattress" ? "selected" : ""}>${stayChosen ? stayChosen.persons : 2} persons</option><option value="mattress" ${pick.occ === "mattress" ? "selected" : ""}>${stayChosen ? stayChosen.persons : 2} persons + 1 mattress</option></select>`, { name: "stayOcc" })}
           ${field("Nightly rate", `<input class="input" value="${rs(samePickRate())}" readonly aria-label="Nightly rate">`, { name: "stayRate" })}
         </div>`, pick.changed ? "Every night uses this catalog row." : "Every night uses the published rate until you change this hotel.") : "";
       const perNight = mode === "with" && plan === "per" ? card("Change per night", `<div class="tbl-wrap"><table class="tbl"><thead><tr><th scope="col">Night</th><th scope="col">City</th><th scope="col">Hotel</th><th scope="col">Room</th><th scope="col" class="r">Mattresses</th><th scope="col" class="r">Rate</th><th scope="col"><span class="sr-only">Remove</span></th></tr></thead><tbody>
@@ -754,7 +754,7 @@
       <td data-label="Actions" class="r">${self ? '<span class="muted">—</span>' : btn(`Remove ${u.email}`, { v: "ghost", size: "sm", ic: "trash", iconOnly: true, a: { "data-action": "remove-user", "data-id": u.id } })}</td></tr>`; }).join("");
     return `${pageHead("Users", { desc: "Office logins and their roles. Only the Owner sees this page.", actions: btn("Create login", { v: "primary", ic: "plus", a: { "data-action": "create-user" } }) })}
       <div class="tbl-wrap"><table class="tbl"><thead><tr><th scope="col">Login</th><th scope="col">Role</th><th scope="col">Last sign in</th><th scope="col" class="r"><span class="sr-only">Actions</span></th></tr></thead><tbody>${rows}</tbody></table></div>
-      <section class="card roles-card"><div class="card-head"><div><h3>What each role can do</h3></div></div><div class="card-body"><div class="tbl-wrap flat"><table class="tbl tbl-plain"><thead><tr><th scope="col">Area</th><th scope="col">Owner</th><th scope="col">Manager</th><th scope="col">Editor</th></tr></thead><tbody>
+      <section class="card roles-card"><div class="card-head"><div><h3>What each role can do</h3></div></div><div class="card-body"><div class="tbl-wrap flat" tabindex="0" aria-label="What each role can do"><table class="tbl tbl-plain"><thead><tr><th scope="col">Area</th><th scope="col">Owner</th><th scope="col">Manager</th><th scope="col">Editor</th></tr></thead><tbody>
         ${[["Requests, read", 1, 1, 1], ["Request status", 1, 1, 0], ["Delete a request", 1, 0, 0], ["Rates and quotes", 1, 1, 0], ["Website content", 1, 0, 1], ["Delete a tour", 1, 0, 1], ["Users and backups", 1, 0, 0]].map(([a, ...r]) => `<tr><td data-label="Area">${a}</td>${r.map((x, i) => `<td data-label="${["Owner", "Manager", "Editor"][i]}">${x ? `${icon("check", "yes")}<span class="sr-only">Yes</span>` : `<span class="muted" aria-label="No">—</span>`}</td>`).join("")}</tr>`).join("")}
       </tbody></table></div></div></section>`;
   };

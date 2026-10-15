@@ -38,7 +38,7 @@ body { font-size: var(--text-sm); letter-spacing: var(--tracking-body); font-fea
 .row-thumb { border-radius: var(--r-s); width: var(--space-12); height: var(--space-12); }
 .btn { font-size: var(--text-sm); }
 .btn-primary { box-shadow: 0 var(--border-w) 0 var(--highlight) inset, var(--shadow-1); }
-.range { width: 100%; accent-color: var(--primary); height: var(--size-md); }
+.range { width: 100%; accent-color: var(--primary); height: var(--size-md); font-size: var(--text-sm); }
 .range:focus-visible { outline: var(--focus-w) solid var(--focus); outline-offset: var(--focus-offset); }
 .badge { height: var(--space-6); font-size: var(--text-xs); }
 .inbox-list { border-radius: var(--r-m); }

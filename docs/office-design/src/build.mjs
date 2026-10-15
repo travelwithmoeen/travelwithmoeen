@@ -113,7 +113,7 @@ const seed = (() => {
 /* Tokens per version and theme                                        */
 /* ------------------------------------------------------------------ */
 const hc = (primary, extra = {}) => ({
-  canvas: "#ffffff", surface: "#ffffff", "surface-2": "#efefef", "surface-3": "#dcdcdc", "surface-hover": "#e4e4e4", selected: "#fff2b3", "field-bg": "#ffffff",
+  canvas: "#ffffff", surface: "#ffffff", "surface-2": "#efefef", "surface-hover": "#e4e4e4", selected: "#fff2b3", "field-bg": "#ffffff",
   border: "#000000", "border-strong": "#000000", "card-line": "#000000", text: "#000000", "text-2": "#1a1a1a", "text-3": "#2e2e2e", link: "#0030a0",
   primary, "primary-hover": "#000000", "on-primary": "#ffffff", "primary-soft": "#e3ebff", "primary-soft-text": "#001a57", focus: "#000000",
   danger: "#a00000", "on-danger": "#ffffff", "danger-soft": "#ffecec", "danger-text": "#8a0000",
