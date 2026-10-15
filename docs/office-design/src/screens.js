@@ -358,7 +358,7 @@
         ${can.rates() ? stat("tag", "Profit margin", `${d.margin}%`, "Guests see this on the total", "#/rates/margin") : stat("map", "Tours live", d.tours.length, `${d.tours.filter((t) => t.featured).length} featured`, "#/tours")}
         ${can.backup() ? stat("database", "Last backup", dt(d.backups[0].at, { timeStyle: "short" }), dt(d.backups[0].at, { dateStyle: "medium" }), "#/backups") : stat("checkCircle", "Closed", R.filter((r) => r.status === "closed").length, "Requests done", "#/requests?status=closed")}
       </div>
-      ${can.rates() ? (() => { const view = quoteView(); return `<section class="card" style="margin-bottom:16px"><div class="card-head"><div><h3>Latest quote</h3><p>${view.nights.length ? `${view.nights.length} nights, then ${view.pct}% profit.` : "No hotel night. Then " + view.pct + "% profit."}</p></div>${btn("Open quote", { v: "ghost", size: "sm", href: "#/rates/quote" })}</div><div class="card-body"><div class="stats">
+      ${can.rates() ? (() => { const view = quoteView(); return `<section class="card"><div class="card-head"><div><h3>Latest quote</h3><p>${view.nights.length ? `${view.nights.length} nights, then ${view.pct}% profit.` : "No hotel night. Then " + view.pct + "% profit."}</p></div>${btn("Open quote", { v: "ghost", size: "sm", href: "#/rates/quote" })}</div><div class="card-body"><div class="stats">
         <div class="stat"><span class="stat-k">Guest sees</span><span class="stat-v">${view.refused ? "Refused" : rs(view.guest)}</span><span class="stat-m">${view.refused ? "Neither a hotel nor other services." : "One total. No lines and no profit."}</span></div>
         <div class="stat"><span class="stat-k">Staff sees</span><span class="stat-v">${rs(view.sub)}</span><span class="stat-m">${view.lines.map((line) => `${line.label} ${rs(line.amount)}`).join(". ")}. Profit ${rs(view.profit)}.</span></div>
       </div></div></section>`; })() : ""}
@@ -565,8 +565,8 @@
           <div class="field full">${segment("hotelMode", mode, [["with", "With hotel"], ["none", "No hotel"], ["only", "Hotel only"]], "Hotel")}</div>
           ${mode === "with" ? `<div class="field full">${segment("hotelPlan", plan, [["same", "Same hotel all nights"], ["per", "Change per night"]], "Nights")}</div>` : ""}
           ${tripFields}
-        </div>`)}
-        <section class="card quote-result" aria-live="polite" id="quote-result">${quotePanel(false)}</section></div><div class="quote-span">
+        </div>`)}</div>
+        <section class="card quote-result" aria-live="polite" id="quote-result">${quotePanel(false)}</section><div class="quote-span">
         ${sameHotel}
         ${perNight}
         ${card("Guest totals", `<div class="stats guest-totals">${guestTotals()}</div>`, "One total for each hotel choice. A package with neither a hotel nor other services is refused.")}

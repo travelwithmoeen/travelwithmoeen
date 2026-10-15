@@ -880,7 +880,8 @@ body { font-size: 14px; letter-spacing: -.003em; font-feature-settings: "cv11", 
 .row-thumb { border-radius: 8px; width: 44px; height: 44px; }
 .btn { font-size: 13.5px; }
 .btn-primary { box-shadow: 0 1px 0 rgba(255,255,255,.15) inset, var(--shadow-1); }
-.range { width: 100%; accent-color: var(--primary); height: 28px; }
+.range { width: 100%; accent-color: var(--primary); height: var(--control-h); }
+.range:focus-visible { outline: var(--focus-w) solid var(--focus); outline-offset: 2px; }
 .badge { height: 22px; font-size: 12px; }
 .inbox-list { border-radius: 12px; }
 .inbox-detail { box-shadow: var(--shadow-1); }
@@ -988,14 +989,18 @@ td.is-changed { background: var(--warning-soft) !important; }
 .message-k { display: block; font-size: 12px; font-weight: 600; color: var(--text-2); margin-bottom: 6px; }
 .status-row { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px; padding-top: 16px; border-top: 1px solid var(--border); }
 .seg-status { border: 0; margin: 0; padding: 0; display: grid; gap: 6px; }
-.seg-track { display: flex; flex-wrap: wrap; width: 100%; box-sizing: border-box; padding: 3px; gap: 2px; border: 1px solid var(--border-strong); border-radius: 10px; background: var(--surface-2); max-width: 100%; }
-.place-picks { display: grid; gap: 8px; border: 0; margin: 0; padding: 0; }
-.place-picks .check { align-items: center; min-height: 40px; }
+.seg-track { display: inline-flex; flex-wrap: nowrap; box-sizing: border-box; max-width: 100%; padding: 3px; gap: 2px; border: 1px solid var(--border-strong); border-radius: 10px; background: var(--surface-2); }
+.place-picks { display: grid; gap: calc(var(--gap) / 2); border: 0; margin: 0; padding: 0; }
+.place-picks .check { align-items: center; min-height: var(--control-h); }
 .guest-totals { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.stat.is-current { outline: 2px solid var(--primary); outline-offset: 2px; }
-.seg-opt { position: relative; flex: 1 1 148px; }
+.stat.is-current { border-color: var(--primary); box-shadow: inset 0 0 0 1px var(--primary); }
+.stat.is-current:hover { border-color: var(--primary); }
+.seg-opt { position: relative; }
 .seg-opt input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
-.seg-opt span { display: flex; align-items: center; justify-content: center; min-height: 40px; padding: 6px 12px; border-radius: 7px; font-weight: 500; font-size: 13.5px; color: var(--text-2); text-align: center; }
+.seg-opt span { display: inline-flex; align-items: center; justify-content: center; min-height: 32px; padding: 0 14px; border-radius: 7px; font-weight: 500; font-size: 13.5px; color: var(--text-2); text-align: center; }
+.quote-form .seg-track { display: flex; flex-wrap: wrap; width: 100%; }
+.quote-form .seg-opt { flex: 1 1 0; min-width: 0; }
+.quote-form .seg-opt span { width: 100%; min-height: var(--control-h); }
 .seg-opt input:checked + span { background: var(--primary); color: var(--on-primary); box-shadow: var(--shadow-1); }
 .seg-opt input:focus-visible + span { outline: var(--focus-w) solid var(--focus); outline-offset: 2px; }
 .seg-opt input:not(:checked):hover + span { background: var(--surface-hover); color: var(--text); }
@@ -1021,10 +1026,12 @@ td.is-changed { background: var(--warning-soft) !important; }
 .quote-form { display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, 360px); gap: var(--gap); align-items: start; }
 .quote-side, .quote-span { min-width: 0; }
 .quote-side { display: grid; gap: var(--gap); align-content: start; }
+.quote-side > .card, .quote-form > .quote-result { margin-bottom: 0; }
 .quote-span { grid-column: 1 / -1; }
-.quote-form .quote-result { position: static; }
+.quote-form .quote-result { position: sticky; top: calc(var(--demo-h) + 56px); }
 @media (max-width: 960px) {
   .quote-form { grid-template-columns: 1fr; }
+  .quote-form .quote-result { position: static; }
 }
 form[data-form="quote"] .tbl { width: 100%; }
 form[data-form="quote"] .tbl .select { min-width: 0; width: 100%; }
@@ -1042,7 +1049,8 @@ form[data-form="quote"] .tbl .select { min-width: 0; width: 100%; }
   .tbl-edit input[name^="hotel_"], .tbl .seats, .tbl .select, .tbl .input, .tbl .money { width: 100%; max-width: 100%; min-width: 0; }
   .tbl-wrap.flat { overflow-x: auto; }
   .stats { grid-template-columns: 1fr; }
-  .seg-opt { flex-basis: 100%; }
+  .quote-form .seg-opt { flex-basis: 100%; }
+  form[data-form="quote"] .tbl-wrap:not(.flat) .tbl td { grid-template-columns: minmax(0, 1fr); }
   .page-head .ph-actions, .row-actions { width: 100%; }
   .row-actions .btn { flex: 1 1 auto; justify-content: center; }
   .pop, .pop-right, .pop-up { max-width: calc(100vw - 24px); }
@@ -1715,7 +1723,7 @@ form[data-form="quote"] .tbl .select { min-width: 0; width: 100%; }
         ${can.rates() ? stat("tag", "Profit margin", `${d.margin}%`, "Guests see this on the total", "#/rates/margin") : stat("map", "Tours live", d.tours.length, `${d.tours.filter((t) => t.featured).length} featured`, "#/tours")}
         ${can.backup() ? stat("database", "Last backup", dt(d.backups[0].at, { timeStyle: "short" }), dt(d.backups[0].at, { dateStyle: "medium" }), "#/backups") : stat("checkCircle", "Closed", R.filter((r) => r.status === "closed").length, "Requests done", "#/requests?status=closed")}
       </div>
-      ${can.rates() ? (() => { const view = quoteView(); return `<section class="card" style="margin-bottom:16px"><div class="card-head"><div><h3>Latest quote</h3><p>${view.nights.length ? `${view.nights.length} nights, then ${view.pct}% profit.` : "No hotel night. Then " + view.pct + "% profit."}</p></div>${btn("Open quote", { v: "ghost", size: "sm", href: "#/rates/quote" })}</div><div class="card-body"><div class="stats">
+      ${can.rates() ? (() => { const view = quoteView(); return `<section class="card"><div class="card-head"><div><h3>Latest quote</h3><p>${view.nights.length ? `${view.nights.length} nights, then ${view.pct}% profit.` : "No hotel night. Then " + view.pct + "% profit."}</p></div>${btn("Open quote", { v: "ghost", size: "sm", href: "#/rates/quote" })}</div><div class="card-body"><div class="stats">
         <div class="stat"><span class="stat-k">Guest sees</span><span class="stat-v">${view.refused ? "Refused" : rs(view.guest)}</span><span class="stat-m">${view.refused ? "Neither a hotel nor other services." : "One total. No lines and no profit."}</span></div>
         <div class="stat"><span class="stat-k">Staff sees</span><span class="stat-v">${rs(view.sub)}</span><span class="stat-m">${view.lines.map((line) => `${line.label} ${rs(line.amount)}`).join(". ")}. Profit ${rs(view.profit)}.</span></div>
       </div></div></section>`; })() : ""}
@@ -1922,8 +1930,8 @@ form[data-form="quote"] .tbl .select { min-width: 0; width: 100%; }
           <div class="field full">${segment("hotelMode", mode, [["with", "With hotel"], ["none", "No hotel"], ["only", "Hotel only"]], "Hotel")}</div>
           ${mode === "with" ? `<div class="field full">${segment("hotelPlan", plan, [["same", "Same hotel all nights"], ["per", "Change per night"]], "Nights")}</div>` : ""}
           ${tripFields}
-        </div>`)}
-        <section class="card quote-result" aria-live="polite" id="quote-result">${quotePanel(false)}</section></div><div class="quote-span">
+        </div>`)}</div>
+        <section class="card quote-result" aria-live="polite" id="quote-result">${quotePanel(false)}</section><div class="quote-span">
         ${sameHotel}
         ${perNight}
         ${card("Guest totals", `<div class="stats guest-totals">${guestTotals()}</div>`, "One total for each hotel choice. A package with neither a hotel nor other services is refused.")}
