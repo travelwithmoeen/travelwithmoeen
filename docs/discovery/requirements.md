@@ -228,7 +228,7 @@ The public site has no login. The office has three roles. A person has one role.
 
 **Manager.** This is the standard role for prices and quotes. A Manager can edit hotel rates, vehicle rates, air ticket extras, and jeep lines. A Manager can turn a vehicle on or off for a route, add an Other vehicle, and add a paid extra such as a jeep leg. A Manager can switch the season profit between 15 percent and 20 percent. A Manager can read guest requests, update them, and save quotes. A Manager does not edit public page text. A Manager cannot create logins and cannot delete a tour or a guest request.
 
-**Editor.** This is the standard role for public pages. An Editor can edit tours, day plans, photos, destinations, blog posts, the gallery, reviews, home page slides, and the phone, address, and social links. An Editor can mark a tour as featured. An Editor can read guest requests. An Editor cannot change any rupee amount: hotel rates, vehicle rates, tickets, jeep prices, or the season profit. An Editor cannot delete a tour or a guest request.
+**Editor.** This is the standard role for public pages. An Editor can edit tours, day plans, photos, destinations, blog posts, the gallery, reviews, home page slides, and the phone, address, and social links. An Editor can mark a tour as featured. An Editor can read guest requests. An Editor cannot change any rupee amount: hotel rates, vehicle rates, tickets, jeep prices, or the season profit. An Editor can delete a tour. An Editor cannot delete a guest request.
 
 Status: Decided for the build. Source: office role decision, 26 Sep 2026. Replaces the earlier idea of one shared login.
 

@@ -10,6 +10,7 @@ import {
   deletePhotoAs,
   deleteReviewAs,
   deleteSlideAs,
+  createTourAs,
   deleteTourAs,
   savePhotoAs,
   saveReviewAs,
@@ -102,7 +103,7 @@ export async function savePriceFromForm(actor: SessionUser, formData: FormData):
   return savePriceFromKind(actor, formData);
 }
 
-export async function updateTourFromForm(actor: SessionUser, formData: FormData): Promise<ActionResult> {
+async function tourBodyFromForm(actor: SessionUser, formData: FormData): Promise<Omit<TourEditInput, "id"> | ActionResult> {
   let image = String(formData.get("image") ?? "");
   const file = uploadedFile(formData, "photo");
   if (file) {
@@ -131,8 +132,8 @@ export async function updateTourFromForm(actor: SessionUser, formData: FormData)
   } catch {
     return { ok: false, error: "The day plan could not be read." };
   }
-  return updateTourAs(actor, {
-    id: String(formData.get("id") ?? ""),
+  const placeSlugs = formData.get("placeSet") === "1" ? stringList(formData, "placeSlug") : undefined;
+  return {
     name: String(formData.get("name") ?? ""),
     location: String(formData.get("location") ?? ""),
     region: String(formData.get("region") ?? ""),
@@ -148,7 +149,24 @@ export async function updateTourFromForm(actor: SessionUser, formData: FormData)
     notIncluded: lines(String(formData.get("notIncluded") ?? "")),
     featured: formData.get("featured") === "on",
     itinerary,
-  });
+    placeSlugs,
+  };
+}
+
+function isTourBody(value: Omit<TourEditInput, "id"> | ActionResult): value is Omit<TourEditInput, "id"> {
+  return !("ok" in value);
+}
+
+export async function updateTourFromForm(actor: SessionUser, formData: FormData): Promise<ActionResult> {
+  const body = await tourBodyFromForm(actor, formData);
+  if (!isTourBody(body)) return body;
+  return updateTourAs(actor, { ...body, id: String(formData.get("id") ?? "") });
+}
+
+export async function createTourFromForm(actor: SessionUser, formData: FormData): Promise<ActionResult> {
+  const body = await tourBodyFromForm(actor, formData);
+  if (!isTourBody(body)) return body;
+  return createTourAs(actor, body);
 }
 
 export async function deleteTourFromForm(actor: SessionUser, formData: FormData): Promise<ActionResult> {

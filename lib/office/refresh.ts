@@ -8,7 +8,8 @@ export function refreshTour(id: string) {
 }
 
 export function refreshPlace(slug: string) {
-  revalidatePath("/destinations");
+  revalidatePath("/destinations", "layout");
+  revalidatePath("/office/places", "layout");
   if (slug) revalidatePath(`/destinations/${slug}`);
 }
 

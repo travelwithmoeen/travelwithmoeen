@@ -6,9 +6,9 @@
 **Proposal:** TWM-SOW-001, version 1.3  
 **Also read:** `docs/rules/project-structure.md` and `docs/rules/coding-standards.md`  
 
-The plan is four sprints of two weeks, plus the Meadow office before Phase 2. Sprints 1 and 2 are the baseline. Those tasks are built. Office media, T-29 through T-35, is built. The Meadow file, T-36, is on `main`. The next sprint is T-37: share that file with Moeen, then build that look into `/office`. Sprint 3 is Phase 2. Sprint 4 is Phase 3. T-37 is accepted before Phase 2 starts. Phase 2 is accepted before Phase 3 starts. Read the requirements and the design before a new task. The quote math is in design section 5. Do not invent a second formula.
+The plan is four sprints of two weeks, plus the Meadow office before Phase 2. Sprints 1 and 2 are the baseline. Those tasks are built. Office media, T-29 through T-35, is built. The Meadow file, T-36, is on `main`. T-36a updates that prototype for Moeen's sign-off. The next build sprint is T-37: share that file with Moeen, then build that look into `/office`. Sprint 3 is Phase 2. Sprint 4 is Phase 3. T-37 is accepted before Phase 2 starts. Phase 2 is accepted before Phase 3 starts. Read the requirements and the design before a new task. The quote math is in design section 5. Do not invent a second formula.
 
-T-01 through T-36 are accepted. Do not reopen them. The next task is T-37. Do not start Phase 2 or Phase 3 until T-37 is accepted. The four security tests in section 12 run again before T-37 is accepted. Follow `docs/rules/project-structure.md` and `docs/rules/coding-standards.md` on every change. Step 1 office saves, and every later save, go through `app/api` and `lib/`. Do not add a server action for a new save. Security checks close in the step named in `docs/specs/requirements.md` section 11. The four security tests in section 12 run at the end of Step 2, Step 3, T-25, T-35, and T-37. Do not move a check into the next step.
+T-01 through T-36 are accepted. Do not reopen them. T-36a is the prototype update before T-37. Do not start the live office, Phase 2, or Phase 3 in T-36a. Do not start Phase 2 or Phase 3 until T-37 is accepted. The four security tests in section 12 run again before T-37 is accepted. Follow `docs/rules/project-structure.md` and `docs/rules/coding-standards.md` on every change. Step 1 office saves, and every later save, go through `app/api` and `lib/`. Do not add a server action for a new save. Security checks close in the step named in `docs/specs/requirements.md` section 11. The four security tests in section 12 run at the end of Step 2, Step 3, T-25, T-35, and T-37. Do not move a check into the next step. T-36a does not repeat the four security tests.
 
 ## Step 1. Office can edit public pages
 
@@ -72,6 +72,7 @@ Do this before Phase 2. Office media is design section 7c and BR-75 to BR-80. T-
 | T-34 | When a gallery photo, a home slide, a tour main photo, or a whole tour is replaced or removed, delete the office files. | BR-79 | The old office file is gone. Deleting a tour also deletes its office extra photos and office PDF. A photo that still uses `/images/` still loads. |
 | T-35 | Add these cases to the step script that already runs Step 3, and run the four security tests again. Update `docs/office-guide.md` so it matches the new controls. A new route is added to requirements section 13 in the same change. | BR-75, BR-62, BR-71 to BR-74 | The script still runs the Step 1, 2, and 3 cases. It refuses a Manager upload, accepts an Editor JPEG, refuses a non-PDF in the PDF field, and shows the file on the public page. `npm run lint`, `npm run check:sca`, and the ZAP baseline pass. |
 | T-36 | Meadow design prototype. Accepted on `main` in pull request 11. | BR-81 | Done. `docs/office-design/meadow.html` is on `main`. The Owner, Manager, and Editor links match BR-01 to BR-07. The Quote tab has the night edit and the day edit. The zip matches that folder in git. No file under `app/`, `components/`, or `lib/` changed. This task does not repeat the four security tests. |
+| T-36a | Update the Meadow prototype for Moeen's sign-off. Prototype only. Do not change `app/`, `components/`, `lib/`, or `drizzle/`, and do not change the database. Do not deploy. | BR-81, BR-03, BR-04, BR-06, BR-11, BR-22, BR-31, BR-32, BR-35, BR-38, BR-41, BR-42, BR-43, BR-44, BR-83 | The Skardu test is still 140,400 at a profit margin of 20 percent. No hotel and Hotel only each show one guest total. A package with neither a hotel nor other services is refused. Same hotel all nights and Change per night switch in one click. An Editor can delete a tour and a Manager cannot. Tour and place links show on both screens. Profit margin is a whole percent from 0 to 100. The Season by month table stays. The layout fits a phone. The zip matches the folder. The new defaults are marked pending Moeen sign-off. No file outside the allowed list changes. |
 
 ## Next sprint. Meadow office for Moeen
 
@@ -83,9 +84,17 @@ Promised to Moeen. Do this before Phase 2. The clickable file is T-36. This task
 
 ## Not in T-37
 
-- A new tour, place, or blog post.
+- A new place or blog post. A new tour is T-38.
 - Delete a price row. That remains BR-03.
 - Phase 2 or Phase 3.
+
+## Tours and places, 14 October 2026
+
+Asked for on the live office, not on the Meadow prototype. This does not rebuild the office look.
+
+| ID | Task | Covers | Done when |
+|---|---|---|---|
+| T-38 | From `/office/tours`, the Owner and the Editor can add a tour, amend a tour, and delete a tour. A Manager cannot. A tour links to its place or places. The office and the public site show the link on both the tour and the place. | BR-83, BR-03, BR-05, BR-06 | An Editor adds a tour and deletes it. A Manager cannot add, amend, or delete a tour. A renamed place title shows on the linked tour. A renamed tour shows on the place. The place guide is not replaced by the tour. `npm run check:step3` still passes. |
 
 Sprint 3, Phase 2. Starts after T-37 is accepted.
 

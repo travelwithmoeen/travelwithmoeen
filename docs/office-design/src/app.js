@@ -178,18 +178,20 @@
       const e = {};
       if (!String(fd.get("name")).trim()) e.name = "Enter a title.";
       const d = readCount(fd.get("duration"), 30); if (d.error) e.duration = d.error === "Enter a number." ? d.error : "Enter a number of days from 1 to 30.";
-      const place = D().places.find((item) => item.slug === fd.get("placeSlug"));
-      if (!place) e.placeSlug = "Choose a place.";
+      const slugs = fd.getAll("placeSlugs").map((slug) => String(slug)).filter((slug) => D().places.some((item) => item.slug === slug));
+      if (!slugs.length) e.placeSlugs = "Choose a place.";
       if (form.dataset.fileError) e.photo = form.dataset.fileError;
       if (Object.keys(e).length) return showErrors(form, e);
+      const primary = D().places.find((item) => item.slug === slugs[0]);
       let t = D().tours.find((x) => x.code === form.dataset.id);
       if (!t && form.dataset.id === "new") {
         const code = `new-${Date.now()}`;
-        t = { code, id: code, name: "", location: "", region: "", duration: 1, transport: "By Road", description: "", image: "", gallery: [], included: [], notIncluded: [], categories: [], packageTypes: [], featured: false, days: [], placeSlug: "" };
+        t = { code, id: code, name: "", location: "", region: "", duration: 1, transport: "By Road", description: "", image: "", gallery: [], included: [], notIncluded: [], categories: [], packageTypes: [], featured: false, days: [], placeSlug: "", placeSlugs: [] };
         D().tours.unshift(t);
       }
       if (!t) return;
-      Object.assign(t, { name: fd.get("name").trim(), description: String(fd.get("description") || "").trim(), location: place.title, region: String(fd.get("region") || place.title).trim(), placeSlug: place.slug, duration: d.value, transport: fd.get("transport") || t.transport, gallery: lines(fd.get("gallery")), included: lines(fd.get("included")), notIncluded: lines(fd.get("notIncluded")), categories: lines(fd.get("categories")), packageTypes: lines(fd.get("packageTypes")), featured: fd.has("featured"), days: zip(fd, ["day_title", "day_text", "day_hl"], ["title", "text", "highlights"]) });
+      const location = slugs.length === 1 || !t.location ? primary.title : t.location;
+      Object.assign(t, { name: fd.get("name").trim(), description: String(fd.get("description") || "").trim(), location, region: String(fd.get("region") || location).trim(), placeSlug: primary.slug, placeSlugs: slugs, duration: d.value, transport: fd.get("transport") || t.transport, gallery: lines(fd.get("gallery")), included: lines(fd.get("included")), notIncluded: lines(fd.get("notIncluded")), categories: lines(fd.get("categories")), packageTypes: lines(fd.get("packageTypes")), featured: fd.has("featured"), days: zip(fd, ["day_title", "day_text", "day_hl"], ["title", "text", "highlights"]) });
       if (form.dataset.fileName) t.image = "/images/tours/" + form.dataset.fileName;
       stampIt(t); log(`Saved tour ${t.name}`, `#/tours/${t.code}`);
       save();
@@ -200,9 +202,13 @@
       const p = D().places.find((x) => x.slug === form.dataset.id);
       if (!String(fd.get("title")).trim()) return showErrors(form, { title: "Enter a title." });
       if (form.dataset.fileError) return showErrors(form, { photo: form.dataset.fileError });
+      const previous = p.title;
       const title = fd.get("title").trim();
       Object.assign(p, { title, excerpt: fd.get("excerpt").trim(), location: fd.get("location").trim(), sections: zip(fd, ["sec_heading", "sec_body", "sec_image", "sec_hl"], ["heading", "body", "image", "highlights"]) });
-      D().tours.filter((tour) => tour.placeSlug === p.slug).forEach((tour) => { tour.location = title; });
+      D().tours.forEach((tour) => {
+        const slugs = Array.isArray(tour.placeSlugs) && tour.placeSlugs.length ? tour.placeSlugs : (tour.placeSlug ? [tour.placeSlug] : []);
+        if (slugs.length === 1 && slugs[0] === p.slug && tour.location === previous) tour.location = title;
+      });
       if (form.dataset.fileName) p.banner = "/images/destinations/" + form.dataset.fileName;
       stampIt(p); log(`Saved place ${p.title}`, `#/places/${p.slug}`);
       save(); done("Place saved.");
@@ -322,11 +328,11 @@
       });
       save(); done("Stop hours saved.");
     },
-    season(fd, form) {
+    margin(fd, form) {
       const raw = String(fd.get("percent") ?? "").trim();
       const p = Number(raw);
       if (!/^\d+$/.test(raw) || p > 100) return showErrors(form, { percent: "Enter a whole percent from 0 to 100." });
-      D().season = p; log(`Changed profit margin to ${p} percent`, "#/rates/season"); save(); done("Profit margin saved.", `Guest quotes now use ${p} percent.`);
+      D().margin = p; log(`Changed the profit margin to ${p} percent`, "#/rates/margin"); save(); done("Profit margin saved.", `Guest quotes now use ${p} percent.`);
     },
     "request-status"(fd, form) {
       const r = D().requests.find((x) => String(x.id) === form.dataset.id);
@@ -335,6 +341,27 @@
     },
     quote(fd, form) {
       const e = {};
+      const hotelMode = fd.get("hotelMode") || D().hotelMode || "with";
+      if (hotelMode === "only") {
+        const rawNights = String(fd.get("onlyNights") ?? "").trim();
+        const onlyCity = String(fd.get("onlyCity") || (D().hotelOnly && D().hotelOnly.city) || "Skardu");
+        if (!/^\d+$/.test(rawNights) || +rawNights > 30) e.onlyNights = "Enter a number of nights from 0 to 30.";
+        else if (+rawNights < 1) e.onlyNights = "A package needs a hotel or other services. Hotel only with no nights is refused.";
+        if (Object.keys(e).length) return showErrors(form, e);
+        D().hotelMode = "only";
+        D().hotelOnly = { city: onlyCity, nights: +rawNights };
+        const pctRaw = String(fd.get("margin") ?? "").trim();
+        if (pctRaw) {
+          if (!/^\d+$/.test(pctRaw) || +pctRaw > 100) return showErrors(form, { margin: "Enter a whole percent from 0 to 100." });
+          D().quotePct = +pctRaw;
+        }
+        save();
+        render({ keepScroll: true });
+        const heading = $("#quote-result h3");
+        if (heading) { heading.tabIndex = -1; heading.focus(); }
+        toast("Quote saved.", { body: "Hotel only. The guest sees one total." });
+        return;
+      }
       const days = readCount(fd.get("days"), 30), adults = readCount(fd.get("adults"), 50);
       const countFromZero = (raw, name, max) => {
         const t = String(raw ?? "").trim();
@@ -397,32 +424,28 @@
         const amount = amountOrBlank(fd.get(name));
         if (amount.error) e[name] = amount.error;
       });
+      if (hotelMode === "none" && night) e.night = "No hotel has no night to edit.";
       if (night && night.n > D().nights.length) e.night = "Hotel nights are days minus one. That night is not on this trip.";
+      const pctRaw = String(fd.get("margin") ?? "").trim();
+      if (pctRaw && (!/^\d+$/.test(pctRaw) || +pctRaw > 100)) e.margin = "Enter a whole percent from 0 to 100.";
       if (Object.keys(e).length) return showErrors(form, e);
       clearErrors(form);
-      const pctRaw = String(fd.get("season") ?? "").trim();
-      const pct = /^\d+$/.test(pctRaw) && +pctRaw <= 100 ? +pctRaw : D().season;
-      if (night) {
+      const pct = pctRaw ? +pctRaw : D().margin;
+      if (night && hotelMode !== "none") {
         const row = D().nights[night.n - 1];
         if (row) { row.override = night.rate; if (night.hotel) row.hotelNote = night.hotel; }
       }
       D().dayEdit = dayLabel ? { day: dayNumber, kind: dayChange, vehicle: dayLabel, rent: amountOrBlank(fd.get("dayRent")).value || 0, fuel: amountOrBlank(fd.get("dayFuel")).value || 0 } : null;
       D().paidExtra = extraAmount.value ? { name: extraName || "Paid extra", amount: extraAmount.value } : null;
+      D().hotelMode = hotelMode === "none" ? "none" : "with";
       D().quotePct = pct;
-      D().trip = { place: fd.get("place"), mode: fd.get("mode"), start: fd.get("start"), grade: fd.get("grade"), vehicle: fd.get("vehicle"), days: days.value, adults: adults.value, children, lapInfants: laps, seatInfants, season: pct, guide: fd.has("guide"), meals: fd.has("meals") };
+      D().trip = { place: fd.get("place"), mode: fd.get("mode"), start: fd.get("start"), grade: (D().trip && D().trip.grade) || "Deluxe", vehicle: fd.get("vehicle"), days: days.value, adults: adults.value, children, lapInfants: laps, seatInfants, margin: pct, guide: fd.has("guide"), meals: hotelMode !== "none" && fd.has("meals") };
       save();
+      render({ keepScroll: true });
+      const heading = $("#quote-result h3");
+      if (heading) { heading.tabIndex = -1; heading.focus(); }
       const view = O.quoteView();
-      const out = $("#quote-result");
-      out.innerHTML = O.quotePanel(true);
-      const views = form.querySelectorAll(".stat-v");
-      const notes = form.querySelectorAll(".stat-m");
-      if (views.length >= 2) {
-        views[0].textContent = rs(view.guest);
-        views[1].textContent = rs(view.sub);
-        notes[0].textContent = "One total. No lines and no profit.";
-        notes[1].textContent = `${view.lines.map((line) => `${line.label} ${rs(line.amount)}`).join(". ")}. Profit ${view.pct}% is ${rs(view.profit)}.`;
-      }
-      out.querySelector("h3").setAttribute("tabindex", "-1"); out.querySelector("h3").focus();
+      toast(view.refused ? "Package refused." : "Quote saved.", { body: view.refused ? "A package needs a hotel or other services." : `Guest total ${rs(view.guest)}.` });
     },
   };
 
@@ -500,9 +523,13 @@
     "rep-up"(el) { const it = el.closest(".rep-item"); if (it.previousElementSibling) { it.parentElement.insertBefore(it, it.previousElementSibling); renumber(it.parentElement); bumpStructural(el.closest("form")); el.focus(); } },
     "rep-down"(el) { const it = el.closest(".rep-item"); if (it.nextElementSibling) { it.parentElement.insertBefore(it.nextElementSibling, it); renumber(it.parentElement); bumpStructural(el.closest("form")); el.focus(); } },
     "delete-tour"(el) {
+      if (!can.deleteTour()) return toast("A Manager cannot delete a tour.", { tone: "info" });
       const t = D().tours.find((x) => x.code === el.dataset.id);
       dialog({ title: `Delete “${t.name}”?`, body: `<p>The tour page, its photo list, and its day plan will be removed from the website. Bookings already saved stay in Requests. This can't be undone.</p>`, confirm: "Delete tour", tone: "danger", icon: "trash", alertdialog: true,
-        onConfirm: () => { D().tours = D().tours.filter((x) => x !== t); save(); const f = dirtyForm(); if (f) delete f.dataset.dirty; location.hash = "#/tours"; toast("Tour deleted.", { body: t.name }); } });
+        onConfirm: () => {
+          if (!can.deleteTour()) return toast("A Manager cannot delete a tour.", { tone: "info" });
+          D().tours = D().tours.filter((x) => x !== t); save(); const f = dirtyForm(); if (f) delete f.dataset.dirty; location.hash = "#/tours"; toast("Tour deleted.", { body: t.name });
+        } });
     },
     "delete-photo"(el) { const a = D().photos, i = a.findIndex((x) => String(x.id) === el.dataset.id); undoable(a, i, a[i], "Photo", "#/gallery"); },
     "delete-review"(el) { const a = D().reviews, i = a.findIndex((x) => String(x.id) === el.dataset.id); undoable(a, i, a[i], "Review", "#/reviews"); },
@@ -599,13 +626,30 @@
 
   /* ---------- Design-system page ---------- */
   const TOKENS = [
-    ["Surfaces", ["canvas", "surface", "surface-2", "surface-hover", "selected"]],
-    ["Text", ["text", "text-2", "text-3", "link"]],
-    ["Lines", ["border", "border-strong", "focus"]],
-    ["Brand", ["primary", "primary-hover", "on-primary", "primary-soft", "accent", "accent-soft"]],
-    ["Status", ["success-soft", "success-text", "warning-soft", "warning-text", "danger", "danger-soft", "danger-text", "info-soft", "info-text"]],
-    ["Navigation", ["nav-bg", "nav-text", "nav-active", "nav-active-text", "nav-indicator"]],
+    ["Surfaces", ["canvas", "surface", "surface-2", "surface-hover", "selected", "field-bg", "overlay"]],
+    ["Text", ["text", "text-2", "text-3", "link", "ink-inverse", "ink-warm", "hc-ink"]],
+    ["Lines", ["border", "border-strong", "card-line", "focus"]],
+    ["Brand", ["primary", "primary-hover", "on-primary", "primary-soft", "primary-soft-text", "accent", "accent-soft", "accent-text", "accent-ink"]],
+    ["Status", ["success-soft", "success-text", "warning-soft", "warning-text", "warning-dot", "danger", "on-danger", "danger-soft", "danger-text", "info-soft", "info-text"]],
+    ["Navigation", ["nav-bg", "nav-text", "nav-muted", "nav-hover", "nav-active", "nav-active-text", "nav-indicator", "nav-line", "logo-bg", "logo-ink", "topbar-bg"]],
+    ["Demo bar", ["demo-bg", "demo-fg", "demo-muted", "demo-ctl", "demo-field", "demo-line", "demo-link"]],
+    ["Scrims", ["photo-scrim", "photo-cap", "hero-scrim-strong", "hero-scrim-mid", "hero-scrim-fade", "scrim-35", "scrim-45", "scrim-50", "highlight"]],
   ];
+  const TYPE_SCALE = ["text-xs", "text-sm", "text-md", "text-lg", "text-xl", "text-2xl", "text-3xl", "text-4xl"];
+  const LEADING = ["leading-none", "leading-tight", "leading-snug", "leading-body", "leading-loose"];
+  const TRACKING = ["tracking-none", "tracking-body", "tracking-snug", "tracking-tight", "tracking-label", "tracking-nav", "tracking-star", "h1", "h1-ls", "font", "font-mono", "font-demo"];
+  const SPACE = ["space-0", "space-half", "space-1", "space-2", "space-3", "space-4", "space-5", "space-6", "space-8", "space-10", "space-12", "space-16", "space-20", "space-24"];
+  const LAYOUT = ["size-sm", "size-md", "size-lg", "icon-sm", "icon-md", "icon-lg", "w-xs", "w-sm", "w-md", "w-lg", "w-xl", "topbar-h", "side-w", "demo-h", "pad", "gap", "stack", "bp-phone", "bp-tablet", "bp-wide"];
+  const RADII = ["r-0", "r-xs", "r-s", "r-m", "r-l", "r-pill"];
+  const tokenGrid = (names, kind) => `<div class="ds-tokens">${names.map((n) => {
+    const sample = kind === "color" ? `<span class="token-swatch" style="background:var(--${n})"></span>`
+      : kind === "bar" ? `<span class="token-bar" style="width:var(--${n})"></span>`
+      : kind === "radius" ? `<span class="token-radius" style="border-radius:var(--${n})"></span>`
+      : kind === "shadow" ? `<span class="token-shadow" style="box-shadow:var(--${n});border-color:transparent"></span>`
+      : kind === "type" ? `<span style="font-size:var(--${n});line-height:var(--leading-body)">Ag</span>`
+      : "";
+    return `<div class="ds-token">${sample}<code>--${n}</code><small data-measure="${n}"></small></div>`;
+  }).join("")}</div>`;
   const PAIRS = window.CONTRAST_PAIRS;
   const SYSTEM = () => {
     const comp = `
@@ -614,7 +658,7 @@
         <div class="field"><label class="label" for="x4">Toll</label><div class="money"><span class="affix" aria-hidden="true">Rs</span><input class="input" id="x4" value="-500" aria-invalid="true" aria-describedby="x4-err"></div><p class="err" id="x4-err">${icon("errorCircle")}<span>Enter an amount that is not negative.</span></p></div></div>
       <div class="ds-row">${O.check("x5", true, "Featured on the home page")}${O.sw("x6", true, "Gli Car")}${O.sw("x7", false, "Prado")}</div>
       <div class="ds-row">${O.statusBadge("new")}${O.statusBadge("in_progress")}${O.statusBadge("closed")}${badge("Booking", "outline")}${badge("★ Featured", "accent")}${badge("Off", "danger", true)}${badge("Offered", "success", true)}</div>
-      <div class="ds-stack">${alert("info", "Season profit is 20 percent", "Change it under Rates, Season.")}${alert("success", "Import finished", "412 rates loaded.")}${alert("warning", "Season is at 15 percent", "Guest quotes use the lower profit.")}${alert("danger", "2 fields need a fix", "Toll: enter an amount that is not negative.")}</div>
+      <div class="ds-stack">${alert("info", "Profit margin is 20 percent", "Change it under Rates, Profit margin.")}${alert("success", "Import finished", "412 rates loaded.")}${alert("warning", "Profit margin is at 15 percent", "Guest quotes use the lower profit.")}${alert("danger", "2 fields need a fix", "Toll: enter an amount that is not negative.")}</div>
       <div class="toast t-success static" role="presentation">${icon("checkCircle")}<div><b>Tour saved.</b><p>The public tour page is updated.</p></div><span class="toast-actions"><button class="btn btn-ghost btn-sm">${icon("undo")}<span>Undo</span></button></span></div>`;
     return `${pageHead(`${V.name} design system`, { desc: esc(V.summary), actions: btn("Open the dashboard", { v: "primary", href: "#/dashboard" }) })}
       <div class="ds-grid">
@@ -622,26 +666,95 @@
         ${card("Principles", `<ol class="ds-list">${V.principles.map((p) => `<li><b>${esc(p[0])}.</b> ${esc(p[1])}</li>`).join("")}</ol>`)}
       </div>
       ${card("Color tokens", `<p class="help">Values for the theme you are viewing. Switch the theme in the bar at the top.</p>${TOKENS.map(([g, ks]) => `<h4 class="ds-h">${g}</h4><div class="swatches">${ks.map((k) => `<div class="swatch"><span class="sw-chip" style="background:var(--${k})"></span><code>--${k}</code><small data-hex="${k}"></small></div>`).join("")}</div>`).join("")}`)}
-      ${card("Contrast audit", `<p class="help">Measured live with the WCAG 2.2 formula. Text needs 4.5:1, field outlines and focus rings need 3:1.</p><div class="tbl-wrap flat"><table class="tbl tbl-plain"><thead><tr><th scope="col">Pair</th><th scope="col">Sample</th><th scope="col" class="r">Ratio</th><th scope="col">Needs</th><th scope="col">Result</th></tr></thead><tbody id="ds-contrast"></tbody></table></div><p class="help" id="ds-contrast-sum"></p>`)}
-      ${card("Typography", `<p class="help">${esc(V.fontNote)}</p>${V.type.map(([n, css, s]) => `<div class="type-row"><small class="type-meta">${esc(n)}</small><span style="${css}">${esc(s)}</span></div>`).join("")}`)}
-      ${card("Shape, space, motion", `<div class="ds-row">${["r-s", "r-m", "r-l", "r-xl"].map((r) => `<div class="shape"><span style="border-radius:var(--${r})"></span><code>--${r}</code></div>`).join("")}${["shadow-1", "shadow-2", "shadow-3"].map((s) => `<div class="shape"><span style="box-shadow:var(--${s});border-color:transparent"></span><code>--${s}</code></div>`).join("")}</div><p class="help">${esc(V.shapeNote)}</p>`)}
+      ${card("Contrast audit", `<p class="help">Measured live with the WCAG 2.2 formula. Text needs 4.5:1, field outlines and focus rings need 3:1.</p><div class="tbl-wrap flat" tabindex="0" aria-label="Contrast pairs"><table class="tbl tbl-plain"><thead><tr><th scope="col">Pair</th><th scope="col">Sample</th><th scope="col" class="r">Ratio</th><th scope="col">Needs</th><th scope="col">Result</th></tr></thead><tbody id="ds-contrast"></tbody></table></div><p class="help" id="ds-contrast-sum"></p>`)}
+      ${card("Typography", `<p class="help">${esc(V.fontNote)}</p>${V.type.map(([n, css, s]) => `<div class="type-row"><small class="type-meta">${esc(n)}</small><span style="${css}">${esc(s)}</span></div>`).join("")}<h4 class="ds-h">Type scale</h4>${tokenGrid(TYPE_SCALE, "type")}<h4 class="ds-h">Line height</h4>${tokenGrid(LEADING, "")}<h4 class="ds-h">Tracking and families</h4>${tokenGrid(TRACKING, "")}`)}
+      ${card("Space", `<p class="help">A 4px scale: 0, 4, 8, 12, 16, 20, 24, then 32, 40, 48, 64, 80, and 96. <code>--space-half</code> is the only 2px step, for hairline gaps. <code>--pad</code> and <code>--gap</code> point at this scale and still change with compact density. <code>--stack</code> is the gap between sections, banners, cards, toolbars, and tables. It follows <code>--gap</code>, so compact density tightens every stack together.</p>${tokenGrid(SPACE, "bar")}`)}
+      ${card("Section spacing", `<p class="help">The check measures adjacent blocks inside each stack: the page, a drawer, a form, a card, a quote column, and a stat row. A vertical or horizontal gap under <code>--stack</code> fails. Gallery tiles, field labels, tab chips, and the needs-attention rows keep their own smaller steps.</p><p class="help" id="ds-spacing-sum"></p><div class="tbl-wrap flat" tabindex="0" aria-label="Section spacing"><table class="tbl tbl-plain"><thead><tr><th scope="col">Pair</th><th scope="col">Axis</th><th scope="col" class="r">Gap</th><th scope="col" class="r">Needs</th></tr></thead><tbody id="ds-spacing"></tbody></table></div>`)}
+      ${card("Radius", `<p class="help">${esc(V.shapeNote)} The scale is 0, 4, 8, 12, 16, and a pill. Tabs, segments, keys, and the old 3, 6, 9, 10, 14, and 18 radii sit on the nearest step.</p>${tokenGrid(RADII, "radius")}`)}
+      ${card("Border, focus, and shadow", `${tokenGrid(["border-w", "border-w-md", "border-w-lg", "border-w-xl", "focus-w", "focus-offset", "focus-offset-field", "focus-offset-inset", "demo-focus-w", "icon-stroke", "blur-topbar"], "")}<div class="ds-tokens">${["shadow-1", "shadow-2", "shadow-3"].map((s) => `<div class="ds-token"><span class="token-shadow" style="box-shadow:var(--${s});border-color:transparent"></span><code>--${s}</code><small data-measure="${s}"></small></div>`).join("")}</div>`)}
+      ${card("Layout", `<p class="help">Controls and rows use <code>--size-sm</code> 32, <code>--size-md</code> 40, and <code>--size-lg</code> 48. Compact density steps <code>--size-md</code> and <code>--size-lg</code> down one step and leaves <code>--size-sm</code> at 32. Icons are 16, 20, and 24. Page, dialog, and preview shells use <code>--w-xs</code> 320 through <code>--w-xl</code> 1240. Grid cells and toolbars are sums of the space scale. The gallery row is 152px on a desktop and 132px on a phone, and a phone search is not capped by a container width. The quote aside stays between 280 and 360. The top bar, sidebar, and demo bar stay named. <code>--pad</code>, <code>--gap</code>, and <code>--stack</code> follow the space scale and still change with compact density. The quote total sticks <code>--demo-h</code> plus <code>--topbar-h</code> below the top of the page. Breakpoints are declared once in the build (<code>--bp-phone</code>, <code>--bp-tablet</code>, <code>--bp-wide</code>). Source media queries say <code>var(--bp-tablet)</code>, and the build writes the literal, because a media query cannot read a custom property. CSS keywords such as 0, auto, 100%, currentColor, transparent, and CanvasText are not tokens. The 1px clip on visually hidden text stays a raw length. Viewport fractions and character measures (vh, vw, ch) stay relative to the screen and the font.</p>${tokenGrid(LAYOUT, "")}<h4 class="ds-h">Stacking and motion</h4>${tokenGrid(["z-base", "z-raised", "z-sticky", "z-overlay", "z-modal", "z-toast", "z-skip", "dur", "dur-spin", "dur-leave", "ease"], "")}`)}
       ${card("Components", comp)}
-      ${card("Layout and patterns", `<div class="tbl-wrap flat"><table class="tbl tbl-plain"><tbody>${V.patterns.map(([a, b]) => `<tr><th scope="row">${esc(a)}</th><td>${esc(b)}</td></tr>`).join("")}</tbody></table></div>`)}
-      ${card("Standards", `<ul class="ds-list"><li><b>WCAG 2.2 AA:</b> contrast checked above for every theme, 2 px focus ring (3 px in high contrast), 32 px smallest target, errors named in words with an error summary, status messages announced.</li><li><b>WAI-ARIA 1.2:</b> dialogs trap focus and close with Esc, tabs and switches use their roles, the palette is a combobox.</li><li><b>ISO 9241-110:</b> save bar shows state, deletes confirm or undo, forms keep what you typed.</li><li><b>Unicode CLDR:</b> Rs amounts, dates, and times in Asia/Karachi through Intl.</li></ul>`)}
+      ${card("Layout and patterns", `<div class="tbl-wrap flat" tabindex="0" aria-label="Layout and patterns"><table class="tbl tbl-plain"><tbody>${V.patterns.map(([a, b]) => `<tr><th scope="row">${esc(a)}</th><td>${esc(b)}</td></tr>`).join("")}</tbody></table></div>`)}
+      ${card("Standards", `<ul class="ds-list"><li><b>WCAG 2.2 AA:</b> contrast checked above for every theme, focus ring <code>--focus-w</code> (2px, 3px in high contrast), smallest target <code>--size-sm</code> (32px, and compact does not step it down), errors named in words with an error summary, status messages announced.</li><li><b>WAI-ARIA 1.2:</b> dialogs trap focus and close with Esc, tabs and switches use their roles, the palette is a combobox.</li><li><b>ISO 9241-110:</b> save bar shows state, deletes confirm or undo, forms keep what you typed.</li><li><b>Unicode CLDR:</b> Rs amounts, dates, and times in Asia/Karachi through Intl.</li></ul>`)}
       ${card("Tokens for the codebase", `<p class="help">Paste into <code>app/office/office-theme.css</code>, scoped under <code>.office</code>.</p><pre class="code" tabindex="0">${esc(window.TOKEN_CSS)}</pre>`)}`;
   };
+  const spacingAudit = (root = document) => {
+    const stack = Math.round(parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--stack")) || 16);
+    const parents = root.querySelectorAll([
+      "main.main", ".drawer-body", ".login-box", ".quote-span",
+      "form[data-form]:not(.quote-form)", ".quote-side", ".quote-form",
+      ".card-body", ".dash-grid", ".ds-grid", ".ds-stack", ".req-detail",
+      ".slide-list", ".repeat", ".stats", ".inbox", ".board", ".edit-split",
+      ".feed", ".form-grid", ".board-col > ul", ".tbl-wrap .tbl tbody",
+    ].join(","));
+    const sig = (el) => {
+      const cls = typeof el.className === "string" ? el.className.trim().split(/\s+/).filter(Boolean).slice(0, 2).join(".") : "";
+      return `${el.tagName.toLowerCase()}${cls ? "." + cls : ""}`;
+    };
+    const box = (el) => el.getBoundingClientRect();
+    const shown = (el) => {
+      const cs = getComputedStyle(el);
+      if (cs.display === "none" || cs.visibility === "hidden") return false;
+      if (cs.position === "fixed" || cs.position === "absolute") return false;
+      if (cs.display === "table-row" || cs.display === "table-cell") return false;
+      const r = box(el);
+      return r.width >= 48 && r.height >= 12;
+    };
+    const between = (mid, a, b, axis) => {
+      const r = box(mid), ar = box(a), br = box(b);
+      if (axis === "v") {
+        const above = ar.bottom <= br.top ? ar : br;
+        const below = above === ar ? br : ar;
+        const overlap = Math.min(above.right, below.right, r.right) - Math.max(above.left, below.left, r.left);
+        return r.top >= above.bottom - 1 && r.bottom <= below.top + 1 && overlap > 24;
+      }
+      const left = ar.right <= br.left ? ar : br;
+      const right = left === ar ? br : ar;
+      const overlap = Math.min(left.bottom, right.bottom, r.bottom) - Math.max(left.top, right.top, r.top);
+      return r.left >= left.right - 1 && r.right <= right.left + 1 && overlap > 24;
+    };
+    const hits = [];
+    parents.forEach((parent) => {
+      if (!shown(parent) && box(parent).height < 12) return;
+      const kids = [...parent.childNodes].filter((n) => n.nodeType === 1 && shown(n));
+      for (let i = 0; i < kids.length; i++) {
+        for (let j = i + 1; j < kids.length; j++) {
+          const a = box(kids[i]), b = box(kids[j]);
+          const overlapX = Math.min(a.right, b.right) - Math.max(a.left, b.left);
+          const overlapY = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top);
+          let axis = "", gap = 0, first = kids[i], second = kids[j];
+          if (b.top >= a.bottom - 1 && overlapX >= 24) { axis = "vertical"; gap = b.top - a.bottom; }
+          else if (a.top >= b.bottom - 1 && overlapX >= 24) { axis = "vertical"; gap = a.top - b.bottom; first = kids[j]; second = kids[i]; }
+          else if (b.left >= a.right - 1 && overlapY >= 24) { axis = "horizontal"; gap = b.left - a.right; }
+          else if (a.left >= b.right - 1 && overlapY >= 24) { axis = "horizontal"; gap = a.left - b.right; first = kids[j]; second = kids[i]; }
+          else continue;
+          if (kids.some((k, n) => n !== i && n !== j && between(k, kids[i], kids[j], axis === "vertical" ? "v" : "h"))) continue;
+          const px = Math.round(gap);
+          if (px >= stack - 1) continue;
+          hits.push({ parent: sig(parent), a: sig(first), b: sig(second), axis, gap: px, stack });
+        }
+      }
+    });
+    return hits;
+  };
+  window.spacingAudit = spacingAudit;
   const hexOf = (k) => getComputedStyle(document.documentElement).getPropertyValue(`--${k}`).trim();
   const lum = (h) => { const m = h.replace("#", ""); const [r, g, b] = [0, 2, 4].map((i) => parseInt(m.slice(i, i + 2), 16) / 255).map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4)); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
   const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((m, n) => n - m); return (x + 0.05) / (y + 0.05); };
   const fillSystem = () => {
     $$("[data-hex]").forEach((el) => (el.textContent = hexOf(el.dataset.hex)));
+    $$("[data-measure]").forEach((el) => { el.textContent = getComputedStyle(document.documentElement).getPropertyValue(`--${el.dataset.measure}`).trim(); });
     let pass = 0;
     $("#ds-contrast").innerHTML = PAIRS.map(([n, f, b, need]) => {
       const r = ratio(hexOf(f), hexOf(b)), ok = r >= need; if (ok) pass++;
-      const sample = need === 3 ? `<span class="pair" style="background:var(--${b});border:2px solid var(--${f})"></span>` : `<span class="pair" style="background:var(--${b});color:var(--${f})">Aa</span>`;
+      const sample = need === 3 ? `<span class="pair" style="background:var(--${b});border:var(--border-w-lg) solid var(--${f})"></span>` : `<span class="pair" style="background:var(--${b});color:var(--${f})">Aa</span>`;
       return `<tr><td data-label="Pair">${esc(n)}<small class="cell-sub"><code>--${f}</code> on <code>--${b}</code></small></td><td data-label="Sample">${sample}</td><td data-label="Ratio" class="r num">${r.toFixed(2)}:1</td><td data-label="Needs">${need}:1</td><td data-label="Result">${ok ? `<span class="pass">${icon("check")}Pass</span>` : `<span class="fail">${icon("x")}Fail</span>`}</td></tr>`;
     }).join("");
     $("#ds-contrast-sum").textContent = `${pass} of ${PAIRS.length} pairs pass in this theme. The build checks Light, Dark, and High contrast before writing the file.`;
+    const gaps = spacingAudit(document);
+    const need = Math.round(parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--stack")) || 16);
+    $("#ds-spacing").innerHTML = gaps.length ? gaps.map((g) => `<tr><td data-label="Pair">${esc(g.a)} then ${esc(g.b)}<small class="cell-sub">${esc(g.parent)}</small></td><td data-label="Axis">${esc(g.axis)}</td><td data-label="Gap" class="r num">${g.gap}px</td><td data-label="Needs" class="r">${need}px</td></tr>`).join("") : `<tr><td colspan="4"><span class="pass">${icon("check")}No section pair on this page sits closer than --stack.</span></td></tr>`;
+    $("#ds-spacing-sum").textContent = gaps.length ? `${gaps.length} section ${gaps.length === 1 ? "pair sits" : "pairs sit"} closer than --stack (${need}px) on this page.` : `Every measured section pair on this page is at least --stack (${need}px).`;
   };
 
   /* ---------- Events ---------- */
@@ -677,7 +790,48 @@
   };
   document.addEventListener("change", (e) => {
     const t = e.target;
+    if (t.matches("[data-margin-slider]")) {
+      const raw = String(t.value);
+      const box = t.form && t.form.margin;
+      if (box) box.value = raw;
+      if (/^\d+$/.test(raw) && +raw <= 100) D().quotePct = +raw;
+      save();
+      render({ keepScroll: true });
+      document.querySelector("[data-margin-slider]")?.focus();
+      return;
+    }
     if (t.closest("form[data-form=quote]") && t.name && !t.matches("[data-night]")) {
+      if (t.name === "hotelMode") {
+        D().hotelMode = t.value;
+        save();
+        render({ keepScroll: true });
+        document.querySelector(`[name="hotelMode"][value="${t.value}"]`)?.focus();
+        return;
+      }
+      if (t.name === "hotelPlan") {
+        D().hotelPlan = t.value;
+        save();
+        render({ keepScroll: true });
+        document.querySelector(`[name="hotelPlan"][value="${t.value}"]`)?.focus();
+        return;
+      }
+      if (t.name === "onlyCity" || t.name === "onlyNights") {
+        const only = D().hotelOnly || (D().hotelOnly = { city: "Skardu", nights: (D().nights || []).length });
+        if (t.name === "onlyCity") only.city = t.value;
+        else only.nights = /^\d+$/.test(String(t.value).trim()) ? +t.value : 0;
+        save();
+        render({ keepScroll: true });
+        document.querySelector(`[name="${t.name}"]`)?.focus();
+        return;
+      }
+      if (t.name === "margin") {
+        const raw = String(t.value).trim();
+        if (/^\d+$/.test(raw) && +raw <= 100) D().quotePct = +raw;
+        save();
+        render({ keepScroll: true });
+        document.querySelector("[name=margin]")?.focus();
+        return;
+      }
       const trip = D().trip || (D().trip = {});
       trip[t.name] = t.type === "checkbox" ? t.checked : t.value;
       if (t.name === "days") {
@@ -685,13 +839,14 @@
         if (days >= 1 && days <= 30) fitNights(days);
       }
       save();
-      if (t.name === "days") render({ keepScroll: true });
+      if (t.name === "days" || t.name === "place" || t.name === "mode" || t.name === "start" || t.name === "vehicle" || t.type === "checkbox") render({ keepScroll: true });
       return;
     }
     if (t.matches("[data-filter-key], [data-sort]")) return applyFilters();
     if (t.matches("[data-file]")) return checkFile(t);
     if (t.matches("[data-demo]")) {
       const k = t.dataset.demo; S[k] = t.value; store.set(k, t.value);
+      if (k === "role") closeDialog(true);
       if (k === "role" && !S.signedIn) return render();
       render({ keepFocus: true, keepScroll: true });
       $(`[data-demo="${k}"]`)?.focus();
@@ -706,16 +861,35 @@
       toast(`${r.name}: ${O.STATUS[r.status][0]}.`, { undo: () => { r.status = from; save(); render({ keepFocus: true, keepScroll: true }); } });
       return;
     }
-    if (t.matches("[data-catalog]")) {
-      const pick = D().pick;
-      pick[t.dataset.catalog] = t.value;
-      if (t.dataset.catalog === "city") {
+    if (t.matches("[data-catalog], [data-stay]")) {
+      const key = t.dataset.catalog || t.dataset.stay;
+      const pick = D().pick || (D().pick = { city: "Skardu", hotel: "Shangrila", room: "Deluxe", occ: "room", changed: false });
+      pick[key] = t.value;
+      if (key === "city") {
         pick.hotel = O.hotelsOf(pick.city)[0];
         pick.room = O.roomsOf(pick.city, pick.hotel)[0]?.room;
         pick.occ = "room";
       }
-      if (t.dataset.catalog === "hotel" || t.dataset.catalog === "room") pick.occ = "room";
+      if (key === "hotel") {
+        pick.room = O.roomsOf(pick.city, pick.hotel)[0]?.room;
+        pick.occ = "room";
+      }
+      if (key === "room") pick.occ = "room";
+      if (t.dataset.stay) {
+        pick.changed = !(pick.city === "Skardu" && pick.hotel === "Shangrila" && pick.room === "Deluxe" && pick.occ !== "mattress");
+        const mattresses = pick.occ === "mattress" ? 1 : 0;
+        (D().nights || []).forEach((night) => {
+          night.city = pick.city;
+          night.hotel = pick.hotel;
+          night.room = pick.room;
+          night.mattresses = mattresses;
+          night.custom = !!pick.changed;
+          if (pick.changed) delete night.override;
+        });
+      }
+      save();
       render({ keepScroll: true });
+      document.querySelector(`[data-stay="${key}"], [data-catalog="${key}"]`)?.focus();
       return;
     }
     if (t.matches("[data-night]")) {
@@ -738,8 +912,8 @@
     }
     if (t.matches("[data-action-change=change-role]")) {
       const u = D().users.find((x) => String(x.id) === t.dataset.id), to = t.value;
-      dialog({ title: `Make ${u.email} ${to === "editor" ? "an" : "a"} ${ROLE_NAME[to]}?`, body: `<p>${{ owner: "Owners can do everything, including logins and backups.", manager: "Managers change rates, quotes, and request status. They can't edit website text.", editor: "Editors change website content. They can't open Rates." }[to]}</p>`, confirm: "Change role", icon: "users", alertdialog: true,
-        onConfirm: () => { u.role = to; save(); render({ keepFocus: true }); toast("Role saved.", { body: `${u.email} is now ${ROLE_NAME[to] === "Owner" ? "an" : "a"} ${ROLE_NAME[to]}.` }); },
+      dialog({ title: `Make ${u.email} ${to === "editor" ? "an" : "a"} ${ROLE_NAME[to]}?`, body: `<p>${{ owner: "Owners can do everything, including logins and backups. An Owner can delete a tour.", manager: "Managers change rates, quotes, and request status. They can't edit website text or delete a tour.", editor: "Editors change website content and can delete a tour. They can't open Rates." }[to]}</p>`, confirm: "Change role", icon: "users", alertdialog: true,
+        onConfirm: () => { u.role = to; save(); render({ keepFocus: true }); toast("Role saved.", { body: `${u.email} is now ${ROLE_NAME[to] === "Owner" ? "an" : "a"} ${ROLE_NAME[to]}. ${to === "manager" ? "A Manager cannot delete a tour." : "The Owner and an Editor can delete a tour."}` }); },
         onCancel: () => { t.value = u.role; t.focus(); } });
     }
   });

@@ -4,6 +4,7 @@ import { db } from "../lib/db";
 import { users } from "../lib/db/schema";
 import { savePriceAs, updateTourAs } from "../lib/office/content-writes";
 import { createUserAs, removeUserAs } from "../lib/office/users";
+import { ensureTourPlacesTable } from "../lib/office/tour-places";
 import { getTour } from "../lib/content";
 
 function officeBase() {
@@ -76,6 +77,7 @@ async function checkOfficeApi(
 }
 
 async function main() {
+  await ensureTourPlacesTable();
   const email = process.env.OWNER_EMAIL?.trim().toLowerCase();
   const password = process.env.OWNER_PASSWORD;
   if (!email || !password) {

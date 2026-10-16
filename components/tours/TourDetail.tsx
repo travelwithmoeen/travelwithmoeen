@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getCategoryBadgeClass, type Tour } from "@/data/tours";
 import { TourOverview } from "@/components/tours/TourOverview";
+import { TourPlaceLabel } from "@/components/tours/TourPlaceLabel";
 import { apiPath } from "@/lib/http/api-path";
 import { cn } from "@/lib/utils";
 
@@ -105,7 +106,7 @@ export default function TourDetails({ tour }: { tour: Tour | null }) {
               <div className="flex flex-wrap items-center gap-4 text-sm">
                 <span className="flex items-center gap-1 text-navy">
                   <MapPin className="h-4 w-4 text-navy" />
-                  {tour.location}
+                  <TourPlaceLabel tour={tour} />
                 </span>
                 <span className="flex items-center gap-1 text-navy">
                   <Clock className="h-4 w-4 text-navy" />

@@ -3,7 +3,8 @@ import path from "path";
 import { spawn } from "child_process";
 import { eq, max } from "drizzle-orm";
 import { db, sql } from "../lib/db";
-import { guestRequests, loginFailures, places, posts, reviews, tours, users } from "../lib/db/schema";
+import { guestRequests, loginFailures, places, posts, reviews, tourPlaces, tours, users } from "../lib/db/schema";
+import { inferTourPlaceLinks, linkInferredTourPlaces } from "../lib/office/tour-places";
 import { authenticate } from "../lib/auth/authenticate";
 import { createUserAs, removeUserAs } from "../lib/office/users";
 import { officeMediaPath } from "../lib/office/media";
@@ -83,7 +84,7 @@ async function officePost(pathname: string, form: FormData, cookie: string) {
     headers: cookie ? { cookie } : {},
   });
   const text = await response.text();
-  let body: { ok?: boolean; error?: string } = {};
+  let body: { ok?: boolean; error?: string; href?: string } = {};
   try {
     body = JSON.parse(text) as { ok?: boolean; error?: string };
   } catch {
@@ -467,10 +468,8 @@ async function assertOfficeMedia(editorCookie: string, managerCookie: string, ow
     const deleteForm = new FormData();
     deleteForm.set("id", created.id);
     const editorDelete = await officePost("/api/office/tours/delete", deleteForm, editorCookie);
-    if (editorDelete.status !== 403) throw new Error(`An Editor delete of a tour returned ${editorDelete.status}.`);
-    const removed = await officePost("/api/office/tours/delete", deleteForm, ownerCookie);
-    if (removed.status !== 200 || !removed.body.ok) {
-      throw new Error(`The Owner could not delete the media check tour: ${removed.status} ${removed.body.error ?? ""}`);
+    if (editorDelete.status !== 200 || !editorDelete.body.ok) {
+      throw new Error(`An Editor could not delete the media check tour: ${editorDelete.status} ${editorDelete.body.error ?? ""}`);
     }
     const [gone] = await db.select().from(tours).where(eq(tours.id, created.id)).limit(1);
     if (gone) throw new Error("Deleting the tour left the row.");
@@ -487,6 +486,249 @@ async function assertOfficeMedia(editorCookie: string, managerCookie: string, ow
     await officePost("/api/office/tours/delete", form, ownerCookie);
     await db.delete(tours).where(eq(tours.id, "office-media-check"));
   }
+}
+
+function assertInferredLinks() {
+  const known = new Set([
+    "skardu-valley",
+    "hunza-valley",
+    "astor-valley-minimarg",
+    "naran-kaghan-babusar-top",
+    "kumrat-valley",
+    "chitral-valley",
+    "neelum-valley",
+    "swat-valley-kalam-malam-jabba",
+  ]);
+  const cases: { tour: { name: string; region: string; location: string }; slugs: string[]; note: boolean }[] = [
+    { tour: { name: "4 Days Trip to Skardu (By Air)", region: "Skardu Valley", location: "Skardu Valley" }, slugs: ["skardu-valley"], note: false },
+    { tour: { name: "10 Days By Air Trip to Skardu & Hunza Valley", region: "Skardu & Hunza", location: "Deosai National Park" }, slugs: ["skardu-valley", "hunza-valley"], note: true },
+    { tour: { name: "5 Days By Air Trip to Astor Minimarg and Skardu", region: "Minimarg Astor Valley", location: "Astor Minimarg" }, slugs: ["astor-valley-minimarg", "skardu-valley"], note: true },
+    { tour: { name: "3 Days By Road Trip to Leepa Valley", region: "Neelum Valley Kashmir", location: "Leepa Valley" }, slugs: ["neelum-valley"], note: true },
+    { tour: { name: "1 Day By Road Trip to Islamabad", region: "Islamabad", location: "Islamabad Capital Territory" }, slugs: [], note: true },
+    { tour: { name: "3 Days Trip to Ratti Gali Lake", region: "Ratti Gali Lake", location: "Ratti Gali Lake" }, slugs: [], note: true },
+    { tour: { name: "5 Days By Air Trip to Fairy Meadows + Skardu Valley", region: "Fairy Meadows Nanga Base Camp", location: "Fairy Meadows" }, slugs: [], note: true },
+    { tour: { name: "1 Day By Road Trip to Murree", region: "Murree Patriata Galiyat", location: "Murree and Patriata" }, slugs: [], note: true },
+  ];
+  for (const item of cases) {
+    const inferred = inferTourPlaceLinks(item.tour, known);
+    if (inferred.slugs.join(",") !== item.slugs.join(",")) {
+      throw new Error(`Links for ${item.tour.name} were ${inferred.slugs.join(",") || "none"}.`);
+    }
+    if (item.note && !inferred.note) throw new Error(`The note for ${item.tour.name} was missing.`);
+    if (!item.note && inferred.note) throw new Error(`The note for ${item.tour.name} was unexpected.`);
+  }
+}
+
+async function assertTourPlaceOffice(editorCookie: string, managerCookie: string, ownerCookie: string) {
+  assertInferredLinks();
+  const linked = await linkInferredTourPlaces();
+  if (linked.unlinked.length === 0) throw new Error("The link pass linked every tour, including ones with no place page.");
+  const [skardu] = await db.select().from(tours).where(eq(tours.region, "Skardu Valley")).limit(1);
+  if (!skardu) throw new Error("A Skardu Valley tour was not loaded.");
+  const skarduLinks = await db.select().from(tourPlaces).where(eq(tourPlaces.tourId, skardu.id));
+  if (skarduLinks.length !== 1 || skarduLinks[0]?.placeSlug !== "skardu-valley") {
+    throw new Error("A Skardu Valley tour was not linked to Skardu Valley.");
+  }
+  const [islamabad] = await db.select().from(tours).where(eq(tours.region, "Islamabad")).limit(1);
+  if (!islamabad) throw new Error("An Islamabad tour was not loaded.");
+  const islamabadLinks = await db.select().from(tourPlaces).where(eq(tourPlaces.tourId, islamabad.id));
+  if (islamabadLinks.length !== 0) throw new Error("An Islamabad tour was linked without a place page.");
+  const [combined] = await db.select().from(tours).where(eq(tours.region, "Skardu & Hunza")).limit(1);
+  if (!combined) throw new Error("A Skardu and Hunza tour was not loaded.");
+  const combinedLinks = await db.select().from(tourPlaces).where(eq(tourPlaces.tourId, combined.id));
+  const combinedSlugs = combinedLinks.map((row) => row.placeSlug).sort();
+  if (combinedSlugs.join(",") !== "hunza-valley,skardu-valley") {
+    throw new Error("A Skardu and Hunza tour was not linked to both places.");
+  }
+
+  const placeSlug = "office-link-place";
+  const otherSlug = "office-link-other";
+  const shipped = skardu.image;
+  await db.delete(tourPlaces).where(eq(tourPlaces.placeSlug, placeSlug));
+  await db.delete(tourPlaces).where(eq(tourPlaces.placeSlug, otherSlug));
+  await db.delete(places).where(eq(places.slug, placeSlug));
+  await db.delete(places).where(eq(places.slug, otherSlug));
+  await db.insert(places).values([
+    {
+      slug: placeSlug,
+      title: "Link Valley",
+      excerpt: "Link valley guide stays.",
+      bannerImage: shipped,
+      location: "Check",
+      listingNumber: 99002,
+      content: [{ heading: "Link Valley", body: "The place guide.", highlight: [], image: "" }],
+    },
+    {
+      slug: otherSlug,
+      title: "Other Valley",
+      excerpt: "Other valley.",
+      bannerImage: shipped,
+      location: "Check",
+      listingNumber: 99003,
+      content: [],
+    },
+  ]);
+
+  const createdNames = ["Office Link Check Tour", "Office Link Check Tour Amended"];
+  const stale = await db.select({ id: tours.id }).from(tours).where(eq(tours.region, "Link Valley"));
+  for (const row of stale) await db.delete(tours).where(eq(tours.id, row.id));
+  try {
+    const editorList = await fetch(`${siteBase()}/office/tours`, { headers: { cookie: editorCookie } });
+    const editorHtml = await editorList.text();
+    if (editorList.status !== 200 || !editorHtml.includes("Add tour") || !editorHtml.includes("Delete tour")) {
+      throw new Error("The Editor tours list does not offer add and delete.");
+    }
+    const ownerList = await fetch(`${siteBase()}/office/tours`, { headers: { cookie: ownerCookie } });
+    const ownerHtml = await ownerList.text();
+    if (ownerList.status !== 200 || !ownerHtml.includes("Add tour") || !ownerHtml.includes("Delete tour")) {
+      throw new Error("The Owner tours list does not offer add and delete.");
+    }
+    const newPage = await fetch(`${siteBase()}/office/tours/new`, { headers: { cookie: editorCookie } });
+    if (newPage.status !== 200 || !(await newPage.text()).includes("Add tour")) {
+      throw new Error("The Editor could not open Add tour.");
+    }
+
+    const form = new FormData();
+    form.set("name", "Office Link Check Tour");
+    form.set("location", "Link Valley");
+    form.set("region", "Link Valley");
+    form.set("description", "Office link check.");
+    form.set("duration", "2");
+    form.set("image", shipped);
+    form.set("pdf", "");
+    form.set("transport", "By Road");
+    form.set("itinerary", "[]");
+    form.set("galleryImageSet", "1");
+    form.set("placeSet", "1");
+    form.append("placeSlug", placeSlug);
+    const signedOut = await officePost("/api/office/tours/create", form, "");
+    if (signedOut.status !== 401) throw new Error(`A tour create with no cookie returned ${signedOut.status}.`);
+    const managerCreate = await officePost("/api/office/tours/create", form, managerCookie);
+    if (managerCreate.status !== 403 || managerCreate.body.error !== "You cannot add a tour.") {
+      throw new Error(`A Manager was not refused a new tour: ${managerCreate.status} ${managerCreate.body.error ?? ""}`);
+    }
+    const created = await officePost("/api/office/tours/create", form, editorCookie);
+    if (created.status !== 200 || !created.body.ok || !created.body.href) {
+      throw new Error(`An Editor could not add a tour: ${created.status} ${created.body.error ?? ""}`);
+    }
+    const [tour] = await db.select().from(tours).where(eq(tours.name, "Office Link Check Tour")).limit(1);
+    if (!tour || tour.basePrice !== 0 || tour.region !== "Link Valley" || tour.location !== "Link Valley") {
+      throw new Error("The new tour was not stored.");
+    }
+    const tourLinks = await db.select().from(tourPlaces).where(eq(tourPlaces.tourId, tour.id));
+    if (tourLinks.length !== 1 || tourLinks[0]?.placeSlug !== placeSlug) throw new Error("The new tour was not linked to its place.");
+
+    const tourPage = await fetch(`${siteBase()}/tours/${encodeURIComponent(tour.id)}`);
+    const tourHtml = await tourPage.text();
+    if (!tourPage.ok || !tourHtml.includes("Office Link Check Tour") || !tourHtml.includes(`/destinations/${placeSlug}`) || !tourHtml.includes("Link Valley")) {
+      throw new Error("The public tour page does not show the linked place.");
+    }
+    const placePage = await fetch(`${siteBase()}/destinations/${placeSlug}`);
+    const placeHtml = await placePage.text();
+    if (!placePage.ok || !placeHtml.includes(`/tours/${tour.id}`) || !placeHtml.includes("Office Link Check Tour")) {
+      throw new Error("The public place page does not show the linked tour.");
+    }
+
+    const placeForm = new FormData();
+    placeForm.set("slug", placeSlug);
+    placeForm.set("title", "Link Valley West");
+    placeForm.set("excerpt", "Link valley guide stays.");
+    placeForm.set("location", "Check");
+    placeForm.set("bannerImage", shipped);
+    placeForm.set("content", JSON.stringify([{ heading: "Link Valley", body: "The place guide.", highlight: [], image: "" }]));
+    const renamed = await officePost("/api/office/places", placeForm, editorCookie);
+    if (renamed.status !== 200 || !renamed.body.ok) {
+      throw new Error(`The place title was not saved: ${renamed.status} ${renamed.body.error ?? ""}`);
+    }
+    const [moved] = await db.select().from(tours).where(eq(tours.id, tour.id)).limit(1);
+    const [place] = await db.select().from(places).where(eq(places.slug, placeSlug)).limit(1);
+    if (!moved || moved.location !== "Link Valley West" || moved.name !== "Office Link Check Tour" || moved.region !== "Link Valley") {
+      throw new Error("Renaming the place did not update the single linked tour location.");
+    }
+    if (!place || place.excerpt !== "Link valley guide stays." || place.content[0]?.body !== "The place guide.") {
+      throw new Error("Renaming the place changed the place guide.");
+    }
+    const renamedTourPage = await fetch(`${siteBase()}/tours/${encodeURIComponent(tour.id)}`);
+    if (!(await renamedTourPage.text()).includes("Link Valley West")) {
+      throw new Error("The public tour page does not show the new place title.");
+    }
+
+    const amend = new FormData();
+    amend.set("id", tour.id);
+    amend.set("name", "Office Link Check Tour Amended");
+    amend.set("location", moved.location);
+    amend.set("region", moved.region);
+    amend.set("description", moved.description);
+    amend.set("duration", String(moved.duration));
+    amend.set("image", moved.image);
+    amend.set("pdf", moved.pdf);
+    amend.set("transport", moved.transport);
+    amend.set("categories", moved.categories.join("\n"));
+    amend.set("packageTypes", moved.packageTypes.join("\n"));
+    amend.set("included", moved.included.join("\n"));
+    amend.set("notIncluded", moved.notIncluded.join("\n"));
+    amend.set("itinerary", "[]");
+    amend.set("galleryImageSet", "1");
+    amend.set("placeSet", "1");
+    amend.append("placeSlug", placeSlug);
+    amend.append("placeSlug", otherSlug);
+    const amended = await officePost("/api/office/tours", amend, editorCookie);
+    if (amended.status !== 200 || !amended.body.ok) {
+      throw new Error(`An Editor could not amend the tour: ${amended.status} ${amended.body.error ?? ""}`);
+    }
+    const [placeAfterAmend] = await db.select().from(places).where(eq(places.slug, placeSlug)).limit(1);
+    if (!placeAfterAmend || placeAfterAmend.title !== "Link Valley West" || placeAfterAmend.excerpt !== "Link valley guide stays.") {
+      throw new Error("Amending the tour rewrote the place.");
+    }
+    const placeAfter = await fetch(`${siteBase()}/destinations/${placeSlug}`);
+    if (!(await placeAfter.text()).includes("Office Link Check Tour Amended")) {
+      throw new Error("The place page does not show the amended tour.");
+    }
+
+    const placeAgain = new FormData();
+    placeAgain.set("slug", placeSlug);
+    placeAgain.set("title", "Link Valley North");
+    placeAgain.set("excerpt", "Link valley guide stays.");
+    placeAgain.set("location", "Check");
+    placeAgain.set("bannerImage", shipped);
+    placeAgain.set("content", JSON.stringify([{ heading: "Link Valley", body: "The place guide.", highlight: [], image: "" }]));
+    const secondRename = await officePost("/api/office/places", placeAgain, editorCookie);
+    if (secondRename.status !== 200 || !secondRename.body.ok) {
+      throw new Error(`The second place title was not saved: ${secondRename.status}`);
+    }
+    const [keptLocation] = await db.select().from(tours).where(eq(tours.id, tour.id)).limit(1);
+    if (!keptLocation || keptLocation.location !== "Link Valley West") {
+      throw new Error("A tour linked to two places took a single place title as its location.");
+    }
+
+    const managerDelete = await officePost("/api/office/tours/delete", deleteFormFor(tour.id), managerCookie);
+    if (managerDelete.status !== 403 || managerDelete.body.error !== "You cannot delete a tour.") {
+      throw new Error(`A Manager was not refused a tour delete: ${managerDelete.status} ${managerDelete.body.error ?? ""}`);
+    }
+    const editorDelete = await officePost("/api/office/tours/delete", deleteFormFor(tour.id), editorCookie);
+    if (editorDelete.status !== 200 || !editorDelete.body.ok) {
+      throw new Error(`An Editor could not delete the new tour: ${editorDelete.status} ${editorDelete.body.error ?? ""}`);
+    }
+    const [gone] = await db.select().from(tours).where(eq(tours.id, tour.id)).limit(1);
+    if (gone) throw new Error("The deleted tour is still stored.");
+    const leftover = await db.select().from(tourPlaces).where(eq(tourPlaces.tourId, tour.id));
+    if (leftover.length !== 0) throw new Error("Deleting the tour left its place links.");
+  } finally {
+    for (const name of createdNames) {
+      const rows = await db.select({ id: tours.id }).from(tours).where(eq(tours.name, name));
+      for (const row of rows) await db.delete(tours).where(eq(tours.id, row.id));
+    }
+    const staleLeft = await db.select({ id: tours.id }).from(tours).where(eq(tours.region, "Link Valley"));
+    for (const row of staleLeft) await db.delete(tours).where(eq(tours.id, row.id));
+    await db.delete(places).where(eq(places.slug, placeSlug));
+    await db.delete(places).where(eq(places.slug, otherSlug));
+  }
+}
+
+function deleteFormFor(id: string) {
+  const form = new FormData();
+  form.set("id", id);
+  return form;
 }
 
 async function assertOfficeRequests(savedIds: number[]) {
@@ -600,6 +842,7 @@ async function assertOfficeRequests(savedIds: number[]) {
     const ownerCookie = sessionCookie(ownerLogin.response);
     if (!ownerCookie) throw new Error("The Owner did not get a session.");
     await assertOfficeMedia(editorCookie, managerCookie, ownerCookie);
+    await assertTourPlaceOffice(editorCookie, managerCookie, ownerCookie);
     const ownerDelete = await officePost("/api/office/requests/delete", deleteForm, ownerCookie);
     if (ownerDelete.status !== 200 || !ownerDelete.body.ok) {
       throw new Error(`An Owner delete returned ${ownerDelete.status}.`);

@@ -4,6 +4,7 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tour, getCategoryBadgeClass } from "@/data/tours";
+import { TourPlaceLabel } from "@/components/tours/TourPlaceLabel";
 import { cn } from "@/lib/utils";
 
 interface TourCardProps {
@@ -73,7 +74,7 @@ export function TourCard({ tour, view }: TourCardProps) {
           <div className="mt-1 flex flex-wrap items-center gap-3 text-sm text-navy-light">
             <span className="flex items-center gap-1">
               <MapPin className="h-3.5 w-3.5" />
-              {tour.location}
+              <TourPlaceLabel tour={tour} />
             </span>
             <span className="flex items-center gap-1">
               <Clock className="h-3.5 w-3.5" />

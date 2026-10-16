@@ -1,6 +1,6 @@
 import { asc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { photos, places, posts, reviews, siteSettings, slides, tourDays, tours } from "@/lib/db/schema";
+import { photos, places, posts, reviews, siteSettings, slides, tourDays, tourPlaces, tours } from "@/lib/db/schema";
 import type { Blog } from "@/data/blog";
 import type { Destination } from "@/data/destinations";
 import type { GalleryImage } from "@/data/gallery";
@@ -12,7 +12,11 @@ import type { HomeSlide, SiteSettings } from "@/lib/content-types";
 
 export type { HomeSlide, SiteSettings };
 
-function toTour(row: typeof tours.$inferSelect, days: TourDay[]): Tour {
+function toTour(
+  row: typeof tours.$inferSelect,
+  days: TourDay[],
+  linkedPlaces: { slug: string; title: string }[],
+): Tour {
   return {
     id: row.id,
     name: row.name,
@@ -36,6 +40,7 @@ function toTour(row: typeof tours.$inferSelect, days: TourDay[]): Tour {
     priceSource: row.priceSource,
     couplePrice: row.basePrice,
     offers: [],
+    places: linkedPlaces,
   };
 }
 
@@ -94,13 +99,55 @@ async function daysByTour() {
   return grouped;
 }
 
+async function linksByTour() {
+  const rows = await db
+    .select({
+      tourId: tourPlaces.tourId,
+      slug: places.slug,
+      title: places.title,
+      sortOrder: tourPlaces.sortOrder,
+    })
+    .from(tourPlaces)
+    .innerJoin(places, eq(tourPlaces.placeSlug, places.slug))
+    .orderBy(asc(tourPlaces.sortOrder), asc(places.title));
+  const grouped = new Map<string, { slug: string; title: string }[]>();
+  for (const row of rows) {
+    const list = grouped.get(row.tourId) ?? [];
+    list.push({ slug: row.slug, title: row.title });
+    grouped.set(row.tourId, list);
+  }
+  return grouped;
+}
+
+async function toursByPlace() {
+  const rows = await db
+    .select({
+      placeSlug: tourPlaces.placeSlug,
+      id: tours.id,
+      name: tours.name,
+      duration: tours.duration,
+      transport: tours.transport,
+    })
+    .from(tourPlaces)
+    .innerJoin(tours, eq(tourPlaces.tourId, tours.id))
+    .orderBy(asc(tours.sortOrder), asc(tours.name));
+  const grouped = new Map<string, { id: string; name: string; duration: number; transport: string }[]>();
+  for (const row of rows) {
+    const list = grouped.get(row.placeSlug) ?? [];
+    list.push({ id: row.id, name: row.name, duration: row.duration, transport: row.transport });
+    grouped.set(row.placeSlug, list);
+  }
+  return grouped;
+}
+
 export async function getTours(): Promise<Tour[]> {
-  const [tourRows, days] = await Promise.all([
+  const [tourRows, days, links] = await Promise.all([
     db.select().from(tours).orderBy(asc(tours.sortOrder)),
     daysByTour(),
+    linksByTour(),
   ]);
   const catalog = await loadCatalog();
-  return tourRows.map((row) => priceTour(toTour(row, days.get(row.id) ?? []), catalog));
+  return tourRows.map((row) => priceTour(toTour(row, days.get(row.id) ?? [], links.get(row.id) ?? []), catalog));
 }
 
 export async function getTour(id: string): Promise<Tour | null> {
@@ -111,6 +158,7 @@ export async function getTour(id: string): Promise<Tour | null> {
     .from(tourDays)
     .where(eq(tourDays.tourId, id))
     .orderBy(asc(tourDays.dayNumber));
+  const links = await linksByTour();
   return priceTour(
     toTour(
       row,
@@ -120,12 +168,16 @@ export async function getTour(id: string): Promise<Tour | null> {
         description: day.description,
         highlights: day.highlights,
       })),
+      links.get(id) ?? [],
     ),
     await loadCatalog(),
   );
 }
 
-function toPlace(row: typeof places.$inferSelect): Destination {
+function toPlace(
+  row: typeof places.$inferSelect,
+  linkedTours: { id: string; name: string; duration: number; transport: string }[],
+): Destination {
   return {
     title: row.title,
     slug: row.slug,
@@ -134,17 +186,23 @@ function toPlace(row: typeof places.$inferSelect): Destination {
     location: row.location ?? undefined,
     listingNumber: row.listingNumber,
     content: row.content,
+    tours: linkedTours,
   };
 }
 
 export async function getPlaces(): Promise<Destination[]> {
-  const rows = await db.select().from(places).orderBy(asc(places.listingNumber));
-  return rows.map(toPlace);
+  const [rows, linked] = await Promise.all([
+    db.select().from(places).orderBy(asc(places.listingNumber)),
+    toursByPlace(),
+  ]);
+  return rows.map((row) => toPlace(row, linked.get(row.slug) ?? []));
 }
 
 export async function getPlace(slug: string): Promise<Destination | null> {
   const [row] = await db.select().from(places).where(eq(places.slug, slug)).limit(1);
-  return row ? toPlace(row) : null;
+  if (!row) return null;
+  const linked = await toursByPlace();
+  return toPlace(row, linked.get(slug) ?? []);
 }
 
 function toPost(row: typeof posts.$inferSelect): Blog {
