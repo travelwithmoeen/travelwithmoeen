@@ -383,9 +383,10 @@ export async function savePhotoAs(
     const saved = { ok: true as const, message: "Photo saved." };
     return existing ? removeOldFilesAfter([existing.src], [input.src.trim()], saved) : saved;
   }
-  // The database assigns the id (T-45), so two adds at the same moment do not collide.
-  await db.transaction(async (tx) => {
-    const [added] = await tx
+  // The database assigns the id (T-45), so two adds at the same moment do not collide. If no row
+  // comes back, nothing was added: no activity row is written and the add reports an error (T-46).
+  const added = await db.transaction(async (tx) => {
+    const [row] = await tx
       .insert(photos)
       .values({
         src: input.src.trim(),
@@ -395,8 +396,11 @@ export async function savePhotoAs(
         homeOnly: input.homeOnly,
       })
       .returning({ id: photos.id });
-    await recordActivity(tx, actor, { kind: "photo", recordId: added?.id, text: `Added gallery photo ${input.alt.trim()}` });
+    if (!row) return false;
+    await recordActivity(tx, actor, { kind: "photo", recordId: row.id, text: `Added gallery photo ${input.alt.trim()}` });
+    return true;
   });
+  if (!added) return { ok: false, error: "The photo could not be added." };
   return { ok: true, message: "Photo added." };
 }
 
@@ -446,8 +450,8 @@ export async function saveReviewAs(
     const saved = { ok: true as const, message: "Review saved." };
     return existing ? removeOldFilesAfter([existing.avatar], [input.avatar.trim()], saved) : saved;
   }
-  await db.transaction(async (tx) => {
-    const [added] = await tx
+  const added = await db.transaction(async (tx) => {
+    const [row] = await tx
       .insert(reviews)
       .values({
         name: input.name.trim(),
@@ -457,8 +461,11 @@ export async function saveReviewAs(
         rating,
       })
       .returning({ id: reviews.id });
-    await recordActivity(tx, actor, { kind: "review", recordId: added?.id, text: `Added review from ${input.name.trim()}` });
+    if (!row) return false;
+    await recordActivity(tx, actor, { kind: "review", recordId: row.id, text: `Added review from ${input.name.trim()}` });
+    return true;
   });
+  if (!added) return { ok: false, error: "The review could not be added." };
   return { ok: true, message: "Review added." };
 }
 
@@ -503,8 +510,8 @@ export async function saveSlideAs(
     const saved = { ok: true as const, message: "Slide saved." };
     return existing ? removeOldFilesAfter([existing.image], [input.image.trim()], saved) : saved;
   }
-  await db.transaction(async (tx) => {
-    const [added] = await tx
+  const added = await db.transaction(async (tx) => {
+    const [row] = await tx
       .insert(slides)
       .values({
         image: input.image.trim(),
@@ -513,11 +520,13 @@ export async function saveSlideAs(
         sortOrder: input.sortOrder,
       })
       .returning({ id: slides.id });
-    if (!added) return;
+    if (!row) return false;
     // A slide with no order joins the end of the row, ordered by its id, as before.
-    if (!input.sortOrder) await tx.update(slides).set({ sortOrder: added.id }).where(eq(slides.id, added.id));
-    await recordActivity(tx, actor, { kind: "slide", recordId: added.id, text: `Added home slide ${input.title.trim()}` });
+    if (!input.sortOrder) await tx.update(slides).set({ sortOrder: row.id }).where(eq(slides.id, row.id));
+    await recordActivity(tx, actor, { kind: "slide", recordId: row.id, text: `Added home slide ${input.title.trim()}` });
+    return true;
   });
+  if (!added) return { ok: false, error: "The slide could not be added." };
   return { ok: true, message: "Slide added." };
 }
 
