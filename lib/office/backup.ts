@@ -8,9 +8,11 @@ import {
   hotelRates,
   jeepLines,
   loginFailures,
+  mealRates,
   photos,
   places,
   posts,
+  pricingRules,
   quoteDays,
   quoteExtras,
   quoteNights,
@@ -57,6 +59,8 @@ export const BACKUP_TABLES = [
   ["quote_extras", quoteExtras],
   ["guest_requests", guestRequests],
   ["site_settings", siteSettings],
+  ["pricing_rules", pricingRules],
+  ["meal_rates", mealRates],
   ["activity", activity],
 ] as const;
 

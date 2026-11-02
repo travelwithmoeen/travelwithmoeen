@@ -41,6 +41,8 @@ const LIST_OF_KIND: Record<string, string> = {
   jeep_line: "/office/rates/jeeps",
   air_extra: "/office/rates/air",
   margin: "/office/rates/margin",
+  pricing_rule: "/office/rates/rules",
+  meal_rate: "/office/rates/rules",
   quote: "/office/rates/quote",
   request: "/office/requests",
   user: "/office/users",

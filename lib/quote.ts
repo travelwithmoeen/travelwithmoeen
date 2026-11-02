@@ -25,19 +25,10 @@ export function readMarginPercent(raw: string): { ok: true; percent: MarginPerce
 }
 
 const GRADES: HotelGrade[] = ["Deluxe", "Premier", "Executive", "Luxury", "Ultra Luxury"];
-const MEAL_PER_NIGHT: Record<HotelGrade, number> = {
-  Deluxe: 1200,
-  Premier: 1500,
-  Executive: 2000,
-  Luxury: 2500,
-  "Ultra Luxury": 3000,
-};
-const GUIDE_PER_DAY = 5000;
-const BREAKFAST_PER_PERSON = 500;
 const LAHORE_ROAD_PER_DAY = 5000;
-const LAP_INFANT_TICKET = 1000;
-const SEAT_INFANT_TICKET = 5000;
 const MAX_DAYS = 60;
+// A twin room holds two. The automatic room count for more than two uses the people-per-room rule.
+const TWIN_ROOM_PEOPLE = 2;
 const TAOBAT_SHEET_PLACE = "Neelum Taobat Arang Kel";
 const TAOBAT_PLACE = "Taobat";
 
@@ -73,6 +64,19 @@ export type AirExtraRow = {
   sticker: number;
 };
 
+// BR-87: the rules the office changes on the Pricing rules tab, read from the database.
+export type PricingRules = {
+  guidePerDay: number;
+  breakfastPerPerson: number;
+  childFarePercent: number;
+  lapInfantFare: number;
+  seatInfantFare: number;
+  peoplePerRoom: number;
+};
+
+// BR-87 and BR-88: per person, dinner for each night and lunch for each day.
+export type MealRateRow = { grade: string; dinner: number; lunch: number };
+
 export type JeepLineRow = {
   place: string;
   mode: TripMode | "both";
@@ -88,6 +92,9 @@ export type RateCatalog = {
   air: AirExtraRow;
   jeeps: JeepLineRow[];
   seasonPercent: MarginPercent;
+  // Null until the pricing rules are stored (drizzle/0004_pricing_rules.sql).
+  rules: PricingRules | null;
+  meals: MealRateRow[];
 };
 
 export type NightEdit = { night: number; rate: number; hotelName?: string };
@@ -115,7 +122,10 @@ export type QuoteInput = {
   roomCount?: number;
   share?: "twin" | "triple";
   guide: boolean;
+  // Dinner each night (BR-37). The field keeps the name meals, as on a saved quote.
   meals: boolean;
+  // Lunch each day, for an office quote only (BR-88).
+  lunch?: boolean;
   seasonPercent?: MarginPercent;
   nightEdits?: NightEdit[];
   dayEdits?: DayEdit[];
@@ -189,6 +199,14 @@ export function buildQuote(input: QuoteInput, catalog: RateCatalog): QuoteResult
   if (seats < 1) {
     return { ok: false, error: "Enter the travelers." };
   }
+  const rules = catalog.rules;
+  if (!rules) {
+    return { ok: false, error: "The pricing rules are not stored yet." };
+  }
+  const mealRate = catalog.meals.find((row) => row.grade === input.grade);
+  if ((input.meals || input.lunch) && !mealRate) {
+    return { ok: false, error: "No meal rate is stored for that grade." };
+  }
 
   const place = storedPlace(input.place);
   const city = input.mode === "air" ? "Air" : input.startCity.trim();
@@ -248,7 +266,7 @@ export function buildQuote(input: QuoteInput, catalog: RateCatalog): QuoteResult
 
   const rooms =
     input.roomCount ??
-    (input.share === "twin" ? Math.ceil(seats / 2) : Math.ceil(seats / 3));
+    (input.share === "twin" ? Math.ceil(seats / TWIN_ROOM_PEOPLE) : Math.ceil(seats / rules.peoplePerRoom));
   if (!Number.isInteger(rooms) || rooms < 1) {
     return { ok: false, error: "Enter the rooms." };
   }
@@ -257,7 +275,7 @@ export function buildQuote(input: QuoteInput, catalog: RateCatalog): QuoteResult
       ? hotel.triple
       : input.share === "twin"
         ? hotel.twin
-        : seats / rooms > 2
+        : seats / rooms > TWIN_ROOM_PEOPLE
           ? hotel.triple
           : hotel.twin;
   const nightsCount = input.days > 1 ? input.days - 1 : 0;
@@ -322,10 +340,12 @@ export function buildQuote(input: QuoteInput, catalog: RateCatalog): QuoteResult
   const dailyVehicle = activeDays.reduce((sum, day) => sum + day.rent + day.fuel, 0);
   const vehicleCost = vehicleCount * (dailyVehicle + (activeDays.length > 0 ? toll : 0));
   const hotelCost = nights.reduce((sum, night) => sum + night.rate, 0) * rooms;
-  const guideCost = input.guide ? GUIDE_PER_DAY * input.days : 0;
+  const guideCost = input.guide ? rules.guidePerDay * input.days : 0;
+  // Infants are not counted for meals or breakfast.
   const mealPeople = input.adults + input.children;
-  const mealCost = input.meals ? MEAL_PER_NIGHT[input.grade] * nightsCount * mealPeople : 0;
-  const breakfastCost = input.mode === "road" && input.days > 1 ? BREAKFAST_PER_PERSON * mealPeople : 0;
+  const dinnerCost = input.meals && mealRate ? mealRate.dinner * nightsCount * mealPeople : 0;
+  const lunchCost = input.lunch && mealRate ? mealRate.lunch * mealPeople * input.days : 0;
+  const breakfastCost = input.mode === "road" && input.days > 1 ? rules.breakfastPerPerson * mealPeople : 0;
   const lahoreCost =
     input.mode === "road" && input.startCity.trim().toLowerCase() === "lahore" && input.days > 3
       ? LAHORE_ROAD_PER_DAY * (input.days - 3) * vehicleCount
@@ -341,12 +361,12 @@ export function buildQuote(input: QuoteInput, catalog: RateCatalog): QuoteResult
       catalog.air.islamabadTicket +
       (input.startCity.trim().toLowerCase() === "lahore" ? catalog.air.lahoreAdd : 0) +
       (input.startCity.trim().toLowerCase() === "karachi" ? catalog.air.karachiAdd : 0);
-    const childFare = Math.round((adultFare * 75) / 100);
+    const childFare = Math.round((adultFare * rules.childFarePercent) / 100);
     ticketCost =
       adultFare * input.adults +
       childFare * input.children +
-      LAP_INFANT_TICKET * input.lapInfants +
-      SEAT_INFANT_TICKET * input.seatInfants;
+      rules.lapInfantFare * input.lapInfants +
+      rules.seatInfantFare * input.seatInfants;
     welcomeCost = catalog.air.welcomePack * mealPeople;
     entryCost = catalog.air.entry * mealPeople;
     infantExtraCost = catalog.air.infantExtra * (input.lapInfants + input.seatInfants);
@@ -367,7 +387,8 @@ export function buildQuote(input: QuoteInput, catalog: RateCatalog): QuoteResult
     { label: "Hotel", amount: hotelCost },
   ];
   if (guideCost > 0) lines.push({ label: "Guide", amount: guideCost });
-  if (mealCost > 0) lines.push({ label: "Meals", amount: mealCost });
+  if (dinnerCost > 0) lines.push({ label: "Dinner", amount: dinnerCost });
+  if (lunchCost > 0) lines.push({ label: "Lunch", amount: lunchCost });
   if (breakfastCost > 0) lines.push({ label: "Arrival breakfast", amount: breakfastCost });
   if (lahoreCost > 0) lines.push({ label: "Lahore road extra", amount: lahoreCost });
   if (ticketCost > 0) lines.push({ label: "Air tickets", amount: ticketCost });

@@ -47,6 +47,8 @@ export async function POST(request: Request) {
     roomCount: text(body, "roomCount") ? Number(text(body, "roomCount")) : undefined,
     guide: body.guide === true,
     meals: body.meals === true,
+    // Lunch is an office choice (BR-88). A guest who sends it gets the quote without it.
+    lunch: rateEditor && body.lunch === true,
     seasonPercent: margin,
     otherNote: text(body, "otherNote"),
   };

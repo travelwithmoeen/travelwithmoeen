@@ -195,6 +195,25 @@ export const seasons = pgTable("seasons", {
   percent: integer("percent").notNull(),
 });
 
+// BR-87: the pricing rules the quote reads, changed on the Pricing rules tab. One row.
+export const pricingRules = pgTable("pricing_rules", {
+  id: serial("id").primaryKey(),
+  guidePerDay: integer("guide_per_day").notNull(),
+  breakfastPerPerson: integer("breakfast_per_person").notNull(),
+  childFarePercent: integer("child_fare_percent").notNull(),
+  lapInfantFare: integer("lap_infant_fare").notNull(),
+  seatInfantFare: integer("seat_infant_fare").notNull(),
+  peoplePerRoom: integer("people_per_room").notNull(),
+});
+
+// BR-87 and BR-88: the dinner rate per night and the lunch rate per day, per person, for each grade.
+export const mealRates = pgTable("meal_rates", {
+  id: serial("id").primaryKey(),
+  grade: text("grade").notNull().unique(),
+  dinner: integer("dinner").notNull(),
+  lunch: integer("lunch").notNull(),
+});
+
 export const quotes = pgTable("quotes", {
   id: serial("id").primaryKey(),
   place: text("place").notNull(),
@@ -210,6 +229,7 @@ export const quotes = pgTable("quotes", {
   otherNote: text("other_note").notNull().default(""),
   guide: boolean("guide").notNull(),
   meals: boolean("meals").notNull(),
+  lunch: boolean("lunch").notNull().default(false),
   seasonPercent: integer("season_percent").notNull(),
   subtotal: integer("subtotal").notNull(),
   profit: integer("profit").notNull(),

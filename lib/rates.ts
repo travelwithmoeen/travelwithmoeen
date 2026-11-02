@@ -1,7 +1,17 @@
 import { asc } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { airExtras, hotelRates, jeepLines, seasons, vehicleRates } from "@/lib/db/schema";
-import { DEFAULT_MARGIN, isMarginPercent, type HotelRateRow, type JeepLineRow, type MarginPercent, type RateCatalog, type TripMode, type VehicleRateRow } from "@/lib/quote";
+import { airExtras, hotelRates, jeepLines, mealRates, pricingRules, seasons, vehicleRates } from "@/lib/db/schema";
+import {
+  DEFAULT_MARGIN,
+  isMarginPercent,
+  type HotelRateRow,
+  type JeepLineRow,
+  type MarginPercent,
+  type PricingRules,
+  type RateCatalog,
+  type TripMode,
+  type VehicleRateRow,
+} from "@/lib/quote";
 
 const MONEY_MAX = 10_000_000;
 
@@ -30,13 +40,27 @@ function savedMargin(stored: number | undefined): MarginPercent {
   return isMarginPercent(stored) ? stored : DEFAULT_MARGIN;
 }
 
+function toRules(row: typeof pricingRules.$inferSelect | undefined): PricingRules | null {
+  if (!row) return null;
+  return {
+    guidePerDay: row.guidePerDay,
+    breakfastPerPerson: row.breakfastPerPerson,
+    childFarePercent: row.childFarePercent,
+    lapInfantFare: row.lapInfantFare,
+    seatInfantFare: row.seatInfantFare,
+    peoplePerRoom: row.peoplePerRoom,
+  };
+}
+
 export async function loadCatalog(): Promise<RateCatalog> {
-  const [hotels, vehicles, airRows, jeeps, seasonRows] = await Promise.all([
+  const [hotels, vehicles, airRows, jeeps, seasonRows, ruleRows, meals] = await Promise.all([
     db.select().from(hotelRates).orderBy(asc(hotelRates.place), asc(hotelRates.grade)),
     db.select().from(vehicleRates).orderBy(asc(vehicleRates.place), asc(vehicleRates.vehicle)),
     db.select().from(airExtras).limit(1),
     db.select().from(jeepLines).orderBy(asc(jeepLines.place)),
     db.select().from(seasons).limit(1),
+    db.select().from(pricingRules).orderBy(asc(pricingRules.id)).limit(1),
+    db.select().from(mealRates).orderBy(asc(mealRates.id)),
   ]);
   const air = airRows[0];
   const margin = savedMargin(seasonRows[0]?.percent);
@@ -54,6 +78,8 @@ export async function loadCatalog(): Promise<RateCatalog> {
     },
     jeeps: jeeps.map(toJeep),
     seasonPercent: margin,
+    rules: toRules(ruleRows[0]),
+    meals: meals.map((row) => ({ grade: row.grade, dinner: row.dinner, lunch: row.lunch })),
   };
 }
 
@@ -96,13 +122,15 @@ function toJeep(row: typeof jeepLines.$inferSelect): JeepLineRow {
 }
 
 export async function loadRateDesk() {
-  const [hotels, vehicles, airRows, jeeps, seasonRows] = await Promise.all([
+  const [hotels, vehicles, airRows, jeeps, seasonRows, ruleRows, meals] = await Promise.all([
     db.select().from(hotelRates).orderBy(asc(hotelRates.place), asc(hotelRates.startCity), asc(hotelRates.grade)),
     // The id last keeps rows with the same place and vehicle in a steady order after a save.
     db.select().from(vehicleRates).orderBy(asc(vehicleRates.place), asc(vehicleRates.vehicle), asc(vehicleRates.id)),
     db.select().from(airExtras).limit(1),
     db.select().from(jeepLines).orderBy(asc(jeepLines.id)),
     db.select().from(seasons).limit(1),
+    db.select().from(pricingRules).orderBy(asc(pricingRules.id)).limit(1),
+    db.select().from(mealRates).orderBy(asc(mealRates.id)),
   ]);
   return {
     hotels,
@@ -110,5 +138,7 @@ export async function loadRateDesk() {
     air: airRows[0] ?? null,
     jeeps,
     seasonPercent: savedMargin(seasonRows[0]?.percent),
+    rules: ruleRows[0] ?? null,
+    meals,
   };
 }
