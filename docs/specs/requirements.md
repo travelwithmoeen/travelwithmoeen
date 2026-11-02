@@ -181,6 +181,19 @@ Loading the v1.2 rates and rule values is a separate data step, after Moeen agre
 
 The v1.2 desk works out three things differently from this file. They are rows S-10 to S-12 in the sign-off table in `docs/specs/tasks.md`. Until Moeen answers a row, the rule in this file stands.
 
+## 8c. Progress feedback, 3 November 2026
+
+On 3 November 2026 the team found that the site shows nothing while it works. A click on a link, a save, and an upload each look like a frozen screen until they finish. Task T-50 builds these rules. They do not wait for Moeen, and they are not Phase 2.
+
+| ID | Requirement |
+|---|---|
+| BR-95 | Every move to another page shows a thin progress bar across the top of the window, on the public site and in the office, until the new page shows. The bar is 3 pixels high, in the site's main colour on the public site and the office primary colour in the office. It shows only when the move takes longer than 150 milliseconds, so a fast move does not flicker. This bar is the only change to the public site look. |
+| BR-96 | An office page that is still loading shows the side menu and the top bar at once, with grey placeholder blocks where the page content will be. |
+| BR-97 | A file upload in the office shows a progress bar with the amount sent and the file size, such as "Uploading 2.1 of 4.8 MB, 44%", and a Cancel button. Cancel stops the upload. A cancelled upload saves nothing, stores no file, and writes no activity row, and the form keeps what was typed. |
+| BR-98 | While an office save, delete, move, or other action is working, its button shows the spinner and cannot be pressed again, and the other fields of that form cannot be changed. The office top bar shows what is happening, such as "Saving photo…", wherever the page is scrolled. When the action ends, the top bar shows the saved message or the error. |
+| BR-99 | After a save, the office shows the new data without reloading the whole page. A save that opens another page, such as adding a tour, moves there with the progress bar in BR-95. The saved message still shows. |
+| BR-100 | Each indicator in BR-95 to BR-98 has a text for screen readers. The moving parts stand still for a person whose device asks for reduced motion. |
+
 ## 9. Phase 3, after the baseline, office media, and Phase 2
 
 These were asked for on September 29, 2026. They are kept in the plan. They are sprint 4. They are not built in the baseline or in office media. The Meadow file shows them on Trip plans so they can be reviewed. They are not part of the live office until Phase 2 and Phase 3. Phase 2 is accepted before Phase 3 starts. Office media is accepted. The Meadow office, BR-82, is accepted before Phase 2 starts.
