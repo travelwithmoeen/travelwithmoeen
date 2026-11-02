@@ -15,5 +15,7 @@ export async function loadRateDesk(): Promise<RateDeskView> {
     air: desk.air,
     jeeps: desk.jeeps,
     seasonPercent: desk.seasonPercent,
+    rules: desk.rules,
+    meals: desk.meals,
   };
 }

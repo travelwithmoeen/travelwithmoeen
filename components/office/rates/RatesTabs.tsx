@@ -9,6 +9,7 @@ export const RATE_TABS = [
   { href: "/office/rates/jeeps", label: "Jeep lines" },
   { href: "/office/rates/air", label: "Air extras" },
   { href: "/office/rates/margin", label: "Profit margin" },
+  { href: "/office/rates/rules", label: "Pricing rules" },
   { href: "/office/rates/quote", label: "Quote" },
 ];
 

@@ -25,7 +25,9 @@ type QuoteFields = {
   seatInfants: string;
   seasonPercent: string;
   guide: boolean;
+  // Dinner each night. The field keeps the name meals, which the server reads.
   meals: boolean;
+  lunch: boolean;
   night: string;
   nightRate: string;
   nightHotel: string;
@@ -87,6 +89,7 @@ function quoteRequest(fields: QuoteFields) {
     vehicle: fields.vehicle,
     guide: fields.guide,
     meals: fields.meals,
+    lunch: fields.lunch,
     seasonPercent: fields.seasonPercent,
     otherNote: fields.otherNote,
   };
@@ -128,6 +131,7 @@ export function QuoteScreen({ places, vehicles, margin }: QuoteScreenProps) {
     seasonPercent: String(margin),
     guide: false,
     meals: false,
+    lunch: false,
     night: "",
     nightRate: "",
     nightHotel: "",
@@ -287,7 +291,11 @@ export function QuoteScreen({ places, vehicles, margin }: QuoteScreenProps) {
                 </label>
                 <label className="check">
                   <input type="checkbox" name="meals" checked={fields.meals} onChange={(event) => set("meals", event.target.checked)} />
-                  <span>Meals</span>
+                  <span>Dinner</span>
+                </label>
+                <label className="check">
+                  <input type="checkbox" name="lunch" checked={fields.lunch} onChange={(event) => set("lunch", event.target.checked)} />
+                  <span>Lunch</span>
                 </label>
               </div>
             </div>

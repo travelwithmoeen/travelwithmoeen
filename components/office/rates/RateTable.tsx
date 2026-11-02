@@ -21,7 +21,7 @@ export type RateColumn = {
 export type RateRow = { id: number; values: Record<string, string | number | boolean> };
 
 type RateTableProps = {
-  kind: "hotel" | "vehicle" | "jeep";
+  kind: "hotel" | "vehicle" | "jeep" | "meal_rate";
   noun: string;
   columns: RateColumn[];
   rows: RateRow[];
@@ -32,6 +32,8 @@ type RateTableProps = {
   nameKeys: string[];
   // "Saved by" for each row id that has been saved in the office (BR-86).
   savedBy?: Record<string, SavedCell>;
+  // A short table, such as the four meal grades, needs no search or filters.
+  toolbar?: boolean;
 };
 
 type Draft = Record<number, Record<string, string | boolean>>;
@@ -56,7 +58,7 @@ function SavedLine({ saved }: { saved?: SavedCell }) {
 
 // The prototype rate table: every row editable, one save bar. Save sends each changed row as its
 // own POST /api/office/rates with the fields the server reads, and the server checks every amount.
-export function RateTable({ kind, noun, columns, rows, filters = [], searchLabel = `Search ${noun}`, nameKeys, savedBy = {} }: RateTableProps) {
+export function RateTable({ kind, noun, columns, rows, filters = [], searchLabel = `Search ${noun}`, nameKeys, savedBy = {}, toolbar = true }: RateTableProps) {
   const rowName = (row: RateRow) => nameKeys.map((key) => String(row.values[key])).join(", ");
   const router = useRouter();
   const [draft, setDraft] = useState<Draft>({});
@@ -141,34 +143,36 @@ export function RateTable({ kind, noun, columns, rows, filters = [], searchLabel
 
   return (
     <>
-      <div className="toolbar">
-        <div className="search-box">
-          <Icon name="search" />
-          <input className="input" type="search" placeholder={searchLabel} aria-label={searchLabel} value={query} onChange={(event) => setQuery(event.target.value)} />
+      {toolbar ? (
+        <div className="toolbar">
+          <div className="search-box">
+            <Icon name="search" />
+            <input className="input" type="search" placeholder={searchLabel} aria-label={searchLabel} value={query} onChange={(event) => setQuery(event.target.value)} />
+          </div>
+          {filters.map((key) => {
+            const column = columns.find((item) => item.key === key);
+            const options = [...new Set(rows.map((row) => String(row.values[key])))];
+            return (
+              <span key={key}>
+                <label className="sr-only" htmlFor={`rate-filter-${key}`}>
+                  {column?.label}
+                </label>
+                <select className="select select-sm" id={`rate-filter-${key}`} value={chosen[key] ?? ""} onChange={(event) => setChosen((current) => ({ ...current, [key]: event.target.value }))}>
+                  <option value="">All {column?.label.toLowerCase()}s</option>
+                  {options.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </span>
+            );
+          })}
+          <span className="filter-count" aria-live="polite">
+            {shown.length === rows.length ? `${rows.length} ${noun}` : `${shown.length} of ${rows.length} ${noun}`}
+          </span>
         </div>
-        {filters.map((key) => {
-          const column = columns.find((item) => item.key === key);
-          const options = [...new Set(rows.map((row) => String(row.values[key])))];
-          return (
-            <span key={key}>
-              <label className="sr-only" htmlFor={`rate-filter-${key}`}>
-                {column?.label}
-              </label>
-              <select className="select select-sm" id={`rate-filter-${key}`} value={chosen[key] ?? ""} onChange={(event) => setChosen((current) => ({ ...current, [key]: event.target.value }))}>
-                <option value="">All {column?.label.toLowerCase()}s</option>
-                {options.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
-            </span>
-          );
-        })}
-        <span className="filter-count" aria-live="polite">
-          {shown.length === rows.length ? `${rows.length} ${noun}` : `${shown.length} of ${rows.length} ${noun}`}
-        </span>
-      </div>
+      ) : null}
 
       {failedIds.length ? (
         <Alert tone="danger" title={`${failedIds.length} ${failedIds.length === 1 ? "row was" : "rows were"} not saved`} role="alert">

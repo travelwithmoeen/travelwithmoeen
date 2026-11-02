@@ -4,6 +4,8 @@ import {
   airExtras,
   hotelRates,
   jeepLines,
+  mealRates,
+  pricingRules,
   quoteDays,
   quoteExtras,
   quoteNights,
@@ -119,6 +121,58 @@ export async function saveJeepLineAs(actor: SessionUser, formData: FormData): Pr
   return { ok: true, message: "Jeep line saved." };
 }
 
+// BR-87: the pricing rules, kept in one row. Each amount is checked like a rate. The child air fare
+// is a whole percent from 0 to 100, and people per room a whole number from 1 to 6.
+export async function savePricingRulesAs(actor: SessionUser, formData: FormData): Promise<ActionResult> {
+  if (!canEditRates(actor.role)) return forbidden("You cannot change a price.");
+  const guide = readAmount(String(formData.get("guidePerDay") ?? ""));
+  if (!guide.ok) return guide;
+  const breakfast = readAmount(String(formData.get("breakfastPerPerson") ?? ""));
+  if (!breakfast.ok) return breakfast;
+  const childFare = readCount(String(formData.get("childFarePercent") ?? ""), "the child fare percent", 1000);
+  if (!childFare.ok) return childFare;
+  if (childFare.count > 100) return { ok: false, error: "Enter a child fare of 0 to 100 percent." };
+  const lapInfant = readAmount(String(formData.get("lapInfantFare") ?? ""));
+  if (!lapInfant.ok) return lapInfant;
+  const seatInfant = readAmount(String(formData.get("seatInfantFare") ?? ""));
+  if (!seatInfant.ok) return seatInfant;
+  const perRoom = readCount(String(formData.get("peoplePerRoom") ?? ""), "the people per room", 1000);
+  if (!perRoom.ok) return perRoom;
+  if (perRoom.count < 1 || perRoom.count > 6) return { ok: false, error: "Enter 1 to 6 people per room." };
+  const values = {
+    guidePerDay: guide.amount,
+    breakfastPerPerson: breakfast.amount,
+    childFarePercent: childFare.count,
+    lapInfantFare: lapInfant.amount,
+    seatInfantFare: seatInfant.amount,
+    peoplePerRoom: perRoom.count,
+  };
+  const [row] = await db.select({ id: pricingRules.id }).from(pricingRules).orderBy(pricingRules.id).limit(1);
+  await db.transaction(async (tx) => {
+    if (!row) await tx.insert(pricingRules).values(values);
+    else await tx.update(pricingRules).set(values).where(eq(pricingRules.id, row.id));
+    await recordActivity(tx, actor, { kind: "pricing_rule", text: "Saved the pricing rules" });
+  });
+  return { ok: true, message: "Pricing rules saved." };
+}
+
+// BR-87 and BR-88: one grade's dinner rate per night and lunch rate per day, per person.
+export async function saveMealRateAs(actor: SessionUser, formData: FormData): Promise<ActionResult> {
+  if (!canEditRates(actor.role)) return forbidden("You cannot change a price.");
+  const id = Number(formData.get("id"));
+  const dinner = readAmount(String(formData.get("dinner") ?? ""));
+  if (!dinner.ok) return dinner;
+  const lunch = readAmount(String(formData.get("lunch") ?? ""));
+  if (!lunch.ok) return lunch;
+  const [row] = await db.select({ id: mealRates.id, grade: mealRates.grade }).from(mealRates).where(eq(mealRates.id, id)).limit(1);
+  if (!row) return { ok: false, error: "That meal rate was not found." };
+  await db.transaction(async (tx) => {
+    await tx.update(mealRates).set({ dinner: dinner.amount, lunch: lunch.amount }).where(eq(mealRates.id, id));
+    await recordActivity(tx, actor, { kind: "meal_rate", recordId: id, text: `Saved the meal rates for ${row.grade}` });
+  });
+  return { ok: true, message: "Meal rates saved." };
+}
+
 // The saved profit margin, one whole percent from 0 to 100, kept in the one seasons row.
 export async function saveMarginAs(actor: SessionUser, formData: FormData): Promise<ActionResult> {
   if (!canEditRates(actor.role)) return forbidden("You cannot change a price.");
@@ -203,6 +257,7 @@ export async function quoteInputFromForm(formData: FormData): Promise<{ ok: true
     vehicle,
     guide: checked(formData.get("guide")),
     meals: checked(formData.get("meals")),
+    lunch: checked(formData.get("lunch")),
     seasonPercent,
     nightEdits,
     dayEdits,
@@ -250,6 +305,7 @@ export async function saveQuoteAs(actor: SessionUser, formData: FormData): Promi
         otherNote: parsed.input.otherNote ?? "",
         guide: parsed.input.guide,
         meals: parsed.input.meals,
+        lunch: Boolean(parsed.input.lunch),
         seasonPercent: quote.seasonPercent,
         subtotal: quote.subtotal,
         profit: quote.profit,
@@ -289,6 +345,8 @@ export async function savePriceFromKind(actor: SessionUser, formData: FormData):
   if (kind === "air") return saveAirExtraAs(actor, formData);
   if (kind === "jeep") return saveJeepLineAs(actor, formData);
   if (kind === "season") return saveMarginAs(actor, formData);
+  if (kind === "pricing_rule") return savePricingRulesAs(actor, formData);
+  if (kind === "meal_rate") return saveMealRateAs(actor, formData);
   if (kind === "quote") return saveQuoteAs(actor, formData);
   if (!canEditRates(actor.role)) return forbidden("You cannot change a price.");
   return { ok: false, error: "Choose a rate to save." };
