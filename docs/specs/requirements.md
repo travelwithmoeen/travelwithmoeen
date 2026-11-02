@@ -194,6 +194,17 @@ On 3 November 2026 the team found that the site shows nothing while it works. A 
 | BR-99 | After a save, the office shows the new data without reloading the whole page. A save that opens another page, such as adding a tour, moves there with the progress bar in BR-95. The saved message still shows. |
 | BR-100 | Each indicator in BR-95 to BR-98 has a text for screen readers. The moving parts stand still for a person whose device asks for reduced motion. |
 
+## 8d. Large uploads, 3 November 2026
+
+On 3 November 2026 the team found that an office upload over about 4.5 MB never reaches the site on Vercel. Vercel refuses a request body over 4.5 MB with `413 FUNCTION_PAYLOAD_TOO_LARGE` before our code runs, so a photo between 4.5 MB and 5 MB, and any tour PDF over 4.5 MB, fails with "The office could not save that." This was checked on the preview site with unsigned requests: 4 MB reached the site and 4.6 MB did not. Task T-51 builds these rules. They do not wait for Moeen.
+
+| ID | Requirement |
+|---|---|
+| BR-101 | An office upload goes from the browser straight to that environment's public media store, not through the site. A photo up to 5 MB (BR-75) and a tour PDF up to 10 MB (BR-76) save on the preview site and the live site. |
+| BR-102 | Only an Owner or an Editor can start an upload. The site gives the browser a short-lived permission for one file, of one allowed type, under the size limit, under `media/`. A Manager, a guest, and a person with no session are refused. |
+| BR-103 | A save that names an uploaded file checks that file before the record changes: it is in this environment's media store under `media/`, it is under the size limit, and its first bytes are a JPEG, PNG, or WebP for a picture, or a PDF for a PDF, as BR-59 and BR-76 say. A file that fails is deleted and the save is refused with the reason. |
+| BR-104 | A refused save deletes the files it uploaded, as T-40 does today. A file uploaded for a save that is never sent, because the page was closed, stays in the store until a later cleanup. |
+
 ## 9. Phase 3, after the baseline, office media, and Phase 2
 
 These were asked for on September 29, 2026. They are kept in the plan. They are sprint 4. They are not built in the baseline or in office media. The Meadow file shows them on Trip plans so they can be reviewed. They are not part of the live office until Phase 2 and Phase 3. Phase 2 is accepted before Phase 3 starts. Office media is accepted. The Meadow office, BR-82, is accepted before Phase 2 starts.
@@ -309,6 +320,7 @@ This list is the whole project. A new office route is added to this list in the 
 | `POST /api/office/login` | Anyone. The failure rules in BR-67 and BR-68 apply. |
 | `POST /api/office/logout` and `GET /api/office/session` | A signed-in Owner, Manager, or Editor. The session reply also carries the number of new guest requests for the sidebar, which every signed-in role may read. |
 | Tour, place, post, photo, review, slide, and site-detail writes | Owner or Editor. |
+| `POST /api/office/uploads` | Owner or Editor. Gives the browser a short-lived permission to upload one picture or one PDF to the media store under `media/`. It does not change a record. T-51. |
 | `POST /api/office/tours/create` | Owner or Editor. Adds a tour. It does not set a rupee amount. |
 | Rates, profit margin, vehicles, jeep lines, paid extras, pricing rules, rate places, start cities, and the live price Excel download | Owner or Manager. The writes from T-47 and T-48 go through `POST /api/office/rates`, like the other rate saves. |
 | `POST /api/office/tours/delete` | Owner or Editor. Deletes a tour. A Manager is refused. |
