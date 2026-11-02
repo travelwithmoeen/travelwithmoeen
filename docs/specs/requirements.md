@@ -44,7 +44,7 @@ The public website stays. The office gets a private area on that same site. Gues
 | BR-18 | Hotel grades offered to guests are Deluxe, Executive, Luxury, and Ultra Luxury. Premier is stored if the sheet has it, and it is not offered. |
 | BR-19 | Road trips start from Lahore or Islamabad only. A guest from Karachi joins a road trip in one of those two cities. |
 | BR-20 | Air trips start from Karachi, Lahore, or Islamabad. |
-| BR-21 | Until the office changes them, the Islamabad air ticket is 60,000 rupees, the Lahore air extra is 10,000 rupees, and the Karachi air extra is 30,000 rupees on top of the Islamabad ticket. |
+| BR-21 | Until the office changes them, the Islamabad air ticket is 60,000 rupees, the Lahore air extra is 10,000 rupees, and the Karachi air extra is 30,000 rupees on top of the Islamabad ticket. From T-48, the Lahore and Karachi extras are stored on each start city, which is BR-91. |
 | BR-22 | The profit margin is any whole percent from 0 to 100. Only the Owner and the Manager can change it. The active margin is shown on the quote screen. The Meadow prototype starts at 20 percent. That default is pending Moeen sign-off. Until the Meadow office is live, the running site still uses 15 or 20. |
 | BR-23 | Prado is the preferred vehicle where that car is offered. The Excel name Parado is the same car. Other vehicles can be turned on for a route. |
 | BR-24 | The office can choose Other and type a mix, for example a Gli car plus a jeep. |
@@ -66,13 +66,13 @@ These rules fill the quote before anyone edits a single night or a single day.
 | BR-33 | If the group needs more seats than one vehicle has, the quote adds more vehicles. |
 | BR-34 | If the office does not type a room count, rooms equal the people who need a seat, divided by 3, rounded up. A seat is each adult, each child, and each infant with their own seat. An infant on a lap is not a seat. |
 | BR-35 | When the package includes a hotel, hotel cost is the nightly rate times nights times rooms. Until the hotel catalog is built, the nightly rate is the grade rate in BR-84. When the catalog is built, in task T-39, hotel cost follows the catalog chain: city, then hotel, then room, then occupancy. The nightly rate is that catalog row, including an extra mattress when occupancy asks for one. Grade is a label on the hotel, not the price. Until the catalog pick is changed, the untouched quote uses the published twin rate for the grade label. The Meadow prototype shows the catalog with sample hotels. That default is pending Moeen sign-off. |
-| BR-36 | A guide, if selected, is 5,000 rupees per day. |
-| BR-37 | Meals, if selected, are per adult and per child, per night: Deluxe 1,200, Executive 2,000, Luxury 2,500, Ultra Luxury 3,000. |
-| BR-38 | When the package includes transport and a hotel, on a road trip longer than one day, arrival breakfast is 500 rupees per adult and per child. No hotel does not add it. Hotel only does not add it. |
+| BR-36 | A guide, if selected, is 5,000 rupees per day. From T-47, that amount is a pricing rule the office can change, which is BR-87. |
+| BR-37 | Meals, if selected, are per adult and per child, per night: Deluxe 1,200, Executive 2,000, Luxury 2,500, Ultra Luxury 3,000. From T-47, the office calls this Dinner, and each grade's rate is a pricing rule, which is BR-87. Lunch is BR-88. |
+| BR-38 | When the package includes transport and a hotel, on a road trip longer than one day, arrival breakfast is 500 rupees per adult and per child. No hotel does not add it. Hotel only does not add it. From T-47, the 500 is a pricing rule, which is BR-87. |
 | BR-39 | When the package includes transport, an air quote adds a welcome pack of 1,500 rupees and entry tickets of 4,000 rupees for each adult and each child, plus 800 rupees for each infant. Hotel only does not add the welcome pack or the entry tickets. |
-| BR-40 | A child air ticket is 75 percent of the adult fare. An infant on a lap is 1,000 rupees. An infant with a seat is 5,000 rupees. |
+| BR-40 | A child air ticket is 75 percent of the adult fare. An infant on a lap is 1,000 rupees. An infant with a seat is 5,000 rupees. From T-47, all three are pricing rules, which is BR-87. From T-49, the office can leave the tickets out, which is BR-89. |
 | BR-41 | When the package includes transport and a hotel, the air sticker is 500 rupees times the number of rooms. No hotel does not add the sticker. Hotel only does not add it. |
-| BR-42 | When the package includes transport, if a road trip starts in Lahore and is longer than three days, the quote adds 5,000 rupees for each day after day three, for each vehicle. Hotel only does not add it. |
+| BR-42 | When the package includes transport, if a road trip starts in Lahore and is longer than three days, the quote adds 5,000 rupees for each day after day three, for each vehicle. Hotel only does not add it. From T-48, the start city, the number of days, and the amount are stored on the start city, which is BR-91. |
 | BR-43 | Profit is added last, at the active profit margin. The margin is a whole percent from 0 to 100. |
 | BR-44 | Before live prices are switched, this example must total 140,400 rupees. The profit margin in this test is 20 percent: Islamabad, Skardu Valley, 5 days, 2 adults, Gli car, Deluxe, no guide, no meals, with a hotel and with transport. No one-night or one-day edit is applied to this test. |
 
@@ -161,6 +161,49 @@ Pictures and PDFs use the public media store for that environment, through `@ver
 | BR-86 | The office records who saved what, and when. Each successful office save writes one activity row: the time, the signed-in login, the area, the record, and a short line such as "Saved tour 5 Days Trip to Skardu". A failed or refused save writes no row. A row does not hold a password, a token, a secret, or a guest phone or message. The dashboard lists recent rows. A person sees only rows for areas their role can open. Each content and rate screen shows "Saved by" and the time of the last save on that record. Rows are kept for 365 days. |
 
 Creating a new tour, place, or blog post is not part of the office-media work. Adding a tour from the tours list is BR-83. Deleting a price row stays BR-03 and is not part of this work. The prototype changes no running route, so it does not repeat the four security tests. T-35 does.
+
+## 8b. Costing desk feedback, 23 October 2026
+
+Moeen sent feedback on 23 October 2026 with the team's own costing desk, `Trip-Casting-Desk-v1.2`, dated 22 September 2026. That file is the reference for how the team prices a trip. It holds the company's bank details, so it is never added to the repository. It stays in the feedback folder. Tasks T-47 to T-49 bring the office quote closer to it. They are not Phase 2. They do not wait for T-37 to be accepted, and they do not change the public site look.
+
+Loading the v1.2 rates and rule values is a separate data step, after Moeen agrees. Until then, every starting value below is today's value, so the Skardu test in BR-44 stays 140,400.
+
+| ID | Requirement |
+|---|---|
+| BR-87 | The Owner and the Manager can change the pricing rules on a Pricing rules tab under Rates and quotes. The rules are the guide per day, the arrival breakfast per adult and child, the child air fare as a whole percent of the adult fare, the lap infant fare, the seat infant fare, the people per room used for the automatic room count, and the dinner rate and the lunch rate for each guest grade. A saved rule applies at once to new quotes in the office and on the website. A blank, negative, or non-numeric amount is refused. The child fare is a whole percent from 0 to 100. People per room is a whole number from 1 to 6. The starting values are today's: guide 5,000, breakfast 500, child fare 75 percent, lap infant 1,000, seat infant 5,000, 3 people per room, and dinner Deluxe 1,200, Executive 2,000, Luxury 2,500, Ultra Luxury 3,000. Lunch starts at the v1.2 desk values: Deluxe 1,800, Executive 3,000, Luxury 3,500, Ultra Luxury 4,000. The Islamabad ticket, welcome pack, entry, infant extra, and sticker stay on the Air extras tab. |
+| BR-88 | An office quote can add lunch. Lunch is the grade's lunch rate times adults and children times days. Infants are not counted. Dinner is the meal rule in BR-37, per night. The guest package builder does not offer lunch. |
+| BR-89 | On an air quote, the office can turn the air tickets off for a group that books its own flights. The quote then has no ticket line. The welcome pack, entry, infant extra, and sticker stay. Tickets are on by default. A guest quote always includes the tickets. |
+| BR-90 | The Owner and the Manager can add a place to the rate tables and rename one. A place is added with its first hotel rate row, which is the place, start city, grade, twin rate, 3-share rate, and hotel name, and then its vehicle rate rows. Renaming a place changes the name on every hotel rate, vehicle rate, and jeep line of that place in one save. A rate place is not a public Places page. The office Quote screen offers a place only when it has an offered hotel rate and a live vehicle rate for the chosen travel mode and start city. A place with hotel rates only, such as Khaplu in the v1.2 desk, is not offered as a trip on its own. Deleting a price row stays BR-03. |
+| BR-91 | The Owner and the Manager can add a start city and change one: its name, whether it starts road trips, whether it starts air trips, its air extra on top of the Islamabad ticket, and its long-route extra, which is an amount per vehicle per day after a number of days on a road trip. The starting cities are Islamabad, road and air, air extra 0; Lahore, road and air, air extra 10,000, long-route extra 5,000 after 3 days; and Karachi, air only, air extra 30,000. The office Quote screen offers only the start cities for the chosen travel mode, so Karachi is not offered for a road trip, which is BR-19. The guest builder keeps its own place and start city lists for now, and it already leaves Karachi out of road trips. Moving it to these tables needs a public read route, and is a later task. A road start city needs its own hotel and vehicle rate rows. Until it has them, no place is offered from it. Renaming a start city also renames it on its rate rows, in the same save. A start city is not deleted. |
+| BR-92 | The office quote shows the automatic room count in BR-34 and the automatic vehicle count in BR-33, each marked Auto. Staff can type a different count, and the quote then uses it and marks it as typed. One button puts both back to the automatic counts. Only an Owner or a Manager can send a vehicle count. A guest quote uses the automatic vehicle count. |
+| BR-93 | Each line on the office quote shows its working next to the amount, for example "1 × Gli Car · (8,000 rent + 0 fuel) × 5 days + 0 toll" or "2 people × 500". The working is built in the quote function with the amount, so the screen and a saved quote show the same numbers. A guest response still has no lines and no profit, which is BR-50. |
+| BR-94 | The office Quote screen is laid out like the costing desk: Route, then Party, then Stay and services, then the night and day edits, the paid extra, and Other. Stay and services shows the hotel grade, Air tickets on an air trip, Tour guide, Dinner, and Lunch, each with its rate, such as "Rs 5,000 a day". The price panel stays beside the form, or above it on a phone. |
+
+The v1.2 desk works out three things differently from this file. They are rows S-10 to S-12 in the sign-off table in `docs/specs/tasks.md`. Until Moeen answers a row, the rule in this file stands.
+
+## 8c. Progress feedback, 3 November 2026
+
+On 3 November 2026 the team found that the site shows nothing while it works. A click on a link, a save, and an upload each look like a frozen screen until they finish. Task T-50 builds these rules. They do not wait for Moeen, and they are not Phase 2.
+
+| ID | Requirement |
+|---|---|
+| BR-95 | Every move to another page shows a thin progress bar across the top of the window, on the public site and in the office, until the new page shows. The bar is 3 pixels high, in the site's main colour on the public site and the office primary colour in the office. It shows only when the move takes longer than 150 milliseconds, so a fast move does not flicker. This bar is the only change to the public site look. |
+| BR-96 | An office page that is still loading shows the side menu and the top bar at once, with grey placeholder blocks where the page content will be. |
+| BR-97 | A file upload in the office shows a progress bar with the amount sent and the file size, such as "Uploading 2.1 of 4.8 MB, 44%", and a Cancel button. Cancel stops the upload. A cancelled upload saves nothing, stores no file, and writes no activity row, and the form keeps what was typed. |
+| BR-98 | While an office save, delete, move, or other action is working, its button shows the spinner and cannot be pressed again, and the other fields of that form cannot be changed. The office top bar shows what is happening, such as "Saving photo…", wherever the page is scrolled. When the action ends, the top bar shows the saved message or the error. |
+| BR-99 | After a save, the office shows the new data without reloading the whole page. A save that opens another page, such as adding a tour, moves there with the progress bar in BR-95. The saved message still shows. |
+| BR-100 | Each indicator in BR-95 to BR-98 has a text for screen readers. The moving parts stand still for a person whose device asks for reduced motion. |
+
+## 8d. Large uploads, 3 November 2026
+
+On 3 November 2026 the team found that an office upload over about 4.5 MB never reaches the site on Vercel. Vercel refuses a request body over 4.5 MB with `413 FUNCTION_PAYLOAD_TOO_LARGE` before our code runs, so a photo between 4.5 MB and 5 MB, and any tour PDF over 4.5 MB, fails with "The office could not save that." This was checked on the preview site with unsigned requests: 4 MB reached the site and 4.6 MB did not. Task T-51 builds these rules. They do not wait for Moeen.
+
+| ID | Requirement |
+|---|---|
+| BR-101 | An office upload goes from the browser straight to that environment's public media store, not through the site. A photo up to 5 MB (BR-75) and a tour PDF up to 10 MB (BR-76) save on the preview site and the live site. |
+| BR-102 | Only an Owner or an Editor can start an upload. The site gives the browser a short-lived permission for one file, of one allowed type, under the size limit, under `media/`. A Manager, a guest, and a person with no session are refused. |
+| BR-103 | A save that names an uploaded file checks that file before the record changes: it is in this environment's media store under `media/`, it is under the size limit, and its first bytes are a JPEG, PNG, or WebP for a picture, or a PDF for a PDF, as BR-59 and BR-76 say. A file that fails is deleted and the save is refused with the reason. |
+| BR-104 | A refused save deletes the files it uploaded, as T-40 does today. A file uploaded for a save that is never sent, because the page was closed, stays in the store until a later cleanup. |
 
 ## 9. Phase 3, after the baseline, office media, and Phase 2
 
@@ -277,8 +320,9 @@ This list is the whole project. A new office route is added to this list in the 
 | `POST /api/office/login` | Anyone. The failure rules in BR-67 and BR-68 apply. |
 | `POST /api/office/logout` and `GET /api/office/session` | A signed-in Owner, Manager, or Editor. The session reply also carries the number of new guest requests for the sidebar, which every signed-in role may read. |
 | Tour, place, post, photo, review, slide, and site-detail writes | Owner or Editor. |
+| `POST /api/office/uploads` | Owner or Editor. Gives the browser a short-lived permission to upload one picture or one PDF to the media store under `media/`. It does not change a record. T-51. |
 | `POST /api/office/tours/create` | Owner or Editor. Adds a tour. It does not set a rupee amount. |
-| Rates, profit margin, vehicles, jeep lines, paid extras, and the live price Excel download | Owner or Manager. |
+| Rates, profit margin, vehicles, jeep lines, paid extras, pricing rules, rate places, start cities, and the live price Excel download | Owner or Manager. The writes from T-47 and T-48 go through `POST /api/office/rates`, like the other rate saves. |
 | `POST /api/office/tours/delete` | Owner or Editor. Deletes a tour. A Manager is refused. |
 | Create a login, remove a login, change a role, delete a price row, delete a guest request | Owner only. |
 | `GET /api/office/requests` | A signed-in Owner, Manager, or Editor. |

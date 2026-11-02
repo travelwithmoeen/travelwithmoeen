@@ -7,7 +7,7 @@ import { count, eq, gt, like, max } from "drizzle-orm";
 import postgres from "postgres";
 import { drizzle } from "drizzle-orm/postgres-js";
 import { db, sql } from "../lib/db";
-import { activity, guestRequests, loginFailures, photos, places, posts, quoteDays, quoteExtras, quoteNights, quotes, reviews, seasons, tourPlaces, tours, users } from "../lib/db/schema";
+import { activity, guestRequests, loginFailures, mealRates, pricingRules, photos, places, posts, quoteDays, quoteExtras, quoteNights, quotes, reviews, seasons, tourPlaces, tours, users } from "../lib/db/schema";
 import { inferTourPlaceLinks, linkInferredTourPlaces } from "../lib/office/tour-places";
 import { authenticate } from "../lib/auth/authenticate";
 import { createUserAs, removeUserAs } from "../lib/office/users";
@@ -849,6 +849,7 @@ async function assertOfficeRequests(savedIds: number[]) {
     await assertSessionRequestCount(ownerCookie);
     await assertProfitMargin(editorCookie, managerCookie);
     await assertQuoteEditsThroughRoutes(managerCookie);
+    await assertPricingRules(editorCookie, managerCookie);
     await assertRefusedSaveCleanup(editorCookie);
     await assertEmptyOfficeSave(editorCookie);
     await assertOldFileRemovedAfterSave(editorCookie);
@@ -1032,6 +1033,151 @@ function marginForm(percent: string) {
 }
 
 // T-37f: the margin is one whole percent from 0 to 100, saved by the Owner or a Manager only.
+function rulesForm(values: Record<string, string | number>) {
+  const form = new FormData();
+  form.set("kind", "pricing_rule");
+  for (const [key, value] of Object.entries(values)) form.set(key, String(value));
+  return form;
+}
+
+function mealForm(id: number, dinner: string | number, lunch: string | number) {
+  const form = new FormData();
+  form.set("kind", "meal_rate");
+  form.set("id", String(id));
+  form.set("dinner", String(dinner));
+  form.set("lunch", String(lunch));
+  return form;
+}
+
+// T-47 (BR-87, BR-88): the pricing rules and meal rates are read from the database, an Owner or a
+// Manager changes them on the Pricing rules tab, and an office quote can add lunch.
+async function assertPricingRules(editorCookie: string, managerCookie: string) {
+  const [rules] = await db.select().from(pricingRules).limit(1);
+  const meals = await db.select().from(mealRates);
+  const deluxe = meals.find((row) => row.grade === "Deluxe");
+  if (!rules || !deluxe || meals.length !== 4) throw new Error("The pricing rules and the four meal rates are not stored.");
+  const current = {
+    guidePerDay: rules.guidePerDay,
+    breakfastPerPerson: rules.breakfastPerPerson,
+    childFarePercent: rules.childFarePercent,
+    lapInfantFare: rules.lapInfantFare,
+    seatInfantFare: rules.seatInfantFare,
+    peoplePerRoom: rules.peoplePerRoom,
+  };
+  const stored = async () => JSON.stringify([await db.select().from(pricingRules).orderBy(pricingRules.id), await db.select().from(mealRates).orderBy(mealRates.id)]);
+  const before = await stored();
+  try {
+    // An Editor cannot open the tab, and the server refuses the saves.
+    const tab = await fetch(`${siteBase()}/office/rates/rules`, { headers: { cookie: editorCookie }, redirect: "manual" });
+    if (tab.status === 200) throw new Error("An Editor opened the Pricing rules tab.");
+    const managerTab = await fetch(`${siteBase()}/office/rates/rules`, { headers: { cookie: managerCookie }, redirect: "manual" });
+    const managerHtml = await managerTab.text();
+    if (managerTab.status !== 200 || !managerHtml.includes("Pricing rules") || !managerHtml.includes("Meal rates")) {
+      throw new Error(`A Manager could not open the Pricing rules tab (${managerTab.status}).`);
+    }
+    const editorRules = await officePost("/api/office/rates", rulesForm({ ...current, guidePerDay: 6000 }), editorCookie);
+    const editorMeal = await officePost("/api/office/rates", mealForm(deluxe.id, 1, 1), editorCookie);
+    if (editorRules.status !== 403 || editorMeal.status !== 403) {
+      throw new Error(`An Editor's pricing rule save returned ${editorRules.status}, and a meal rate save ${editorMeal.status}.`);
+    }
+
+    // Blank, negative, and non-numeric amounts, a child fare over 100, and 0 or 7 people per room are refused.
+    const refused: [string, FormData][] = [
+      ["a blank guide", rulesForm({ ...current, guidePerDay: "" })],
+      ["a negative guide", rulesForm({ ...current, guidePerDay: "-5" })],
+      ["a guide of abc", rulesForm({ ...current, guidePerDay: "abc" })],
+      ["a child fare of 101", rulesForm({ ...current, childFarePercent: 101 })],
+      ["a child fare of 12.5", rulesForm({ ...current, childFarePercent: "12.5" })],
+      ["0 people per room", rulesForm({ ...current, peoplePerRoom: 0 })],
+      ["7 people per room", rulesForm({ ...current, peoplePerRoom: 7 })],
+      ["a negative lunch", mealForm(deluxe.id, deluxe.dinner, "-1")],
+      ["a blank dinner", mealForm(deluxe.id, "", deluxe.lunch)],
+    ];
+    for (const [what, form] of refused) {
+      const reply = await officePost("/api/office/rates", form, managerCookie);
+      if (reply.status !== 400) throw new Error(`The rates save accepted ${what} (${reply.status}).`);
+    }
+    if ((await stored()) !== before) throw new Error("A refused pricing rule or meal rate save changed the stored values.");
+
+    // A Manager changes the guide to 6,000 a day, and a quote with a guide uses 6,000.
+    const saved = await officePost("/api/office/rates", rulesForm({ ...current, guidePerDay: 6000 }), managerCookie);
+    if (saved.status !== 200 || !saved.body.ok) throw new Error(`A Manager could not save the pricing rules (${saved.status}).`);
+    const withGuide = await quoteReply({ guide: true, seasonPercent: 20 }, managerCookie);
+    const guideLine = withGuide.lines?.find((line) => line.label === "Guide");
+    if (guideLine?.amount !== 6000 * SKARDU_QUOTE.days) throw new Error(`A quote with a guide used ${guideLine?.amount}, not 6,000 a day.`);
+
+    // Each save writes one activity row, which a Manager can read and an Editor cannot.
+    const ruleRows = await db.select().from(activity).where(eq(activity.kind, "pricing_rule"));
+    const managerRows = ruleRows.filter((row) => row.userEmail === MANAGER_EMAIL);
+    if (managerRows.length !== 1 || managerRows[0].text !== "Saved the pricing rules" || managerRows[0].area !== "rates") {
+      throw new Error(`The pricing rule save wrote ${managerRows.length} activity rows.`);
+    }
+    const managerRead = await activityGet("?kind=pricing_rule", managerCookie);
+    const editorRead = await activityGet("?kind=pricing_rule", editorCookie);
+    if (managerRead.status !== 200 || managerRead.rows[0]?.userEmail !== MANAGER_EMAIL || editorRead.status !== 403) {
+      throw new Error(`The pricing rule row read as ${managerRead.status} for a Manager and ${editorRead.status} for an Editor.`);
+    }
+
+    // Lunch is the grade's lunch rate times adults and children times days. Infants are not counted.
+    // Dinner, the meal rule per night, is labelled Dinner.
+    const party = { children: 1, lapInfants: 1, seatInfants: 0, seasonPercent: 20 };
+    const plain = await quoteReply(party, managerCookie);
+    const lunch = await quoteReply({ ...party, lunch: true }, managerCookie);
+    const lunchLine = lunch.lines?.find((line) => line.label === "Lunch");
+    const lunchAmount = deluxe.lunch * 3 * SKARDU_QUOTE.days;
+    if (lunchLine?.amount !== lunchAmount || (lunch.subtotal ?? 0) - (plain.subtotal ?? 0) !== lunchAmount) {
+      throw new Error(`Lunch for 2 adults and a child over 5 days was ${lunchLine?.amount}, not ${lunchAmount}.`);
+    }
+    const dinner = await quoteReply({ ...party, meals: true }, managerCookie);
+    const dinnerLine = dinner.lines?.find((line) => line.label === "Dinner");
+    if (dinnerLine?.amount !== deluxe.dinner * 3 * (SKARDU_QUOTE.days - 1) || dinner.lines?.some((line) => line.label === "Meals")) {
+      throw new Error(`Dinner for 3 people over 4 nights was ${dinnerLine?.amount}, or the line was still called Meals.`);
+    }
+    const mealSaved = await officePost("/api/office/rates", mealForm(deluxe.id, deluxe.dinner, 2000), managerCookie);
+    const newLunch = await quoteReply({ ...party, lunch: true }, managerCookie);
+    if (mealSaved.status !== 200 || newLunch.lines?.find((line) => line.label === "Lunch")?.amount !== 2000 * 3 * SKARDU_QUOTE.days) {
+      throw new Error("A changed Deluxe lunch rate was not used.");
+    }
+    const [mealRow] = await db.select().from(activity).where(eq(activity.kind, "meal_rate"));
+    if (!mealRow || mealRow.text !== "Saved the meal rates for Deluxe" || mealRow.recordId !== String(deluxe.id)) {
+      throw new Error("The meal rate save did not write its activity row.");
+    }
+
+    // A guest cannot add lunch.
+    const guestPlain = await quoteReply({}, "");
+    const guestLunch = await quoteReply({ lunch: true }, "");
+    if (!guestLunch.ok || guestLunch.total !== guestPlain.total || guestLunch.lines !== undefined) {
+      throw new Error("A guest quote added lunch.");
+    }
+
+    // A saved office quote keeps lunch.
+    const quoteForm = new FormData();
+    for (const [key, value] of Object.entries({ kind: "quote", ...SKARDU_QUOTE, seasonPercent: "", lunch: "on" })) quoteForm.set(key, String(value));
+    const [top] = await db.select({ id: max(quotes.id) }).from(quotes);
+    const savedQuote = await officePost("/api/office/rates", quoteForm, managerCookie);
+    const [kept] = await db.select().from(quotes).where(gt(quotes.id, top?.id ?? 0));
+    try {
+      if (savedQuote.status !== 200 || !kept?.lunch) throw new Error("A saved office quote did not keep lunch.");
+    } finally {
+      if (kept) await db.delete(quotes).where(eq(quotes.id, kept.id));
+    }
+  } finally {
+    await db.update(pricingRules).set(current).where(eq(pricingRules.id, rules.id));
+    await db.update(mealRates).set({ dinner: deluxe.dinner, lunch: deluxe.lunch }).where(eq(mealRates.id, deluxe.id));
+  }
+  if ((await stored()) !== before) throw new Error("The pricing rules were not put back.");
+
+  // With the starting values, the Skardu test is still 140,400.
+  const skardu = await quoteReply({ seasonPercent: 20 }, managerCookie);
+  if (skardu.subtotal !== 117000 || skardu.total !== 140400) throw new Error(`The Skardu quote is ${skardu.total}, not 140,400.`);
+
+  // Both tables are backed up, before activity.
+  const names = BACKUP_TABLES.map(([name]) => name);
+  if (names.indexOf("pricing_rules") < 0 || names.indexOf("meal_rates") < 0 || names.indexOf("meal_rates") > names.indexOf("activity") || names.indexOf("pricing_rules") > names.indexOf("activity")) {
+    throw new Error("pricing_rules and meal_rates are not in BACKUP_TABLES before activity.");
+  }
+}
+
 async function assertProfitMargin(editorCookie: string, managerCookie: string) {
   const [saved] = await db.select({ percent: seasons.percent }).from(seasons).limit(1);
   if (saved?.percent !== 20) throw new Error(`The profit margin starts at ${saved?.percent ?? "nothing"}, not 20.`);

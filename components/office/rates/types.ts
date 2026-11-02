@@ -32,4 +32,22 @@ export type Air = {
 };
 export type Jeep = { id: number; place: string; mode: string; label: string; amount: number; live: boolean };
 
-export type RateDeskView = { hotels: Hotel[]; vehicles: Vehicle[]; air: Air | null; jeeps: Jeep[]; seasonPercent: number };
+export type PricingRules = {
+  guidePerDay: number;
+  breakfastPerPerson: number;
+  childFarePercent: number;
+  lapInfantFare: number;
+  seatInfantFare: number;
+  peoplePerRoom: number;
+};
+export type MealRate = { id: number; grade: string; dinner: number; lunch: number };
+
+export type RateDeskView = {
+  hotels: Hotel[];
+  vehicles: Vehicle[];
+  air: Air | null;
+  jeeps: Jeep[];
+  seasonPercent: number;
+  rules: PricingRules | null;
+  meals: MealRate[];
+};
