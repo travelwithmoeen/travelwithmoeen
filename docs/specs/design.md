@@ -112,7 +112,10 @@ Main records:
 | Site settings | Phone, address, social links. |
 | Hotel rate | Place, start city, grade, twin, 3-share, hotel name, offered or not. |
 | Vehicle rate | Place, start city, road or air, vehicle, rent, fuel, toll, seats, on or off. |
-| Air extra | Islamabad ticket, Lahore add, Karachi add, welcome pack, entry, infant extra, sticker. |
+| Air extra | Islamabad ticket, Lahore add, Karachi add, welcome pack, entry, infant extra, sticker. From T-48, the Lahore and Karachi adds are read from the start city instead. |
+| Pricing rules | Guide per day, arrival breakfast, child fare percent, lap infant fare, seat infant fare, people per room. One row. Added in T-47. Section 12. |
+| Meal rate | Grade, dinner per night, lunch per day. One row for each guest grade. Added in T-47. Section 12. |
+| Start city | Name, road or not, air or not, air extra, long-route extra. Added in T-48. Section 12. |
 | Jeep line | Place, road or air, label, people per jeep, amount, on or off. |
 | Profit margin | A whole percent from 0 to 100. One active value. The prototype default is 20 percent, pending Moeen sign-off. |
 | Quote | The inputs, the night lines, the day lines, the extras, the total. |
@@ -133,10 +136,10 @@ One function. Do not keep a second copy of the math in the React components. Do 
 
 - A seat is used by each adult, each child, and each infant with their own seat.
 - An infant on a lap does not use a seat and does not take a room.
-- Rooms, when nobody types a count, equal the number of seats divided by 3, rounded up.
+- Rooms, when nobody types a count, equal the number of seats divided by 3, rounded up. From T-47, the 3 is the people-per-room pricing rule.
 - More than two people in a room uses the 3-share rate. Two or fewer uses the twin rate.
 - Meals and arrival breakfast are per adult and per child. Infants are not included.
-- The child air fare is 75 percent of the adult fare. The adult fare is the Islamabad ticket plus the Lahore or Karachi extra, when that start city applies.
+- The child air fare is 75 percent of the adult fare. The adult fare is the Islamabad ticket plus the Lahore or Karachi extra, when that start city applies. From T-47, the 75 is a pricing rule. From T-48, the extra is the start city's air extra.
 
 ### Order of the starting quote
 
@@ -144,11 +147,11 @@ One function. Do not keep a second copy of the math in the React components. Do 
 2. Vehicle count equals seats needed, divided by the seats on that vehicle, rounded up, unless a count is typed.
 3. Vehicle cost equals the vehicle count times ((daily rent plus daily fuel) times days, plus the toll once). The toll is once per vehicle, not once for the whole trip.
 4. Hotel cost equals the nightly rate times nights times rooms.
-5. Guide, if selected, is 5,000 rupees times days. On the public builder, a Coaster 4c or Coaster 5c selects the guide. The office can turn it off. The test quote has no guide.
-6. Meals, if selected, use the grade rate times nights times adults and children.
-7. A road trip longer than one day adds arrival breakfast of 500 rupees times adults and children.
-8. A Lahore road trip longer than three days adds 5,000 rupees times (days minus 3) times the vehicle count. This is not added to an air quote.
-9. An air quote adds, for each adult and each child, a welcome pack of 1,500 and entry tickets of 4,000. Each infant adds 800. The sticker is 500 times rooms. Tickets are the adult fare times adults, 75 percent of that fare times children, 1,000 for each lap infant, and 5,000 for each infant with a seat.
+5. Guide, if selected, is 5,000 rupees times days. From T-47, the 5,000 is the guide pricing rule. On the public builder, a Coaster 4c or Coaster 5c selects the guide. The office can turn it off. The test quote has no guide.
+6. Meals, if selected, use the grade rate times nights times adults and children. From T-47, this is Dinner, at the grade's dinner rate. Lunch, if selected, is the grade's lunch rate times days times adults and children.
+7. A road trip longer than one day adds arrival breakfast of 500 rupees times adults and children. From T-47, the 500 is the breakfast pricing rule.
+8. A Lahore road trip longer than three days adds 5,000 rupees times (days minus 3) times the vehicle count. This is not added to an air quote. From T-48, the start city, the 3 days, and the 5,000 come from the start city's long-route extra.
+9. An air quote adds, for each adult and each child, a welcome pack of 1,500 and entry tickets of 4,000. Each infant adds 800. The sticker is 500 times rooms. Tickets are the adult fare times adults, 75 percent of that fare times children, 1,000 for each lap infant, and 5,000 for each infant with a seat. From T-47, the 75 percent, the 1,000, and the 5,000 are pricing rules. From T-49, an office quote with tickets turned off has no ticket line, and the welcome pack, entry, infant extra, and sticker stay.
 10. A jeep line that is turned on, and that matches the place and road or air, is added once for each group of six travelers, at the full amount on the line. Do not multiply 90,000 by 3.
 11. Subtotal is the sum of those lines. Total equals subtotal times (1 plus the profit margin). The margin is a whole percent from 0 to 100. The Skardu test uses 20 percent, which is 1.20. Do not divide by 1.20.
 
@@ -374,3 +377,48 @@ Built after rows S-3 to S-8 in the tasks file are Approved or Changed. The rules
 2. Change the requirement and this design in the same pull request.
 3. If the change is to the look, update the prototype source and rebuild `meadow.html` in that pull request too, so the reference stays true.
 4. Then change the code. A task that is already merged gets a small follow-up pull request that names the S row.
+
+## 12. Costing desk feedback, T-47 to T-49
+
+Requirements section 8b. The reference is the team's costing desk, `Trip-Casting-Desk-v1.2`, which stays in the feedback folder and never enters the repository. Read the rules from the requirements, not from the desk. Where the desk differs, rows S-10 to S-12 in the tasks file decide.
+
+Build T-47, then T-48, then T-49, one pull request each, into the fork `main`. Each one adds an additive migration in `drizzle/` and the matching `lib/db/schema.ts` change. A migration that adds starting rows is run on the Preview database before that change is deployed, as with `0003`, because the Preview build only pushes the schema.
+
+### Pricing rules, T-47
+
+Two new tables:
+
+| Table | Columns |
+|---|---|
+| `pricing_rules` | `id` serial, `guide_per_day`, `breakfast_per_person`, `child_fare_percent`, `lap_infant_fare`, `seat_infant_fare`, `people_per_room`. All integers. One row. |
+| `meal_rates` | `id` serial, `grade` text unique, `dinner` integer, `lunch` integer. One row each for Deluxe, Executive, Luxury, and Ultra Luxury. |
+
+- The migration, `drizzle/0004_pricing_rules.sql`, creates both tables and inserts the starting values in BR-87, only when a table is empty.
+- `RateCatalog` in `lib/quote.ts` gains `rules` and `meals`, loaded with the other rates in `lib/rates.ts`. Remove the constants `GUIDE_PER_DAY`, `BREAKFAST_PER_PERSON`, `LAP_INFANT_TICKET`, `SEAT_INFANT_TICKET`, `MEAL_PER_NIGHT`, the fixed 75 percent, and the fixed 3 people per room. The math in section 5 stays in `buildQuote`.
+- `QuoteInput` gains `lunch`. Its line is labelled Lunch, and the Meals line is labelled Dinner. `POST /api/quote` accepts `lunch` only from an Owner or a Manager, the same way it accepts night edits. A saved quote keeps it in a new `quotes.lunch` column, default false, in the same migration.
+- The Pricing rules tab is `/office/rates/rules`, next to Profit margin. It saves through `POST /api/office/rates` with new kinds, such as `pricing_rule` and `meal_rate`, checked in `lib/office/rates.ts`. Each save writes one activity row in area `rates`.
+- Add `pricing_rules` and `meal_rates` to `BACKUP_TABLES` before `activity`.
+
+### Places and start cities, T-48
+
+One new table:
+
+| Table | Columns |
+|---|---|
+| `start_cities` | `id` serial, `name` text unique, `road` boolean, `air` boolean, `air_extra` integer, `long_route_after_days` integer or null, `long_route_per_vehicle_day` integer default 0, `sort_order` integer. |
+
+- The migration, `drizzle/0005_start_cities.sql`, creates the table and inserts Islamabad, Lahore, and Karachi as in BR-91. The Lahore and Karachi air extras are copied from `air_extras.lahore_add` and `air_extras.karachi_add`. Those two columns stay in the table, because the migration is additive, and nothing reads them after this change. The Air extras tab stops showing them.
+- `buildQuote` reads the adult fare as the Islamabad ticket plus the start city's air extra, and the long-route extra from the start city. Remove `LAHORE_ROAD_PER_DAY` and the fixed Karachi and Lahore checks. A road quote from a start city with `road` false is refused, which keeps the Karachi rule.
+- Road rate rows keep the start city as text, as today. Air rate rows keep `Air`. Renaming a start city updates `start_city` on its hotel and vehicle rate rows in the same transaction.
+- The Hotels tab and the Vehicles tab each get an Add rate drawer. A new place name in that drawer adds the place. Renaming a place updates `place` on its hotel rates, vehicle rates, and jeep lines in one transaction. The public `places` table is not touched.
+- The place list for a quote comes from one `lib/` function: places with an offered hotel rate and a live vehicle rate for the mode and start city. The office Quote screen uses it. The guest builder keeps `data/calculator-options.ts` for now. The start city list is the start cities with `road` or `air` true for the chosen mode.
+- The Start cities tab is `/office/rates/start-cities`. Saves go through `POST /api/office/rates` with kinds such as `start_city`, `hotel_rate_add`, `vehicle_rate_add`, and `place_rename`. Each save writes one activity row in area `rates`.
+- Add `start_cities` to `BACKUP_TABLES` before `activity`.
+
+### Quote screen v2, T-49
+
+- `QuoteLine` gains `working`, a short text built in `buildQuote` from the same numbers as the amount, as in BR-93. The guest response still leaves out the lines.
+- `QuoteInput` gains `tickets`, default true. With `tickets` false on an air quote, the ticket line is left out. `POST /api/quote` accepts `tickets` and `vehicleCount` only from an Owner or a Manager. A guest's room count stays as today.
+- A saved quote keeps the typed room count, the typed vehicle count, and `tickets`, in new nullable columns on `quotes`, in `drizzle/0006_quote_counts.sql`.
+- The screen sections are Route (place, travel by, start city, days), Party (adults, children, lap infants, infants with a seat, rooms, vehicles), and Stay and services (grade, Air tickets on air only, Tour guide, Dinner, Lunch). The night and day edits, the paid extra, and Other follow in one section. Rooms and vehicles show the automatic count with an Auto tag. Typing a number changes the tag to Typed. Back to auto counts clears both.
+- The breakdown lists every line with its working and amount, then the subtotal, the profit, and the guest total.
