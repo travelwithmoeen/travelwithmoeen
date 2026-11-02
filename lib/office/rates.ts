@@ -14,7 +14,8 @@ import {
 import { canEditRates } from "@/lib/auth/permissions";
 import type { SessionUser } from "@/lib/auth/session";
 import { forbidden, type ActionResult } from "@/lib/http/result";
-import { buildQuote, type DayEdit, type NightEdit, type QuoteInput, type SeasonPercent } from "@/lib/quote";
+import { recordActivity } from "@/lib/office/activity";
+import { buildQuote, readMarginPercent, type DayEdit, type MarginPercent, type NightEdit, type QuoteInput } from "@/lib/quote";
 import { loadCatalog, loadRateDesk, readAmount, readCount } from "@/lib/rates";
 
 export async function loadRateDeskAs(actor: SessionUser) {
@@ -34,12 +35,19 @@ export async function saveHotelRateAs(actor: SessionUser, formData: FormData): P
   const triple = readAmount(String(formData.get("triple") ?? ""));
   if (!triple.ok) return triple;
   const hotelName = String(formData.get("hotelName") ?? "").trim();
-  const [row] = await db.select({ id: hotelRates.id }).from(hotelRates).where(eq(hotelRates.id, id)).limit(1);
+  const [row] = await db
+    .select({ id: hotelRates.id, place: hotelRates.place, startCity: hotelRates.startCity, grade: hotelRates.grade })
+    .from(hotelRates)
+    .where(eq(hotelRates.id, id))
+    .limit(1);
   if (!row) return { ok: false, error: "That hotel rate was not found." };
-  await db
-    .update(hotelRates)
-    .set({ twin: twin.amount, triple: triple.amount, hotelName, offered: checked(formData.get("offered")) })
-    .where(eq(hotelRates.id, id));
+  await db.transaction(async (tx) => {
+    await tx
+      .update(hotelRates)
+      .set({ twin: twin.amount, triple: triple.amount, hotelName, offered: checked(formData.get("offered")) })
+      .where(eq(hotelRates.id, id));
+    await recordActivity(tx, actor, { kind: "hotel_rate", recordId: id, text: `Saved hotel rate ${row.place}, ${row.startCity}, ${row.grade}` });
+  });
   return { ok: true, message: "Hotel rate saved." };
 }
 
@@ -54,13 +62,20 @@ export async function saveVehicleRateAs(actor: SessionUser, formData: FormData):
   if (!toll.ok) return toll;
   const seats = readCount(String(formData.get("seats") ?? ""), "the seats", 60);
   if (!seats.ok) return seats;
-  const [row] = await db.select({ id: vehicleRates.id }).from(vehicleRates).where(eq(vehicleRates.id, id)).limit(1);
+  const [row] = await db
+    .select({ id: vehicleRates.id, place: vehicleRates.place, startCity: vehicleRates.startCity, vehicle: vehicleRates.vehicle })
+    .from(vehicleRates)
+    .where(eq(vehicleRates.id, id))
+    .limit(1);
   if (!row) return { ok: false, error: "That vehicle rate was not found." };
   const live = checked(formData.get("live")) && !(rent.amount === 0 && fuel.amount === 0 && toll.amount === 0);
-  await db
-    .update(vehicleRates)
-    .set({ rent: rent.amount, fuel: fuel.amount, toll: toll.amount, seats: seats.count, live })
-    .where(eq(vehicleRates.id, id));
+  await db.transaction(async (tx) => {
+    await tx
+      .update(vehicleRates)
+      .set({ rent: rent.amount, fuel: fuel.amount, toll: toll.amount, seats: seats.count, live })
+      .where(eq(vehicleRates.id, id));
+    await recordActivity(tx, actor, { kind: "vehicle_rate", recordId: id, text: `Saved vehicle rate ${row.vehicle}, ${row.place} from ${row.startCity}` });
+  });
   return { ok: true, message: "Vehicle rate saved." };
 }
 
@@ -83,7 +98,10 @@ export async function saveAirExtraAs(actor: SessionUser, formData: FormData): Pr
   }
   const [row] = await db.select({ id: airExtras.id }).from(airExtras).limit(1);
   if (!row) return { ok: false, error: "The air extras are not loaded." };
-  await db.update(airExtras).set(amounts).where(eq(airExtras.id, row.id));
+  await db.transaction(async (tx) => {
+    await tx.update(airExtras).set(amounts).where(eq(airExtras.id, row.id));
+    await recordActivity(tx, actor, { kind: "air_extra", text: "Saved the air extras" });
+  });
   return { ok: true, message: "Air extras saved." };
 }
 
@@ -92,20 +110,27 @@ export async function saveJeepLineAs(actor: SessionUser, formData: FormData): Pr
   const id = Number(formData.get("id"));
   const amount = readAmount(String(formData.get("amount") ?? ""));
   if (!amount.ok) return amount;
-  const [row] = await db.select({ id: jeepLines.id }).from(jeepLines).where(eq(jeepLines.id, id)).limit(1);
+  const [row] = await db.select({ id: jeepLines.id, place: jeepLines.place, label: jeepLines.label }).from(jeepLines).where(eq(jeepLines.id, id)).limit(1);
   if (!row) return { ok: false, error: "That jeep line was not found." };
-  await db.update(jeepLines).set({ amount: amount.amount, live: checked(formData.get("live")) }).where(eq(jeepLines.id, id));
+  await db.transaction(async (tx) => {
+    await tx.update(jeepLines).set({ amount: amount.amount, live: checked(formData.get("live")) }).where(eq(jeepLines.id, id));
+    await recordActivity(tx, actor, { kind: "jeep_line", recordId: id, text: `Saved jeep line ${row.label}, ${row.place}` });
+  });
   return { ok: true, message: "Jeep line saved." };
 }
 
-export async function saveSeasonAs(actor: SessionUser, formData: FormData): Promise<ActionResult> {
+// The saved profit margin, one whole percent from 0 to 100, kept in the one seasons row.
+export async function saveMarginAs(actor: SessionUser, formData: FormData): Promise<ActionResult> {
   if (!canEditRates(actor.role)) return forbidden("You cannot change a price.");
-  const percent = String(formData.get("percent") ?? "").trim();
-  if (percent !== "15" && percent !== "20") return { ok: false, error: "Choose 15 percent or 20 percent." };
+  const margin = readMarginPercent(String(formData.get("percent") ?? ""));
+  if (!margin.ok) return margin;
   const [row] = await db.select({ id: seasons.id }).from(seasons).limit(1);
-  if (!row) await db.insert(seasons).values({ percent: Number(percent) });
-  else await db.update(seasons).set({ percent: Number(percent) }).where(eq(seasons.id, row.id));
-  return { ok: true, message: "Season saved." };
+  await db.transaction(async (tx) => {
+    if (!row) await tx.insert(seasons).values({ percent: margin.percent });
+    else await tx.update(seasons).set({ percent: margin.percent }).where(eq(seasons.id, row.id));
+    await recordActivity(tx, actor, { kind: "margin", text: `Changed the profit margin to ${margin.percent} percent` });
+  });
+  return { ok: true, message: `Profit margin saved: ${margin.percent} percent.` };
 }
 
 export async function quoteInputFromForm(formData: FormData): Promise<{ ok: true; input: QuoteInput } | { ok: false; error: string }> {
@@ -119,8 +144,14 @@ export async function quoteInputFromForm(formData: FormData): Promise<{ ok: true
   if (!lapInfants.ok) return lapInfants;
   const seatInfants = readCount(String(formData.get("seatInfants") ?? "0"), "the infants with a seat", 60);
   if (!seatInfants.ok) return seatInfants;
-  const season = String(formData.get("seasonPercent") ?? "").trim();
-  const seasonPercent: SeasonPercent | undefined = season === "15" || season === "20" ? Number(season) as SeasonPercent : undefined;
+  // A margin for this one quote. Blank uses the saved margin. Anything else must be 0 to 100.
+  const marginText = String(formData.get("seasonPercent") ?? "").trim();
+  let seasonPercent: MarginPercent | undefined;
+  if (marginText) {
+    const margin = readMarginPercent(marginText);
+    if (!margin.ok) return margin;
+    seasonPercent = margin.percent;
+  }
   const nightEdits: NightEdit[] = [];
   const night = String(formData.get("night") ?? "").trim();
   const nightRate = String(formData.get("nightRate") ?? "").trim();
@@ -246,6 +277,7 @@ export async function saveQuoteAs(actor: SessionUser, formData: FormData): Promi
     if (extras.length > 0) {
       await tx.insert(quoteExtras).values(extras.map((extra) => ({ quoteId: saved.id, name: extra.name, amount: extra.amount })));
     }
+    await recordActivity(tx, actor, { kind: "quote", recordId: saved.id, text: `Saved quote ${saved.id}, ${parsed.input.place}, total Rs ${quote.total.toLocaleString("en-US")}` });
   });
   return { ok: true, message: `Quote saved. Total ${quote.total}.` };
 }
@@ -256,7 +288,7 @@ export async function savePriceFromKind(actor: SessionUser, formData: FormData):
   if (kind === "vehicle") return saveVehicleRateAs(actor, formData);
   if (kind === "air") return saveAirExtraAs(actor, formData);
   if (kind === "jeep") return saveJeepLineAs(actor, formData);
-  if (kind === "season") return saveSeasonAs(actor, formData);
+  if (kind === "season") return saveMarginAs(actor, formData);
   if (kind === "quote") return saveQuoteAs(actor, formData);
   if (!canEditRates(actor.role)) return forbidden("You cannot change a price.");
   return { ok: false, error: "Choose a rate to save." };

@@ -112,7 +112,7 @@ export const posts = pgTable("posts", {
 });
 
 export const photos = pgTable("photos", {
-  id: integer("id").primaryKey(),
+  id: serial("id").primaryKey(),
   src: text("src").notNull(),
   alt: text("alt").notNull(),
   category: text("category").notNull(),
@@ -121,7 +121,7 @@ export const photos = pgTable("photos", {
 });
 
 export const reviews = pgTable("reviews", {
-  id: integer("id").primaryKey(),
+  id: serial("id").primaryKey(),
   name: text("name").notNull(),
   avatar: text("avatar").notNull(),
   location: text("location").notNull(),
@@ -130,7 +130,7 @@ export const reviews = pgTable("reviews", {
 });
 
 export const slides = pgTable("slides", {
-  id: integer("id").primaryKey(),
+  id: serial("id").primaryKey(),
   image: text("image").notNull(),
   title: text("title").notNull(),
   rotation: integer("rotation").notNull(),
@@ -272,3 +272,20 @@ export const siteSettings = pgTable("site_settings", {
   tiktokUrl: text("tiktok_url").notNull(),
   youtubeUrl: text("youtube_url").notNull(),
 });
+
+// BR-86: one row per successful office save. user_id has no foreign key, so removing a login keeps
+// its old rows. area decides who may read the row. record_id is empty for a single record.
+export const activity = pgTable(
+  "activity",
+  {
+    id: serial("id").primaryKey(),
+    at: timestamp("at", { withTimezone: true }).defaultNow().notNull(),
+    userId: integer("user_id").notNull(),
+    userEmail: text("user_email").notNull(),
+    area: text("area").notNull(),
+    kind: text("kind").notNull(),
+    recordId: text("record_id").notNull().default(""),
+    text: text("text").notNull(),
+  },
+  (table) => [index("activity_at_idx").on(table.at), index("activity_kind_record_at_idx").on(table.kind, table.recordId, table.at)],
+);

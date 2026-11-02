@@ -1,13 +1,18 @@
-import { existsSync, readFileSync } from "fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "fs";
+import os from "os";
 import path from "path";
 import { spawn } from "child_process";
-import { eq, max } from "drizzle-orm";
+import { head, list } from "@vercel/blob";
+import { count, eq, gt, like, max } from "drizzle-orm";
+import postgres from "postgres";
+import { drizzle } from "drizzle-orm/postgres-js";
 import { db, sql } from "../lib/db";
-import { guestRequests, loginFailures, places, posts, reviews, tourPlaces, tours, users } from "../lib/db/schema";
+import { activity, guestRequests, loginFailures, photos, places, posts, quoteDays, quoteExtras, quoteNights, quotes, reviews, seasons, tourPlaces, tours, users } from "../lib/db/schema";
 import { inferTourPlaceLinks, linkInferredTourPlaces } from "../lib/office/tour-places";
 import { authenticate } from "../lib/auth/authenticate";
 import { createUserAs, removeUserAs } from "../lib/office/users";
 import { officeMediaPath } from "../lib/office/media";
+import { BACKUP_TABLES, readBackupFile } from "../lib/office/backup";
 import { GUEST_EMAIL_LIMIT, GUEST_MESSAGE_LIMIT, GUEST_NAME_LIMIT, GUEST_PHONE_LIMIT } from "../lib/requests";
 
 const EDITOR_EMAIL = "editor-step3-requests@travelwithmoeen.test";
@@ -189,8 +194,6 @@ async function assertPlaceBlogReview(editorCookie: string, shipped: string) {
   const postSlug = "office-media-post";
   await db.delete(places).where(eq(places.slug, placeSlug));
   await db.delete(posts).where(eq(posts.slug, postSlug));
-  const [idRow] = await db.select({ value: max(reviews.id) }).from(reviews);
-  const reviewId = (idRow?.value ?? 0) + 1;
   await db.insert(places).values({
     slug: placeSlug,
     title: "Office media place",
@@ -209,14 +212,11 @@ async function assertPlaceBlogReview(editorCookie: string, shipped: string) {
     coverImage: shipped,
     content: [],
   });
-  await db.insert(reviews).values({
-    id: reviewId,
-    name: "Office media review",
-    avatar: "",
-    location: "Check",
-    text: "Office media review stays.",
-    rating: 5,
-  });
+  const [reviewRow] = await db
+    .insert(reviews)
+    .values({ name: "Office media review", avatar: "", location: "Check", text: "Office media review stays.", rating: 5 })
+    .returning({ id: reviews.id });
+  const reviewId = reviewRow.id;
   const uploaded: string[] = [];
   try {
     const placeForm = new FormData();
@@ -573,15 +573,17 @@ async function assertTourPlaceOffice(editorCookie: string, managerCookie: string
   const stale = await db.select({ id: tours.id }).from(tours).where(eq(tours.region, "Link Valley"));
   for (const row of stale) await db.delete(tours).where(eq(tours.id, row.id));
   try {
-    const editorList = await fetch(`${siteBase()}/office/tours`, { headers: { cookie: editorCookie } });
-    const editorHtml = await editorList.text();
-    if (editorList.status !== 200 || !editorHtml.includes("Add tour") || !editorHtml.includes("Delete tour")) {
-      throw new Error("The Editor tours list does not offer add and delete.");
-    }
-    const ownerList = await fetch(`${siteBase()}/office/tours`, { headers: { cookie: ownerCookie } });
-    const ownerHtml = await ownerList.text();
-    if (ownerList.status !== 200 || !ownerHtml.includes("Add tour") || !ownerHtml.includes("Delete tour")) {
-      throw new Error("The Owner tours list does not offer add and delete.");
+    // T-37c: the list links to the new-tour page, and each tour's editor offers Delete tour.
+    const [anyTour] = await db.select({ id: tours.id }).from(tours).limit(1);
+    if (!anyTour) throw new Error("No tour to open in the office.");
+    for (const [who, cookie] of [["Editor", editorCookie], ["Owner", ownerCookie]] as const) {
+      const list = await fetch(`${siteBase()}/office/tours`, { headers: { cookie } });
+      const listHtml = await list.text();
+      const editor = await fetch(`${siteBase()}/office/tours/${encodeURIComponent(anyTour.id)}`, { headers: { cookie } });
+      const editorPageHtml = await editor.text();
+      if (list.status !== 200 || !listHtml.includes('href="/office/tours/new"') || editor.status !== 200 || !editorPageHtml.includes("Delete tour")) {
+        throw new Error(`The ${who} tours screens do not offer add and delete.`);
+      }
     }
     const newPage = await fetch(`${siteBase()}/office/tours/new`, { headers: { cookie: editorCookie } });
     if (newPage.status !== 200 || !(await newPage.text()).includes("Add tour")) {
@@ -843,6 +845,16 @@ async function assertOfficeRequests(savedIds: number[]) {
     if (!ownerCookie) throw new Error("The Owner did not get a session.");
     await assertOfficeMedia(editorCookie, managerCookie, ownerCookie);
     await assertTourPlaceOffice(editorCookie, managerCookie, ownerCookie);
+    await assertOfficeShellLinks(editorCookie, managerCookie, ownerCookie);
+    await assertSessionRequestCount(ownerCookie);
+    await assertProfitMargin(editorCookie, managerCookie);
+    await assertQuoteEditsThroughRoutes(managerCookie);
+    await assertRefusedSaveCleanup(editorCookie);
+    await assertEmptyOfficeSave(editorCookie);
+    await assertOldFileRemovedAfterSave(editorCookie);
+    await assertDeleteRemovesRecordAndFile(editorCookie);
+    await assertActivity(editorCookie, managerCookie, ownerCookie, { id: saved.body.id, phone, message });
+    await assertParallelPhotoAdds(editorCookie);
     const ownerDelete = await officePost("/api/office/requests/delete", deleteForm, ownerCookie);
     if (ownerDelete.status !== 200 || !ownerDelete.body.ok) {
       throw new Error(`An Owner delete returned ${ownerDelete.status}.`);
@@ -859,6 +871,669 @@ async function assertOfficeRequests(savedIds: number[]) {
   }
 }
 
+const OFFICE_LINKS_BY_ROLE = {
+  owner: [
+    "/office",
+    "/office/requests",
+    "/office/rates",
+    "/office/tours",
+    "/office/places",
+    "/office/blog",
+    "/office/gallery",
+    "/office/reviews",
+    "/office/slides",
+    "/office/site",
+    "/office/users",
+    "/office/backup",
+  ],
+  manager: ["/office", "/office/requests", "/office/rates"],
+  editor: [
+    "/office",
+    "/office/requests",
+    "/office/tours",
+    "/office/places",
+    "/office/blog",
+    "/office/gallery",
+    "/office/reviews",
+    "/office/slides",
+    "/office/site",
+  ],
+};
+
+function sidebarLinks(html: string) {
+  const links: string[] = [];
+  for (const tag of html.match(/<a [^>]*class="nav-item"[^>]*>/g) ?? []) {
+    const href = /href="([^"]+)"/.exec(tag)?.[1];
+    if (href) links.push(href);
+  }
+  return links;
+}
+
+const SKARDU_QUOTE = {
+  place: "Skardu Valley",
+  startCity: "Islamabad",
+  mode: "road",
+  days: 5,
+  adults: 2,
+  children: 0,
+  lapInfants: 0,
+  seatInfants: 0,
+  grade: "Deluxe",
+  vehicle: "Gli Car",
+  guide: false,
+  meals: false,
+};
+
+// A Manager's quote sends no margin, so it uses the saved one and shows the subtotal and the profit.
+// A guest's quote shows only the total.
+async function skarduQuote(cookie: string) {
+  const response = await fetch(`${siteBase()}/api/quote`, {
+    method: "POST",
+    headers: { "content-type": "application/json", ...(cookie ? { cookie } : {}) },
+    body: JSON.stringify(SKARDU_QUOTE),
+  });
+  return (await response.json()) as { ok?: boolean; subtotal?: number; profit?: number; total?: number; seasonPercent?: number };
+}
+
+type QuoteReply = {
+  ok?: boolean;
+  error?: string;
+  total?: number;
+  subtotal?: number;
+  profit?: number;
+  averageNightly?: number;
+  lines?: { label: string; amount: number }[];
+  nights?: { night: number; rate: number }[];
+  days?: { day: number; rent: number; fuel: number; toll: number; cleared: boolean }[];
+};
+
+async function quoteReply(extra: Record<string, unknown>, cookie: string) {
+  const response = await fetch(`${siteBase()}/api/quote`, {
+    method: "POST",
+    headers: { "content-type": "application/json", ...(cookie ? { cookie } : {}) },
+    body: JSON.stringify({ ...SKARDU_QUOTE, ...extra }),
+  });
+  return (await response.json()) as QuoteReply;
+}
+
+// T-37g: the Quote screen prices through POST /api/quote and saves through POST /api/office/rates.
+// Through those routes, a night-two edit changes only that night and the average, clearing one day
+// removes only that day's rent, and a guest still sees one total.
+async function assertQuoteEditsThroughRoutes(managerCookie: string) {
+  const base = await quoteReply({}, managerCookie);
+  if (!base.ok || !base.nights || !base.days || base.nights.length < 2) throw new Error("The T-37g base quote has no nights.");
+
+  const night = await quoteReply({ nightEdits: [{ night: 2, rate: 20000 }] }, managerCookie);
+  const otherNights = night.nights?.filter((row) => row.night !== 2) ?? [];
+  const expectedAverage = (base.nights.reduce((sum, row) => sum + row.rate, 0) - base.nights[1].rate + 20000) / base.nights.length;
+  if (
+    !night.ok ||
+    night.nights?.[1]?.rate !== 20000 ||
+    otherNights.some((row) => row.rate !== base.nights?.find((b) => b.night === row.night)?.rate) ||
+    night.averageNightly !== expectedAverage
+  ) {
+    throw new Error("Through /api/quote, a night-two edit changed another night or not the average.");
+  }
+
+  const cleared = await quoteReply({ dayEdits: [{ day: 1, cleared: true }] }, managerCookie);
+  const dayOne = base.days[0];
+  const otherDays = cleared.days?.filter((row) => row.day !== 1) ?? [];
+  if (
+    !cleared.ok ||
+    !cleared.days?.[0]?.cleared ||
+    cleared.days[0].rent !== 0 ||
+    otherDays.some((row) => row.rent !== base.days?.find((b) => b.day === row.day)?.rent) ||
+    cleared.days[0].fuel !== 0 ||
+    // The toll is counted once for the trip, so clearing a day removes its rent and fuel.
+    (base.subtotal ?? 0) - (cleared.subtotal ?? 0) !== dayOne.rent + dayOne.fuel
+  ) {
+    throw new Error("Through /api/quote, clearing day one did not remove only that day's rent.");
+  }
+
+  const guest = await quoteReply({ nightEdits: [{ night: 2, rate: 20000 }] }, "");
+  if (!guest.ok || guest.total !== base.total || guest.lines !== undefined || guest.profit !== undefined || guest.nights !== undefined) {
+    throw new Error("A guest quote did not show one total only.");
+  }
+
+  const [before] = await db.select({ value: max(quotes.id) }).from(quotes);
+  const form = new FormData();
+  for (const [key, value] of Object.entries({ kind: "quote", ...SKARDU_QUOTE, night: "2", nightRate: "20000", seasonPercent: "" })) {
+    if (typeof value === "boolean") {
+      if (value) form.set(key, "on");
+    } else {
+      form.set(key, String(value));
+    }
+  }
+  const saved = await officePost("/api/office/rates", form, managerCookie);
+  const [afterRow] = await db.select({ value: max(quotes.id) }).from(quotes);
+  const savedId = afterRow?.value && afterRow.value !== before?.value ? afterRow.value : null;
+  try {
+    if (saved.status !== 200 || !saved.body.ok || !savedId) throw new Error(`The office quote save was refused: ${saved.body.error ?? saved.status}.`);
+    const nights = await db.select().from(quoteNights).where(eq(quoteNights.quoteId, savedId));
+    const two = nights.find((row) => row.night === 2);
+    if (two?.rate !== 20000 || nights.some((row) => row.night !== 2 && row.rate !== base.nights?.find((b) => b.night === row.night)?.rate)) {
+      throw new Error("The saved quote did not keep the night-two edit alone.");
+    }
+  } finally {
+    if (savedId) {
+      await db.delete(quoteNights).where(eq(quoteNights.quoteId, savedId));
+      await db.delete(quoteDays).where(eq(quoteDays.quoteId, savedId));
+      await db.delete(quoteExtras).where(eq(quoteExtras.quoteId, savedId));
+      await db.delete(quotes).where(eq(quotes.id, savedId));
+    }
+  }
+}
+
+function marginForm(percent: string) {
+  const form = new FormData();
+  form.set("kind", "season");
+  form.set("percent", percent);
+  return form;
+}
+
+// T-37f: the margin is one whole percent from 0 to 100, saved by the Owner or a Manager only.
+async function assertProfitMargin(editorCookie: string, managerCookie: string) {
+  const [saved] = await db.select({ percent: seasons.percent }).from(seasons).limit(1);
+  if (saved?.percent !== 20) throw new Error(`The profit margin starts at ${saved?.percent ?? "nothing"}, not 20.`);
+  try {
+    const editorSave = await officePost("/api/office/rates", marginForm("16"), editorCookie);
+    if (editorSave.status !== 403) throw new Error(`An Editor margin save returned ${editorSave.status}.`);
+    for (const refused of ["101", "12.5", "-1", ""]) {
+      const result = await officePost("/api/office/rates", marginForm(refused), managerCookie);
+      if (result.status !== 400 || result.body.ok) throw new Error(`The margin "${refused}" was not refused: ${result.status}.`);
+    }
+    const [unchanged] = await db.select({ percent: seasons.percent }).from(seasons).limit(1);
+    if (unchanged?.percent !== 20) throw new Error("A refused margin changed the saved margin.");
+
+    const atTwenty = await skarduQuote(managerCookie);
+    if (atTwenty.subtotal !== 117000 || atTwenty.profit !== 23400 || atTwenty.total !== 140400) {
+      throw new Error(`The Skardu quote at 20 percent was ${atTwenty.total}.`);
+    }
+    for (const [percent, profit] of [["16", 18720], ["30", 35100]] as const) {
+      const result = await officePost("/api/office/rates", marginForm(percent), managerCookie);
+      if (result.status !== 200 || !result.body.ok) throw new Error(`The margin ${percent} was not saved: ${result.body.error ?? result.status}.`);
+      const quote = await skarduQuote(managerCookie);
+      if (quote.seasonPercent !== Number(percent) || quote.subtotal !== 117000 || quote.profit !== profit || quote.total !== 117000 + profit) {
+        throw new Error(`At ${percent} percent the Skardu quote was ${quote.subtotal} plus ${quote.profit}.`);
+      }
+      const guest = await skarduQuote("");
+      if (guest.total !== 117000 + profit || guest.profit !== undefined) {
+        throw new Error(`At ${percent} percent the guest total was ${guest.total}.`);
+      }
+    }
+  } finally {
+    await db.update(seasons).set({ percent: 20 });
+  }
+  const [back] = await db.select({ percent: seasons.percent }).from(seasons).limit(1);
+  if (back?.percent !== 20) throw new Error("The profit margin was not put back to 20.");
+}
+
+async function mediaFiles() {
+  const token = process.env.MEDIA_READ_WRITE_TOKEN;
+  if (!token) throw new Error("The T-40 check needs MEDIA_READ_WRITE_TOKEN.");
+  const names = new Set<string>();
+  let cursor: string | undefined;
+  do {
+    const page = await list({ prefix: "media/", token, cursor });
+    for (const blob of page.blobs) names.add(blob.pathname);
+    cursor = page.cursor;
+  } while (cursor);
+  return names;
+}
+
+async function mediaFileExists(url: string) {
+  try {
+    await head(url, { token: process.env.MEDIA_READ_WRITE_TOKEN });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function newTourForm(location: string, files: { photo?: File; pdf?: File }) {
+  const form = new FormData();
+  form.set("name", "T-40 check tour");
+  form.set("location", location);
+  form.set("region", "T-40 Valley");
+  form.set("description", "T-40 check.");
+  form.set("duration", "1");
+  form.set("image", "");
+  form.set("pdf", "");
+  form.set("transport", "By Road");
+  form.set("itinerary", "[]");
+  form.set("galleryImageSet", "1");
+  form.set("placeSet", "1");
+  if (files.photo) form.set("photo", files.photo);
+  if (files.pdf) form.set("pdfFile", files.pdf);
+  return form;
+}
+
+// T-40: a refused save deletes the files it stored. An accepted save keeps them.
+async function assertRefusedSaveCleanup(editorCookie: string) {
+  const jpeg = () => new File([new Uint8Array(JPEG)], "t40.jpg", { type: "image/jpeg" });
+  const before = await mediaFiles();
+  const refusedSaves: [string, string, FormData][] = [
+    ["a tour with no location", "/api/office/tours/create", newTourForm("", { photo: jpeg() })],
+    ["a tour whose PDF is not a PDF", "/api/office/tours/create", newTourForm("T-40 Valley", { photo: jpeg(), pdf: new File([Buffer.from("hello")], "t40.pdf", { type: "application/pdf" }) })],
+  ];
+  const photoForm = new FormData();
+  photoForm.set("alt", "");
+  photoForm.set("category", "private");
+  photoForm.set("photo", jpeg());
+  refusedSaves.push(["a gallery photo with no description", "/api/office/photos", photoForm]);
+  for (const [what, path, form] of refusedSaves) {
+    const refused = await officePost(path, form, editorCookie);
+    if (refused.status !== 400 || refused.body.ok) throw new Error(`Saving ${what} was not refused: ${refused.status}.`);
+  }
+  const after = await mediaFiles();
+  const left = [...after].filter((name) => !before.has(name));
+  if (left.length > 0) throw new Error(`A refused save left ${left.length} file(s) in the media store: ${left.join(", ")}`);
+
+  const accepted = await officePost("/api/office/tours/create", newTourForm("T-40 Valley", { photo: jpeg() }), editorCookie);
+  if (accepted.status !== 200 || !accepted.body.ok) throw new Error(`The accepted T-40 tour was refused: ${accepted.body.error ?? accepted.status}.`);
+  const [tour] = await db.select().from(tours).where(eq(tours.name, "T-40 check tour")).limit(1);
+  try {
+    if (!tour || !tour.image.includes("/media/")) throw new Error("The accepted T-40 tour did not keep its photo.");
+    if (!(await mediaFileExists(tour.image))) throw new Error("The accepted T-40 tour's photo is not in the media store.");
+  } finally {
+    if (tour) {
+      const form = new FormData();
+      form.set("id", tour.id);
+      await officePost("/api/office/tours/delete", form, editorCookie);
+      await db.delete(tours).where(eq(tours.id, tour.id));
+    }
+  }
+}
+
+function galleryForm(fields: Record<string, string>, photo?: File) {
+  const form = new FormData();
+  for (const [key, value] of Object.entries(fields)) form.set(key, value);
+  if (photo) form.set("photo", photo);
+  return form;
+}
+
+// T-42: a save deletes the old file only after the new record is written. Replacing a photo still
+// removes the old office file, and a refused save leaves the current file in the record and the store.
+async function assertOldFileRemovedAfterSave(editorCookie: string) {
+  const jpeg = () => new File([new Uint8Array(JPEG)], "t42.jpg", { type: "image/jpeg" });
+  const added = await officePost("/api/office/photos", galleryForm({ alt: "T-42 check photo", category: "private", src: "" }, jpeg()), editorCookie);
+  if (added.status !== 200 || !added.body.ok) throw new Error(`The T-42 photo was not added: ${added.body.error ?? added.status}.`);
+  const [photo] = await db.select().from(photos).where(eq(photos.alt, "T-42 check photo")).limit(1);
+  if (!photo || !photo.src.includes("/media/")) throw new Error("The T-42 photo did not keep its upload.");
+  try {
+    const first = photo.src;
+    const replaced = await officePost("/api/office/photos", galleryForm({ id: String(photo.id), alt: "T-42 check photo", category: "private", src: first }, jpeg()), editorCookie);
+    if (replaced.status !== 200 || !replaced.body.ok) throw new Error(`Replacing the T-42 photo was refused: ${replaced.body.error ?? replaced.status}.`);
+    const [afterReplace] = await db.select({ src: photos.src }).from(photos).where(eq(photos.id, photo.id)).limit(1);
+    if (!afterReplace || afterReplace.src === first) throw new Error("Replacing the T-42 photo did not store the new file.");
+    if (await mediaFileExists(first)) throw new Error("Replacing a photo left the old office file in the media store.");
+    if (!(await mediaFileExists(afterReplace.src))) throw new Error("The replaced photo is not in the media store.");
+
+    const refused = await officePost("/api/office/photos", galleryForm({ id: String(photo.id), alt: "", category: "private", src: afterReplace.src }, jpeg()), editorCookie);
+    if (refused.status !== 400) throw new Error(`A T-42 save with no description returned ${refused.status}.`);
+    const [afterRefused] = await db.select({ src: photos.src }).from(photos).where(eq(photos.id, photo.id)).limit(1);
+    if (afterRefused?.src !== afterReplace.src) throw new Error("A refused save changed the photo the record points at.");
+    if (!(await mediaFileExists(afterReplace.src))) throw new Error("A refused save removed the record's current file.");
+  } finally {
+    await officePost("/api/office/photos/delete", galleryForm({ id: String(photo.id) }), editorCookie);
+    await db.delete(photos).where(eq(photos.id, photo.id));
+  }
+}
+
+// T-43: a delete removes the record, then its office file, and leaves nothing in the media store.
+async function assertDeleteRemovesRecordAndFile(editorCookie: string) {
+  const jpeg = () => new File([new Uint8Array(JPEG)], "t43.jpg", { type: "image/jpeg" });
+  const before = await mediaFiles();
+
+  const added = await officePost("/api/office/photos", galleryForm({ alt: "T-43 check photo", category: "private", src: "" }, jpeg()), editorCookie);
+  if (added.status !== 200 || !added.body.ok) throw new Error(`The T-43 photo was not added: ${added.body.error ?? added.status}.`);
+  const [photo] = await db.select().from(photos).where(eq(photos.alt, "T-43 check photo")).limit(1);
+  try {
+    if (!photo || !(await mediaFileExists(photo.src))) throw new Error("The T-43 photo is not in the media store.");
+    const photoDeleted = await officePost("/api/office/photos/delete", galleryForm({ id: String(photo.id) }), editorCookie);
+    if (photoDeleted.status !== 200 || !photoDeleted.body.ok) throw new Error(`Deleting the T-43 photo was refused: ${photoDeleted.body.error ?? photoDeleted.status}.`);
+    const [photoLeft] = await db.select({ id: photos.id }).from(photos).where(eq(photos.id, photo.id)).limit(1);
+    if (photoLeft) throw new Error("Deleting a gallery photo left its record.");
+    if (await mediaFileExists(photo.src)) throw new Error("Deleting a gallery photo left its office file.");
+  } finally {
+    await db.delete(photos).where(eq(photos.alt, "T-43 check photo"));
+  }
+
+  const tourAdded = await officePost("/api/office/tours/create", newTourForm("T-43 Valley", { photo: jpeg() }), editorCookie);
+  if (tourAdded.status !== 200 || !tourAdded.body.ok) throw new Error(`The T-43 tour was not added: ${tourAdded.body.error ?? tourAdded.status}.`);
+  const [tour] = await db.select().from(tours).where(eq(tours.location, "T-43 Valley")).limit(1);
+  try {
+    if (!tour || !(await mediaFileExists(tour.image))) throw new Error("The T-43 tour's photo is not in the media store.");
+    const tourForm = new FormData();
+    tourForm.set("id", tour.id);
+    const tourDeleted = await officePost("/api/office/tours/delete", tourForm, editorCookie);
+    if (tourDeleted.status !== 200 || !tourDeleted.body.ok) throw new Error(`Deleting the T-43 tour was refused: ${tourDeleted.body.error ?? tourDeleted.status}.`);
+    const [tourLeft] = await db.select({ id: tours.id }).from(tours).where(eq(tours.id, tour.id)).limit(1);
+    if (tourLeft) throw new Error("Deleting a tour left its record.");
+    if (await mediaFileExists(tour.image)) throw new Error("Deleting a tour left its office photo.");
+  } finally {
+    if (tour) await db.delete(tours).where(eq(tours.id, tour.id));
+  }
+
+  const after = await mediaFiles();
+  const left = [...after].filter((name) => !before.has(name));
+  if (left.length > 0) throw new Error(`The T-43 deletes left ${left.length} file(s) in the media store.`);
+}
+
+type ActivityReplyRow = { id: number; at: string; userEmail: string; area: string; kind: string; recordId: string; text: string };
+
+async function activityGet(query: string, cookie: string) {
+  const response = await fetch(`${siteBase()}/api/office/activity${query}`, { headers: cookie ? { cookie } : {} });
+  const body = (await response.json().catch(() => ({}))) as { ok?: boolean; rows?: ActivityReplyRow[] };
+  return { status: response.status, rows: body.rows ?? [] };
+}
+
+async function activityCount() {
+  const [row] = await db.select({ total: count() }).from(activity);
+  return row?.total ?? 0;
+}
+
+async function officePage(pathname: string, cookie: string) {
+  const response = await fetch(`${siteBase()}${pathname}`, { headers: { cookie }, redirect: "manual" });
+  return { status: response.status, html: await response.text() };
+}
+
+// T-37k (BR-86): each office save writes one activity row, and a person reads only the rows for
+// areas their role can open.
+async function assertActivity(editorCookie: string, managerCookie: string, ownerCookie: string, request: { id: number; phone: string; message: string }) {
+  const signedOut = await activityGet("", "");
+  if (signedOut.status !== 401) throw new Error(`An activity read with no cookie returned ${signedOut.status}.`);
+
+  // An Editor saves a tour, and the dashboard and the tour screen show who saved it and when.
+  const [shipped] = await db.select({ image: tours.image }).from(tours).where(like(tours.image, "/images/%")).limit(1);
+  if (!shipped) throw new Error("No tour has a shipped photo for the T-37k tour.");
+  const addForm = newTourForm("T-37k Valley", {});
+  addForm.set("name", "T-37k check tour");
+  addForm.set("image", shipped.image);
+  const added = await officePost("/api/office/tours/create", addForm, editorCookie);
+  if (added.status !== 200 || !added.body.ok) throw new Error(`The T-37k tour was not added: ${added.body.error ?? added.status}.`);
+  const [tour] = await db.select().from(tours).where(eq(tours.location, "T-37k Valley")).limit(1);
+  try {
+    if (!tour) throw new Error("The T-37k tour is not in the database.");
+    const savedAt = Date.now();
+    const saved = await officePost("/api/office/tours", tourForm(tour), editorCookie);
+    if (saved.status !== 200 || !saved.body.ok) throw new Error(`The Editor could not save the T-37k tour: ${saved.body.error ?? saved.status}.`);
+    const feed = await activityGet("?limit=20", editorCookie);
+    const row = feed.rows.find((item) => item.kind === "tour" && item.recordId === tour.id && item.text === "Saved tour T-37k check tour");
+    if (feed.status !== 200 || !row || row.userEmail !== EDITOR_EMAIL || row.area !== "content") {
+      throw new Error("The Editor's tour save is not in the activity feed with the Editor's login.");
+    }
+    if (Math.abs(Date.parse(row.at) - savedAt) > 60_000) throw new Error("The tour save's activity time is not the time of the save.");
+    const addedRow = feed.rows.find((item) => item.kind === "tour" && item.recordId === tour.id && item.text === "Added tour T-37k check tour");
+    if (!addedRow || addedRow.id >= row.id) throw new Error("Adding the T-37k tour did not write its own activity row first.");
+    const screen = await activityGet(`?kind=tour&record=${encodeURIComponent(tour.id)}`, editorCookie);
+    if (screen.status !== 200 || screen.rows.length !== 1 || screen.rows[0].id !== row.id) {
+      throw new Error("Saved by for the T-37k tour is not its newest save.");
+    }
+    const dashboard = await officePage("/office", editorCookie);
+    if (dashboard.status !== 200 || !dashboard.html.includes("Saved tour T-37k check tour") || !dashboard.html.includes(EDITOR_EMAIL)) {
+      throw new Error("The dashboard does not show the Editor's tour save.");
+    }
+    const tourScreen = await officePage(`/office/tours/${encodeURIComponent(tour.id)}`, editorCookie);
+    if (tourScreen.status !== 200 || !tourScreen.html.includes(`by ${EDITOR_EMAIL}`) || !tourScreen.html.includes("Last saved")) {
+      throw new Error("The tour screen does not show who saved the T-37k tour.");
+    }
+  } finally {
+    if (tour) await db.delete(tours).where(eq(tours.id, tour.id));
+  }
+
+  // A Manager reads rate and request rows and no content rows. An Editor reads no rate rows.
+  const [season] = await db.select({ percent: seasons.percent }).from(seasons).limit(1);
+  const marginForm = new FormData();
+  marginForm.set("kind", "season");
+  marginForm.set("percent", String(season?.percent ?? 20));
+  const marginSaved = await officePost("/api/office/rates", marginForm, managerCookie);
+  if (marginSaved.status !== 200) throw new Error(`The Manager's margin save returned ${marginSaved.status}.`);
+  const managerFeed = await activityGet("?limit=100", managerCookie);
+  if (managerFeed.status !== 200 || managerFeed.rows.some((item) => item.area !== "rates" && item.area !== "requests")) {
+    throw new Error("A Manager received activity rows outside rates and requests.");
+  }
+  if (!managerFeed.rows.some((item) => item.kind === "margin" && item.userEmail === MANAGER_EMAIL)) {
+    throw new Error("The Manager's margin save is not in the Manager's activity feed.");
+  }
+  const requestText = `Moved request ${request.id} to In progress`;
+  for (const cookie of [managerCookie, editorCookie]) {
+    const requestRows = await activityGet(`?kind=request&record=${request.id}`, cookie);
+    if (requestRows.status !== 200 || requestRows.rows[0]?.text !== requestText || requestRows.rows[0]?.userEmail !== MANAGER_EMAIL) {
+      throw new Error("The request status change is not readable as a request row.");
+    }
+  }
+  const managerTours = await activityGet("?kind=tour", managerCookie);
+  if (managerTours.status !== 403 || managerTours.rows.length) throw new Error(`A Manager content activity read returned ${managerTours.status}.`);
+  const editorFeed = await activityGet("?limit=100", editorCookie);
+  if (editorFeed.status !== 200 || editorFeed.rows.some((item) => item.area !== "content" && item.area !== "requests")) {
+    throw new Error("An Editor received activity rows outside content and requests.");
+  }
+  for (const kind of ["margin", "hotel_rate", "quote", "user", "backup"]) {
+    const refused = await activityGet(`?kind=${kind}`, editorCookie);
+    if (refused.status !== 403 || refused.rows.length) throw new Error(`An Editor ${kind} activity read returned ${refused.status}.`);
+  }
+  for (const kind of ["user", "backup"]) {
+    const refused = await activityGet(`?kind=${kind}`, managerCookie);
+    if (refused.status !== 403) throw new Error(`A Manager ${kind} activity read returned ${refused.status}.`);
+  }
+  const ownerUsers = await activityGet("?kind=user", ownerCookie);
+  if (ownerUsers.status !== 200 || !ownerUsers.rows.some((item) => item.text === `Created a login for ${EDITOR_EMAIL} as Editor`)) {
+    throw new Error("The Owner cannot read the login rows.");
+  }
+  const badKind = await activityGet("?kind=password", ownerCookie);
+  if (badKind.status !== 400) throw new Error(`An unknown activity kind returned ${badKind.status}.`);
+
+  // A failed or refused save writes no row.
+  const before = await activityCount();
+  const refusedSaves: [string, FormData, string][] = [];
+  const editorMargin = new FormData();
+  editorMargin.set("kind", "season");
+  editorMargin.set("percent", "30");
+  refusedSaves.push(["/api/office/rates", editorMargin, editorCookie]);
+  const badMargin = new FormData();
+  badMargin.set("kind", "season");
+  badMargin.set("percent", "101");
+  refusedSaves.push(["/api/office/rates", badMargin, managerCookie]);
+  const noLocation = newTourForm("", {});
+  noLocation.set("image", shipped.image);
+  refusedSaves.push(["/api/office/tours/create", noLocation, editorCookie]);
+  refusedSaves.push(["/api/office/tours/create", addForm, managerCookie]);
+  const editorStatus = new FormData();
+  editorStatus.set("id", String(request.id));
+  editorStatus.set("status", "closed");
+  refusedSaves.push(["/api/office/requests/status", editorStatus, editorCookie]);
+  const badStatus = new FormData();
+  badStatus.set("id", String(request.id));
+  badStatus.set("status", "done");
+  refusedSaves.push(["/api/office/requests/status", badStatus, managerCookie]);
+  for (const [pathname, form, cookie] of refusedSaves) {
+    const refused = await officePost(pathname, form, cookie);
+    if (refused.status === 200) throw new Error(`A save that should be refused was accepted: ${pathname}.`);
+  }
+  if ((await activityCount()) !== before) throw new Error("A refused save wrote an activity row.");
+
+  // No row holds a password, a token, a secret, or a guest phone or message.
+  const secrets = [
+    EDITOR_PASSWORD,
+    MANAGER_PASSWORD,
+    process.env.OWNER_PASSWORD,
+    process.env.SESSION_SECRET,
+    process.env.MEDIA_READ_WRITE_TOKEN,
+    process.env.BLOB_READ_WRITE_TOKEN,
+    process.env.BACKUP_SECRET,
+    request.phone,
+    request.message,
+    "Office List Guest",
+  ].filter((value): value is string => Boolean(value && value.length >= 6));
+  const everyRow = await db.select().from(activity);
+  for (const row of everyRow) {
+    const stored = `${row.userEmail} ${row.kind} ${row.recordId} ${row.text}`;
+    if (secrets.some((secret) => stored.includes(secret))) throw new Error(`Activity row ${row.id} holds a password, a secret, or guest details.`);
+  }
+
+  // Rows older than 365 days go when a new row is written. A row of 364 days stays.
+  const day = 24 * 60 * 60 * 1000;
+  const old = await db
+    .insert(activity)
+    .values([
+      { at: new Date(Date.now() - 366 * day), userId: 0, userEmail: "t37k@travelwithmoeen.test", area: "rates", kind: "margin", text: "T-37k row of 366 days" },
+      { at: new Date(Date.now() - 364 * day), userId: 0, userEmail: "t37k@travelwithmoeen.test", area: "rates", kind: "margin", text: "T-37k row of 364 days" },
+    ])
+    .returning({ id: activity.id, text: activity.text });
+  try {
+    const pruneSave = await officePost("/api/office/rates", marginForm, managerCookie);
+    if (pruneSave.status !== 200) throw new Error(`The Manager's margin save returned ${pruneSave.status}.`);
+    const left = await db.select({ text: activity.text }).from(activity).where(eq(activity.userEmail, "t37k@travelwithmoeen.test"));
+    if (left.length !== 1 || left[0].text !== "T-37k row of 364 days") throw new Error("Activity rows older than 365 days were not removed, or a newer one was.");
+  } finally {
+    await db.delete(activity).where(eq(activity.userEmail, "t37k@travelwithmoeen.test"));
+  }
+  if (old.length !== 2) throw new Error("The old T-37k activity rows were not written.");
+
+  // A backup and a restore keep the activity table.
+  if (BACKUP_TABLES.at(-1)?.[0] !== "activity") throw new Error("The activity table is not the last backup table.");
+}
+
+// T-45: the database assigns a new photo's id, so adds sent at the same moment all save, each with its
+// own id and one activity row.
+async function assertParallelPhotoAdds(editorCookie: string) {
+  const [shipped] = await db.select({ image: tours.image }).from(tours).where(like(tours.image, "/images/%")).limit(1);
+  if (!shipped) throw new Error("No tour has a shipped photo for the T-45 photos.");
+  const alts = [1, 2, 3, 4, 5, 6, 7, 8].map((number) => `T-45 parallel photo ${number}`);
+  try {
+    const replies = await Promise.all(alts.map((alt) => officePost("/api/office/photos", galleryForm({ alt, category: "private", src: shipped.image }), editorCookie)));
+    const refused = replies.filter((reply) => reply.status !== 200 || !reply.body.ok);
+    if (refused.length) throw new Error(`${refused.length} of ${alts.length} gallery photo adds sent at the same time failed (${refused[0].status}).`);
+    const added = await db.select({ id: photos.id, alt: photos.alt }).from(photos).where(like(photos.alt, "T-45 parallel photo %"));
+    if (added.length !== alts.length || new Set(added.map((photo) => photo.id)).size !== alts.length) {
+      throw new Error(`The parallel adds made ${added.length} photos with ${new Set(added.map((photo) => photo.id)).size} distinct ids.`);
+    }
+    const rows = await db.select({ recordId: activity.recordId, text: activity.text }).from(activity).where(like(activity.text, "Added gallery photo T-45 parallel photo %"));
+    for (const photo of added) {
+      const own = rows.filter((row) => row.recordId === String(photo.id));
+      if (own.length !== 1 || own[0].text !== `Added gallery photo ${photo.alt}`) throw new Error(`Photo ${photo.id} does not have exactly one activity row.`);
+    }
+    if (rows.length !== alts.length) throw new Error(`The parallel adds wrote ${rows.length} activity rows for ${alts.length} photos.`);
+  } finally {
+    await db.delete(photos).where(like(photos.alt, "T-45 parallel photo %"));
+    await db.delete(activity).where(like(activity.text, "Added gallery photo T-45 parallel photo %"));
+  }
+}
+
+const RESTORE_COPY = "travelwithmoeen_restore_check";
+
+function runWithDatabase(command: string, args: string[], databaseUrl: string) {
+  return new Promise<{ code: number | null; output: string }>((resolve) => {
+    const child = spawn(command, args, { env: { ...process.env, DATABASE_URL: databaseUrl }, shell: process.platform === "win32" });
+    let output = "";
+    child.stdout.on("data", (chunk) => (output += chunk));
+    child.stderr.on("data", (chunk) => (output += chunk));
+    child.on("close", (code) => resolve({ code, output }));
+  });
+}
+
+// One table's rows in a fixed order, so the backup and the copy compare whatever order they come in.
+function sortedRows(rows: Record<string, unknown>[]) {
+  return rows.map((row) => JSON.stringify(row)).sort();
+}
+
+// T-44: a backup restores into a copy database with every table and row, tours included. It runs
+// the real npm run db:restore on a copy made for this check, then removes the copy.
+async function assertBackupRestoresIntoCopy() {
+  const copyUrl = new URL(process.env.DATABASE_URL ?? "");
+  copyUrl.pathname = `/${RESTORE_COPY}`;
+  const file = await readBackupFile();
+  if (file.tables.tours.length === 0) throw new Error("The backup has no tours to restore.");
+  // The file holds logins, so it is readable only by this user and removed at the end.
+  const folder = mkdtempSync(path.join(os.tmpdir(), "twm-restore-check-"));
+  const filePath = path.join(folder, "backup.json");
+  writeFileSync(filePath, JSON.stringify(file), { mode: 0o600 });
+  await sql.unsafe(`drop database if exists ${RESTORE_COPY} with (force)`);
+  await sql.unsafe(`create database ${RESTORE_COPY}`);
+  const copySql = postgres(copyUrl.toString(), { max: 1, onnotice: () => {} });
+  try {
+    const pushed = await runWithDatabase("npx", ["drizzle-kit", "push", "--force"], copyUrl.toString());
+    if (pushed.code !== 0) throw new Error(`The copy database did not get its tables: ${pushed.output.slice(-300)}`);
+    const restored = await runWithDatabase("npm", ["run", "-s", "db:restore", "--", filePath, "--yes"], copyUrl.toString());
+    if (!restored.output.includes(`into ${copyUrl.hostname}/${RESTORE_COPY}`)) throw new Error("The restore did not name the copy database.");
+    if (restored.code !== 0 || !restored.output.includes("Restore finished.")) {
+      const reason = restored.output.split("\n").find((line) => /(Error|error):/.test(line) && !line.trim().startsWith("at ")) ?? restored.output.slice(-300);
+      throw new Error(`The backup did not restore into a copy database: ${reason.trim()}`);
+    }
+    const copy = drizzle(copySql);
+    for (const [name, table] of BACKUP_TABLES) {
+      const backedUp = sortedRows(JSON.parse(JSON.stringify(file.tables[name])));
+      const inCopy = sortedRows(JSON.parse(JSON.stringify(await copy.select().from(table))));
+      if (inCopy.length !== backedUp.length) throw new Error(`The copy has ${inCopy.length} ${name} rows. The backup has ${backedUp.length}.`);
+      if (inCopy.some((row, index) => row !== backedUp[index])) throw new Error(`The restored ${name} rows differ from the backup.`);
+    }
+    // Every table with a serial id carries on after the restored rows. Photos, reviews, and slides
+    // have one since T-45.
+    const sequenced: string[] = [];
+    for (const [name] of BACKUP_TABLES) {
+      const [row] = await copySql`select pg_get_serial_sequence(${name}, 'id') as seq`.catch(() => [{ seq: null }]);
+      if (!row?.seq) continue;
+      sequenced.push(name);
+      const [next] = await copySql.unsafe(`select nextval('${row.seq}')::int as id, (select max(id) from ${name})::int as top`);
+      if (next.top !== null && next.id <= next.top) throw new Error(`After a restore, a new ${name} row would reuse an id.`);
+    }
+    if (!["photos", "reviews", "slides", "users"].every((name) => sequenced.includes(name))) {
+      throw new Error(`After a restore, these tables have an id sequence: ${sequenced.join(", ")}.`);
+    }
+  } finally {
+    await copySql.end({ timeout: 5 });
+    await sql.unsafe(`drop database if exists ${RESTORE_COPY} with (force)`);
+    rmSync(folder, { recursive: true, force: true });
+  }
+}
+
+// T-41: an office save with no body is a 400, not a 500. With no session it is still a 401.
+async function assertEmptyOfficeSave(editorCookie: string) {
+  const empty = await fetch(`${siteBase()}/api/office/tours`, { method: "POST", headers: { cookie: editorCookie } });
+  const emptyBody = (await empty.json().catch(() => ({}))) as { ok?: boolean; error?: string };
+  if (empty.status !== 400 || emptyBody.error !== "Send the form again.") throw new Error(`A signed-in save with no body returned ${empty.status}.`);
+  const notForm = await fetch(`${siteBase()}/api/office/rates`, {
+    method: "POST",
+    headers: { cookie: editorCookie, "content-type": "application/json" },
+    body: JSON.stringify({ kind: "season", percent: "20" }),
+  });
+  if (notForm.status !== 400) throw new Error(`A signed-in save that is not a form returned ${notForm.status}.`);
+  const signedOut = await fetch(`${siteBase()}/api/office/tours`, { method: "POST" });
+  if (signedOut.status !== 401) throw new Error(`A save with no body and no session returned ${signedOut.status}.`);
+}
+
+// T-37b: the session reply carries the sidebar count of new requests, and only with a session.
+async function assertSessionRequestCount(ownerCookie: string) {
+  const [row] = await db.select({ total: count() }).from(guestRequests).where(eq(guestRequests.status, "new"));
+  const expected = row?.total ?? 0;
+  const signedIn = await fetch(`${siteBase()}/api/office/session`, { headers: { cookie: ownerCookie } });
+  const body = (await signedIn.json()) as { ok?: boolean; newRequestCount?: unknown };
+  if (signedIn.status !== 200 || !body.ok || body.newRequestCount !== expected) {
+    throw new Error(`The session reply has newRequestCount ${String(body.newRequestCount)}, not ${expected}.`);
+  }
+  const signedOut = await fetch(`${siteBase()}/api/office/session`);
+  const outText = await signedOut.text();
+  if (signedOut.status !== 401 || outText.includes("newRequestCount")) {
+    throw new Error(`Without a session the session reply returned ${signedOut.status} or a request count.`);
+  }
+}
+
+// T-37a: the Meadow shell shows each role only the links it may use.
+async function assertOfficeShellLinks(editorCookie: string, managerCookie: string, ownerCookie: string) {
+  const cookies = { owner: ownerCookie, manager: managerCookie, editor: editorCookie };
+  for (const role of ["owner", "manager", "editor"] as const) {
+    const page = await officeGet("/office", cookies[role]);
+    if (page.status !== 200) throw new Error(`The ${role} office page returned ${page.status}.`);
+    const shown = sidebarLinks(page.text).join(" ");
+    const expected = OFFICE_LINKS_BY_ROLE[role].join(" ");
+    if (shown !== expected) throw new Error(`The ${role} sidebar shows ${shown || "no links"}, not ${expected}.`);
+    if (page.text.includes("Trip plans") || page.text.includes("View as")) {
+      throw new Error(`The ${role} office shows a prototype-only control.`);
+    }
+  }
+}
+
 function assertBookNowOpensOnClick() {
   const source = readFileSync(new URL("../components/tours/TourDetail.tsx", import.meta.url), "utf8");
   if (!source.includes(WHATSAPP) || source.includes("preventDefault") || source.includes("window.open")) {
@@ -867,6 +1542,9 @@ function assertBookNowOpensOnClick() {
 }
 
 async function main() {
+  // The checks' own office saves write activity rows. They are removed at the end, with the other
+  // test data, so a run leaves the activity record as it found it.
+  const [activityStart] = await db.select({ id: max(activity.id) }).from(activity);
   await runStep2();
   const marker = `step3-part1-${Date.now()}`;
   const phone = "03009990001";
@@ -1000,11 +1678,13 @@ async function main() {
       throw new Error("The public home page includes the test guest phone.");
     }
     await assertOfficeRequests(savedIds);
+    await assertBackupRestoresIntoCopy();
     console.log("Step 3 checks passed.");
   } finally {
     for (const id of savedIds) {
       await db.delete(guestRequests).where(eq(guestRequests.id, id));
     }
+    await db.delete(activity).where(gt(activity.id, activityStart?.id ?? 0));
   }
 }
 

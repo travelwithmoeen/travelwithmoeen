@@ -12,6 +12,7 @@ export type OfficeSession = {
   canUpdateRequestStatus: boolean;
   canDeleteRequest: boolean;
   canRunBackup: boolean;
+  newRequestCount: number;
 };
 
 export type OfficeUserRow = {
@@ -54,6 +55,7 @@ export async function getOfficeSession(): Promise<OfficeSession | null> {
     canUpdateRequestStatus: Boolean(body.canUpdateRequestStatus),
     canDeleteRequest: Boolean(body.canDeleteRequest),
     canRunBackup: Boolean(body.canRunBackup),
+    newRequestCount: Number(body.newRequestCount) || 0,
   };
 }
 
@@ -93,4 +95,33 @@ export async function getOfficeBackups(): Promise<OfficeBackupRow[]> {
   if (!response.ok) return [];
   const body = (await response.json()) as { ok: boolean; backups?: OfficeBackupRow[] };
   return body.backups ?? [];
+}
+
+export type OfficeActivityRow = {
+  id: number;
+  at: string;
+  userEmail: string;
+  area: "content" | "rates" | "requests" | "users" | "backups";
+  kind: string;
+  recordId: string;
+  text: string;
+};
+
+// The newest office saves the signed-in role may read, for the dashboard feed.
+export async function getOfficeActivity(limit = 8): Promise<OfficeActivityRow[]> {
+  const response = await officeRequest(`/api/office/activity?limit=${limit}`);
+  if (!response.ok) return [];
+  const body = (await response.json()) as { ok: boolean; rows?: OfficeActivityRow[] };
+  return body.rows ?? [];
+}
+
+// "Saved by": the newest save of each record of one kind, keyed by the record. With no records
+// named, every record of that kind.
+export async function getSavedBy(kind: string, records: (string | number)[] = []): Promise<Record<string, OfficeActivityRow>> {
+  const query = new URLSearchParams({ kind });
+  for (const record of records) query.append("record", String(record));
+  const response = await officeRequest(`/api/office/activity?${query}`);
+  if (!response.ok) return {};
+  const body = (await response.json()) as { ok: boolean; rows?: OfficeActivityRow[] };
+  return Object.fromEntries((body.rows ?? []).map((row) => [row.recordId, row]));
 }

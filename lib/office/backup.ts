@@ -2,6 +2,7 @@ import { timingSafeEqual } from "crypto";
 import { del, get, list, put } from "@vercel/blob";
 import { db } from "@/lib/db";
 import {
+  activity,
   airExtras,
   guestRequests,
   hotelRates,
@@ -27,6 +28,7 @@ import {
 import { canRunBackup } from "@/lib/auth/permissions";
 import type { SessionUser } from "@/lib/auth/session";
 import { forbidden, type ActionResult } from "@/lib/http/result";
+import { recordActivity } from "@/lib/office/activity";
 
 export const BACKUP_FORMAT = "twm-backup-1";
 const PREFIX = "backups/";
@@ -55,6 +57,7 @@ export const BACKUP_TABLES = [
   ["quote_extras", quoteExtras],
   ["guest_requests", guestRequests],
   ["site_settings", siteSettings],
+  ["activity", activity],
 ] as const;
 
 export type BackupFile = {
@@ -86,14 +89,20 @@ async function pruneOldBackups() {
   if (old.length > 0) await del(old, { token: process.env.BLOB_READ_WRITE_TOKEN });
 }
 
-export async function runBackup(): Promise<ActionResult> {
-  if (!storageReady()) {
-    return { ok: false, error: "Backup storage is not connected to this deployment." };
-  }
+// Every table in BACKUP_TABLES, as the backup file holds it. check-step3 restores this into a copy.
+export async function readBackupFile(): Promise<BackupFile> {
   const file: BackupFile = { format: BACKUP_FORMAT, createdAt: new Date().toISOString(), tables: {} };
   for (const [name, table] of BACKUP_TABLES) {
     file.tables[name] = await db.select().from(table);
   }
+  return file;
+}
+
+export async function runBackup(): Promise<ActionResult> {
+  if (!storageReady()) {
+    return { ok: false, error: "Backup storage is not connected to this deployment." };
+  }
+  const file = await readBackupFile();
   const stamp = file.createdAt.replace(/[:.]/g, "-");
   const target = process.env.VERCEL_ENV === "production" ? "production" : "preview";
   const name = `${PREFIX}${target}-${stamp}.json`;
@@ -112,7 +121,10 @@ export async function backupAs(actor: SessionUser): Promise<ActionResult> {
   if (!canRunBackup(actor.role)) {
     return forbidden("Only the Owner can run a backup.");
   }
-  return runBackup();
+  const result = await runBackup();
+  // Back up now from the office. The nightly backup has no signed-in login, so it writes no row.
+  if (result.ok) await recordActivity(db, actor, { kind: "backup", text: "Made a backup" });
+  return result;
 }
 
 export async function listBackupsAs(actor: SessionUser) {

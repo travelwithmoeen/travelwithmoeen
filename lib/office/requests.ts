@@ -1,11 +1,13 @@
-import { desc, eq } from "drizzle-orm";
+import { count, desc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { guestRequests } from "@/lib/db/schema";
 import { canDeleteRequest, canUpdateRequestStatus } from "@/lib/auth/permissions";
 import type { SessionUser } from "@/lib/auth/session";
 import { forbidden, type ActionResult } from "@/lib/http/result";
+import { recordActivity } from "@/lib/office/activity";
 
 const REQUEST_STATUSES = ["new", "in_progress", "closed"] as const;
+const STATUS_NAME = { new: "New", in_progress: "In progress", closed: "Closed" } as const;
 
 export type RequestStatus = (typeof REQUEST_STATUSES)[number];
 
@@ -48,6 +50,13 @@ export async function listRequestsAs(actor: SessionUser) {
   return { ok: true as const, requests };
 }
 
+// The sidebar count. Every role that may read the list may read the count.
+export async function countNewRequestsAs(actor: SessionUser) {
+  if (actor.role !== "owner" && actor.role !== "manager" && actor.role !== "editor") return 0;
+  const [row] = await db.select({ total: count() }).from(guestRequests).where(eq(guestRequests.status, "new"));
+  return row?.total ?? 0;
+}
+
 export async function updateRequestStatusAs(actor: SessionUser, id: number, status: string): Promise<ActionResult> {
   if (!canUpdateRequestStatus(actor.role)) {
     return forbidden("You cannot change a request status.");
@@ -57,7 +66,11 @@ export async function updateRequestStatusAs(actor: SessionUser, id: number, stat
   }
   const [row] = await db.select({ id: guestRequests.id }).from(guestRequests).where(eq(guestRequests.id, id)).limit(1);
   if (!row) return { ok: false, error: "That request was not found." };
-  await db.update(guestRequests).set({ status }).where(eq(guestRequests.id, id));
+  await db.transaction(async (tx) => {
+    await tx.update(guestRequests).set({ status }).where(eq(guestRequests.id, id));
+    // The request number only. A row never holds the guest's name, phone, or message.
+    await recordActivity(tx, actor, { kind: "request", recordId: id, text: `Moved request ${id} to ${STATUS_NAME[status]}` });
+  });
   return { ok: true, message: "Status saved." };
 }
 
@@ -67,7 +80,10 @@ export async function deleteRequestAs(actor: SessionUser, id: number): Promise<A
   }
   const [row] = await db.select({ id: guestRequests.id }).from(guestRequests).where(eq(guestRequests.id, id)).limit(1);
   if (!row) return { ok: false, error: "That request was not found." };
-  await db.delete(guestRequests).where(eq(guestRequests.id, id));
+  await db.transaction(async (tx) => {
+    await tx.delete(guestRequests).where(eq(guestRequests.id, id));
+    await recordActivity(tx, actor, { kind: "request", recordId: id, text: `Deleted request ${id}` });
+  });
   return { ok: true, message: "Request deleted." };
 }
 

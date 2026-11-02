@@ -1910,14 +1910,14 @@ export const tours: Tour[] = [
     "region": "Swat Kalam & Malam Jabba",
     "duration": 4,
     "code": "142",
-    "pdf": "/images/pdf/byroadtrips/4_days_by_road_trip_to_naran_kaghan_and_babusar_top_(couple).pdf",
+    "pdf": "/images/pdf/byroadtrips/4_days_by_road_trip_to_swat_kalam_malam_jabba_(family).pdf",
     "description": "Experience a 4-day journey through the scenic landscapes of Swat, Kalam, and Malam Jabba. Enjoy skiing, sightseeing, and cultural visits to historical sites. Perfect for families seeking adventure and relaxation.",
     "image": "/images/All_Tour_Images/SwatKalamMalamJabba/Picture3.jpg",
     "galleryImages": [
       "/images/All_Tour_Images/SwatKalamMalamJabba/Picture2.webp",
       "/images/All_Tour_Images/SwatKalamMalamJabba/Picture1.jpg",
       "/images/All_Tour_Images/SwatKalamMalamJabba/Picture3.jpg",
-      "/images/All_Tour_Images/SwatKalamMalamJabba/Picture4.jpg",
+      "/images/All_Tour_Images/SwatKalamMalamJabba/Picture4.webp",
     ],
     "categories": [
       "Deluxe",
