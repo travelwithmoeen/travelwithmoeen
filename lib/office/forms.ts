@@ -7,6 +7,7 @@ import type { DestinationSection } from "@/data/destinations";
 import { createUserAs, changeRoleAs, removeUserAs } from "@/lib/office/users";
 import { deleteOfficeFiles } from "@/lib/office/media";
 import { savePriceFromKind } from "@/lib/office/rates";
+import { readRecordId } from "@/lib/office/record-id";
 import {
   deletePhotoAs,
   deleteReviewAs,
@@ -129,11 +130,11 @@ export async function createUserFromForm(actor: SessionUser, formData: FormData)
 }
 
 export async function changeRoleFromForm(actor: SessionUser, formData: FormData): Promise<ActionResult> {
-  return changeRoleAs(actor, Number(formData.get("userId")), String(formData.get("role") ?? ""));
+  return changeRoleAs(actor, readRecordId(formData.get("userId")), String(formData.get("role") ?? ""));
 }
 
 export async function removeUserFromForm(actor: SessionUser, formData: FormData): Promise<ActionResult> {
-  return removeUserAs(actor, Number(formData.get("userId")));
+  return removeUserAs(actor, readRecordId(formData.get("userId")));
 }
 
 export async function savePriceFromForm(actor: SessionUser, formData: FormData): Promise<ActionResult> {
@@ -308,7 +309,7 @@ export async function savePhotoFromForm(actor: SessionUser, formData: FormData):
 }
 
 export async function deletePhotoFromForm(actor: SessionUser, formData: FormData): Promise<ActionResult> {
-  return deletePhotoAs(actor, Number(formData.get("id")));
+  return deletePhotoAs(actor, readRecordId(formData.get("id")));
 }
 
 export async function saveReviewFromForm(actor: SessionUser, formData: FormData): Promise<ActionResult> {
@@ -334,7 +335,7 @@ export async function saveReviewFromForm(actor: SessionUser, formData: FormData)
 }
 
 export async function deleteReviewFromForm(actor: SessionUser, formData: FormData): Promise<ActionResult> {
-  return deleteReviewAs(actor, Number(formData.get("id")));
+  return deleteReviewAs(actor, readRecordId(formData.get("id")));
 }
 
 export async function saveSlideFromForm(actor: SessionUser, formData: FormData): Promise<ActionResult> {
@@ -359,7 +360,7 @@ export async function saveSlideFromForm(actor: SessionUser, formData: FormData):
 }
 
 export async function deleteSlideFromForm(actor: SessionUser, formData: FormData): Promise<ActionResult> {
-  return deleteSlideAs(actor, Number(formData.get("id")));
+  return deleteSlideAs(actor, readRecordId(formData.get("id")));
 }
 
 export async function updateSiteFromForm(actor: SessionUser, formData: FormData): Promise<ActionResult> {

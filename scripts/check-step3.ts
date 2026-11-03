@@ -7,7 +7,7 @@ import { count, eq, gt, like, max } from "drizzle-orm";
 import postgres from "postgres";
 import { drizzle } from "drizzle-orm/postgres-js";
 import { db, sql } from "../lib/db";
-import { activity, guestRequests, loginFailures, mealRates, pricingRules, photos, places, posts, quoteDays, quoteExtras, quoteNights, quotes, reviews, seasons, tourPlaces, tours, users } from "../lib/db/schema";
+import { activity, guestRequests, hotelRates, jeepLines, loginFailures, mealRates, pricingRules, photos, places, posts, quoteDays, quoteExtras, quoteNights, quotes, reviews, seasons, slides, tourPlaces, tours, users, vehicleRates } from "../lib/db/schema";
 import { inferTourPlaceLinks, linkInferredTourPlaces } from "../lib/office/tour-places";
 import { authenticate } from "../lib/auth/authenticate";
 import { createUserAs, removeUserAs } from "../lib/office/users";
@@ -850,6 +850,7 @@ async function assertOfficeRequests(savedIds: number[]) {
     await assertProfitMargin(editorCookie, managerCookie);
     await assertQuoteEditsThroughRoutes(managerCookie);
     await assertPricingRules(editorCookie, managerCookie);
+    await assertBadRecordIds(editorCookie, managerCookie, ownerCookie, saved.body.id);
     await assertRefusedSaveCleanup(editorCookie);
     await assertEmptyOfficeSave(editorCookie);
     await assertOldFileRemovedAfterSave(editorCookie);
@@ -1033,6 +1034,115 @@ function marginForm(percent: string) {
 }
 
 // T-37f: the margin is one whole percent from 0 to 100, saved by the Owner or a Manager only.
+function formOf(values: Record<string, string | number>) {
+  const form = new FormData();
+  for (const [key, value] of Object.entries(values)) form.set(key, String(value));
+  return form;
+}
+
+// T-52: an office save with a bad record id, or a well-formed id with no record (999999), returns
+// 400 with its not-found message and changes nothing. A good id still saves. A role that may not
+// make the save gets 403 for any id.
+async function assertBadRecordIds(editorCookie: string, managerCookie: string, ownerCookie: string, requestId: number) {
+  const badIds = ["abc", "1.5", "0", "-1", "", "2147483648", "999999"];
+  const [hotel] = await db.select().from(hotelRates).limit(1);
+  const [vehicle] = await db.select().from(vehicleRates).limit(1);
+  const [jeep] = await db.select().from(jeepLines).limit(1);
+  const [meal] = await db.select().from(mealRates).limit(1);
+  if (!hotel || !vehicle || !jeep || !meal) throw new Error("The T-52 check needs a hotel rate, a vehicle rate, a jeep line, and a meal rate.");
+  const hotelValues = { kind: "hotel", twin: hotel.twin, triple: hotel.triple, hotelName: hotel.hotelName, ...(hotel.offered ? { offered: "on" } : {}) };
+  const vehicleValues = { kind: "vehicle", rent: vehicle.rent, fuel: vehicle.fuel, toll: vehicle.toll, seats: vehicle.seats, ...(vehicle.live ? { live: "on" } : {}) };
+  const jeepValues = { kind: "jeep", amount: jeep.amount, ...(jeep.live ? { live: "on" } : {}) };
+  const mealValues = { kind: "meal_rate", dinner: meal.dinner, lunch: meal.lunch };
+  const saves: { what: string; path: string; field: string; values: Record<string, string | number>; cookie: string; error: string }[] = [
+    { what: "hotel rate save", path: "/api/office/rates", field: "id", values: hotelValues, cookie: managerCookie, error: "That hotel rate was not found." },
+    { what: "vehicle rate save", path: "/api/office/rates", field: "id", values: vehicleValues, cookie: managerCookie, error: "That vehicle rate was not found." },
+    { what: "jeep line save", path: "/api/office/rates", field: "id", values: jeepValues, cookie: managerCookie, error: "That jeep line was not found." },
+    { what: "meal rate save", path: "/api/office/rates", field: "id", values: mealValues, cookie: managerCookie, error: "That meal rate was not found." },
+    { what: "photo delete", path: "/api/office/photos/delete", field: "id", values: {}, cookie: editorCookie, error: "That photo was not found." },
+    { what: "review delete", path: "/api/office/reviews/delete", field: "id", values: {}, cookie: editorCookie, error: "That review was not found." },
+    { what: "slide delete", path: "/api/office/slides/delete", field: "id", values: {}, cookie: editorCookie, error: "That slide was not found." },
+    { what: "login removal", path: "/api/office/users/remove", field: "userId", values: {}, cookie: ownerCookie, error: "That login was not found." },
+    { what: "role change", path: "/api/office/users/role", field: "userId", values: { role: "manager" }, cookie: ownerCookie, error: "That login was not found." },
+    { what: "request status", path: "/api/office/requests/status", field: "id", values: { status: "closed" }, cookie: managerCookie, error: "That request was not found." },
+    { what: "request delete", path: "/api/office/requests/delete", field: "id", values: {}, cookie: ownerCookie, error: "That request was not found." },
+  ];
+  const snapshot = async () =>
+    JSON.stringify([
+      await db.select().from(hotelRates).orderBy(hotelRates.id),
+      await db.select().from(vehicleRates).orderBy(vehicleRates.id),
+      await db.select().from(jeepLines).orderBy(jeepLines.id),
+      await db.select().from(mealRates).orderBy(mealRates.id),
+      await db.select().from(photos).orderBy(photos.id),
+      await db.select().from(reviews).orderBy(reviews.id),
+      await db.select().from(slides).orderBy(slides.id),
+      await db.select({ id: users.id, email: users.email, role: users.role }).from(users).orderBy(users.id),
+      await db.select().from(guestRequests).orderBy(guestRequests.id),
+      await activityCount(),
+    ]);
+  for (const table of [hotelRates, vehicleRates, jeepLines, mealRates, photos, reviews, slides, users, guestRequests]) {
+    const [taken] = await db.select({ id: table.id }).from(table).where(eq(table.id, 999999)).limit(1);
+    if (taken) throw new Error("A record has id 999999, so the missing-id case cannot run.");
+  }
+  const before = await snapshot();
+  for (const save of saves) {
+    for (const badId of badIds) {
+      const reply = await officePost(save.path, formOf({ ...save.values, [save.field]: badId }), save.cookie);
+      if (reply.status !== 400 || reply.body.error !== save.error) {
+        throw new Error(`A ${save.what} with id "${badId}" returned ${reply.status} (${reply.body.error ?? ""}), not 400 with "${save.error}".`);
+      }
+    }
+  }
+  // The request saves check the role before the id, like the others.
+  for (const [what, pathname, values] of [
+    ["request status", "/api/office/requests/status", { status: "closed" }],
+    ["request delete", "/api/office/requests/delete", {}],
+  ] as const) {
+    const reply = await officePost(pathname, formOf({ ...values, id: "abc" }), editorCookie);
+    if (reply.status !== 403) throw new Error(`An Editor's ${what} with id "abc" returned ${reply.status}, not 403.`);
+  }
+  if ((await snapshot()) !== before) throw new Error("A save with a bad record id changed something.");
+
+  // A good id still saves.
+  const good: [string, string, FormData, string][] = [
+    ["hotel rate save", "/api/office/rates", formOf({ ...hotelValues, id: hotel.id }), managerCookie],
+    ["vehicle rate save", "/api/office/rates", formOf({ ...vehicleValues, id: vehicle.id }), managerCookie],
+    ["jeep line save", "/api/office/rates", formOf({ ...jeepValues, id: jeep.id }), managerCookie],
+    ["meal rate save", "/api/office/rates", formOf({ ...mealValues, id: meal.id }), managerCookie],
+    ["request status", "/api/office/requests/status", formOf({ id: requestId, status: "in_progress" }), managerCookie],
+  ];
+  const [manager] = await db.select({ id: users.id }).from(users).where(eq(users.email, MANAGER_EMAIL)).limit(1);
+  if (manager) good.push(["role change", "/api/office/users/role", formOf({ userId: manager.id, role: "manager" }), ownerCookie]);
+  for (const [what, pathname, form, cookie] of good) {
+    const reply = await officePost(pathname, form, cookie);
+    if (reply.status !== 200 || !reply.body.ok) throw new Error(`A ${what} with a good id returned ${reply.status} (${reply.body.error ?? ""}).`);
+  }
+  const [shipped] = await db.select({ image: tours.image }).from(tours).where(like(tours.image, "/images/%")).limit(1);
+  const [photo] = await db.insert(photos).values({ src: shipped?.image ?? "/images/x.jpg", alt: "T-52 check photo", category: "private" }).returning({ id: photos.id });
+  const [review] = await db.insert(reviews).values({ name: "T-52 check review", avatar: "", location: "", text: "x", rating: 5 }).returning({ id: reviews.id });
+  const [slide] = await db.insert(slides).values({ image: shipped?.image ?? "/images/x.jpg", title: "T-52 check slide", rotation: 0, sortOrder: 999 }).returning({ id: slides.id });
+  const loginAdded = await officePost("/api/office/users", formOf({ email: "t52-check@travelwithmoeen.test", password: "T52Check-pass1", role: "editor" }), ownerCookie);
+  const [login] = await db.select({ id: users.id }).from(users).where(eq(users.email, "t52-check@travelwithmoeen.test")).limit(1);
+  try {
+    if (loginAdded.status !== 200 || !login) throw new Error("The T-52 check login was not added.");
+    const deletes: [string, string, FormData, string, () => Promise<unknown[]>][] = [
+      ["photo delete", "/api/office/photos/delete", formOf({ id: photo.id }), editorCookie, () => db.select().from(photos).where(eq(photos.id, photo.id))],
+      ["review delete", "/api/office/reviews/delete", formOf({ id: review.id }), editorCookie, () => db.select().from(reviews).where(eq(reviews.id, review.id))],
+      ["slide delete", "/api/office/slides/delete", formOf({ id: slide.id }), editorCookie, () => db.select().from(slides).where(eq(slides.id, slide.id))],
+      ["login removal", "/api/office/users/remove", formOf({ userId: login.id }), ownerCookie, () => db.select().from(users).where(eq(users.id, login.id))],
+    ];
+    for (const [what, pathname, form, cookie, left] of deletes) {
+      const reply = await officePost(pathname, form, cookie);
+      if (reply.status !== 200 || !reply.body.ok || (await left()).length) throw new Error(`A ${what} with a good id did not delete it (${reply.status}).`);
+    }
+  } finally {
+    await db.delete(photos).where(eq(photos.alt, "T-52 check photo"));
+    await db.delete(reviews).where(eq(reviews.name, "T-52 check review"));
+    await db.delete(slides).where(eq(slides.title, "T-52 check slide"));
+    await db.delete(users).where(eq(users.email, "t52-check@travelwithmoeen.test"));
+  }
+}
+
 function rulesForm(values: Record<string, string | number>) {
   const form = new FormData();
   form.set("kind", "pricing_rule");
