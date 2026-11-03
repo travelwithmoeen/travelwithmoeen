@@ -5,6 +5,7 @@ import { canDeleteRequest, canUpdateRequestStatus } from "@/lib/auth/permissions
 import type { SessionUser } from "@/lib/auth/session";
 import { forbidden, type ActionResult } from "@/lib/http/result";
 import { recordActivity } from "@/lib/office/activity";
+import { readRecordId } from "@/lib/office/record-id";
 
 const REQUEST_STATUSES = ["new", "in_progress", "closed"] as const;
 const STATUS_NAME = { new: "New", in_progress: "In progress", closed: "Closed" } as const;
@@ -26,10 +27,8 @@ function isRequestStatus(value: string): value is RequestStatus {
   return REQUEST_STATUSES.includes(value as RequestStatus);
 }
 
-function requestId(value: string) {
-  const id = Number(value);
-  if (!Number.isInteger(id) || id < 1) return null;
-  return id;
+function requestId(value: FormDataEntryValue | null) {
+  return readRecordId(value);
 }
 
 export async function listRequestsAs(actor: SessionUser) {
@@ -88,13 +87,13 @@ export async function deleteRequestAs(actor: SessionUser, id: number): Promise<A
 }
 
 export async function updateRequestStatusFromForm(actor: SessionUser, formData: FormData): Promise<ActionResult> {
-  const id = requestId(String(formData.get("id") ?? ""));
+  const id = requestId(formData.get("id"));
   if (!id) return { ok: false, error: "That request was not found." };
   return updateRequestStatusAs(actor, id, String(formData.get("status") ?? ""));
 }
 
 export async function deleteRequestFromForm(actor: SessionUser, formData: FormData): Promise<ActionResult> {
-  const id = requestId(String(formData.get("id") ?? ""));
+  const id = requestId(formData.get("id"));
   if (!id) return { ok: false, error: "That request was not found." };
   return deleteRequestAs(actor, id);
 }

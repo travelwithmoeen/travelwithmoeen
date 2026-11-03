@@ -17,6 +17,7 @@ import { canEditRates } from "@/lib/auth/permissions";
 import type { SessionUser } from "@/lib/auth/session";
 import { forbidden, type ActionResult } from "@/lib/http/result";
 import { recordActivity } from "@/lib/office/activity";
+import { readRecordId } from "@/lib/office/record-id";
 import { buildQuote, readMarginPercent, type DayEdit, type MarginPercent, type NightEdit, type QuoteInput } from "@/lib/quote";
 import { loadCatalog, loadRateDesk, readAmount, readCount } from "@/lib/rates";
 
@@ -31,7 +32,8 @@ function checked(value: FormDataEntryValue | null) {
 
 export async function saveHotelRateAs(actor: SessionUser, formData: FormData): Promise<ActionResult> {
   if (!canEditRates(actor.role)) return forbidden("You cannot change a price.");
-  const id = Number(formData.get("id"));
+  const id = readRecordId(formData.get("id"));
+  if (id === null) return { ok: false, error: "That hotel rate was not found." };
   const twin = readAmount(String(formData.get("twin") ?? ""));
   if (!twin.ok) return twin;
   const triple = readAmount(String(formData.get("triple") ?? ""));
@@ -55,7 +57,8 @@ export async function saveHotelRateAs(actor: SessionUser, formData: FormData): P
 
 export async function saveVehicleRateAs(actor: SessionUser, formData: FormData): Promise<ActionResult> {
   if (!canEditRates(actor.role)) return forbidden("You cannot change a price.");
-  const id = Number(formData.get("id"));
+  const id = readRecordId(formData.get("id"));
+  if (id === null) return { ok: false, error: "That vehicle rate was not found." };
   const rent = readAmount(String(formData.get("rent") ?? ""));
   if (!rent.ok) return rent;
   const fuel = readAmount(String(formData.get("fuel") ?? ""));
@@ -109,7 +112,8 @@ export async function saveAirExtraAs(actor: SessionUser, formData: FormData): Pr
 
 export async function saveJeepLineAs(actor: SessionUser, formData: FormData): Promise<ActionResult> {
   if (!canEditRates(actor.role)) return forbidden("You cannot change a price.");
-  const id = Number(formData.get("id"));
+  const id = readRecordId(formData.get("id"));
+  if (id === null) return { ok: false, error: "That jeep line was not found." };
   const amount = readAmount(String(formData.get("amount") ?? ""));
   if (!amount.ok) return amount;
   const [row] = await db.select({ id: jeepLines.id, place: jeepLines.place, label: jeepLines.label }).from(jeepLines).where(eq(jeepLines.id, id)).limit(1);
@@ -159,7 +163,8 @@ export async function savePricingRulesAs(actor: SessionUser, formData: FormData)
 // BR-87 and BR-88: one grade's dinner rate per night and lunch rate per day, per person.
 export async function saveMealRateAs(actor: SessionUser, formData: FormData): Promise<ActionResult> {
   if (!canEditRates(actor.role)) return forbidden("You cannot change a price.");
-  const id = Number(formData.get("id"));
+  const id = readRecordId(formData.get("id"));
+  if (id === null) return { ok: false, error: "That meal rate was not found." };
   const dinner = readAmount(String(formData.get("dinner") ?? ""));
   if (!dinner.ok) return dinner;
   const lunch = readAmount(String(formData.get("lunch") ?? ""));

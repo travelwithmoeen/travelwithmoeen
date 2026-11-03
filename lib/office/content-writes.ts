@@ -404,10 +404,11 @@ export async function savePhotoAs(
   return { ok: true, message: "Photo added." };
 }
 
-export async function deletePhotoAs(actor: SessionUser, id: number): Promise<ActionResult> {
+export async function deletePhotoAs(actor: SessionUser, id: number | null): Promise<ActionResult> {
   if (!canEditContent(actor.role)) {
     return forbidden("You cannot edit the gallery.");
   }
+  if (id === null) return { ok: false, error: "That photo was not found." };
   const [existing] = await db.select({ src: photos.src, alt: photos.alt }).from(photos).where(eq(photos.id, id)).limit(1);
   await db.transaction(async (tx) => {
     await tx.delete(photos).where(eq(photos.id, id));
@@ -469,10 +470,11 @@ export async function saveReviewAs(
   return { ok: true, message: "Review added." };
 }
 
-export async function deleteReviewAs(actor: SessionUser, id: number): Promise<ActionResult> {
+export async function deleteReviewAs(actor: SessionUser, id: number | null): Promise<ActionResult> {
   if (!canEditContent(actor.role)) {
     return forbidden("You cannot edit reviews.");
   }
+  if (id === null) return { ok: false, error: "That review was not found." };
   const [existing] = await db.select({ avatar: reviews.avatar, name: reviews.name }).from(reviews).where(eq(reviews.id, id)).limit(1);
   await db.transaction(async (tx) => {
     await tx.delete(reviews).where(eq(reviews.id, id));
@@ -530,10 +532,11 @@ export async function saveSlideAs(
   return { ok: true, message: "Slide added." };
 }
 
-export async function deleteSlideAs(actor: SessionUser, id: number): Promise<ActionResult> {
+export async function deleteSlideAs(actor: SessionUser, id: number | null): Promise<ActionResult> {
   if (!canEditContent(actor.role)) {
     return forbidden("You cannot edit home slides.");
   }
+  if (id === null) return { ok: false, error: "That slide was not found." };
   const [existing] = await db.select({ image: slides.image, title: slides.title }).from(slides).where(eq(slides.id, id)).limit(1);
   await db.transaction(async (tx) => {
     await tx.delete(slides).where(eq(slides.id, id));
