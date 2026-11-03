@@ -1040,10 +1040,11 @@ function formOf(values: Record<string, string | number>) {
   return form;
 }
 
-// T-52: an office save with a bad record id returns 400 with its not-found message and changes
-// nothing. A good id still saves.
+// T-52: an office save with a bad record id, or a well-formed id with no record (999999), returns
+// 400 with its not-found message and changes nothing. A good id still saves. A role that may not
+// make the save gets 403 for any id.
 async function assertBadRecordIds(editorCookie: string, managerCookie: string, ownerCookie: string, requestId: number) {
-  const badIds = ["abc", "1.5", "0", "-1", "", "2147483648"];
+  const badIds = ["abc", "1.5", "0", "-1", "", "2147483648", "999999"];
   const [hotel] = await db.select().from(hotelRates).limit(1);
   const [vehicle] = await db.select().from(vehicleRates).limit(1);
   const [jeep] = await db.select().from(jeepLines).limit(1);
@@ -1079,6 +1080,10 @@ async function assertBadRecordIds(editorCookie: string, managerCookie: string, o
       await db.select().from(guestRequests).orderBy(guestRequests.id),
       await activityCount(),
     ]);
+  for (const table of [hotelRates, vehicleRates, jeepLines, mealRates, photos, reviews, slides, users, guestRequests]) {
+    const [taken] = await db.select({ id: table.id }).from(table).where(eq(table.id, 999999)).limit(1);
+    if (taken) throw new Error("A record has id 999999, so the missing-id case cannot run.");
+  }
   const before = await snapshot();
   for (const save of saves) {
     for (const badId of badIds) {
@@ -1087,6 +1092,14 @@ async function assertBadRecordIds(editorCookie: string, managerCookie: string, o
         throw new Error(`A ${save.what} with id "${badId}" returned ${reply.status} (${reply.body.error ?? ""}), not 400 with "${save.error}".`);
       }
     }
+  }
+  // The request saves check the role before the id, like the others.
+  for (const [what, pathname, values] of [
+    ["request status", "/api/office/requests/status", { status: "closed" }],
+    ["request delete", "/api/office/requests/delete", {}],
+  ] as const) {
+    const reply = await officePost(pathname, formOf({ ...values, id: "abc" }), editorCookie);
+    if (reply.status !== 403) throw new Error(`An Editor's ${what} with id "abc" returned ${reply.status}, not 403.`);
   }
   if ((await snapshot()) !== before) throw new Error("A save with a bad record id changed something.");
 
