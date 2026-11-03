@@ -7,7 +7,7 @@ import { count, eq, gt, like, max } from "drizzle-orm";
 import postgres from "postgres";
 import { drizzle } from "drizzle-orm/postgres-js";
 import { db, sql } from "../lib/db";
-import { activity, guestRequests, hotelRates, jeepLines, loginFailures, mealRates, pricingRules, photos, places, posts, quoteDays, quoteExtras, quoteNights, quotes, reviews, seasons, slides, tourPlaces, tours, users, vehicleRates } from "../lib/db/schema";
+import { activity, guestRequests, hotelRates, jeepLines, loginFailures, mealRates, pricingRules, photos, places, posts, quoteDays, quoteExtras, quoteNights, quotes, reviews, seasons, slides, tourDays, tourPlaces, tours, users, vehicleRates } from "../lib/db/schema";
 import { inferTourPlaceLinks, linkInferredTourPlaces } from "../lib/office/tour-places";
 import { authenticate } from "../lib/auth/authenticate";
 import { createUserAs, removeUserAs } from "../lib/office/users";
@@ -851,6 +851,7 @@ async function assertOfficeRequests(savedIds: number[]) {
     await assertQuoteEditsThroughRoutes(managerCookie);
     await assertPricingRules(editorCookie, managerCookie);
     await assertBadRecordIds(editorCookie, managerCookie, ownerCookie, saved.body.id);
+    await assertTourDeleteNotFound(editorCookie, managerCookie);
     await assertRefusedSaveCleanup(editorCookie);
     await assertEmptyOfficeSave(editorCookie);
     await assertOldFileRemovedAfterSave(editorCookie);
@@ -1140,6 +1141,60 @@ async function assertBadRecordIds(editorCookie: string, managerCookie: string, o
     await db.delete(reviews).where(eq(reviews.name, "T-52 check review"));
     await db.delete(slides).where(eq(slides.title, "T-52 check slide"));
     await db.delete(users).where(eq(users.email, "t52-check@travelwithmoeen.test"));
+  }
+}
+
+// T-53: a tour delete with an id no tour has, or an empty id, returns 400 and changes nothing. A
+// Manager still gets 403 for any id, and a real tour still goes with its day plan, place links, and
+// office files, with one activity row.
+async function assertTourDeleteNotFound(editorCookie: string, managerCookie: string) {
+  const snapshot = async () =>
+    JSON.stringify([
+      await db.select({ id: tours.id }).from(tours).orderBy(tours.id),
+      await db.select({ id: tourDays.id }).from(tourDays).orderBy(tourDays.id),
+      await db.select().from(tourPlaces).orderBy(tourPlaces.tourId, tourPlaces.placeSlug),
+      await activityCount(),
+    ]);
+  const before = await snapshot();
+  for (const id of ["no-such-tour-t53", ""]) {
+    const reply = await officePost("/api/office/tours/delete", formOf({ id }), editorCookie);
+    if (reply.status !== 400 || reply.body.error !== "That tour was not found.") {
+      throw new Error(`An Editor's tour delete with id "${id}" returned ${reply.status} (${reply.body.error ?? ""}), not 400 "That tour was not found.".`);
+    }
+  }
+  const [anyTour] = await db.select({ id: tours.id }).from(tours).limit(1);
+  for (const id of ["no-such-tour-t53", "", anyTour?.id ?? "x"]) {
+    const reply = await officePost("/api/office/tours/delete", formOf({ id }), managerCookie);
+    if (reply.status !== 403) throw new Error(`A Manager's tour delete with id "${id}" returned ${reply.status}, not 403.`);
+  }
+  if ((await snapshot()) !== before) throw new Error("A tour delete with no tour changed a tour, day plan, place link, or activity row.");
+
+  // A real tour still goes with everything that belongs to it.
+  const [place] = await db.select({ slug: places.slug }).from(places).limit(1);
+  if (!place) throw new Error("The T-53 check needs a place to link.");
+  const form = newTourForm("T-53 Valley", { photo: jpegFile("t53.jpg") });
+  form.set("itinerary", JSON.stringify([{ title: "Day one", description: "T-53", highlights: [] }]));
+  form.append("placeSlug", place.slug);
+  const added = await officePost("/api/office/tours/create", form, editorCookie);
+  const [tour] = await db.select().from(tours).where(eq(tours.location, "T-53 Valley")).limit(1);
+  try {
+    if (added.status !== 200 || !tour) throw new Error(`The T-53 tour was not added: ${added.body.error ?? added.status}.`);
+    const days = await db.select().from(tourDays).where(eq(tourDays.tourId, tour.id));
+    const links = await db.select().from(tourPlaces).where(eq(tourPlaces.tourId, tour.id));
+    if (days.length !== 1 || links.length !== 1 || !(await mediaFileExists(tour.image))) throw new Error("The T-53 tour does not have its day, place link, and office photo.");
+    const deleted = await officePost("/api/office/tours/delete", formOf({ id: tour.id }), editorCookie);
+    if (deleted.status !== 200 || !deleted.body.ok) throw new Error(`An Editor could not delete the T-53 tour (${deleted.status}).`);
+    const [left] = await db.select({ id: tours.id }).from(tours).where(eq(tours.id, tour.id));
+    const daysLeft = await db.select({ id: tourDays.id }).from(tourDays).where(eq(tourDays.tourId, tour.id));
+    const linksLeft = await db.select().from(tourPlaces).where(eq(tourPlaces.tourId, tour.id));
+    if (left || daysLeft.length || linksLeft.length || (await mediaFileExists(tour.image))) {
+      throw new Error("Deleting a real tour left the tour, its day plan, a place link, or its office photo.");
+    }
+    const rows = await db.select().from(activity).where(eq(activity.recordId, tour.id));
+    const deleteRows = rows.filter((row) => row.text === `Deleted tour ${tour.name}`);
+    if (deleteRows.length !== 1) throw new Error(`Deleting a real tour wrote ${deleteRows.length} delete rows, not one.`);
+  } finally {
+    if (tour) await db.delete(tours).where(eq(tours.id, tour.id));
   }
 }
 
