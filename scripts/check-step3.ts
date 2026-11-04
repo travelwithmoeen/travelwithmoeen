@@ -852,6 +852,7 @@ async function assertOfficeRequests(savedIds: number[]) {
     await assertPricingRules(editorCookie, managerCookie);
     await assertBadRecordIds(editorCookie, managerCookie, ownerCookie, saved.body.id);
     await assertTourDeleteNotFound(editorCookie, managerCookie);
+    await assertNulText(editorCookie);
     await assertRefusedSaveCleanup(editorCookie);
     await assertEmptyOfficeSave(editorCookie);
     await assertOldFileRemovedAfterSave(editorCookie);
@@ -1141,6 +1142,69 @@ async function assertBadRecordIds(editorCookie: string, managerCookie: string, o
     await db.delete(reviews).where(eq(reviews.name, "T-52 check review"));
     await db.delete(slides).where(eq(slides.title, "T-52 check slide"));
     await db.delete(users).where(eq(users.email, "t52-check@travelwithmoeen.test"));
+  }
+}
+
+// T-54: text with a NUL character is refused before any query, instead of Postgres failing with a
+// 500. Text without it, including Urdu and emoji, still saves.
+async function assertNulText(editorCookie: string) {
+  const NUL = "\u0000";
+  const nulError = "Some text has a character that cannot be saved.";
+  const [review] = await db
+    .insert(reviews)
+    .values({ name: "T-54 check review", avatar: "", location: "", text: "T-54", rating: 5 })
+    .returning({ id: reviews.id });
+  const reviewForm = (name: string, text: string) => formOf({ id: review.id, name, avatar: "", location: "", text, rating: 5 });
+  const savedIds: number[] = [];
+  try {
+    const snapshot = async () =>
+      JSON.stringify([
+        await db.select({ id: tours.id }).from(tours).orderBy(tours.id),
+        await db.select().from(reviews).orderBy(reviews.id),
+        await db.select({ id: guestRequests.id }).from(guestRequests).orderBy(guestRequests.id),
+        await activityCount(),
+      ]);
+    const before = await snapshot();
+    const refused: [string, { status: number; body: { error?: string } }][] = [
+      ["a tour delete with id a\\0b", await officePost("/api/office/tours/delete", formOf({ id: `a${NUL}b` }), editorCookie)],
+      ["a review save with a name holding \\0", await officePost("/api/office/reviews", reviewForm(`T-54${NUL}name`, "T-54"), editorCookie)],
+      ["a guest request with a message holding \\0", await postRequest({ kind: "contact", name: "T-54 Guest", email: "t54@travelwithmoeen.test", message: `Hello${NUL}there` })],
+    ];
+    for (const [what, reply] of refused) {
+      if (reply.status !== 400 || reply.body.error !== nulError) throw new Error(`${what} returned ${reply.status} (${reply.body.error ?? ""}), not 400 "${nulError}".`);
+    }
+    const signedOut = await officePost("/api/office/tours/delete", formOf({ id: `a${NUL}b` }), "");
+    if (signedOut.status !== 401) throw new Error(`A signed-out office save with \\0 returned ${signedOut.status}, not 401.`);
+    if ((await snapshot()) !== before) throw new Error("A request with a NUL character changed a tour, a review, a guest request, or the activity record.");
+
+    // The sign-in gives its usual refusal, for a NUL character and for no body at all.
+    const nulSignIn = await signIn(`owner${NUL}@travelwithmoeen.test`, "T54-any-password");
+    const noBody = await fetch(`${siteBase()}/api/office/login`, { method: "POST" });
+    const noBodyReply = (await noBody.json().catch(() => ({}))) as { error?: string };
+    if (nulSignIn.status !== 401 || noBody.status !== 401 || nulSignIn.body.error !== noBodyReply.error || noBodyReply.error !== "That email or password is not right.") {
+      throw new Error(`A sign-in with \\0 returned ${nulSignIn.status} and one with no body ${noBody.status}, not the usual 401.`);
+    }
+
+    // A content route with NUL in its id answers as for a missing record.
+    for (const kind of ["tours", "places", "posts"]) {
+      const reply = await fetch(`${siteBase()}/api/content/${kind}/a%00b`);
+      if (reply.status !== 404) throw new Error(`GET /api/content/${kind}/a%00b returned ${reply.status}, not 404.`);
+    }
+
+    // Text without NUL, such as Urdu and emoji, still saves exactly.
+    const urduName = "سلیم خان 😊";
+    const urduText = "بہت اچھا سفر تھا ✈️🏔️";
+    const urduSave = await officePost("/api/office/reviews", reviewForm(urduName, urduText), editorCookie);
+    const [kept] = await db.select().from(reviews).where(eq(reviews.id, review.id)).limit(1);
+    if (urduSave.status !== 200 || kept?.name !== urduName || kept?.text !== urduText) throw new Error("A review in Urdu with emoji did not save exactly.");
+    const guest = await postRequest({ kind: "contact", name: urduName, email: "t54@travelwithmoeen.test", message: urduText });
+    if (guest.status !== 200 || !guest.body.id) throw new Error("A guest request in Urdu with emoji was not saved.");
+    savedIds.push(guest.body.id);
+    const [stored] = await db.select().from(guestRequests).where(eq(guestRequests.id, guest.body.id)).limit(1);
+    if (stored?.name !== urduName || stored?.message !== urduText) throw new Error("A guest request in Urdu with emoji did not save exactly.");
+  } finally {
+    await db.delete(reviews).where(eq(reviews.id, review.id));
+    for (const id of savedIds) await db.delete(guestRequests).where(eq(guestRequests.id, id));
   }
 }
 

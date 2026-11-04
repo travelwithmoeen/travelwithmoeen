@@ -1,3 +1,4 @@
+import { hasNulText, NUL_TEXT_ERROR } from "@/lib/http/nul-text";
 import { saveGuestRequest } from "@/lib/requests";
 
 function text(body: Record<string, unknown>, key: string) {
@@ -12,6 +13,7 @@ export async function POST(request: Request) {
   } catch {
     return Response.json({ ok: false, error: "The request could not be read." }, { status: 400 });
   }
+  if (hasNulText(body)) return Response.json({ ok: false, error: NUL_TEXT_ERROR }, { status: 400 });
   const result = await saveGuestRequest({
     kind: text(body, "kind"),
     name: text(body, "name"),
