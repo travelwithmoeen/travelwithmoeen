@@ -149,15 +149,22 @@ export async function uploadPermissionAs(actor: SessionUser, body: unknown, requ
 }
 
 const NOT_IN_STORE = "That file is not in the office media store. Choose it again.";
+// A direct upload is stored as media/upload plus the random suffix addRandomSuffix gives. Older office
+// files are named media/<time>-<hex>, so they can never be taken for a fresh upload.
+const FRESH_UPLOAD_NAME = /^media\/upload-[A-Za-z0-9]+\.(jpg|png|webp|pdf)$/;
+const FRESH_UPLOAD_MINUTES = 15;
 
 // A save that names an uploaded file checks it before the record changes: it is in this store under
-// media/, it is under the size limit, and its first bytes are the kind it claims. A file that fails
-// is deleted. The role is checked first, so a role that may not save never touches a stored file.
+// media/, it is under the size limit, and its first bytes are the kind it claims. The role is checked
+// first, so a role that may not save never touches a stored file. Only a fresh direct upload is
+// accepted: one with the upload name, stored in the last 15 minutes. Any other file, which a record
+// may still use, is refused and never deleted, by this check or by the save's stored list. A fresh
+// upload that fails is the uploader's own, so it is deleted.
 export async function checkUploadedFile(actor: SessionUser, value: string, kind: UploadKind): Promise<string | ActionResult> {
   if (!canEditContent(actor.role)) return forbidden(kind === "pdf" ? "You cannot edit a tour." : "You cannot edit a photo.");
   const url = value.trim();
   const path = officeMediaPath(url);
-  if (!path || !url.startsWith("https://")) return { ok: false, error: NOT_IN_STORE };
+  if (!path || !url.startsWith("https://") || !FRESH_UPLOAD_NAME.test(path)) return { ok: false, error: NOT_IN_STORE };
   const token = mediaToken();
   let stored: Awaited<ReturnType<typeof head>>;
   try {
@@ -167,6 +174,7 @@ export async function checkUploadedFile(actor: SessionUser, value: string, kind:
   }
   // The same path in another store is not this store's file.
   if (stored.url !== url) return { ok: false, error: NOT_IN_STORE };
+  if (Date.now() - stored.uploadedAt.getTime() > FRESH_UPLOAD_MINUTES * 60 * 1000) return { ok: false, error: NOT_IN_STORE };
   const rules = UPLOAD_RULES[kind];
   let refusal = "";
   if (stored.size > rules.maxBytes) {

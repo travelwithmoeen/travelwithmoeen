@@ -2,7 +2,7 @@ import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "fs
 import os from "os";
 import path from "path";
 import { spawn } from "child_process";
-import { del, head, list } from "@vercel/blob";
+import { del, head, list, put } from "@vercel/blob";
 import { upload } from "@vercel/blob/client";
 import { count, eq, gt, like, max } from "drizzle-orm";
 import postgres from "postgres";
@@ -1215,6 +1215,23 @@ async function assertDirectUploads(editorCookie: string, managerCookie: string) 
     }
     if ((await photoCount()) !== before) throw new Error("A save naming a file outside this store added a photo.");
     if (!(await mediaFileExists(store.href))) throw new Error("A refused save naming another file removed this store's file.");
+
+    // Only a fresh direct upload is accepted. An existing office file, named the older way, is refused
+    // and kept, whatever else is wrong with the save, so a record that still uses it keeps it.
+    const olderName = (extension: string) => `media/${Date.now()}-${Math.random().toString(16).slice(2, 18)}.${extension}`;
+    const olderPhoto = (await put(olderName("jpg"), Buffer.from(JPEG), { access: "public", token: process.env.MEDIA_READ_WRITE_TOKEN, contentType: "image/jpeg", addRandomSuffix: false })).url;
+    const olderPdf = (await put(olderName("pdf"), Buffer.from("%PDF-1.7\nT-51 older PDF"), { access: "public", token: process.env.MEDIA_READ_WRITE_TOKEN, contentType: "application/pdf", addRandomSuffix: false })).url;
+    sent.push(olderPhoto, olderPdf);
+    const notInStore = "That file is not in the office media store. Choose it again.";
+    const emptyDescription = await officePost("/api/office/photos", galleryForm({ alt: "", category: "private", src: "", photoUploaded: olderPhoto }), editorCookie);
+    if (emptyDescription.status !== 400 || emptyDescription.body.error !== notInStore || !(await mediaFileExists(olderPhoto))) {
+      throw new Error(`A gallery save with an empty description, naming an existing office photo, returned ${emptyDescription.status} (${emptyDescription.body.error ?? ""}), or the photo was deleted.`);
+    }
+    const pdfAsPhoto = await officePost("/api/office/photos", galleryForm({ alt: "T-51 check photo", category: "private", src: "", photoUploaded: olderPdf }), editorCookie);
+    if (pdfAsPhoto.status !== 400 || pdfAsPhoto.body.error !== notInStore || !(await mediaFileExists(olderPdf))) {
+      throw new Error(`A gallery save naming an existing tour PDF returned ${pdfAsPhoto.status} (${pdfAsPhoto.body.error ?? ""}), or the PDF was deleted.`);
+    }
+    if ((await photoCount()) !== before) throw new Error("A save naming an existing office file added a photo.");
 
     // A file uploaded as image/jpeg whose bytes are not an image is refused and deleted.
     const fake = await direct(new TextEncoder().encode('<svg xmlns="http://www.w3.org/2000/svg"></svg>'), "jpg", "image", "image/jpeg");
