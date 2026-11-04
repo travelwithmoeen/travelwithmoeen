@@ -100,7 +100,8 @@ function stringList(formData: FormData, name: string) {
     .filter(Boolean);
 }
 
-export async function loginFromForm(formData: FormData): Promise<ActionResult> {
+export async function loginFromForm(formData: FormData | null): Promise<ActionResult> {
+  if (!formData) return { ok: false, error: LOGIN_ERROR };
   const email = String(formData.get("email") ?? "");
   const password = String(formData.get("password") ?? "");
   if (await loginIsLocked(email)) {
