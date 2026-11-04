@@ -1173,6 +1173,26 @@ async function assertNulText(editorCookie: string) {
     for (const [what, reply] of refused) {
       if (reply.status !== 400 || reply.body.error !== nulError) throw new Error(`${what} returned ${reply.status} (${reply.body.error ?? ""}), not 400 "${nulError}".`);
     }
+    // A guest request reads only its five text fields, so deep nesting cannot crash the check, and a
+    // body that is not a plain object is not read at all.
+    const rawRequest = async (raw: string) => {
+      const response = await fetch(`${siteBase()}/api/requests`, { method: "POST", headers: { "Content-Type": "application/json" }, body: raw });
+      return { status: response.status, body: (await response.json().catch(() => ({}))) as { ok?: boolean; error?: string } };
+    };
+    const deep = (depth: number) => "[".repeat(depth) + "]".repeat(depth);
+    for (const [what, raw] of [
+      ["a kind nested 10,000 deep", `{"kind":${deep(10_000)}}`],
+      ["a message nested 10,000 deep", `{"kind":"contact","name":"T-54 Guest","email":"t54@travelwithmoeen.test","message":${deep(10_000)}}`],
+    ]) {
+      const reply = await rawRequest(raw);
+      if (reply.status !== 400) throw new Error(`A guest request with ${what} returned ${reply.status}, not 400.`);
+    }
+    for (const raw of ["null", "[]", "5"]) {
+      const reply = await rawRequest(raw);
+      if (reply.status !== 400 || reply.body.error !== "The request could not be read.") {
+        throw new Error(`A guest request with the body ${raw} returned ${reply.status} (${reply.body.error ?? ""}), not 400 "The request could not be read.".`);
+      }
+    }
     const signedOut = await officePost("/api/office/tours/delete", formOf({ id: `a${NUL}b` }), "");
     if (signedOut.status !== 401) throw new Error(`A signed-out office save with \\0 returned ${signedOut.status}, not 401.`);
     if ((await snapshot()) !== before) throw new Error("A request with a NUL character changed a tour, a review, a guest request, or the activity record.");
