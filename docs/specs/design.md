@@ -137,7 +137,7 @@ One function. Do not keep a second copy of the math in the React components. Do 
 - A seat is used by each adult, each child, and each infant with their own seat.
 - An infant on a lap does not use a seat and does not take a room.
 - Rooms, when nobody types a count, equal the number of seats divided by 3, rounded up. From T-47, the 3 is the people-per-room pricing rule.
-- More than two people in a room uses the 3-share rate. Two or fewer uses the twin rate.
+- From T-55, the hotel rate is per room. The rooms that hold a third guest use the 3-share rate, and the other rooms use the twin rate. The number of 3-share rooms is seats minus twice the rooms, from 0 up to the number of rooms. With 5 seats in 2 rooms that is 1 room at 3-share and 1 at twin. With 6 seats in 2 rooms, both are 3-share. Lap infants take no room, as above. A typed share of twin or triple still prices every room at that rate. Before T-55, every room used the 3-share rate when there were more than two people per room.
 - Meals and arrival breakfast are per adult and per child. Infants are not included.
 - The child air fare is 75 percent of the adult fare. The adult fare is the Islamabad ticket plus the Lahore or Karachi extra, when that start city applies. From T-47, the 75 is a pricing rule. From T-48, the extra is the start city's air extra.
 
@@ -146,13 +146,13 @@ One function. Do not keep a second copy of the math in the React components. Do 
 1. Nights equal days minus 1. A one-day trip has no hotel night.
 2. Vehicle count equals seats needed, divided by the seats on that vehicle, rounded up, unless a count is typed.
 3. Vehicle cost equals the vehicle count times ((daily rent plus daily fuel) times days, plus the toll once). The toll is once per vehicle, not once for the whole trip.
-4. Hotel cost equals the nightly rate times nights times rooms.
+4. Hotel cost equals, for each night, the 3-share rate times the 3-share rooms plus the twin rate times the twin rooms. A night edit that types a rate uses that rate for every room that night, as today. From T-55, the hotel line's working shows both, for example "1 room × 28,000 3-share + 1 room × 24,000 twin × 4 nights".
 5. Guide, if selected, is 5,000 rupees times days. From T-47, the 5,000 is the guide pricing rule. On the public builder, a Coaster 4c or Coaster 5c selects the guide. The office can turn it off. The test quote has no guide.
 6. Meals, if selected, use the grade rate times nights times adults and children. From T-47, this is Dinner, at the grade's dinner rate. Lunch, if selected, is the grade's lunch rate times days times adults and children.
 7. A road trip longer than one day adds arrival breakfast of 500 rupees times adults and children. From T-47, the 500 is the breakfast pricing rule.
 8. A Lahore road trip longer than three days adds 5,000 rupees times (days minus 3) times the vehicle count. This is not added to an air quote. From T-48, the start city, the 3 days, and the 5,000 come from the start city's long-route extra.
-9. An air quote adds, for each adult and each child, a welcome pack of 1,500 and entry tickets of 4,000. Each infant adds 800. The sticker is 500 times rooms. Tickets are the adult fare times adults, 75 percent of that fare times children, 1,000 for each lap infant, and 5,000 for each infant with a seat. From T-47, the 75 percent, the 1,000, and the 5,000 are pricing rules. From T-49, an office quote with tickets turned off has no ticket line, and the welcome pack, entry, infant extra, and sticker stay.
-10. A jeep line that is turned on, and that matches the place and road or air, is added once for each group of six travelers, at the full amount on the line. Do not multiply 90,000 by 3.
+9. An air quote adds, for each adult and each child, a welcome pack of 1,500 and entry tickets of 4,000. Each infant adds 800. The sticker is 500 times vehicles, from T-55. Before T-55 it was 500 times rooms. Tickets are the adult fare times adults, 75 percent of that fare times children, 1,000 for each lap infant, and 5,000 for each infant with a seat. From T-47, the 75 percent, the 1,000, and the 5,000 are pricing rules. From T-49, an office quote with tickets turned off has no ticket line, and the welcome pack, entry, infant extra, and sticker stay.
+10. A jeep line that is turned on, and that matches the place and road or air, is added once for each group of six adults and children, at the full amount on the line. From T-55, infants are not counted. Before T-55, every traveler was counted. Do not multiply 90,000 by 3.
 11. Subtotal is the sum of those lines. Total equals subtotal times (1 plus the profit margin). The margin is a whole percent from 0 to 100. The Skardu test uses 20 percent, which is 1.20. Do not divide by 1.20.
 
 The guest builder keeps today's minimum trip length for each place. That limit is not applied to an office quote. The Skardu test is 5 days even though the public road minimum for Skardu is 6.
@@ -295,7 +295,6 @@ Phase 3 is sprint 4. These are not built in the baseline, in the next sprint, or
 - PDF or image download of a guest quote. The guest file shows one total, not the staff lines and not the profit
 - Excel download of the live prices. Only the Owner and the Manager can download it
 
-In sprint 4, the sticker follows the number of vehicles. In the baseline it stays 500 rupees times rooms.
 
 ## 11. Meadow office, T-37
 
