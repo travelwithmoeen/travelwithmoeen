@@ -234,18 +234,21 @@ export async function deleteTourAs(actor: SessionUser, tourId: string): Promise<
   if (!canDeleteTour(actor.role)) {
     return forbidden("You cannot delete a tour.");
   }
+  // An empty id, or one no tour has, is not found: nothing is deleted and no row is written (T-53).
+  const notFound = { ok: false as const, error: "That tour was not found." };
+  if (!tourId.trim()) return notFound;
   const [existing] = await db
     .select({ name: tours.name, image: tours.image, pdf: tours.pdf, galleryImages: tours.galleryImages })
     .from(tours)
     .where(eq(tours.id, tourId))
     .limit(1);
+  if (!existing) return notFound;
   await db.transaction(async (tx) => {
     // tour_days and tour_places cascade on tours.id, so the day plan and place links go with this one delete.
     await tx.delete(tours).where(eq(tours.id, tourId));
-    if (existing) await recordActivity(tx, actor, { kind: "tour", recordId: tourId, text: `Deleted tour ${existing.name}` });
+    await recordActivity(tx, actor, { kind: "tour", recordId: tourId, text: `Deleted tour ${existing.name}` });
   });
-  const deleted = { ok: true as const, message: "Tour deleted." };
-  return existing ? removeOldFilesAfter([existing.image, existing.pdf, ...existing.galleryImages], [], deleted) : deleted;
+  return removeOldFilesAfter([existing.image, existing.pdf, ...existing.galleryImages], [], { ok: true, message: "Tour deleted." });
 }
 
 export async function updatePlaceAs(
