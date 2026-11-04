@@ -234,18 +234,21 @@ export async function deleteTourAs(actor: SessionUser, tourId: string): Promise<
   if (!canDeleteTour(actor.role)) {
     return forbidden("You cannot delete a tour.");
   }
+  // An empty id, or one no tour has, is not found: nothing is deleted and no row is written (T-53).
+  const notFound = { ok: false as const, error: "That tour was not found." };
+  if (!tourId.trim()) return notFound;
   const [existing] = await db
     .select({ name: tours.name, image: tours.image, pdf: tours.pdf, galleryImages: tours.galleryImages })
     .from(tours)
     .where(eq(tours.id, tourId))
     .limit(1);
+  if (!existing) return notFound;
   await db.transaction(async (tx) => {
     // tour_days and tour_places cascade on tours.id, so the day plan and place links go with this one delete.
     await tx.delete(tours).where(eq(tours.id, tourId));
-    if (existing) await recordActivity(tx, actor, { kind: "tour", recordId: tourId, text: `Deleted tour ${existing.name}` });
+    await recordActivity(tx, actor, { kind: "tour", recordId: tourId, text: `Deleted tour ${existing.name}` });
   });
-  const deleted = { ok: true as const, message: "Tour deleted." };
-  return existing ? removeOldFilesAfter([existing.image, existing.pdf, ...existing.galleryImages], [], deleted) : deleted;
+  return removeOldFilesAfter([existing.image, existing.pdf, ...existing.galleryImages], [], { ok: true, message: "Tour deleted." });
 }
 
 export async function updatePlaceAs(
@@ -404,17 +407,20 @@ export async function savePhotoAs(
   return { ok: true, message: "Photo added." };
 }
 
-export async function deletePhotoAs(actor: SessionUser, id: number): Promise<ActionResult> {
+export async function deletePhotoAs(actor: SessionUser, id: number | null): Promise<ActionResult> {
   if (!canEditContent(actor.role)) {
     return forbidden("You cannot edit the gallery.");
   }
+  // A bad id, or one with no photo, is not found: nothing is deleted and no row is written (T-52).
+  const notFound = { ok: false as const, error: "That photo was not found." };
+  if (id === null) return notFound;
   const [existing] = await db.select({ src: photos.src, alt: photos.alt }).from(photos).where(eq(photos.id, id)).limit(1);
+  if (!existing) return notFound;
   await db.transaction(async (tx) => {
     await tx.delete(photos).where(eq(photos.id, id));
-    if (existing) await recordActivity(tx, actor, { kind: "photo", recordId: id, text: `Removed gallery photo ${existing.alt}` });
+    await recordActivity(tx, actor, { kind: "photo", recordId: id, text: `Removed gallery photo ${existing.alt}` });
   });
-  const deleted = { ok: true as const, message: "Photo removed." };
-  return existing ? removeOldFilesAfter([existing.src], [], deleted) : deleted;
+  return removeOldFilesAfter([existing.src], [], { ok: true, message: "Photo removed." });
 }
 
 export async function saveReviewAs(
@@ -469,17 +475,20 @@ export async function saveReviewAs(
   return { ok: true, message: "Review added." };
 }
 
-export async function deleteReviewAs(actor: SessionUser, id: number): Promise<ActionResult> {
+export async function deleteReviewAs(actor: SessionUser, id: number | null): Promise<ActionResult> {
   if (!canEditContent(actor.role)) {
     return forbidden("You cannot edit reviews.");
   }
+  // A bad id, or one with no review, is not found: nothing is deleted and no row is written (T-52).
+  const notFound = { ok: false as const, error: "That review was not found." };
+  if (id === null) return notFound;
   const [existing] = await db.select({ avatar: reviews.avatar, name: reviews.name }).from(reviews).where(eq(reviews.id, id)).limit(1);
+  if (!existing) return notFound;
   await db.transaction(async (tx) => {
     await tx.delete(reviews).where(eq(reviews.id, id));
-    if (existing) await recordActivity(tx, actor, { kind: "review", recordId: id, text: `Removed review from ${existing.name}` });
+    await recordActivity(tx, actor, { kind: "review", recordId: id, text: `Removed review from ${existing.name}` });
   });
-  const deleted = { ok: true as const, message: "Review removed." };
-  return existing ? removeOldFilesAfter([existing.avatar], [], deleted) : deleted;
+  return removeOldFilesAfter([existing.avatar], [], { ok: true, message: "Review removed." });
 }
 
 export async function saveSlideAs(
@@ -530,17 +539,20 @@ export async function saveSlideAs(
   return { ok: true, message: "Slide added." };
 }
 
-export async function deleteSlideAs(actor: SessionUser, id: number): Promise<ActionResult> {
+export async function deleteSlideAs(actor: SessionUser, id: number | null): Promise<ActionResult> {
   if (!canEditContent(actor.role)) {
     return forbidden("You cannot edit home slides.");
   }
+  // A bad id, or one with no slide, is not found: nothing is deleted and no row is written (T-52).
+  const notFound = { ok: false as const, error: "That slide was not found." };
+  if (id === null) return notFound;
   const [existing] = await db.select({ image: slides.image, title: slides.title }).from(slides).where(eq(slides.id, id)).limit(1);
+  if (!existing) return notFound;
   await db.transaction(async (tx) => {
     await tx.delete(slides).where(eq(slides.id, id));
-    if (existing) await recordActivity(tx, actor, { kind: "slide", recordId: id, text: `Removed home slide ${existing.title}` });
+    await recordActivity(tx, actor, { kind: "slide", recordId: id, text: `Removed home slide ${existing.title}` });
   });
-  const deleted = { ok: true as const, message: "Slide removed." };
-  return existing ? removeOldFilesAfter([existing.image], [], deleted) : deleted;
+  return removeOldFilesAfter([existing.image], [], { ok: true, message: "Slide removed." });
 }
 
 export async function updateSiteSettingsAs(

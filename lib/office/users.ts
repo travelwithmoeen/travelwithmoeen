@@ -53,10 +53,11 @@ export async function createUserAs(
   return { ok: true, message: "Login created." };
 }
 
-export async function removeUserAs(actor: SessionUser, userId: number): Promise<ActionResult> {
+export async function removeUserAs(actor: SessionUser, userId: number | null): Promise<ActionResult> {
   if (!canManageUsers(actor.role)) {
     return forbidden("Only the Owner can remove a login.");
   }
+  if (userId === null) return { ok: false, error: "That login was not found." };
   if (actor.id === userId) {
     return { ok: false, error: "You cannot remove your own login." };
   }
@@ -77,10 +78,11 @@ export async function removeUserAs(actor: SessionUser, userId: number): Promise<
   return { ok: true, message: "Login removed." };
 }
 
-export async function changeRoleAs(actor: SessionUser, userId: number, role: string): Promise<ActionResult> {
+export async function changeRoleAs(actor: SessionUser, userId: number | null, role: string): Promise<ActionResult> {
   if (!canManageUsers(actor.role)) {
     return forbidden("Only the Owner can change a role.");
   }
+  if (userId === null) return { ok: false, error: "That login was not found." };
   if (!isRole(role)) {
     return { ok: false, error: "Choose Owner, Manager, or Editor." };
   }

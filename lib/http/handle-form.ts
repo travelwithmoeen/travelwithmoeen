@@ -1,4 +1,5 @@
 import { requireUser, type SessionUser } from "@/lib/auth/session";
+import { hasNulText, NUL_TEXT_ERROR } from "@/lib/http/nul-text";
 import type { ActionResult } from "@/lib/http/result";
 
 export async function handleOfficeForm(
@@ -18,6 +19,10 @@ export async function handleOfficeForm(
     formData = await request.formData();
   } catch {
     return Response.json({ ok: false, error: "Send the form again." }, { status: 400 });
+  }
+  // T-54: refused here, after the session check and before any query.
+  if (hasNulText(formData)) {
+    return Response.json({ ok: false, error: NUL_TEXT_ERROR }, { status: 400 });
   }
   const result = await run(actor, formData);
   if (result.ok && refresh) refresh(formData, result);
