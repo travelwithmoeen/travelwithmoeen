@@ -95,9 +95,9 @@ This table is the record of what Moeen decided. The numbers match the WhatsApp m
 | S-7 | A package with neither a hotel nor other services is refused | Asked | | T-37h |
 | S-8 | Guests on the website get the same three choices and see one total. Staff see the lines and the profit | Asked | | T-37h |
 | S-9 | One example trip where the dashboard does not match the costing file | Asked 14 October 2026 | | Not T-37. The dashboard note stays a placeholder. |
-| S-10 | Air sticker. The v1.2 costing desk charges it per vehicle. This spec charges it per room, which is BR-41. | Asked 3 November 2026 | | Nothing. BR-41 stands until answered. |
-| S-11 | Rooms with a third guest. The v1.2 desk charges the 3-share rate only on the rooms that hold a third person, and the twin rate on the rest. This spec charges the 3-share rate on every room when there are more than two people per room. For 5 people in 2 rooms, the desk charges 1 triple and 1 twin, and this spec charges 2 at the 3-share rate. | Asked 3 November 2026 | | Nothing. BR-84 stands until answered. |
-| S-12 | Jeep count. The v1.2 desk counts adults and children for each jeep. This spec counts every traveler, infants included, which is BR-27. | Asked 3 November 2026 | | Nothing. BR-27 stands until answered. |
+| S-10 | Air sticker. The v1.2 costing desk charges it per vehicle. This spec charges it per room, which is BR-41. | Changed 4 November 2026 | Rs 500 per vehicle. BR-41 is changed. | T-55 |
+| S-11 | Rooms with a third guest. The v1.2 desk charges the 3-share rate only on the rooms that hold a third person, and the twin rate on the rest. This spec charges the 3-share rate on every room when there are more than two people per room. For 5 people in 2 rooms, the desk charges 1 triple and 1 twin, and this spec charges 2 at the 3-share rate. | Changed 4 November 2026 | The 3-share rate only on the room that has a third guest, and the twin rate on the others. BR-84 is changed. | T-55 |
+| S-12 | Jeep count. The v1.2 desk counts adults and children for each jeep. This spec counts every traveler, infants included, which is BR-27. | Changed 4 November 2026 | Adults and children, 1 jeep for every 6. BR-27 is changed. | T-55 |
 
 Status is Asked, Approved, or Changed. A look change Moeen asks for on one screen goes into that screen's task. A change to a price rule goes into the requirement first.
 
@@ -187,6 +187,14 @@ The rules are requirements section 8c and design section 13. Build T-50 after T-
 |---|---|---|---|
 | T-50 | Progress feedback. Add the page-move bar, `components/ui/NavigationProgress.tsx`, to `app/layout.tsx`. Add `app/office/(panel)/loading.tsx` with placeholder blocks. Give `postOfficeForm` upload progress, Cancel, and a label, and add the `UploadProgress` component to every form with an upload. Show the busy label and the result in the office top bar. Pass `busy` on every office action button. Replace the full page reloads after a save with `router.refresh()` and `router.push()`. | BR-95 to BR-100 | With Chrome at Slow 4G: a click on a public page link and an office side menu link shows the bar until the page shows, and a fast move shows no bar. An office page shows the side menu, the top bar, and placeholders while it loads. A 4 MB photo upload shows the amount and the percent rising, and Cancel stops it, keeps the form, and stores nothing. A save shows "Saving …" in the top bar while scrolled to the top of a long form, then the saved message. A second press on a working button does nothing. After a gallery photo, review, or slide save, the page does not reload and shows the new data. Reduced motion stops the moving parts. A screen reader hears "Loading page" and the save result. `npm run check:step3` passes. The public site looks the same apart from the bar. |
 
+## Costing desk answers, 4 November 2026
+
+Moeen's team answered rows S-10 to S-12 on 4 November 2026. The rules are BR-41, BR-84, and BR-27 in the requirements and the starting quote rules in design section 5. Build T-55 after T-51 and before T-50, in its own pull request, into the fork `main`. No migration. After T-55 is on the preview site, the v1.2 rates and rule values are loaded there as a separate data step, which Moeen's team agreed to on the same day.
+
+| ID | Task | Covers | Done when |
+|---|---|---|---|
+| T-55 | Price the sticker, the rooms, and the jeeps as the costing desk does. In `lib/quote.ts`, the air sticker is the sticker amount times the vehicle count, not the rooms. The hotel line prices the rooms that hold a third guest at the 3-share rate and the other rooms at the twin rate, where the 3-share rooms are seats minus twice the rooms, from 0 up to the rooms. A typed share of twin or triple, and a typed night rate, still apply to every room. The jeep count is adults and children, not infants, divided by the line's people, rounded up. Show the twin and 3-share rooms in the hotel line's working. The guest calculator and the office Quote screen both use `lib/quote.ts`, so neither keeps its own copy. | BR-41, BR-84, BR-27, BR-93 | An air quote with 2 vehicles and 3 rooms has a sticker of 1,000. A quote for 5 adults in 2 rooms prices 1 room at 3-share and 1 at twin, and 6 adults in 2 rooms prices both at 3-share. 4 adults in 2 rooms is all twin. 6 adults and 2 infants on a jeep line add 1 jeep, and 7 adults add 2. The Skardu test is still 140,400. The cases are in `scripts/check-step3.ts`, and `npm run check:step3` passes. |
+
 Sprint 3, Phase 2. Starts after T-37 is accepted.
 
 - Hours on each stop
@@ -203,6 +211,5 @@ Sprint 4, Phase 3:
 - A no-price copy for the driver and field team. That copy has no rupee amounts (BR-66).
 - PDF or image download of a guest quote. The guest file has one total, not the staff lines and not the profit (BR-66).
 - Excel download of live prices. Only the Owner and the Manager can download it (BR-66).
-- A sticker counted by vehicles, replacing the room count from the baseline
 
 Card payment, a guest login, and a new public look stay out of the baseline, office media, Phase 2, and Phase 3.
