@@ -52,3 +52,6 @@ docs/_*
 
 # database backups stay on disk only
 /backups/
+
+# files kept by the local media stand-in (design section 14a)
+/.local-blob/

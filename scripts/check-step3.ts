@@ -1256,6 +1256,36 @@ async function assertDirectUploads(editorCookie: string, managerCookie: string) 
     const managerSave = await officePost("/api/office/tours", managerForm, managerCookie);
     if (managerSave.status !== 403 || !(await mediaFileExists(kept))) throw new Error(`A Manager's tour save naming an upload returned ${managerSave.status}, or the file was removed.`);
 
+    // T-56: the extension must fit the kind. A fresh upload-<suffix>.pdf holding JPEG bytes, named as
+    // a gallery photo, and a fresh upload-<suffix>.jpg holding PDF bytes, named as a tour PDF, are
+    // refused and deleted.
+    const pdfNamedPhoto = await direct(jpegBytes(2048), "pdf", "pdf", "application/pdf");
+    const pdfNamedSave = await officePost("/api/office/photos", galleryForm({ alt: "T-51 check photo", category: "private", src: "", photoUploaded: pdfNamedPhoto }), editorCookie);
+    if (pdfNamedSave.status !== 400 || pdfNamedSave.body.error !== notInStore || (await mediaFileExists(pdfNamedPhoto))) {
+      throw new Error(`A gallery save naming a fresh .pdf upload with JPEG bytes returned ${pdfNamedSave.status} (${pdfNamedSave.body.error ?? ""}), or the file was kept.`);
+    }
+    if ((await photoCount()) !== before) throw new Error("A gallery save naming a .pdf upload added a photo.");
+    const jpgNamedPdf = await direct(new TextEncoder().encode("%PDF-1.7\nT-56 PDF named .jpg"), "jpg", "image", "image/jpeg");
+    const jpgNamedForm = tourForm(tour);
+    jpgNamedForm.set("pdfFileUploaded", jpgNamedPdf);
+    const jpgNamedSave = await officePost("/api/office/tours", jpgNamedForm, editorCookie);
+    const [unchanged] = await db.select({ pdf: tours.pdf }).from(tours).where(eq(tours.id, tour.id)).limit(1);
+    if (jpgNamedSave.status !== 400 || jpgNamedSave.body.error !== notInStore || (await mediaFileExists(jpgNamedPdf)) || unchanged?.pdf !== tour.pdf) {
+      throw new Error(`A tour save naming a fresh .jpg upload with PDF bytes as its PDF returned ${jpgNamedSave.status} (${jpgNamedSave.body.error ?? ""}), or the file was kept.`);
+    }
+
+    // The stand-in refuses what Vercel refuses: a photo over 5 MB, and a type the permission does not allow.
+    const refusedUpload = async (bytes: Uint8Array, extension: string, kind: string, contentType: string) => {
+      try {
+        await direct(bytes, extension, kind, contentType);
+        return false;
+      } catch {
+        return true;
+      }
+    };
+    if (!(await refusedUpload(jpegBytes(6 * 1024 * 1024), "jpg", "image", "image/jpeg"))) throw new Error("A 6 MB photo upload was not refused.");
+    if (!(await refusedUpload(jpegBytes(1024), "jpg", "image", "image/gif"))) throw new Error("A GIF upload under a photo permission was not refused.");
+
     // A 4.8 MB JPEG and a 9 MB PDF save through the direct upload.
     const bigPhoto = await direct(jpegBytes(Math.round(4.8 * 1024 * 1024)), "jpg", "image", "image/jpeg");
     const photoSave = await officePost("/api/office/photos", galleryForm({ alt: "T-51 check photo", category: "private", src: "", photoUploaded: bigPhoto }), editorCookie);
@@ -2073,7 +2103,64 @@ function assertBookNowOpensOnClick() {
   }
 }
 
+// T-56 (design section 14a): the check runs only against the local media stand-in, never a Vercel
+// store. It stops before its first request otherwise, and prints the store id, never the token.
+function assertLocalStandIn() {
+  const apiUrl = process.env.VERCEL_BLOB_API_URL?.trim() ?? "";
+  let local = false;
+  try {
+    const host = new URL(apiUrl).hostname;
+    local = host === "localhost" || host === "127.0.0.1";
+  } catch {
+    local = false;
+  }
+  const storeId = (process.env.MEDIA_READ_WRITE_TOKEN ?? "").split("_")[3] ?? "";
+  const backupToken = Boolean(process.env.BLOB_READ_WRITE_TOKEN?.trim());
+  if (!local || storeId !== "localtest" || backupToken) {
+    console.error(`Media store id: ${storeId || "(none)"}. VERCEL_BLOB_API_URL: ${apiUrl || "(not set)"}.${backupToken ? " BLOB_READ_WRITE_TOKEN is set." : ""}`);
+    throw new Error("check-step3 runs only against the local media stand-in. See design section 14a.");
+  }
+}
+
+// Every file in the stand-in that was not there when the check started is one the check uploaded,
+// through the site or directly. They are all removed at the end, and on Ctrl+C.
+async function storedNames() {
+  const names = new Set<string>();
+  let cursor: string | undefined;
+  do {
+    const page = await list({ token: process.env.MEDIA_READ_WRITE_TOKEN, cursor });
+    for (const blob of page.blobs) names.add(blob.pathname);
+    cursor = page.cursor;
+  } while (cursor);
+  return names;
+}
+
+async function removeUploadsSince(before: Set<string>) {
+  const added = [...(await storedNames())].filter((name) => !before.has(name));
+  if (added.length) await del(added, { token: process.env.MEDIA_READ_WRITE_TOKEN });
+}
+
 async function main() {
+  assertLocalStandIn();
+  let storedAtStart: Set<string>;
+  try {
+    storedAtStart = await storedNames();
+  } catch {
+    throw new Error("The local media stand-in did not answer. Start it with npm run blob:local.");
+  }
+  process.once("SIGINT", () => {
+    removeUploadsSince(storedAtStart)
+      .catch(() => console.error("Some uploaded files could not be removed from .local-blob/."))
+      .finally(() => process.exit(130));
+  });
+  try {
+    await checkSteps();
+  } finally {
+    await removeUploadsSince(storedAtStart);
+  }
+}
+
+async function checkSteps() {
   // The checks' own office saves write activity rows. They are removed at the end, with the other
   // test data, so a run leaves the activity record as it found it.
   const [activityStart] = await db.select({ id: max(activity.id) }).from(activity);

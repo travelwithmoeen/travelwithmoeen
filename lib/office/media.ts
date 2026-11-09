@@ -154,17 +154,44 @@ const NOT_IN_STORE = "That file is not in the office media store. Choose it agai
 const FRESH_UPLOAD_NAME = /^media\/upload-[A-Za-z0-9]+\.(jpg|png|webp|pdf)$/;
 const FRESH_UPLOAD_MINUTES = 15;
 
+// T-56 (design section 14a): a local run stores office files in the stand-in at http://localhost:3100.
+// Its origin is accepted only when VERCEL_BLOB_API_URL points at localhost or 127.0.0.1, so a deployed
+// site, where it is never set, accepts only https:// addresses.
+function localStandInOrigin() {
+  const configured = process.env.VERCEL_BLOB_API_URL?.trim();
+  if (!configured) return null;
+  try {
+    const url = new URL(configured);
+    return url.hostname === "localhost" || url.hostname === "127.0.0.1" ? url.origin : null;
+  } catch {
+    return null;
+  }
+}
+
+function isStoreAddress(url: string) {
+  if (url.startsWith("https://")) return true;
+  const local = localStandInOrigin();
+  if (!local) return false;
+  try {
+    return new URL(url).origin === local;
+  } catch {
+    return false;
+  }
+}
+
 // A save that names an uploaded file checks it before the record changes: it is in this store under
 // media/, it is under the size limit, and its first bytes are the kind it claims. The role is checked
 // first, so a role that may not save never touches a stored file. Only a fresh direct upload is
 // accepted: one with the upload name, stored in the last 15 minutes. Any other file, which a record
 // may still use, is refused and never deleted, by this check or by the save's stored list. A fresh
-// upload that fails is the uploader's own, so it is deleted.
+// upload that fails is the uploader's own, so it is deleted. That includes a fresh upload whose
+// extension does not fit the kind, such as upload-<suffix>.pdf named as a gallery photo (T-56).
 export async function checkUploadedFile(actor: SessionUser, value: string, kind: UploadKind): Promise<string | ActionResult> {
   if (!canEditContent(actor.role)) return forbidden(kind === "pdf" ? "You cannot edit a tour." : "You cannot edit a photo.");
   const url = value.trim();
   const path = officeMediaPath(url);
-  if (!path || !url.startsWith("https://") || !FRESH_UPLOAD_NAME.test(path)) return { ok: false, error: NOT_IN_STORE };
+  const name = path ? FRESH_UPLOAD_NAME.exec(path) : null;
+  if (!path || !name || !isStoreAddress(url)) return { ok: false, error: NOT_IN_STORE };
   const token = mediaToken();
   let stored: Awaited<ReturnType<typeof head>>;
   try {
@@ -177,7 +204,9 @@ export async function checkUploadedFile(actor: SessionUser, value: string, kind:
   if (Date.now() - stored.uploadedAt.getTime() > FRESH_UPLOAD_MINUTES * 60 * 1000) return { ok: false, error: NOT_IN_STORE };
   const rules = UPLOAD_RULES[kind];
   let refusal = "";
-  if (stored.size > rules.maxBytes) {
+  if (!rules.extensions.includes(name[1])) {
+    refusal = NOT_IN_STORE;
+  } else if (stored.size > rules.maxBytes) {
     refusal = kind === "image" ? "The file is larger than 5 MB." : "The file is larger than 10 MB.";
   } else {
     let bytes = Buffer.alloc(0);
