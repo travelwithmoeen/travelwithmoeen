@@ -179,6 +179,14 @@ The rules are requirements section 8d and design section 14. Build T-51 after T-
 |---|---|---|---|
 | T-51 | Upload office files straight to the media store. Add `POST /api/office/uploads` with `handleUpload` from `@vercel/blob/client`, with the role check and the type, size, and path rules in `lib/office/media.ts`. Upload each chosen file from the office screens with `upload()` when Save is pressed, and send the stored URL in the save. Check each uploaded file in the save, from its bytes, before the record changes, and delete a file that fails. Add the route to requirements section 13. | BR-101 to BR-104, BR-59, BR-75, BR-76, BR-79 | On the preview site, a 4.8 MB gallery photo and a 9 MB tour PDF save and show. The `check-step3` cases in design section 14 pass: no session gets 401 and a Manager gets 403 from the token route, a bad path or type is refused, a URL from another store or outside `media/` is refused, and a file whose bytes are not its type is refused and deleted. A refused save deletes the file it uploaded. A small upload through the old file field still works. `npm run check:step3` passes. |
 
+## Test storage, 10 November 2026
+
+The rules are design section 14a. Vercel suspended all four TWM Blob stores on 5 November 2026 for going over the Hobby plan limits, and local test runs used the preview media store. Switching `.env` to the Softbuilds test store needs no code, so T-51 is checked and merged on the test store first. Build T-56 after T-51 is merged and before T-55, in its own pull request, into the fork `main`. It does not wait for Moeen. No migration.
+
+| ID | Task | Covers | Done when |
+|---|---|---|---|
+| T-56 | Keep testing off the TWM stores. In `scripts/check-step3.ts`, stop before the first request when `MEDIA_READ_WRITE_TOKEN` or `BLOB_READ_WRITE_TOKEN` names one of the four TWM stores, run the 4.8 MB and 9 MB upload cases only with `CHECK_LARGE_UPLOADS=1` and small files otherwise, and delete every uploaded file in a `finally`. Add the comment to `.env.example`. | Design section 14a, BR-101 to BR-104 | With `MEDIA_READ_WRITE_TOKEN` set to a TWM preview media token, `npm run check:step3` stops before any request with the guard message and prints the store id, not the token. With the test store, it passes and prints that the large cases were skipped. With `CHECK_LARGE_UPLOADS=1`, the 4.8 MB and 9 MB cases run and pass. After a run that is stopped partway, and after a full run, the test store has no files the check uploaded. |
+
 ## Progress feedback, 3 November 2026
 
 The rules are requirements section 8c and design section 13. Build T-50 after T-51 is merged, because its upload progress is built on the direct upload, in its own pull request, into the fork `main`. It does not wait for Moeen. No migration.
@@ -189,7 +197,7 @@ The rules are requirements section 8c and design section 13. Build T-50 after T-
 
 ## Costing desk answers, 4 November 2026
 
-Moeen's team answered rows S-10 to S-12 on 4 November 2026. The rules are BR-41, BR-84, and BR-27 in the requirements and the starting quote rules in design section 5. Build T-55 after T-51 and before T-50, in its own pull request, into the fork `main`. No migration. After T-55 is on the preview site, the v1.2 rates and rule values are loaded there as a separate data step, which Moeen's team agreed to on the same day.
+Moeen's team answered rows S-10 to S-12 on 4 November 2026. The rules are BR-41, BR-84, and BR-27 in the requirements and the starting quote rules in design section 5. T-55 can be built while T-51 waits, and its pull request is opened after T-51 and T-56 are merged, before T-50, in its own pull request, into the fork `main`. No migration. After T-55 is on the preview site, the v1.2 rates and rule values are loaded there as a separate data step, which Moeen's team agreed to on the same day.
 
 | ID | Task | Covers | Done when |
 |---|---|---|---|
