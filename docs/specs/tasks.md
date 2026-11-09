@@ -179,6 +179,14 @@ The rules are requirements section 8d and design section 14. Build T-51 after T-
 |---|---|---|---|
 | T-51 | Upload office files straight to the media store. Add `POST /api/office/uploads` with `handleUpload` from `@vercel/blob/client`, with the role check and the type, size, and path rules in `lib/office/media.ts`. Upload each chosen file from the office screens with `upload()` when Save is pressed, and send the stored URL in the save. Check each uploaded file in the save, from its bytes, before the record changes, and delete a file that fails. Add the route to requirements section 13. | BR-101 to BR-104, BR-59, BR-75, BR-76, BR-79 | On the preview site, a 4.8 MB gallery photo and a 9 MB tour PDF save and show. The `check-step3` cases in design section 14 pass: no session gets 401 and a Manager gets 403 from the token route, a bad path or type is refused, a URL from another store or outside `media/` is refused, and a file whose bytes are not its type is refused and deleted. A refused save deletes the file it uploaded. A small upload through the old file field still works. `npm run check:step3` passes. |
 
+## Local media stand-in, 10 November 2026
+
+The rules are design section 14a. Vercel suspended all four TWM Blob stores on 5 November 2026 for going over the Hobby plan limits, and local test runs used the preview media store. Testing uses only TWM resources or the developer's own machine, and a new store on the TWM account would stop with the others, so local runs use a local stand-in. T-51 cannot be checked until the stand-in exists, so build T-56 on the T-51 branch, in its own pull request, into the fork `main`. Both are checked together on the stand-in, then T-51 is merged and T-56 right after it, before T-55. It does not wait for Moeen. No migration.
+
+| ID | Task | Covers | Done when |
+|---|---|---|---|
+| T-56 | Test locally against a stand-in for the Blob service. Add `scripts/blob-stand-in.ts` and `npm run blob:local`, keeping files in `.local-blob/`, with the same refusals as Vercel for a client token upload. Set the local values in `.env.example`. Let `checkUploadedFile` accept the stand-in's origin only when `VERCEL_BLOB_API_URL` is a localhost address. In `scripts/check-step3.ts`, stop unless the media settings point at the stand-in, and delete every uploaded file in a `finally`. | Design section 14a, BR-101 to BR-104 | With the stand-in running and the `.env.example` values, `npm run check:step3` passes, including the 4.8 MB JPEG and 9 MB PDF cases, with no request to Vercel. With a Vercel media token or no `VERCEL_BLOB_API_URL`, it stops before any request with the guard message and prints the store id, not the token. In Chrome on a local run, a 4.8 MB gallery photo and a 9 MB tour PDF save and show from the stand-in. A 6 MB photo is refused by the stand-in. With `VERCEL_BLOB_API_URL` unset, a save naming an `http://localhost:3100` address is refused. After a run that is stopped partway, and after a full run, `.local-blob/` has no files the check uploaded. |
+
 ## Progress feedback, 3 November 2026
 
 The rules are requirements section 8c and design section 13. Build T-50 after T-51 is merged, because its upload progress is built on the direct upload, in its own pull request, into the fork `main`. It does not wait for Moeen. No migration.
@@ -189,7 +197,7 @@ The rules are requirements section 8c and design section 13. Build T-50 after T-
 
 ## Costing desk answers, 4 November 2026
 
-Moeen's team answered rows S-10 to S-12 on 4 November 2026. The rules are BR-41, BR-84, and BR-27 in the requirements and the starting quote rules in design section 5. Build T-55 after T-51 and before T-50, in its own pull request, into the fork `main`. No migration. After T-55 is on the preview site, the v1.2 rates and rule values are loaded there as a separate data step, which Moeen's team agreed to on the same day.
+Moeen's team answered rows S-10 to S-12 on 4 November 2026. The rules are BR-41, BR-84, and BR-27 in the requirements and the starting quote rules in design section 5. T-55 can be built while T-51 waits, and its pull request is opened after T-51 and T-56 are merged, before T-50, in its own pull request, into the fork `main`. No migration. After T-55 is on the preview site, the v1.2 rates and rule values are loaded there as a separate data step, which Moeen's team agreed to on the same day.
 
 | ID | Task | Covers | Done when |
 |---|---|---|---|
