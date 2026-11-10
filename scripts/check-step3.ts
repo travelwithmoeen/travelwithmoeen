@@ -14,6 +14,8 @@ import { authenticate } from "../lib/auth/authenticate";
 import { createUserAs, removeUserAs } from "../lib/office/users";
 import { officeMediaPath } from "../lib/office/media";
 import { BACKUP_TABLES, readBackupFile } from "../lib/office/backup";
+import { buildQuote, type QuoteInput } from "../lib/quote";
+import { loadCatalog } from "../lib/rates";
 import { GUEST_EMAIL_LIMIT, GUEST_MESSAGE_LIMIT, GUEST_NAME_LIMIT, GUEST_PHONE_LIMIT } from "../lib/requests";
 
 const EDITOR_EMAIL = "editor-step3-requests@travelwithmoeen.test";
@@ -851,6 +853,7 @@ async function assertOfficeRequests(savedIds: number[]) {
     await assertProfitMargin(editorCookie, managerCookie);
     await assertQuoteEditsThroughRoutes(managerCookie);
     await assertPricingRules(editorCookie, managerCookie);
+    await assertDeskPricing(managerCookie);
     await assertBadRecordIds(editorCookie, managerCookie, ownerCookie, saved.body.id);
     await assertTourDeleteNotFound(editorCookie, managerCookie);
     await assertNulText(editorCookie);
@@ -948,7 +951,7 @@ type QuoteReply = {
   subtotal?: number;
   profit?: number;
   averageNightly?: number;
-  lines?: { label: string; amount: number }[];
+  lines?: { label: string; amount: number; working?: string }[];
   nights?: { night: number; rate: number }[];
   days?: { day: number; rent: number; fuel: number; toll: number; cleared: boolean }[];
 };
@@ -1591,6 +1594,95 @@ async function assertPricingRules(editorCookie: string, managerCookie: string) {
   const names = BACKUP_TABLES.map(([name]) => name);
   if (names.indexOf("pricing_rules") < 0 || names.indexOf("meal_rates") < 0 || names.indexOf("meal_rates") > names.indexOf("activity") || names.indexOf("pricing_rules") > names.indexOf("activity")) {
     throw new Error("pricing_rules and meal_rates are not in BACKUP_TABLES before activity.");
+  }
+}
+
+// T-55 (BR-41, BR-84, BR-27, sign-off rows S-10 to S-12): the sticker is per vehicle, only the rooms
+// with a third guest use the 3-share rate, and jeeps count adults and children, not infants. The
+// amounts come from the stored rates, so the cases hold when the v1.2 rates are loaded.
+async function assertDeskPricing(managerCookie: string) {
+  const catalog = await loadCatalog();
+  const road: QuoteInput = {
+    place: "Skardu Valley",
+    startCity: "Islamabad",
+    mode: "road",
+    days: 5,
+    adults: 2,
+    children: 0,
+    lapInfants: 0,
+    seatInfants: 0,
+    grade: "Deluxe",
+    vehicle: "Gli Car",
+    guide: false,
+    meals: false,
+    seasonPercent: 20,
+  };
+  const hotel = catalog.hotels.find((row) => row.place === "Skardu Valley" && row.startCity === "Islamabad" && row.grade === "Deluxe" && row.offered);
+  if (!hotel || hotel.triple === hotel.twin) throw new Error("The T-55 check needs a Skardu Deluxe hotel rate with different twin and 3-share rates.");
+  const priced = (input: QuoteInput) => {
+    const quote = buildQuote(input, catalog);
+    if (!quote.ok) throw new Error(`A T-55 quote could not be priced: ${quote.error}`);
+    return quote;
+  };
+  const hotelLine = (input: QuoteInput) => {
+    const line = priced(input).lines.find((row) => row.label === "Hotel");
+    if (!line) throw new Error("A T-55 quote has no hotel line.");
+    return line;
+  };
+  const nights = road.days - 1;
+  const twin = hotel.twin.toLocaleString("en-US");
+  const triple = hotel.triple.toLocaleString("en-US");
+
+  // 5 adults in 2 rooms: 1 room at 3-share and 1 at twin, and the working shows both.
+  const five = hotelLine({ ...road, adults: 5, roomCount: 2 });
+  if (five.amount !== (hotel.triple + hotel.twin) * nights || five.working !== `1 room × ${triple} 3-share + 1 room × ${twin} twin × ${nights} nights`) {
+    throw new Error(`5 adults in 2 rooms priced the hotel at ${five.amount} (${five.working ?? ""}).`);
+  }
+  // 6 adults in 2 rooms: both at 3-share. 4 adults in 2 rooms: all twin.
+  const six = hotelLine({ ...road, adults: 6, roomCount: 2 });
+  if (six.amount !== hotel.triple * 2 * nights || six.working !== `2 rooms × ${triple} 3-share × ${nights} nights`) {
+    throw new Error(`6 adults in 2 rooms priced the hotel at ${six.amount} (${six.working ?? ""}).`);
+  }
+  const four = hotelLine({ ...road, adults: 4, roomCount: 2 });
+  if (four.amount !== hotel.twin * 2 * nights || four.working !== `2 rooms × ${twin} twin × ${nights} nights`) {
+    throw new Error(`4 adults in 2 rooms priced the hotel at ${four.amount} (${four.working ?? ""}).`);
+  }
+  // Lap infants take no room: 4 adults and 2 lap infants in 2 rooms is still all twin.
+  if (hotelLine({ ...road, adults: 4, lapInfants: 2, roomCount: 2 }).amount !== four.amount) throw new Error("Lap infants changed the hotel rooms.");
+  // A typed share prices every room at that rate, and a typed night rate is for every room that night.
+  if (hotelLine({ ...road, adults: 5, roomCount: 2, share: "twin" }).amount !== hotel.twin * 2 * nights) throw new Error("A typed twin share did not price every room at twin.");
+  if (hotelLine({ ...road, adults: 4, roomCount: 2, share: "triple" }).amount !== hotel.triple * 2 * nights) throw new Error("A typed triple share did not price every room at 3-share.");
+  const editedNight = hotelLine({ ...road, adults: 5, roomCount: 2, nightEdits: [{ night: 2, rate: 30000 }] });
+  if (editedNight.amount !== (hotel.triple + hotel.twin) * (nights - 1) + 30000 * 2) {
+    throw new Error(`A typed night rate with 5 adults in 2 rooms priced the hotel at ${editedNight.amount}.`);
+  }
+  const mixedNight = priced({ ...road, adults: 5, roomCount: 2 }).nights[0];
+  if (mixedNight?.rate !== Math.round((hotel.triple + hotel.twin) / 2)) throw new Error("A night with both kinds of room did not keep the average room rate.");
+
+  // An air quote with 2 vehicles and 3 rooms has a sticker of 2 vehicles, not 3 rooms.
+  const air = priced({ ...road, mode: "air", days: 4, adults: 6, vehicle: "Prado", vehicleCount: 2, roomCount: 3 });
+  const sticker = air.lines.find((line) => line.label === "Sticker");
+  if (sticker?.amount !== catalog.air.sticker * 2) throw new Error(`The sticker for 2 vehicles and 3 rooms is ${sticker?.amount ?? 0}, not ${catalog.air.sticker * 2}.`);
+  if (catalog.air.sticker === 500 && sticker.amount !== 1000) throw new Error("The sticker for 2 vehicles is not 1,000.");
+
+  // 6 adults and 2 infants on a jeep line add 1 jeep, and 7 adults add 2.
+  const jeepPlace = "Kalash Valley & Chitral";
+  const jeep = catalog.jeeps.find((line) => line.live && line.place === jeepPlace && (line.mode === "both" || line.mode === "road"));
+  if (!jeep || jeep.people !== 6) throw new Error("The T-55 check needs a live Kalash jeep line for 6 people.");
+  const jeepAmount = (input: QuoteInput) => priced(input).lines.find((line) => line.label === jeep.label)?.amount;
+  const jeepTrip = { ...road, place: jeepPlace, days: 6, vehicleCount: 2 };
+  const withInfants = jeepAmount({ ...jeepTrip, adults: 6, lapInfants: 1, seatInfants: 1 });
+  if (withInfants !== jeep.amount) throw new Error(`6 adults and 2 infants added ${withInfants ?? 0}, not 1 jeep.`);
+  const seven = jeepAmount({ ...jeepTrip, adults: 7 });
+  if (seven !== jeep.amount * 2) throw new Error(`7 adults added ${seven ?? 0}, not 2 jeeps.`);
+
+  // The Skardu test is still 140,400, and the office quote route shows the hotel working.
+  const skardu = priced(road);
+  if (skardu.subtotal !== 117000 || skardu.total !== 140400) throw new Error(`The Skardu quote is ${skardu.total}, not 140,400.`);
+  const office = await quoteReply({ seasonPercent: 20 }, managerCookie);
+  const officeHotel = office.lines?.find((line) => line.label === "Hotel");
+  if (office.total !== 140400 || officeHotel?.working !== `1 room × ${twin} twin × ${nights} nights`) {
+    throw new Error(`The office Skardu quote is ${office.total ?? 0} with hotel working "${officeHotel?.working ?? ""}".`);
   }
 }
 
