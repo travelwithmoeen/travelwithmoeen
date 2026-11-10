@@ -51,7 +51,7 @@ type QuoteResult = {
   profit: number;
   total: number;
   seasonPercent: number;
-  lines: { label: string; amount: number }[];
+  lines: { label: string; amount: number; working?: string }[];
   nights: { night: number; rate: number; hotelName: string }[];
   days: { day: number; vehicle: string; rent: number; fuel: number; toll: number; cleared: boolean }[];
   averageNightly: number;
@@ -410,7 +410,10 @@ export function QuoteScreen({ places, vehicles, margin }: QuoteScreenProps) {
                 <dl className="sum">
                   {result.lines.map((line, index) => (
                     <Fragment key={`${index}-${line.label}`}>
-                      <dt>{line.label}</dt>
+                      <dt>
+                        {line.label}
+                        {line.working ? <span className="help sum-working">{line.working}</span> : null}
+                      </dt>
                       <dd>{rupees(line.amount)}</dd>
                     </Fragment>
                   ))}

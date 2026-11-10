@@ -139,7 +139,9 @@ export type QuoteInput = {
 
 export type NightLine = { night: number; rate: number; hotelName: string };
 export type DayLine = { day: number; vehicle: string; rent: number; fuel: number; toll: number; cleared: boolean };
-export type QuoteLine = { label: string; amount: number };
+// working is the sum behind the amount, shown next to it on the office quote (BR-93). From T-55 only
+// the hotel line has it. A guest response never has lines (BR-50).
+export type QuoteLine = { label: string; amount: number; working?: string };
 
 export type QuoteSuccess = {
   ok: true;
@@ -177,6 +179,14 @@ function isGrade(value: string): value is HotelGrade {
 
 function whole(value: number) {
   return Number.isInteger(value) && value >= 0;
+}
+
+function rupeeText(value: number) {
+  return value.toLocaleString("en-US");
+}
+
+function countText(count: number, one: string, many: string) {
+  return `${count} ${count === 1 ? one : many}`;
 }
 
 export function buildQuote(input: QuoteInput, catalog: RateCatalog): QuoteResult {
@@ -270,24 +280,40 @@ export function buildQuote(input: QuoteInput, catalog: RateCatalog): QuoteResult
   if (!Number.isInteger(rooms) || rooms < 1) {
     return { ok: false, error: "Enter the rooms." };
   }
-  const nightly =
-    input.share === "triple"
-      ? hotel.triple
-      : input.share === "twin"
-        ? hotel.twin
-        : seats / rooms > TWIN_ROOM_PEOPLE
-          ? hotel.triple
-          : hotel.twin;
+  // T-55 (BR-84, sign-off row S-11): only the rooms that hold a third guest use the 3-share rate, and
+  // the other rooms use the twin rate. The 3-share rooms are seats minus twice the rooms, from 0 up to
+  // the rooms, so 5 seats in 2 rooms is 1 at 3-share and 1 at twin. A typed share prices every room.
+  const tripleRooms =
+    input.share === "triple" ? rooms : input.share === "twin" ? 0 : Math.min(Math.max(seats - TWIN_ROOM_PEOPLE * rooms, 0), rooms);
+  const twinRooms = rooms - tripleRooms;
+  const nightCost = hotel.triple * tripleRooms + hotel.twin * twinRooms;
   const nightsCount = input.days > 1 ? input.days - 1 : 0;
   const nights: NightLine[] = [];
+  let hotelCost = 0;
   for (let night = 1; night <= nightsCount; night += 1) {
     const edit = input.nightEdits?.find((row) => row.night === night);
+    // A typed night rate is for every room that night. A night with both kinds of room keeps the
+    // average room rate on its line, and the hotel cost uses the exact sum.
+    hotelCost += edit ? edit.rate * rooms : nightCost;
     nights.push({
       night,
-      rate: edit ? edit.rate : nightly,
+      rate: edit ? edit.rate : tripleRooms === 0 ? hotel.twin : twinRooms === 0 ? hotel.triple : Math.round(nightCost / rooms),
       hotelName: edit?.hotelName?.trim() || hotel.hotelName,
     });
   }
+  const editedNights = nights.filter((night) => input.nightEdits?.some((row) => row.night === night.night));
+  const plainNights = nightsCount - editedNights.length;
+  const hotelParts: string[] = [];
+  if (plainNights > 0) {
+    const roomParts: string[] = [];
+    if (tripleRooms > 0) roomParts.push(`${countText(tripleRooms, "room", "rooms")} × ${rupeeText(hotel.triple)} 3-share`);
+    if (twinRooms > 0) roomParts.push(`${countText(twinRooms, "room", "rooms")} × ${rupeeText(hotel.twin)} twin`);
+    hotelParts.push(`${roomParts.join(" + ")} × ${countText(plainNights, "night", "nights")}`);
+  }
+  for (const night of editedNights) {
+    hotelParts.push(`${countText(rooms, "room", "rooms")} × ${rupeeText(night.rate)} on night ${night.night}`);
+  }
+  const hotelWorking = hotelParts.length > 0 ? hotelParts.join(" + ") : "No hotel nights";
 
   const vehicleCount = input.vehicleCount ?? Math.ceil(seats / vehicleSeats);
   if (!Number.isInteger(vehicleCount) || vehicleCount < 1) {
@@ -339,7 +365,6 @@ export function buildQuote(input: QuoteInput, catalog: RateCatalog): QuoteResult
   const activeDays = days.filter((day) => !day.cleared);
   const dailyVehicle = activeDays.reduce((sum, day) => sum + day.rent + day.fuel, 0);
   const vehicleCost = vehicleCount * (dailyVehicle + (activeDays.length > 0 ? toll : 0));
-  const hotelCost = nights.reduce((sum, night) => sum + night.rate, 0) * rooms;
   const guideCost = input.guide ? rules.guidePerDay * input.days : 0;
   // Infants are not counted for meals or breakfast.
   const mealPeople = input.adults + input.children;
@@ -370,21 +395,23 @@ export function buildQuote(input: QuoteInput, catalog: RateCatalog): QuoteResult
     welcomeCost = catalog.air.welcomePack * mealPeople;
     entryCost = catalog.air.entry * mealPeople;
     infantExtraCost = catalog.air.infantExtra * (input.lapInfants + input.seatInfants);
-    stickerCost = catalog.air.sticker * rooms;
+    // T-55 (BR-41, sign-off row S-10): the sticker is per vehicle, not per room.
+    stickerCost = catalog.air.sticker * vehicleCount;
   }
 
-  const travelers = input.adults + input.children + input.lapInfants + input.seatInfants;
+  // T-55 (BR-27, sign-off row S-12): a jeep for each group of the line's people, counting adults and
+  // children. Infants are not counted.
   const jeepCosts = catalog.jeeps
     .filter((line) => line.live && line.place === place && (line.mode === "both" || line.mode === input.mode))
     .map((line) => ({
       label: line.label,
-      amount: line.amount * Math.ceil(travelers / line.people),
+      amount: line.amount * Math.ceil(mealPeople / line.people),
     }));
   const extras = (input.paidExtras ?? []).filter((extra) => extra.name.trim() && extra.amount > 0);
 
   const lines: QuoteLine[] = [
     { label: "Vehicle", amount: vehicleCost },
-    { label: "Hotel", amount: hotelCost },
+    { label: "Hotel", amount: hotelCost, working: hotelWorking },
   ];
   if (guideCost > 0) lines.push({ label: "Guide", amount: guideCost });
   if (dinnerCost > 0) lines.push({ label: "Dinner", amount: dinnerCost });
