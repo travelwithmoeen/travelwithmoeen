@@ -2,7 +2,8 @@ import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "fs
 import os from "os";
 import path from "path";
 import { spawn } from "child_process";
-import { head, list } from "@vercel/blob";
+import { del, head, list, put } from "@vercel/blob";
+import { upload } from "@vercel/blob/client";
 import { count, eq, gt, like, max } from "drizzle-orm";
 import postgres from "postgres";
 import { drizzle } from "drizzle-orm/postgres-js";
@@ -13,6 +14,8 @@ import { authenticate } from "../lib/auth/authenticate";
 import { createUserAs, removeUserAs } from "../lib/office/users";
 import { officeMediaPath } from "../lib/office/media";
 import { BACKUP_TABLES, readBackupFile } from "../lib/office/backup";
+import { buildQuote, type QuoteInput } from "../lib/quote";
+import { loadCatalog } from "../lib/rates";
 import { GUEST_EMAIL_LIMIT, GUEST_MESSAGE_LIMIT, GUEST_NAME_LIMIT, GUEST_PHONE_LIMIT } from "../lib/requests";
 
 const EDITOR_EMAIL = "editor-step3-requests@travelwithmoeen.test";
@@ -850,9 +853,11 @@ async function assertOfficeRequests(savedIds: number[]) {
     await assertProfitMargin(editorCookie, managerCookie);
     await assertQuoteEditsThroughRoutes(managerCookie);
     await assertPricingRules(editorCookie, managerCookie);
+    await assertDeskPricing(managerCookie);
     await assertBadRecordIds(editorCookie, managerCookie, ownerCookie, saved.body.id);
     await assertTourDeleteNotFound(editorCookie, managerCookie);
     await assertNulText(editorCookie);
+    await assertDirectUploads(editorCookie, managerCookie);
     await assertRefusedSaveCleanup(editorCookie);
     await assertEmptyOfficeSave(editorCookie);
     await assertOldFileRemovedAfterSave(editorCookie);
@@ -946,7 +951,7 @@ type QuoteReply = {
   subtotal?: number;
   profit?: number;
   averageNightly?: number;
-  lines?: { label: string; amount: number }[];
+  lines?: { label: string; amount: number; working?: string }[];
   nights?: { night: number; rate: number }[];
   days?: { day: number; rent: number; fuel: number; toll: number; cleared: boolean }[];
 };
@@ -1142,6 +1147,171 @@ async function assertBadRecordIds(editorCookie: string, managerCookie: string, o
     await db.delete(reviews).where(eq(reviews.name, "T-52 check review"));
     await db.delete(slides).where(eq(slides.title, "T-52 check slide"));
     await db.delete(users).where(eq(users.email, "t52-check@travelwithmoeen.test"));
+  }
+}
+
+// T-51 (design section 14): an office file goes from the browser straight to the media store with
+// a short-lived permission, and the save checks the stored file before the record changes.
+async function assertDirectUploads(editorCookie: string, managerCookie: string) {
+  const uploadsPath = `${siteBase()}/api/office/uploads`;
+  const permission = async (pathname: string, kind: string, cookie: string) => {
+    const response = await fetch(uploadsPath, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...(cookie ? { cookie } : {}) },
+      body: JSON.stringify({ type: "blob.generate-client-token", payload: { pathname, clientPayload: JSON.stringify({ kind }), multipart: false } }),
+    });
+    return { status: response.status, body: (await response.json().catch(() => ({}))) as { clientToken?: string; error?: string } };
+  };
+  const sent: string[] = [];
+  const direct = async (bytes: Uint8Array, extension: string, kind: string, contentType: string) => {
+    const stored = await upload(`media/upload.${extension}`, new Blob([new Uint8Array(bytes)], { type: contentType }), {
+      access: "public",
+      handleUploadUrl: uploadsPath,
+      clientPayload: JSON.stringify({ kind }),
+      contentType,
+      headers: { cookie: editorCookie },
+    });
+    sent.push(stored.url);
+    return stored.url;
+  };
+  const jpegBytes = (size: number) => {
+    const bytes = new Uint8Array(size);
+    bytes.set([0xff, 0xd8, 0xff, 0xe0]);
+    return bytes;
+  };
+  const photoCount = async () => (await db.select({ total: count() }).from(photos))[0]?.total ?? 0;
+  const [shipped] = await db.select({ image: tours.image }).from(tours).where(like(tours.image, "/images/%")).limit(1);
+  let tourId = "";
+  try {
+    // The permission route: no session 401, a Manager 403, an Editor a permission.
+    const signedOut = await permission("media/upload.jpg", "image", "");
+    const manager = await permission("media/upload.jpg", "image", managerCookie);
+    const editor = await permission("media/upload.jpg", "image", editorCookie);
+    if (signedOut.status !== 401 || manager.status !== 403 || editor.status !== 200 || !editor.body.clientToken) {
+      throw new Error(`The upload permission answered ${signedOut.status} signed out, ${manager.status} for a Manager, and ${editor.status} for an Editor.`);
+    }
+    // A path with a folder or another name, a kind that is not image or pdf, and an SVG are refused.
+    for (const [pathname, kind] of [
+      ["media/folder/upload.jpg", "image"],
+      ["media/../upload.jpg", "image"],
+      ["images/upload.jpg", "image"],
+      ["media/photo.jpg", "image"],
+      ["media/upload.jpg", "video"],
+      ["media/upload.svg", "image"],
+      ["media/upload.pdf", "image"],
+    ]) {
+      const refused = await permission(pathname, kind, editorCookie);
+      if (refused.status !== 400 || refused.body.clientToken) throw new Error(`An upload permission for ${pathname} as ${kind} returned ${refused.status}, not 400.`);
+    }
+
+    // A save naming a file that is not in this store, or not under media/, is refused and changes nothing.
+    const store = new URL(await direct(jpegBytes(1024), "jpg", "image", "image/jpeg"));
+    const before = await photoCount();
+    for (const url of [
+      `https://example.com${store.pathname}`,
+      `https://another-store.public.blob.vercel-storage.com${store.pathname}`,
+      `${store.origin}/images/no-such-photo.jpg`,
+      `${store.origin}/media/no-such-photo.jpg`,
+    ]) {
+      const reply = await officePost("/api/office/photos", galleryForm({ alt: "T-51 check photo", category: "private", src: "", photoUploaded: url }), editorCookie);
+      if (reply.status !== 400) throw new Error(`A gallery save naming ${url} returned ${reply.status}, not 400.`);
+    }
+    if ((await photoCount()) !== before) throw new Error("A save naming a file outside this store added a photo.");
+    if (!(await mediaFileExists(store.href))) throw new Error("A refused save naming another file removed this store's file.");
+
+    // Only a fresh direct upload is accepted. An existing office file, named the older way, is refused
+    // and kept, whatever else is wrong with the save, so a record that still uses it keeps it.
+    const olderName = (extension: string) => `media/${Date.now()}-${Math.random().toString(16).slice(2, 18)}.${extension}`;
+    const olderPhoto = (await put(olderName("jpg"), Buffer.from(JPEG), { access: "public", token: process.env.MEDIA_READ_WRITE_TOKEN, contentType: "image/jpeg", addRandomSuffix: false })).url;
+    const olderPdf = (await put(olderName("pdf"), Buffer.from("%PDF-1.7\nT-51 older PDF"), { access: "public", token: process.env.MEDIA_READ_WRITE_TOKEN, contentType: "application/pdf", addRandomSuffix: false })).url;
+    sent.push(olderPhoto, olderPdf);
+    const notInStore = "That file is not in the office media store. Choose it again.";
+    const emptyDescription = await officePost("/api/office/photos", galleryForm({ alt: "", category: "private", src: "", photoUploaded: olderPhoto }), editorCookie);
+    if (emptyDescription.status !== 400 || emptyDescription.body.error !== notInStore || !(await mediaFileExists(olderPhoto))) {
+      throw new Error(`A gallery save with an empty description, naming an existing office photo, returned ${emptyDescription.status} (${emptyDescription.body.error ?? ""}), or the photo was deleted.`);
+    }
+    const pdfAsPhoto = await officePost("/api/office/photos", galleryForm({ alt: "T-51 check photo", category: "private", src: "", photoUploaded: olderPdf }), editorCookie);
+    if (pdfAsPhoto.status !== 400 || pdfAsPhoto.body.error !== notInStore || !(await mediaFileExists(olderPdf))) {
+      throw new Error(`A gallery save naming an existing tour PDF returned ${pdfAsPhoto.status} (${pdfAsPhoto.body.error ?? ""}), or the PDF was deleted.`);
+    }
+    if ((await photoCount()) !== before) throw new Error("A save naming an existing office file added a photo.");
+
+    // A file uploaded as image/jpeg whose bytes are not an image is refused and deleted.
+    const fake = await direct(new TextEncoder().encode('<svg xmlns="http://www.w3.org/2000/svg"></svg>'), "jpg", "image", "image/jpeg");
+    const fakeSave = await officePost("/api/office/photos", galleryForm({ alt: "T-51 check photo", category: "private", src: "", photoUploaded: fake }), editorCookie);
+    if (fakeSave.status !== 400 || fakeSave.body.error !== "Use a JPEG, PNG, or WebP file.") throw new Error(`A fake JPEG upload returned ${fakeSave.status} (${fakeSave.body.error ?? ""}).`);
+    if (await mediaFileExists(fake)) throw new Error("A fake JPEG upload was not deleted.");
+
+    // A refused save deletes the file it uploaded, as T-40 does.
+    const unsaved = await direct(jpegBytes(2048), "jpg", "image", "image/jpeg");
+    const noAlt = await officePost("/api/office/photos", galleryForm({ alt: "", category: "private", src: "", photoUploaded: unsaved }), editorCookie);
+    if (noAlt.status !== 400 || (await mediaFileExists(unsaved))) throw new Error("A refused save kept the file it uploaded.");
+
+    // A Manager naming an uploaded file is refused with 403, and the file is not touched.
+    const kept = await direct(jpegBytes(2048), "jpg", "image", "image/jpeg");
+    if (!shipped) throw new Error("No tour has a shipped photo for the T-51 tour.");
+    const tourAdded = await officePost("/api/office/tours/create", (() => { const form = newTourForm("T-51 Valley", {}); form.set("image", shipped.image); return form; })(), editorCookie);
+    const [tour] = await db.select().from(tours).where(eq(tours.location, "T-51 Valley")).limit(1);
+    if (tourAdded.status !== 200 || !tour) throw new Error("The T-51 tour was not added.");
+    tourId = tour.id;
+    const managerForm = tourForm(tour);
+    managerForm.set("photoUploaded", kept);
+    const managerSave = await officePost("/api/office/tours", managerForm, managerCookie);
+    if (managerSave.status !== 403 || !(await mediaFileExists(kept))) throw new Error(`A Manager's tour save naming an upload returned ${managerSave.status}, or the file was removed.`);
+
+    // T-56: the extension must fit the kind. A fresh upload-<suffix>.pdf holding JPEG bytes, named as
+    // a gallery photo, and a fresh upload-<suffix>.jpg holding PDF bytes, named as a tour PDF, are
+    // refused and deleted.
+    const pdfNamedPhoto = await direct(jpegBytes(2048), "pdf", "pdf", "application/pdf");
+    const pdfNamedSave = await officePost("/api/office/photos", galleryForm({ alt: "T-51 check photo", category: "private", src: "", photoUploaded: pdfNamedPhoto }), editorCookie);
+    if (pdfNamedSave.status !== 400 || pdfNamedSave.body.error !== notInStore || (await mediaFileExists(pdfNamedPhoto))) {
+      throw new Error(`A gallery save naming a fresh .pdf upload with JPEG bytes returned ${pdfNamedSave.status} (${pdfNamedSave.body.error ?? ""}), or the file was kept.`);
+    }
+    if ((await photoCount()) !== before) throw new Error("A gallery save naming a .pdf upload added a photo.");
+    const jpgNamedPdf = await direct(new TextEncoder().encode("%PDF-1.7\nT-56 PDF named .jpg"), "jpg", "image", "image/jpeg");
+    const jpgNamedForm = tourForm(tour);
+    jpgNamedForm.set("pdfFileUploaded", jpgNamedPdf);
+    const jpgNamedSave = await officePost("/api/office/tours", jpgNamedForm, editorCookie);
+    const [unchanged] = await db.select({ pdf: tours.pdf }).from(tours).where(eq(tours.id, tour.id)).limit(1);
+    if (jpgNamedSave.status !== 400 || jpgNamedSave.body.error !== notInStore || (await mediaFileExists(jpgNamedPdf)) || unchanged?.pdf !== tour.pdf) {
+      throw new Error(`A tour save naming a fresh .jpg upload with PDF bytes as its PDF returned ${jpgNamedSave.status} (${jpgNamedSave.body.error ?? ""}), or the file was kept.`);
+    }
+
+    // The stand-in refuses what Vercel refuses: a photo over 5 MB, and a type the permission does not allow.
+    const refusedUpload = async (bytes: Uint8Array, extension: string, kind: string, contentType: string) => {
+      try {
+        await direct(bytes, extension, kind, contentType);
+        return false;
+      } catch {
+        return true;
+      }
+    };
+    if (!(await refusedUpload(jpegBytes(6 * 1024 * 1024), "jpg", "image", "image/jpeg"))) throw new Error("A 6 MB photo upload was not refused.");
+    if (!(await refusedUpload(jpegBytes(1024), "jpg", "image", "image/gif"))) throw new Error("A GIF upload under a photo permission was not refused.");
+
+    // A 4.8 MB JPEG and a 9 MB PDF save through the direct upload.
+    const bigPhoto = await direct(jpegBytes(Math.round(4.8 * 1024 * 1024)), "jpg", "image", "image/jpeg");
+    const photoSave = await officePost("/api/office/photos", galleryForm({ alt: "T-51 check photo", category: "private", src: "", photoUploaded: bigPhoto }), editorCookie);
+    const [bigRow] = await db.select().from(photos).where(eq(photos.alt, "T-51 check photo")).limit(1);
+    if (photoSave.status !== 200 || bigRow?.src !== bigPhoto) throw new Error(`A 4.8 MB photo did not save through the direct upload (${photoSave.status} ${photoSave.body.error ?? ""}).`);
+    const pdfBytes = new Uint8Array(9 * 1024 * 1024);
+    pdfBytes.set(new TextEncoder().encode("%PDF-1.7\n"));
+    const bigPdf = await direct(pdfBytes, "pdf", "pdf", "application/pdf");
+    const pdfForm = tourForm(tour);
+    pdfForm.set("pdfFileUploaded", bigPdf);
+    const pdfSave = await officePost("/api/office/tours", pdfForm, editorCookie);
+    const [withPdf] = await db.select({ pdf: tours.pdf }).from(tours).where(eq(tours.id, tour.id)).limit(1);
+    if (pdfSave.status !== 200 || withPdf?.pdf !== bigPdf) throw new Error(`A 9 MB PDF did not save through the direct upload (${pdfSave.status} ${pdfSave.body.error ?? ""}).`);
+  } finally {
+    const [row] = await db.select({ id: photos.id }).from(photos).where(eq(photos.alt, "T-51 check photo")).limit(1);
+    if (row) await officePost("/api/office/photos/delete", galleryForm({ id: String(row.id) }), editorCookie);
+    if (tourId) await officePost("/api/office/tours/delete", formOf({ id: tourId }), editorCookie);
+    await db.delete(photos).where(eq(photos.alt, "T-51 check photo"));
+    await db.delete(tours).where(eq(tours.location, "T-51 Valley"));
+    // Every file this check uploaded is removed, used or not.
+    const left = [];
+    for (const url of sent) if (await mediaFileExists(url)) left.push(url);
+    if (left.length) await del(left, { token: process.env.MEDIA_READ_WRITE_TOKEN });
   }
 }
 
@@ -1424,6 +1594,95 @@ async function assertPricingRules(editorCookie: string, managerCookie: string) {
   const names = BACKUP_TABLES.map(([name]) => name);
   if (names.indexOf("pricing_rules") < 0 || names.indexOf("meal_rates") < 0 || names.indexOf("meal_rates") > names.indexOf("activity") || names.indexOf("pricing_rules") > names.indexOf("activity")) {
     throw new Error("pricing_rules and meal_rates are not in BACKUP_TABLES before activity.");
+  }
+}
+
+// T-55 (BR-41, BR-84, BR-27, sign-off rows S-10 to S-12): the sticker is per vehicle, only the rooms
+// with a third guest use the 3-share rate, and jeeps count adults and children, not infants. The
+// amounts come from the stored rates, so the cases hold when the v1.2 rates are loaded.
+async function assertDeskPricing(managerCookie: string) {
+  const catalog = await loadCatalog();
+  const road: QuoteInput = {
+    place: "Skardu Valley",
+    startCity: "Islamabad",
+    mode: "road",
+    days: 5,
+    adults: 2,
+    children: 0,
+    lapInfants: 0,
+    seatInfants: 0,
+    grade: "Deluxe",
+    vehicle: "Gli Car",
+    guide: false,
+    meals: false,
+    seasonPercent: 20,
+  };
+  const hotel = catalog.hotels.find((row) => row.place === "Skardu Valley" && row.startCity === "Islamabad" && row.grade === "Deluxe" && row.offered);
+  if (!hotel || hotel.triple === hotel.twin) throw new Error("The T-55 check needs a Skardu Deluxe hotel rate with different twin and 3-share rates.");
+  const priced = (input: QuoteInput) => {
+    const quote = buildQuote(input, catalog);
+    if (!quote.ok) throw new Error(`A T-55 quote could not be priced: ${quote.error}`);
+    return quote;
+  };
+  const hotelLine = (input: QuoteInput) => {
+    const line = priced(input).lines.find((row) => row.label === "Hotel");
+    if (!line) throw new Error("A T-55 quote has no hotel line.");
+    return line;
+  };
+  const nights = road.days - 1;
+  const twin = hotel.twin.toLocaleString("en-US");
+  const triple = hotel.triple.toLocaleString("en-US");
+
+  // 5 adults in 2 rooms: 1 room at 3-share and 1 at twin, and the working shows both.
+  const five = hotelLine({ ...road, adults: 5, roomCount: 2 });
+  if (five.amount !== (hotel.triple + hotel.twin) * nights || five.working !== `1 room × ${triple} 3-share + 1 room × ${twin} twin × ${nights} nights`) {
+    throw new Error(`5 adults in 2 rooms priced the hotel at ${five.amount} (${five.working ?? ""}).`);
+  }
+  // 6 adults in 2 rooms: both at 3-share. 4 adults in 2 rooms: all twin.
+  const six = hotelLine({ ...road, adults: 6, roomCount: 2 });
+  if (six.amount !== hotel.triple * 2 * nights || six.working !== `2 rooms × ${triple} 3-share × ${nights} nights`) {
+    throw new Error(`6 adults in 2 rooms priced the hotel at ${six.amount} (${six.working ?? ""}).`);
+  }
+  const four = hotelLine({ ...road, adults: 4, roomCount: 2 });
+  if (four.amount !== hotel.twin * 2 * nights || four.working !== `2 rooms × ${twin} twin × ${nights} nights`) {
+    throw new Error(`4 adults in 2 rooms priced the hotel at ${four.amount} (${four.working ?? ""}).`);
+  }
+  // Lap infants take no room: 4 adults and 2 lap infants in 2 rooms is still all twin.
+  if (hotelLine({ ...road, adults: 4, lapInfants: 2, roomCount: 2 }).amount !== four.amount) throw new Error("Lap infants changed the hotel rooms.");
+  // A typed share prices every room at that rate, and a typed night rate is for every room that night.
+  if (hotelLine({ ...road, adults: 5, roomCount: 2, share: "twin" }).amount !== hotel.twin * 2 * nights) throw new Error("A typed twin share did not price every room at twin.");
+  if (hotelLine({ ...road, adults: 4, roomCount: 2, share: "triple" }).amount !== hotel.triple * 2 * nights) throw new Error("A typed triple share did not price every room at 3-share.");
+  const editedNight = hotelLine({ ...road, adults: 5, roomCount: 2, nightEdits: [{ night: 2, rate: 30000 }] });
+  if (editedNight.amount !== (hotel.triple + hotel.twin) * (nights - 1) + 30000 * 2) {
+    throw new Error(`A typed night rate with 5 adults in 2 rooms priced the hotel at ${editedNight.amount}.`);
+  }
+  const mixedNight = priced({ ...road, adults: 5, roomCount: 2 }).nights[0];
+  if (mixedNight?.rate !== Math.round((hotel.triple + hotel.twin) / 2)) throw new Error("A night with both kinds of room did not keep the average room rate.");
+
+  // An air quote with 2 vehicles and 3 rooms has a sticker of 2 vehicles, not 3 rooms.
+  const air = priced({ ...road, mode: "air", days: 4, adults: 6, vehicle: "Prado", vehicleCount: 2, roomCount: 3 });
+  const sticker = air.lines.find((line) => line.label === "Sticker");
+  if (sticker?.amount !== catalog.air.sticker * 2) throw new Error(`The sticker for 2 vehicles and 3 rooms is ${sticker?.amount ?? 0}, not ${catalog.air.sticker * 2}.`);
+  if (catalog.air.sticker === 500 && sticker.amount !== 1000) throw new Error("The sticker for 2 vehicles is not 1,000.");
+
+  // 6 adults and 2 infants on a jeep line add 1 jeep, and 7 adults add 2.
+  const jeepPlace = "Kalash Valley & Chitral";
+  const jeep = catalog.jeeps.find((line) => line.live && line.place === jeepPlace && (line.mode === "both" || line.mode === "road"));
+  if (!jeep || jeep.people !== 6) throw new Error("The T-55 check needs a live Kalash jeep line for 6 people.");
+  const jeepAmount = (input: QuoteInput) => priced(input).lines.find((line) => line.label === jeep.label)?.amount;
+  const jeepTrip = { ...road, place: jeepPlace, days: 6, vehicleCount: 2 };
+  const withInfants = jeepAmount({ ...jeepTrip, adults: 6, lapInfants: 1, seatInfants: 1 });
+  if (withInfants !== jeep.amount) throw new Error(`6 adults and 2 infants added ${withInfants ?? 0}, not 1 jeep.`);
+  const seven = jeepAmount({ ...jeepTrip, adults: 7 });
+  if (seven !== jeep.amount * 2) throw new Error(`7 adults added ${seven ?? 0}, not 2 jeeps.`);
+
+  // The Skardu test is still 140,400, and the office quote route shows the hotel working.
+  const skardu = priced(road);
+  if (skardu.subtotal !== 117000 || skardu.total !== 140400) throw new Error(`The Skardu quote is ${skardu.total}, not 140,400.`);
+  const office = await quoteReply({ seasonPercent: 20 }, managerCookie);
+  const officeHotel = office.lines?.find((line) => line.label === "Hotel");
+  if (office.total !== 140400 || officeHotel?.working !== `1 room × ${twin} twin × ${nights} nights`) {
+    throw new Error(`The office Skardu quote is ${office.total ?? 0} with hotel working "${officeHotel?.working ?? ""}".`);
   }
 }
 
@@ -1936,7 +2195,64 @@ function assertBookNowOpensOnClick() {
   }
 }
 
+// T-56 (design section 14a): the check runs only against the local media stand-in, never a Vercel
+// store. It stops before its first request otherwise, and prints the store id, never the token.
+function assertLocalStandIn() {
+  const apiUrl = process.env.VERCEL_BLOB_API_URL?.trim() ?? "";
+  let local = false;
+  try {
+    const host = new URL(apiUrl).hostname;
+    local = host === "localhost" || host === "127.0.0.1";
+  } catch {
+    local = false;
+  }
+  const storeId = (process.env.MEDIA_READ_WRITE_TOKEN ?? "").split("_")[3] ?? "";
+  const backupToken = Boolean(process.env.BLOB_READ_WRITE_TOKEN?.trim());
+  if (!local || storeId !== "localtest" || backupToken) {
+    console.error(`Media store id: ${storeId || "(none)"}. VERCEL_BLOB_API_URL: ${apiUrl || "(not set)"}.${backupToken ? " BLOB_READ_WRITE_TOKEN is set." : ""}`);
+    throw new Error("check-step3 runs only against the local media stand-in. See design section 14a.");
+  }
+}
+
+// Every file in the stand-in that was not there when the check started is one the check uploaded,
+// through the site or directly. They are all removed at the end, and on Ctrl+C.
+async function storedNames() {
+  const names = new Set<string>();
+  let cursor: string | undefined;
+  do {
+    const page = await list({ token: process.env.MEDIA_READ_WRITE_TOKEN, cursor });
+    for (const blob of page.blobs) names.add(blob.pathname);
+    cursor = page.cursor;
+  } while (cursor);
+  return names;
+}
+
+async function removeUploadsSince(before: Set<string>) {
+  const added = [...(await storedNames())].filter((name) => !before.has(name));
+  if (added.length) await del(added, { token: process.env.MEDIA_READ_WRITE_TOKEN });
+}
+
 async function main() {
+  assertLocalStandIn();
+  let storedAtStart: Set<string>;
+  try {
+    storedAtStart = await storedNames();
+  } catch {
+    throw new Error("The local media stand-in did not answer. Start it with npm run blob:local.");
+  }
+  process.once("SIGINT", () => {
+    removeUploadsSince(storedAtStart)
+      .catch(() => console.error("Some uploaded files could not be removed from .local-blob/."))
+      .finally(() => process.exit(130));
+  });
+  try {
+    await checkSteps();
+  } finally {
+    await removeUploadsSince(storedAtStart);
+  }
+}
+
+async function checkSteps() {
   // The checks' own office saves write activity rows. They are removed at the end, with the other
   // test data, so a run leaves the activity record as it found it.
   const [activityStart] = await db.select({ id: max(activity.id) }).from(activity);

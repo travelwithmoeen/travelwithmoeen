@@ -22,6 +22,7 @@
     "check:step1": "node --env-file=.env --import tsx scripts/check-step1.ts",
     "check:step2": "node --env-file=.env --import tsx scripts/check-step2.ts",
     "check:step3": "node --env-file=.env --import tsx scripts/check-step3.ts",
+    "blob:local": "node --env-file=.env --import tsx scripts/blob-stand-in.ts",
     "check:sca": "npm audit --omit=dev --audit-level=high"
   },
   "dependencies": {
