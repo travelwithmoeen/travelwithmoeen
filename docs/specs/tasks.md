@@ -101,6 +101,7 @@ This table is the record of what Moeen decided. The numbers match the WhatsApp m
 | S-13 | Package prices are rounded up to the next 10,000, never down. Per person is the rounded total divided by adults and children. | Asked 14 November 2026 | | T-61 |
 | S-14 | The hotel names for each grade come from the hotel name on each place's rate row, joined in the order the trip reaches the places. | Asked 14 November 2026 | | T-61 |
 | S-15 | Each night is priced at its overnight place's rate, such as 3 nights in Skardu and 1 in Khaplu, as the desk does. | Asked 14 November 2026 | | T-61 |
+| S-16 | Roles and access. The Owner can change what Manager and Editor may do and add new roles, such as a sales agent who only makes quotes. Creating logins, roles, backups, and deleting price rows and guest requests stay with the Owner. | Approved 15 November 2026 | As written. | T-63 |
 
 Status is Asked, Approved, or Changed. A look change Moeen asks for on one screen goes into that screen's task. A change to a price rule goes into the requirement first.
 
@@ -232,6 +233,22 @@ The rules are requirements section 8f and design section 16. Build T-62 from the
 | ID | Task | Covers | Done when |
 |---|---|---|---|
 | T-62 | Office Settings page. Add the `users.name` column and its migration, `POST /api/office/settings/profile` with `lib/office/settings.ts`, the page `app/office/(panel)/settings/page.tsx` with Profile, Appearance, and Density, and a Settings item in the account menu. Show the name in the account menu, the Users list, and "Saved by". Add `components/office/appearance.ts`, read both cookies in `app/office/layout.tsx` and set `data-theme`, `data-density`, and `data-office-root` on the `.office` root, port the dark, System, high contrast, and compact rules into `components/office/meadow.css`, and make the account menu fit the side menu, as design section 16 says. Do not add Keyboard shortcuts, the Office guide and design link, or a password change. | BR-117 to BR-122 | On a local run, as the Owner, a Manager, and an Editor: Settings opens from the account menu. Each person can set, change, and clear their own name, and the account menu, the Users list, and "Saved by" show it, with the email when it is cleared. A 61-character name returns 400 and changes nothing. A save with no session returns 401. A save that sends another user's id still changes only the signed-in person's name. A name change writes one activity row. These cases are in `scripts/check-step3.ts`. Each of System, Light, Dark, and High contrast, and Comfortable and Compact, applies at once, and the pressed button shows it. After a reload, a sign-out, and on the sign-in page, the choice is kept. With Dark chosen, a reload shows no light flash, checked with the browser's slow network setting. System follows the device setting, checked by switching the emulated colour scheme. With no cookie, the office looks as it does today. A screenshot of the dashboard, a rate table, the request inbox, an editor drawer, the Settings page, and the sign-in page in each look is in the pull request, and no part keeps a light background on Dark. In Compact, a rate table shows more rows than in Comfortable. The open account menu is not cut off and makes no scrollbar in the side menu, with the side menu open and collapsed, and on a phone. Every text and control meets WCAG 2.2 AA contrast in each look. The public home and a tour page look the same as before. `npm run check:step3` passes. |
+
+## Roles and access, 15 November 2026
+
+The rules are requirements section 8g and design section 17. Build T-63 from the fork `main`, in its own pull request, only when sign-off row S-16 is Approved or Changed, and after T-62. One migration. No Blob operation. The four security tests run again before it is accepted.
+
+| ID | Task | Covers | Done when |
+|---|---|---|---|
+| T-63 | Roles and access. Add the permission list to `lib/auth/permissions.ts`, the `roles` and `role_permissions` tables and `users.role_id` with one migration that keeps every login's access as it is, permission checks read on each request, `POST /api/office/roles`, the Roles page under Admin, and every role in the Users role picker, as design section 17 says. Add the route to requirements section 13. | BR-123 to BR-130, BR-01 to BR-08 | After the migration on a local copy of the preview backup, every login has the same access as before, and the existing `check:step3` role cases pass unchanged. The Owner can add a role, tick permissions, rename it, give it to a login, and delete it when empty. The new `check:step3` cases in design section 17 pass. A person whose role loses a permission is refused on their next save with 403 and no longer sees that menu item, without signing out. The Owner role cannot be changed, and no Owner-only action can be given to another role. Each role change writes an activity row only the Owner can read. A screenshot of the Roles page and of Users with a custom role is in the pull request. The four security tests in requirements section 12 pass. `npm run check:step3` passes. |
+
+## Office logo, 15 November 2026
+
+The rule is requirements section 8h and design section 18. Build T-64 from the fork `main`, in its own small pull request, at any time. It does not wait for Moeen. No migration, and no Blob operation.
+
+| ID | Task | Covers | Done when |
+|---|---|---|---|
+| T-64 | Office logo. Replace the "TM" badge in the side menu and on the sign-in page with the round logo from `public/images/logo/logo.png` through `next/image`, as design section 18 says. | BR-131 | On a local run, screenshots of the side menu open and collapsed, on a computer and a phone, and of the sign-in page show the round logo, sharp, not stretched, and not cut off. The side menu and the sign-in page keep their layout. A screen reader reads "Travel With Moeen" once, not the picture. The public home looks the same as before. `npm run check:step3` passes. |
 
 Sprint 3, Phase 2. Starts after T-37 is accepted.
 
