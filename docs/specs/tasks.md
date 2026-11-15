@@ -98,7 +98,7 @@ This table is the record of what Moeen decided. The numbers match the WhatsApp m
 | S-10 | Air sticker. The v1.2 costing desk charges it per vehicle. This spec charges it per room, which is BR-41. | Changed 4 November 2026 | Rs 500 per vehicle. BR-41 is changed. | T-55 |
 | S-11 | Rooms with a third guest. The v1.2 desk charges the 3-share rate only on the rooms that hold a third person, and the twin rate on the rest. This spec charges the 3-share rate on every room when there are more than two people per room. For 5 people in 2 rooms, the desk charges 1 triple and 1 twin, and this spec charges 2 at the 3-share rate. | Changed 4 November 2026 | The 3-share rate only on the room that has a third guest, and the twin rate on the others. BR-84 is changed. | T-55 |
 | S-12 | Jeep count. The v1.2 desk counts adults and children for each jeep. This spec counts every traveler, infants included, which is BR-27. | Changed 4 November 2026 | Adults and children, 1 jeep for every 6. BR-27 is changed. | T-55 |
-| S-16 | Roles and access. The Owner can change what Manager and Editor may do and add new roles, such as a sales agent who only makes quotes. Creating logins, roles, backups, and deleting price rows and guest requests stay with the Owner. | Asked 15 November 2026 | | T-63 |
+| S-16 | Roles and access. The Owner can change what Manager and Editor may do and add new roles, such as a sales agent who only makes quotes. Creating logins, roles, backups, and deleting price rows and guest requests stay with the Owner. | Approved 15 November 2026 | As written. | T-63 |
 
 Status is Asked, Approved, or Changed. A look change Moeen asks for on one screen goes into that screen's task. A change to a price rule goes into the requirement first.
 
