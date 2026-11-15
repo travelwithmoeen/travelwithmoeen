@@ -206,6 +206,11 @@
   height: 3px;
   z-index: 2147483000;
   pointer-events: none;
+  /* In the office this element also has the .office class, for the --primary colour. The .office
+     rule gives it min-height: 100vh and the page background, which would cover the whole window
+     with a blank page. These undo that; this file is not layered, so it wins. */
+  min-height: 0;
+  background: none;
 }
 .nav-progress {
   height: 3px;
