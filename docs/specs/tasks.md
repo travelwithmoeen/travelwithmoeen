@@ -228,6 +228,14 @@ The rules are requirements section 8g and design section 17. Build T-63 from the
 |---|---|---|---|
 | T-63 | Roles and access. Add the permission list to `lib/auth/permissions.ts`, the `roles` and `role_permissions` tables and `users.role_id` with one migration that keeps every login's access as it is, permission checks read on each request, `POST /api/office/roles`, the Roles page under Admin, and every role in the Users role picker, as design section 17 says. Add the route to requirements section 13. | BR-123 to BR-130, BR-01 to BR-08 | After the migration on a local copy of the preview backup, every login has the same access as before, and the existing `check:step3` role cases pass unchanged. The Owner can add a role, tick permissions, rename it, give it to a login, and delete it when empty. The new `check:step3` cases in design section 17 pass. A person whose role loses a permission is refused on their next save with 403 and no longer sees that menu item, without signing out. The Owner role cannot be changed, and no Owner-only action can be given to another role. Each role change writes an activity row only the Owner can read. A screenshot of the Roles page and of Users with a custom role is in the pull request. The four security tests in requirements section 12 pass. `npm run check:step3` passes. |
 
+## Office logo, 15 November 2026
+
+The rule is requirements section 8h and design section 18. Build T-64 from the fork `main`, in its own small pull request, at any time. It does not wait for Moeen. No migration, and no Blob operation.
+
+| ID | Task | Covers | Done when |
+|---|---|---|---|
+| T-64 | Office logo. Replace the "TM" badge in the side menu and on the sign-in page with the round logo from `public/images/logo/logo.png` through `next/image`, as design section 18 says. | BR-131 | On a local run, screenshots of the side menu open and collapsed, on a computer and a phone, and of the sign-in page show the round logo, sharp, not stretched, and not cut off. The side menu and the sign-in page keep their layout. A screen reader reads "Travel With Moeen" once, not the picture. The public home looks the same as before. `npm run check:step3` passes. |
+
 Sprint 3, Phase 2. Starts after T-37 is accepted.
 
 - Hours on each stop

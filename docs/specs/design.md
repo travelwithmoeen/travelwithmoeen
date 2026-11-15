@@ -503,3 +503,12 @@ The rules are BR-123 to BR-130. Read section 11 of the requirements and `lib/aut
 - **Page.** `app/office/(panel)/roles/page.tsx`: a table of roles, permissions as ticks, and the login count. Add role, Rename, Change permissions, and Delete open in the existing drawer and dialog components. The Users screen role picker lists every role.
 - **Activity.** Area `roles`, Owner only, with the role name and the keys added and removed.
 - **Tests.** `scripts/check-step3.ts` today tests the three roles. Keep those cases. Add: a custom role with only `rates.edit` can save a rate and is refused a tour save and a request status change; removing `content.edit` from Editor refuses that Editor's next tour save with 403 without a sign-out; a Manager and an Editor get 403 from `POST /api/office/roles`; an unknown key, a change to Owner, and a delete of a role with logins are each refused; deleting an empty role works.
+
+## 18. Office logo, T-64
+
+The rule is BR-131.
+
+- **File.** Use `public/images/logo/logo.png`, the 200 by 200 file the public `Navbar` already uses. Do not add a copy, and do not upload it to the media store.
+- **Markup.** In `components/office/OfficeFrame.tsx` and `app/office/login/page.tsx`, replace the `TM` text in `<span className="logo">` with `next/image`, `src="/images/logo/logo.png"`, `alt=""`, because the name "Travel With Moeen" is next to it as text, and the `width` and `height` of the shown size. Add `priority` on the sign-in page only. Read the Next 16 guide for `Image` in `node_modules/next/dist/docs/` first.
+- **Size.** 32 pixels in the side menu, open and collapsed, and 64 pixels on the sign-in page, each a circle: `border-radius: 50%` and `object-fit: cover` on `.office .logo`, with the letter-badge background, colour, and font removed. Add a `.office .login-brand .logo` size rule for 64 pixels. Keep the `--logo-bg` and `--logo-ink` tokens, because the dark block sets them, but nothing reads them after this.
+- **Not changed.** The public site header and footer, the browser tab icon, and the Meadow prototype.

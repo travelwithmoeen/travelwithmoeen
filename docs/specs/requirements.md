@@ -233,6 +233,14 @@ Today the office has three fixed roles, and what each one may do is written in t
 | BR-129 | A change to a role applies on that person's next page or save, with no sign-out. A person who loses a permission is refused from then on, with the same 403 as today, and the side menu, the New menu, and the dashboard show only what their role allows. |
 | BR-130 | Every role change, add, rename, and delete writes an activity row that only the Owner can read, naming the role and the permissions added and removed. The four security tests in section 12 run again before T-63 is accepted. |
 
+## 8h. Office logo, 15 November 2026
+
+On 15 November 2026 Zeeshan asked for the Travel With Moeen logo in the office. Today the office shows a "TM" letter badge. Task T-64 builds this rule. It does not wait for Moeen.
+
+| ID | Requirement |
+|---|---|
+| BR-131 | The office shows the round Travel With Moeen logo, the same picture as the public site header, in place of the "TM" badge: in the side menu next to "Travel With Moeen, Office", where it is the only mark left when the side menu is collapsed, and above the title on the sign-in page. It is a circle, sharp on a high-density screen, and looks right in every office look. The public site does not change. |
+
 ## 9. Phase 3, after the baseline, office media, and Phase 2
 
 These were asked for on September 29, 2026. They are kept in the plan. They are sprint 4. They are not built in the baseline or in office media. The Meadow file shows them on Trip plans so they can be reviewed. They are not part of the live office until Phase 2 and Phase 3. Phase 2 is accepted before Phase 3 starts. Office media is accepted. The Meadow office, BR-82, is accepted before Phase 2 starts.
