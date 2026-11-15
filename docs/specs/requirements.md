@@ -205,6 +205,17 @@ On 3 November 2026 the team found that an office upload over about 4.5 MB never 
 | BR-103 | A save that names an uploaded file checks that file before the record changes: it is in this environment's media store under `media/`, it is under the size limit, and its first bytes are a JPEG, PNG, or WebP for a picture, or a PDF for a PDF, as BR-59 and BR-76 say. A file that fails is deleted and the save is refused with the reason. |
 | BR-104 | A refused save deletes the files it uploaded, as T-40 does today. A file uploaded for a save that is never sent, because the page was closed, stays in the store until a later cleanup. |
 
+## 8f. Office appearance, 15 November 2026
+
+The Meadow prototype Moeen reviewed has an Appearance choice and a Density choice in the account menu. The T-37 spec left them out, so the live office has one light look. Task T-62 builds these rules. They do not wait for Moeen, and they are not Phase 2.
+
+| ID | Requirement |
+|---|---|
+| BR-117 | The office account menu, at the bottom of the side menu, has an Appearance choice: System, Light, Dark, and High contrast. System follows the light or dark setting of the person's device. Light is today's look and is the choice until the person picks another. |
+| BR-118 | The same menu has a Density choice: Comfortable and Compact. Compact makes buttons, fields, and the gaps between them smaller, so more rows of a rate table or the request inbox fit on the screen. Comfortable is today's size and is the choice until the person picks another. |
+| BR-119 | The choice applies at once, and it is kept in that browser for one year, through a reload, a sign-out, and the sign-in page. It applies to the office only. The public site does not change. An office page opens in the chosen look, with no flash of another look first. |
+| BR-120 | Every look meets the WCAG 2.2 AA contrast the prototype was checked for. High contrast has black text and borders on white and a 3-pixel focus ring. The prototype menu also has Keyboard shortcuts and Office guide and design. They are not part of this: the office has no keyboard shortcuts yet, and the design page is for developers. An Office guide link joins the menu with T-25. |
+
 ## 9. Phase 3, after the baseline, office media, and Phase 2
 
 These were asked for on September 29, 2026. They are kept in the plan. They are sprint 4. They are not built in the baseline or in office media. The Meadow file shows them on Trip plans so they can be reviewed. They are not part of the live office until Phase 2 and Phase 3. Phase 2 is accepted before Phase 3 starts. Office media is accepted. The Meadow office, BR-82, is accepted before Phase 2 starts.

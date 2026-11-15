@@ -307,7 +307,7 @@ Run `node docs/office-design/src/build.mjs` and open `docs/office-design/meadow.
 - Tokens. Copy the custom properties in `base.css` and `meadow.css` into one office stylesheet, such as `components/office/meadow.css`. Scope every rule under one office root class on the office layout, so no token or class reaches a public page. Do not add them to the Tailwind `@theme`, because that is global.
 - Classes. Port the prototype classes the screens use, such as `card`, `btn`, `field`, `tbl`, `badge`, `alert`, `stat`, `seg-status`, and `drawer`, into the same scoped stylesheet. Wrap them in small components under `components/office/ui/`. A screen uses those components, not new one-off styles.
 - Icons. The prototype draws each icon from one path list, `IC` in `core.js`. Port it as one `Icon` component with the same paths.
-- High contrast. The prototype has a `data-theme="hc"` mode. It is not part of T-37.
+- Appearance and density. The prototype has System, Light, Dark, and High contrast, and Comfortable and Compact. They are not part of T-37. T-62 adds them, as section 16 says.
 - Phone. The prototype sidebar becomes a menu on a phone. Keep that, and keep the quote form full width on a phone.
 
 ### Shell and roles
@@ -468,3 +468,19 @@ The TWM team moved to the Vercel Pro plan on 13 November 2026 after the Hobby li
 - **Role checks.** The cache holds only the file list. The Owner check in `listBackupsAs` runs on every request, outside the cache.
 - **Downloads.** `readBackupAs` still reads the chosen file each time. A download is rare and is not cached.
 - **Testing.** Local runs use the stand-in in section 14a, never a Vercel store. To see the backup list locally, set `BLOB_READ_WRITE_TOKEN` to the stand-in token for that check only, and leave it empty for `check-step3`, whose guard refuses it.
+
+## 16. Office appearance, T-62
+
+The rules are BR-117 to BR-120. The look values come from the prototype, `docs/office-design/src/base.css` and `meadow.css`. Do not design new colours.
+
+- **Choices.** Add `components/office/appearance.ts` with the two cookie names, `twm_office_theme` and `twm_office_density`, the allowed values, `system`, `light`, `dark`, `hc` and `comfortable`, `compact`, and one function that reads a value and returns the default, `light` or `comfortable`, for a missing or unknown value. Set each cookie as the sidebar cookie is set today: `path=/office`, one year, `samesite=lax`.
+- **No flash.** `app/office/layout.tsx` reads both cookies with `cookies()` from `next/headers` and puts `data-theme` and `data-density` on the `.office` root, so the first paint is already right. For `system` it leaves `data-theme` off. Read the Next 16 guide for `cookies()` in `node_modules/next/dist/docs/` first. The office pages already render on each request, so this changes no caching. Give the root a `data-office-root` attribute too.
+- **Menu.** Add an `AppearanceMenu` component to the account menu in `OfficeFrame`, between the signed-in header and Sign out, as in the prototype: an Appearance heading with four segmented buttons and a Density heading with two, each with `aria-pressed`. A press sets the cookie and changes the attribute on the `[data-office-root]` element at once. Do not select `.office` for this: the page-move bar's root also has that class (T-50).
+- **Styles.** In `components/office/meadow.css`, inside the same layer, scope every prototype rule under `.office` in place of `:root`:
+  - Dark: the `.office[data-theme="dark"]` block is already there. Remove its "Not switched on yet" comment. Add the same values under `@media (prefers-color-scheme: dark) { .office:not([data-theme]) { … } }` for System.
+  - High contrast: the `[data-theme="hc"]` colour block, `--focus-w: 3px`, and the `hc` rules for `.badge`, `.alert`, `.card`, `.drawer`, `.dlg`, `.toast`, `.tab`, and `.seg-btn`.
+  - Compact: the `[data-density="compact"]` block, which sets `--size-md`, `--size-lg`, `--pad`, and `--gap`.
+  - Keep the `forced-colors` rules as they are.
+- **Not changed.** The page-move bar keeps the light primary colour in every look, because its root sits outside the `.office` root. It is visible on dark. The public site, its stylesheet, and the Tailwind `@theme` do not change. Sonner toasts on the public site do not change.
+- **Not ported.** The prototype's Keyboard shortcuts item, its Office guide and design link, and its demo bar.
+- **Testing.** Local run only, no Blob use. Screenshot each office screen in each look, at least the dashboard, a rate table, the request inbox, an editor drawer, and the sign-in page, so a part that keeps a light colour is caught. Text checks alone do not catch a look problem.
