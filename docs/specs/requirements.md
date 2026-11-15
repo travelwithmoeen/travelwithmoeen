@@ -218,6 +218,14 @@ The Meadow prototype Moeen reviewed has an Appearance choice and a Density choic
 | BR-121 | An Appearance or Density choice applies at once, without a Save button, and it is kept in that browser for one year, through a reload, a sign-out, and the sign-in page. It applies to the office only. The public site does not change. An office page opens in the chosen look, with no flash of another look first. |
 | BR-122 | Every look meets the WCAG 2.2 AA contrast the prototype was checked for. High contrast has black text and borders on white and a 3-pixel focus ring. The prototype menu also has Keyboard shortcuts and Office guide and design. They are not part of this: the office has no keyboard shortcuts yet, and the design page is for developers. Changing a password is not part of this either: the Owner still removes the login and creates it again. |
 
+## 8h. Office logo, 15 November 2026
+
+On 15 November 2026 Zeeshan asked for the Travel With Moeen logo in the office. Today the office shows a "TM" letter badge. Task T-64 builds this rule. It does not wait for Moeen.
+
+| ID | Requirement |
+|---|---|
+| BR-131 | The office shows the round Travel With Moeen logo, the same picture as the public site header, in place of the "TM" badge: in the side menu next to "Travel With Moeen, Office", where it is the only mark left when the side menu is collapsed, and above the title on the sign-in page. It is a circle, sharp on a high-density screen, and looks right in every office look. The public site does not change. |
+
 ## 9. Phase 3, after the baseline, office media, and Phase 2
 
 These were asked for on September 29, 2026. They are kept in the plan. They are sprint 4. They are not built in the baseline or in office media. The Meadow file shows them on Trip plans so they can be reviewed. They are not part of the live office until Phase 2 and Phase 3. Phase 2 is accepted before Phase 3 starts. Office media is accepted. The Meadow office, BR-82, is accepted before Phase 2 starts.

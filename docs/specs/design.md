@@ -488,3 +488,12 @@ The rules are BR-117 to BR-122. The look values come from the prototype, `docs/o
 - **Not changed.** The page-move bar keeps the light primary colour in every look, because its root sits outside the `.office` root. It is visible on dark. The public site, its stylesheet, and the Tailwind `@theme` do not change.
 - **Not ported.** The prototype's Keyboard shortcuts item, its Office guide and design link, and its demo bar.
 - **Testing.** Local run only, no Blob use. Screenshot each office screen in each look, at least the dashboard, a rate table, the request inbox, an editor drawer, the Settings page, and the sign-in page, so a part that keeps a light colour is caught. Text checks alone do not catch a look problem.
+
+## 18. Office logo, T-64
+
+The rule is BR-131.
+
+- **File.** Use `public/images/logo/logo.png`, the 200 by 200 file the public `Navbar` already uses. Do not add a copy, and do not upload it to the media store.
+- **Markup.** In `components/office/OfficeFrame.tsx` and `app/office/login/page.tsx`, replace the `TM` text in `<span className="logo">` with `next/image`, `src="/images/logo/logo.png"`, `alt=""`, because the name "Travel With Moeen" is next to it as text, and the `width` and `height` of the shown size. Add `priority` on the sign-in page only. Read the Next 16 guide for `Image` in `node_modules/next/dist/docs/` first.
+- **Size.** 32 pixels in the side menu, open and collapsed, and 64 pixels on the sign-in page, each a circle: `border-radius: 50%` and `object-fit: cover` on `.office .logo`, with the letter-badge background, colour, and font removed. Add a `.office .login-brand .logo` size rule for 64 pixels. Keep the `--logo-bg` and `--logo-ink` tokens, because the dark block sets them, but nothing reads them after this.
+- **Not changed.** The public site header and footer, the browser tab icon, and the Meadow prototype.
