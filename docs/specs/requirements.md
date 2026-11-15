@@ -224,6 +224,19 @@ Moeen's team sent a sample package, "5 Days Autumn Skardu & Khaplu By Air from I
 | BR-115 | Services included and not included are built from the quote: air tickets both ways when tickets are on, the vehicle, fuel and toll, entry tickets on an air trip, the nights at each overnight place, and the breakfasts. Lunch, dinner, and the guide are listed as not included when they are off. Option lines and the fixed "Travel insurance" and "Items of a personal nature" lines follow. |
 | BR-116 | Only the Owner and the Manager can build and download a package, and change day plans, package options, and fixed sections. Each save writes one activity row in area `rates`. The document never shows the net cost, the lines, or the profit. |
 
+## 8f. Office settings page, 15 November 2026
+
+The Meadow prototype Moeen reviewed has an Appearance choice and a Density choice in the account menu. The T-37 spec left them out, so the live office has one light look, and a person is shown only by their email. On 15 November 2026 Zeeshan chose one Settings page for a person's own name and look, in place of more items in the account menu. Task T-62 builds these rules. They do not wait for Moeen, and they are not Phase 2.
+
+| ID | Requirement |
+|---|---|
+| BR-117 | Every signed-in Owner, Manager, and Editor has a Settings page at `/office/settings`, for their own login only. It opens from a Settings item in the account menu, between the signed-in name and Sign out. The page has three parts: Profile, Appearance, and Density. It is not Site details, which edits the public site. |
+| BR-118 | Profile shows the person's name, email, and role. The person can set or change their own name, from 1 to 60 characters, or clear it. The email and the role cannot be changed here: the Owner changes logins under Users. A person cannot change another person's name. |
+| BR-119 | When a person has a name, the office shows it in place of the email in the account menu and its initials, in the Users list next to the email, and in "Saved by" with the email shown when the pointer rests on it. With no name, or for a login that has been removed, the office shows the email as today. |
+| BR-120 | Appearance is System, Light, Dark, or High contrast. System follows the light or dark setting of the person's device. Density is Comfortable or Compact. Compact makes buttons, fields, and the gaps between them smaller, so more rows of a rate table or the request inbox fit on the screen. Light and Comfortable are today's look and stay the choice until the person picks another. |
+| BR-121 | An Appearance or Density choice applies at once, without a Save button, and it is kept in that browser for one year, through a reload, a sign-out, and the sign-in page. It applies to the office only. The public site does not change. An office page opens in the chosen look, with no flash of another look first. |
+| BR-122 | Every look meets the WCAG 2.2 AA contrast the prototype was checked for. High contrast has black text and borders on white and a 3-pixel focus ring. The prototype menu also has Keyboard shortcuts and Office guide and design. They are not part of this: the office has no keyboard shortcuts yet, and the design page is for developers. Changing a password is not part of this either: the Owner still removes the login and creates it again. |
+
 ## 9. Phase 3, after the baseline, office media, and Phase 2
 
 These were asked for on September 29, 2026. They are kept in the plan. They are sprint 4. They are not built in the baseline or in office media. The Meadow file shows them on Trip plans so they can be reviewed. They are not part of the live office until Phase 2 and Phase 3. Phase 2 is accepted before Phase 3 starts. Office media is accepted. The Meadow office, BR-82, is accepted before Phase 2 starts.
@@ -343,6 +356,7 @@ This list is the whole project. A new office route is added to this list in the 
 | Rates, profit margin, vehicles, jeep lines, paid extras, pricing rules, rate places, start cities, and the live price Excel download | Owner or Manager. The writes from T-47 and T-48 go through `POST /api/office/rates`, like the other rate saves. |
 | `POST /api/office/tours/delete` | Owner or Editor. Deletes a tour. A Manager is refused. |
 | Create a login, remove a login, change a role, delete a price row, delete a guest request | Owner only. |
+| `GET /office/settings` and `POST /api/office/settings/profile` | A signed-in Owner, Manager, or Editor. The save changes only the name of the signed-in login, read from the session, never from the request. T-62. |
 | `GET /api/office/requests` | A signed-in Owner, Manager, or Editor. |
 | `GET /api/office/activity` | A signed-in Owner, Manager, or Editor. Returns only rows for areas that role can open, which is BR-86. Read only. |
 | `GET /api/office/rates` | Owner or Manager. |
