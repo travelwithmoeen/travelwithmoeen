@@ -22,6 +22,7 @@ import {
   seasons,
   siteSettings,
   slides,
+  startCities,
   tourDays,
   tourPlaces,
   tours,
@@ -62,6 +63,7 @@ export const BACKUP_TABLES = [
   ["site_settings", siteSettings],
   ["pricing_rules", pricingRules],
   ["meal_rates", mealRates],
+  ["start_cities", startCities],
   ["activity", activity],
 ] as const;
 

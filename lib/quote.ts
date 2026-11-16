@@ -24,13 +24,15 @@ export function readMarginPercent(raw: string): { ok: true; percent: MarginPerce
   return { ok: true, percent };
 }
 
-const GRADES: HotelGrade[] = ["Deluxe", "Premier", "Executive", "Luxury", "Ultra Luxury"];
-const LAHORE_ROAD_PER_DAY = 5000;
+// Every grade a hotel rate row can have. Premier is stored but not offered to guests.
+export const HOTEL_GRADES: readonly HotelGrade[] = ["Deluxe", "Premier", "Executive", "Luxury", "Ultra Luxury"];
 const MAX_DAYS = 60;
 // A twin room holds two. The automatic room count for more than two uses the people-per-room rule.
 const TWIN_ROOM_PEOPLE = 2;
 const TAOBAT_SHEET_PLACE = "Neelum Taobat Arang Kel";
 const TAOBAT_PLACE = "Taobat";
+// Air rate rows are stored with this start city, whichever city the flight leaves from.
+export const AIR_RATE_CITY = "Air";
 
 export type HotelRateRow = {
   place: string;
@@ -54,14 +56,24 @@ export type VehicleRateRow = {
   live: boolean;
 };
 
+// From T-48 the Lahore and Karachi adds are read from the start city (BR-91), not from here.
 export type AirExtraRow = {
   islamabadTicket: number;
-  lahoreAdd: number;
-  karachiAdd: number;
   welcomePack: number;
   entry: number;
   infantExtra: number;
   sticker: number;
+};
+
+// BR-91: where a trip starts. airExtra is added to the Islamabad ticket on an air trip. On a road
+// trip longer than longRouteAfterDays, longRoutePerVehicleDay is added for each later day and vehicle.
+export type StartCityRow = {
+  name: string;
+  road: boolean;
+  air: boolean;
+  airExtra: number;
+  longRouteAfterDays: number | null;
+  longRoutePerVehicleDay: number;
 };
 
 // BR-87: the rules the office changes on the Pricing rules tab, read from the database.
@@ -90,6 +102,7 @@ export type RateCatalog = {
   hotels: HotelRateRow[];
   vehicles: VehicleRateRow[];
   air: AirExtraRow;
+  startCities: StartCityRow[];
   jeeps: JeepLineRow[];
   seasonPercent: MarginPercent;
   // Null until the pricing rules are stored (drizzle/0004_pricing_rules.sql).
@@ -174,7 +187,7 @@ export function vehicleKey(name: string) {
 }
 
 function isGrade(value: string): value is HotelGrade {
-  return GRADES.includes(value as HotelGrade);
+  return HOTEL_GRADES.includes(value as HotelGrade);
 }
 
 function whole(value: number) {
@@ -189,9 +202,24 @@ function countText(count: number, one: string, many: string) {
   return `${count} ${count === 1 ? one : many}`;
 }
 
+// The stored start city with that name, in any case, or undefined.
+export function findStartCity(startCities: StartCityRow[], name: string) {
+  const key = name.trim().toLowerCase();
+  return startCities.find((row) => row.name.trim().toLowerCase() === key);
+}
+
 export function buildQuote(input: QuoteInput, catalog: RateCatalog): QuoteResult {
-  if (input.mode === "road" && input.startCity.trim().toLowerCase() === "karachi") {
-    return { ok: false, error: "A road trip cannot start in Karachi." };
+  // BR-19, BR-20, BR-91: a trip starts only from a start city that starts that kind of trip, so a
+  // road trip from Karachi is refused while Karachi starts air trips only.
+  const start = findStartCity(catalog.startCities, input.startCity);
+  if (!start) {
+    return { ok: false, error: "Choose a start city." };
+  }
+  if (input.mode === "road" && !start.road) {
+    return { ok: false, error: `A road trip cannot start in ${start.name}.` };
+  }
+  if (input.mode === "air" && !start.air) {
+    return { ok: false, error: `An air trip cannot start in ${start.name}.` };
   }
   if (!isGrade(input.grade)) {
     return { ok: false, error: "Choose Deluxe, Executive, Luxury, or Ultra Luxury." };
@@ -219,7 +247,7 @@ export function buildQuote(input: QuoteInput, catalog: RateCatalog): QuoteResult
   }
 
   const place = storedPlace(input.place);
-  const city = input.mode === "air" ? "Air" : input.startCity.trim();
+  const city = input.mode === "air" ? AIR_RATE_CITY : start.name;
   const hotel = catalog.hotels.find(
     (row) => row.place === place && row.startCity === city && row.grade === input.grade && row.offered,
   );
@@ -371,10 +399,9 @@ export function buildQuote(input: QuoteInput, catalog: RateCatalog): QuoteResult
   const dinnerCost = input.meals && mealRate ? mealRate.dinner * nightsCount * mealPeople : 0;
   const lunchCost = input.lunch && mealRate ? mealRate.lunch * mealPeople * input.days : 0;
   const breakfastCost = input.mode === "road" && input.days > 1 ? rules.breakfastPerPerson * mealPeople : 0;
-  const lahoreCost =
-    input.mode === "road" && input.startCity.trim().toLowerCase() === "lahore" && input.days > 3
-      ? LAHORE_ROAD_PER_DAY * (input.days - 3) * vehicleCount
-      : 0;
+  // BR-42 and BR-91: the long-route extra, such as Lahore's 5,000 per vehicle for each day after day 3.
+  const longRouteDays = input.mode === "road" && start.longRouteAfterDays !== null ? Math.max(input.days - start.longRouteAfterDays, 0) : 0;
+  const longRouteCost = start.longRoutePerVehicleDay * longRouteDays * vehicleCount;
 
   let ticketCost = 0;
   let welcomeCost = 0;
@@ -382,10 +409,8 @@ export function buildQuote(input: QuoteInput, catalog: RateCatalog): QuoteResult
   let infantExtraCost = 0;
   let stickerCost = 0;
   if (input.mode === "air") {
-    const adultFare =
-      catalog.air.islamabadTicket +
-      (input.startCity.trim().toLowerCase() === "lahore" ? catalog.air.lahoreAdd : 0) +
-      (input.startCity.trim().toLowerCase() === "karachi" ? catalog.air.karachiAdd : 0);
+    // BR-21 and BR-91: the Islamabad ticket plus the start city's air extra.
+    const adultFare = catalog.air.islamabadTicket + start.airExtra;
     const childFare = Math.round((adultFare * rules.childFarePercent) / 100);
     ticketCost =
       adultFare * input.adults +
@@ -417,7 +442,7 @@ export function buildQuote(input: QuoteInput, catalog: RateCatalog): QuoteResult
   if (dinnerCost > 0) lines.push({ label: "Dinner", amount: dinnerCost });
   if (lunchCost > 0) lines.push({ label: "Lunch", amount: lunchCost });
   if (breakfastCost > 0) lines.push({ label: "Arrival breakfast", amount: breakfastCost });
-  if (lahoreCost > 0) lines.push({ label: "Lahore road extra", amount: lahoreCost });
+  if (longRouteCost > 0) lines.push({ label: `${start.name} road extra`, amount: longRouteCost });
   if (ticketCost > 0) lines.push({ label: "Air tickets", amount: ticketCost });
   if (welcomeCost > 0) lines.push({ label: "Welcome pack", amount: welcomeCost });
   if (entryCost > 0) lines.push({ label: "Entry", amount: entryCost });
@@ -466,4 +491,34 @@ export function buildQuote(input: QuoteInput, catalog: RateCatalog): QuoteResult
     vehicleName,
     hotelName: nights[0]?.hotelName || hotel.hotelName,
   };
+}
+
+export type QuoteOptions = {
+  // The start cities for each travel mode, in the stored order.
+  startCities: Record<TripMode, string[]>;
+  // For each travel mode and start city, the places that can be quoted, by name.
+  places: Record<TripMode, Record<string, string[]>>;
+};
+
+type OfferedHotel = Pick<HotelRateRow, "place" | "startCity" | "offered">;
+type LiveVehicle = Pick<VehicleRateRow, "place" | "startCity" | "live"> & { mode: string };
+type OfferedStart = Pick<StartCityRow, "name" | "road" | "air">;
+
+// BR-90 and BR-91: what the office Quote screen offers. A start city is offered for the travel modes
+// it starts. A place is offered for a travel mode and start city only when it has an offered hotel
+// rate and a live vehicle rate for them, so a place with hotel rates only is not a trip on its own.
+// Air rates are stored under one start city, so every air start city offers the same places.
+export function quoteOptions(hotels: OfferedHotel[], vehicles: LiveVehicle[], startCities: OfferedStart[]): QuoteOptions {
+  const options: QuoteOptions = { startCities: { road: [], air: [] }, places: { road: {}, air: {} } };
+  for (const mode of ["road", "air"] as const) {
+    for (const start of startCities) {
+      if (!start[mode]) continue;
+      const city = mode === "air" ? AIR_RATE_CITY : start.name;
+      const hotelPlaces = new Set(hotels.filter((row) => row.offered && row.startCity === city).map((row) => row.place));
+      const places = new Set(vehicles.filter((row) => row.live && row.mode === mode && row.startCity === city && hotelPlaces.has(row.place)).map((row) => row.place));
+      options.startCities[mode].push(start.name);
+      options.places[mode][start.name] = [...places].sort((a, b) => a.localeCompare(b));
+    }
+  }
+  return options;
 }

@@ -9,7 +9,7 @@ import { Table } from "@/components/office/ui/Table";
 import { apiPath } from "@/lib/http/api-path";
 import { postOfficeForm } from "@/lib/http/office-client";
 import type { ActionResult } from "@/lib/http/result";
-import { GUEST_GRADES, MARGIN_MAX } from "@/lib/quote";
+import { GUEST_GRADES, MARGIN_MAX, type QuoteOptions, type TripMode } from "@/lib/quote";
 
 // The fields of one quote. Their names are the fields POST /api/office/rates reads for kind=quote.
 type QuoteFields = {
@@ -109,16 +109,31 @@ function quoteRequest(fields: QuoteFields) {
 }
 
 type QuoteScreenProps = {
-  places: string[];
+  // The start cities for each travel mode, and the places offered from each (BR-90, BR-91).
+  options: QuoteOptions;
   vehicles: string[];
   margin: number;
 };
 
+function tripMode(mode: string): TripMode {
+  return mode === "air" ? "air" : "road";
+}
+
+// After the travel mode or the start city changes, the start city and the place stay among the ones
+// offered: Islamabad and Skardu Valley when they are offered, otherwise the first of each list.
+function offered(fields: QuoteFields, options: QuoteOptions): QuoteFields {
+  const cities = options.startCities[tripMode(fields.mode)];
+  const startCity = cities.includes(fields.startCity) ? fields.startCity : cities.includes("Islamabad") ? "Islamabad" : cities[0] ?? "";
+  const places = options.places[tripMode(fields.mode)][startCity] ?? [];
+  const place = places.includes(fields.place) ? fields.place : places.includes("Skardu Valley") ? "Skardu Valley" : places[0] ?? "";
+  return startCity === fields.startCity && place === fields.place ? fields : { ...fields, startCity, place };
+}
+
 // The Quote tab in the Meadow layout: the trip and the edits on the left, and the price on the
 // right. The edits are the ones the office already had: one night, one day, and a paid extra.
-export function QuoteScreen({ places, vehicles, margin }: QuoteScreenProps) {
-  const [fields, setFields] = useState<QuoteFields>({
-    place: places.includes("Skardu Valley") ? "Skardu Valley" : places[0] ?? "",
+export function QuoteScreen({ options, vehicles, margin }: QuoteScreenProps) {
+  const [fields, setFields] = useState<QuoteFields>(() => offered({
+    place: "Skardu Valley",
     mode: "road",
     startCity: "Islamabad",
     grade: "Deluxe",
@@ -147,7 +162,7 @@ export function QuoteScreen({ places, vehicles, margin }: QuoteScreenProps) {
     otherFuel: "",
     otherToll: "",
     otherSeats: "",
-  });
+  }, options));
   const [priced, setPriced] = useState<Priced>(null);
   const [pricing, setPricing] = useState(false);
   const [saved, setSaved] = useState<ActionResult | null>(null);
@@ -156,7 +171,7 @@ export function QuoteScreen({ places, vehicles, margin }: QuoteScreenProps) {
 
   const set = <K extends keyof QuoteFields>(name: K, value: QuoteFields[K]) => {
     setSaved(null);
-    setFields((current) => ({ ...current, [name]: value }));
+    setFields((current) => offered({ ...current, [name]: value }, options));
   };
 
   // Price the quote a moment after the last change. Only the newest answer is shown.
@@ -198,6 +213,8 @@ export function QuoteScreen({ places, vehicles, margin }: QuoteScreenProps) {
   };
 
   const result = priced && "result" in priced ? priced.result : null;
+  const startCities = options.startCities[tripMode(fields.mode)];
+  const places = options.places[tripMode(fields.mode)][fields.startCity] ?? [];
   const editedNight = Number(fields.night);
   const editedDay = fields.dayChange ? Number(fields.day) : 0;
   const marginSlider = isWhole(fields.seasonPercent) ? Math.min(Number(fields.seasonPercent), MARGIN_MAX) : margin;
@@ -241,9 +258,19 @@ export function QuoteScreen({ places, vehicles, margin }: QuoteScreenProps) {
         <div className="quote-side">
           <Card title="Trip" description="The starting quote uses one hotel rate on every night and one vehicle on every day.">
             <div className="form-grid">
-              {choose("place", "Place", places.map((place) => [place, place]))}
               {choose("mode", "Travel by", [["road", "Road"], ["air", "Air"]])}
-              {choose("startCity", "Start city", [["Islamabad", "Islamabad"], ["Lahore", "Lahore"], ["Karachi", "Karachi"]], "Karachi starts are by air only.")}
+              {choose(
+                "startCity",
+                "Start city",
+                startCities.length ? startCities.map((city) => [city, city]) : [["", "No start city for this travel mode"]],
+                "Only the start cities for this travel mode are offered.",
+              )}
+              {choose(
+                "place",
+                "Place",
+                places.length ? places.map((place) => [place, place]) : [["", "No place is offered from this start city"]],
+                "A place is offered when it has a hotel rate and a vehicle rate for this trip.",
+              )}
               {choose("grade", "Hotel grade", GUEST_GRADES.map((grade) => [grade, grade]))}
               {choose("vehicle", "Vehicle", [...vehicles.map((name): [string, string] => [name, name]), [OTHER, "Other, typed below"]])}
               {text("days", "Days", { numeric: true })}
