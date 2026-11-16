@@ -137,9 +137,15 @@ type RateDrawerProps = {
   places: string[];
   // The start cities that start road trips.
   roadCities: string[];
+  // The rate places the website package builder offers, from data/calculator-options.ts.
+  websitePlaces: string[];
 };
 
-function RenamePlace({ places, onSaved }: { places: string[]; onSaved: (message: string) => void }) {
+function RenamePlace({ places, websitePlaces, onSaved }: { places: string[]; websitePlaces: string[]; onSaved: (message: string) => void }) {
+  const [chosen, setChosen] = useState(places[0] ?? "");
+  // The website package builder keeps its own list of places in code, so a rename of one of these
+  // stops its website quotes until a developer updates the list.
+  const onWebsite = websitePlaces.includes(chosen);
   return (
     <DrawerForm
       kind="place_rename"
@@ -152,7 +158,7 @@ function RenamePlace({ places, onSaved }: { places: string[]; onSaved: (message:
       onSaved={onSaved}
     >
       <Field id="rename-place" label="Place">
-        <select className="select" id="rename-place" name="place" defaultValue={places[0] ?? ""}>
+        <select className="select" id="rename-place" name="place" value={chosen} onChange={(event) => setChosen(event.target.value)}>
           {places.map((place) => (
             <option key={place} value={place}>
               {place}
@@ -160,10 +166,17 @@ function RenamePlace({ places, onSaved }: { places: string[]; onSaved: (message:
           ))}
         </select>
       </Field>
+      <div className="field full" aria-live="polite">
+        {onWebsite ? (
+          <Alert tone="warning" title="The website package builder uses this place">
+            After a rename, website quotes for {chosen} stop working until the developer updates the builder.
+          </Alert>
+        ) : null}
+      </div>
       <Field
         id="rename-name"
         label="New name"
-        help="Tour prices and the package builder on the website look places up by name, so they still use the old name until they are changed too."
+        help="Tour prices use each tour's Region, so change the Region on those tours too. The package builder on the website keeps its own list of places; ask the developer to update it after a rename."
       >
         <input className="input" id="rename-name" name="name" autoComplete="off" required aria-describedby={helpId("rename-name")} />
       </Field>
@@ -172,7 +185,7 @@ function RenamePlace({ places, onSaved }: { places: string[]; onSaved: (message:
 }
 
 // BR-90: the Hotels tab. A new place name adds the place with this, its first hotel rate.
-export function HotelRateDrawers({ places, roadCities }: RateDrawerProps) {
+export function HotelRateDrawers({ places, roadCities, websitePlaces }: RateDrawerProps) {
   const [message, setMessage] = useState("");
   return (
     <Actions message={message}>
@@ -213,13 +226,13 @@ export function HotelRateDrawers({ places, roadCities }: RateDrawerProps) {
           <Check name="offered" label="Offered on quotes" defaultChecked />
         </div>
       </DrawerForm>
-      <RenamePlace places={places} onSaved={setMessage} />
+      <RenamePlace places={places} websitePlaces={websitePlaces} onSaved={setMessage} />
     </Actions>
   );
 }
 
 // BR-90: the Vehicles tab. A vehicle rate is added to a place that already has rates.
-export function VehicleRateDrawers({ places, roadCities, vehicles }: RateDrawerProps & { vehicles: string[] }) {
+export function VehicleRateDrawers({ places, roadCities, websitePlaces, vehicles }: RateDrawerProps & { vehicles: string[] }) {
   const [message, setMessage] = useState("");
   return (
     <Actions message={message}>
@@ -261,7 +274,7 @@ export function VehicleRateDrawers({ places, roadCities, vehicles }: RateDrawerP
           <Check name="live" label="On for quotes" defaultChecked />
         </div>
       </DrawerForm>
-      <RenamePlace places={places} onSaved={setMessage} />
+      <RenamePlace places={places} websitePlaces={websitePlaces} onSaved={setMessage} />
     </Actions>
   );
 }

@@ -1,4 +1,4 @@
-import { loadRateDesk, ratePlaces, roadCities } from "@/components/office/rates/load-rates";
+import { loadRateDesk, ratePlaces, roadCities, websiteBuilderPlaces } from "@/components/office/rates/load-rates";
 import { VehicleRateDrawers } from "@/components/office/rates/RateDrawers";
 import { RateTable } from "@/components/office/rates/RateTable";
 import { savedByCells } from "@/components/office/activity";
@@ -10,7 +10,7 @@ export default async function RatesVehiclesPage() {
   const vehicles = [...new Set(desk.vehicles.map((row) => row.vehicle))].sort((a, b) => a.localeCompare(b));
   return (
     <>
-      <VehicleRateDrawers places={ratePlaces(desk)} roadCities={roadCities(desk)} vehicles={vehicles} />
+      <VehicleRateDrawers places={ratePlaces(desk)} roadCities={roadCities(desk)} websitePlaces={websiteBuilderPlaces()} vehicles={vehicles} />
       <RateTable
       kind="vehicle"
       noun="vehicle rates"
