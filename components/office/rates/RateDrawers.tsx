@@ -145,7 +145,11 @@ function RenamePlace({ places, websitePlaces, onSaved }: { places: string[]; web
   const [chosen, setChosen] = useState(places[0] ?? "");
   // The website package builder keeps its own list of places in code, so a rename of one of these
   // stops its website quotes until a developer updates the list.
-  const onWebsite = websitePlaces.includes(chosen);
+  // The choice is kept while the drawer is closed. After a rename it can name a place that is no
+  // longer in the list, and the select then shows the first place. So the place shown, the place
+  // sent, and the warning all use the same current place, worked out from the list.
+  const current = places.includes(chosen) ? chosen : (places[0] ?? "");
+  const onWebsite = websitePlaces.includes(current);
   return (
     <DrawerForm
       kind="place_rename"
@@ -158,7 +162,7 @@ function RenamePlace({ places, websitePlaces, onSaved }: { places: string[]; web
       onSaved={onSaved}
     >
       <Field id="rename-place" label="Place">
-        <select className="select" id="rename-place" name="place" value={chosen} onChange={(event) => setChosen(event.target.value)}>
+        <select className="select" id="rename-place" name="place" value={current} onChange={(event) => setChosen(event.target.value)}>
           {places.map((place) => (
             <option key={place} value={place}>
               {place}
@@ -169,7 +173,7 @@ function RenamePlace({ places, websitePlaces, onSaved }: { places: string[]; web
       <div className="field full" aria-live="polite">
         {onWebsite ? (
           <Alert tone="warning" title="The website package builder uses this place">
-            After a rename, website quotes for {chosen} stop working until the developer updates the builder.
+            After a rename, website quotes for {current} stop working until the developer updates the builder.
           </Alert>
         ) : null}
       </div>
