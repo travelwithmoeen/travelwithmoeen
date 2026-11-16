@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
   airExtras,
@@ -11,6 +11,7 @@ import {
   quoteNights,
   quotes,
   seasons,
+  startCities,
   vehicleRates,
 } from "@/lib/db/schema";
 import { canEditRates } from "@/lib/auth/permissions";
@@ -18,7 +19,7 @@ import type { SessionUser } from "@/lib/auth/session";
 import { forbidden, type ActionResult } from "@/lib/http/result";
 import { recordActivity } from "@/lib/office/activity";
 import { readRecordId } from "@/lib/office/record-id";
-import { buildQuote, readMarginPercent, type DayEdit, type MarginPercent, type NightEdit, type QuoteInput } from "@/lib/quote";
+import { AIR_RATE_CITY, buildQuote, findStartCity, HOTEL_GRADES, readMarginPercent, vehicleKey, type DayEdit, type MarginPercent, type NightEdit, type QuoteInput, type TripMode } from "@/lib/quote";
 import { loadCatalog, loadRateDesk, readAmount, readCount } from "@/lib/rates";
 
 export async function loadRateDeskAs(actor: SessionUser) {
@@ -86,11 +87,10 @@ export async function saveVehicleRateAs(actor: SessionUser, formData: FormData):
 
 export async function saveAirExtraAs(actor: SessionUser, formData: FormData): Promise<ActionResult> {
   if (!canEditRates(actor.role)) return forbidden("You cannot change a price.");
-  const fields = ["islamabadTicket", "lahoreAdd", "karachiAdd", "welcomePack", "entry", "infantExtra", "sticker"] as const;
+  // From T-48 the Lahore and Karachi adds are saved on the start city (BR-91), so they are not read here.
+  const fields = ["islamabadTicket", "welcomePack", "entry", "infantExtra", "sticker"] as const;
   const amounts: Record<(typeof fields)[number], number> = {
     islamabadTicket: 0,
-    lahoreAdd: 0,
-    karachiAdd: 0,
     welcomePack: 0,
     entry: 0,
     infantExtra: 0,
@@ -108,6 +108,226 @@ export async function saveAirExtraAs(actor: SessionUser, formData: FormData): Pr
     await recordActivity(tx, actor, { kind: "air_extra", text: "Saved the air extras" });
   });
   return { ok: true, message: "Air extras saved." };
+}
+
+const NAME_MAX = 100;
+const HOTEL_NAME_MAX = 200;
+const LONG_ROUTE_DAYS_MAX = 60;
+
+// A place, start city, or vehicle name: trimmed, with single spaces, from 1 to 100 characters.
+function readName(value: FormDataEntryValue | null, label: string): { ok: true; name: string } | { ok: false; error: string } {
+  const name = String(value ?? "").trim().replace(/\s+/g, " ");
+  if (!name) return { ok: false, error: `Enter ${label}.` };
+  if (name.length > NAME_MAX) return { ok: false, error: `Enter ${label} of ${NAME_MAX} characters or less.` };
+  return { ok: true, name };
+}
+
+function sameName(a: string, b: string) {
+  return a.trim().toLowerCase() === b.trim().toLowerCase();
+}
+
+type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
+type Reader = typeof db | Transaction;
+
+// T-48: a save that adds or renames a start city, a place, or a rate row takes this lock first and
+// checks for a clash inside its transaction. Two such saves at the same moment then run one after the
+// other, so the second gets the clash message, not a 500 or two places merged into one.
+const RATE_NAMES_LOCK = 4801;
+
+async function lockRateNames(tx: Transaction) {
+  await tx.execute(sql`select pg_advisory_xact_lock(${RATE_NAMES_LOCK})`);
+}
+
+// Every place named on a hotel rate, a vehicle rate, or a jeep line (BR-90). A rate place is not a
+// public Places page.
+async function ratePlaces(reader: Reader = db) {
+  const [hotels, vehicles, jeeps] = await Promise.all([
+    reader.selectDistinct({ place: hotelRates.place }).from(hotelRates),
+    reader.selectDistinct({ place: vehicleRates.place }).from(vehicleRates),
+    reader.selectDistinct({ place: jeepLines.place }).from(jeepLines),
+  ]);
+  return [...new Set([...hotels, ...vehicles, ...jeeps].map((row) => row.place))];
+}
+
+// The start city of a new rate row: Air for an air rate, or a start city that starts road trips.
+async function readRateCity(value: FormDataEntryValue | null): Promise<{ ok: true; city: string; mode: TripMode } | { ok: false; error: string }> {
+  const text = String(value ?? "").trim();
+  if (sameName(text, AIR_RATE_CITY)) return { ok: true, city: AIR_RATE_CITY, mode: "air" };
+  const cities = await db.select().from(startCities);
+  const start = findStartCity(cities, text);
+  if (!start || !start.road) return { ok: false, error: "Choose Air or a start city that starts road trips." };
+  return { ok: true, city: start.name, mode: "road" };
+}
+
+// BR-91: add a start city, or change one. Renaming it renames it on its hotel and vehicle rate rows
+// in the same save. A start city is not deleted.
+export async function saveStartCityAs(actor: SessionUser, formData: FormData): Promise<ActionResult> {
+  if (!canEditRates(actor.role)) return forbidden("You cannot change a price.");
+  const idText = String(formData.get("id") ?? "").trim();
+  const id = idText ? readRecordId(idText) : null;
+  if (idText && id === null) return { ok: false, error: "That start city was not found." };
+  const name = readName(formData.get("name"), "the city name");
+  if (!name.ok) return name;
+  if (sameName(name.name, AIR_RATE_CITY)) return { ok: false, error: "Air is the start city of the air rates. Choose another name." };
+  const road = checked(formData.get("road"));
+  const air = checked(formData.get("air"));
+  if (!road && !air) return { ok: false, error: "Choose road trips, air trips, or both." };
+  const airExtra = readAmount(String(formData.get("airExtra") ?? ""));
+  if (!airExtra.ok) return airExtra;
+  const perVehicleDay = readAmount(String(formData.get("longRoutePerVehicleDay") ?? "") || "0");
+  if (!perVehicleDay.ok) return perVehicleDay;
+  const afterText = String(formData.get("longRouteAfterDays") ?? "").trim();
+  let afterDays: number | null = null;
+  if (afterText) {
+    const after = readCount(afterText, "the days before the long-route extra", LONG_ROUTE_DAYS_MAX);
+    if (!after.ok) return after;
+    afterDays = after.count;
+  }
+  if (perVehicleDay.amount > 0 && afterDays === null) return { ok: false, error: "Enter the days after which the long-route extra starts." };
+
+  const values = {
+    name: name.name,
+    road,
+    air,
+    airExtra: airExtra.amount,
+    longRouteAfterDays: afterDays,
+    longRoutePerVehicleDay: perVehicleDay.amount,
+  };
+
+  return db.transaction(async (tx): Promise<ActionResult> => {
+    await lockRateNames(tx);
+    const cities = await tx.select({ id: startCities.id, name: startCities.name, sortOrder: startCities.sortOrder }).from(startCities);
+    const current = id === null ? null : cities.find((row) => row.id === id);
+    if (id !== null && !current) return { ok: false, error: "That start city was not found." };
+    if (cities.some((row) => row.id !== id && sameName(row.name, name.name))) return { ok: false, error: "A start city with that name already exists." };
+
+    if (!current) {
+      const sortOrder = Math.max(0, ...cities.map((row) => row.sortOrder)) + 1;
+      const [row] = await tx.insert(startCities).values({ ...values, sortOrder }).returning({ id: startCities.id });
+      if (!row) return { ok: false, error: "The start city could not be added." };
+      await recordActivity(tx, actor, { kind: "start_city", recordId: row.id, text: `Added start city ${name.name}` });
+      return { ok: true, message: `Start city added: ${name.name}.` };
+    }
+
+    const renamed = current.name !== name.name;
+    if (renamed && !sameName(current.name, name.name)) {
+      // Rate rows that already use the new name belong to no start city. Renaming onto them would mix
+      // two sets of rates, so it is refused.
+      const [hotelClash] = await tx.select({ id: hotelRates.id }).from(hotelRates).where(eq(hotelRates.startCity, name.name)).limit(1);
+      const [vehicleClash] = await tx.select({ id: vehicleRates.id }).from(vehicleRates).where(eq(vehicleRates.startCity, name.name)).limit(1);
+      if (hotelClash || vehicleClash) return { ok: false, error: "Rate rows already use that start city name. Choose another name." };
+    }
+    await tx.update(startCities).set(values).where(eq(startCities.id, current.id));
+    if (renamed) {
+      await tx.update(hotelRates).set({ startCity: name.name }).where(eq(hotelRates.startCity, current.name));
+      await tx.update(vehicleRates).set({ startCity: name.name }).where(eq(vehicleRates.startCity, current.name));
+    }
+    await recordActivity(tx, actor, {
+      kind: "start_city",
+      recordId: current.id,
+      text: renamed ? `Renamed start city ${current.name} to ${name.name}` : `Saved start city ${name.name}`,
+    });
+    return { ok: true, message: renamed ? `Start city renamed: ${name.name}.` : "Start city saved." };
+  });
+}
+
+// BR-90: a new hotel rate row. A new place name adds the place with this, its first hotel rate.
+export async function addHotelRateAs(actor: SessionUser, formData: FormData): Promise<ActionResult> {
+  if (!canEditRates(actor.role)) return forbidden("You cannot change a price.");
+  const typed = readName(formData.get("place"), "the place");
+  if (!typed.ok) return typed;
+  const city = await readRateCity(formData.get("startCity"));
+  if (!city.ok) return city;
+  const grade = String(formData.get("grade") ?? "").trim();
+  if (!(HOTEL_GRADES as readonly string[]).includes(grade)) return { ok: false, error: "Choose a hotel grade." };
+  const twin = readAmount(String(formData.get("twin") ?? ""));
+  if (!twin.ok) return twin;
+  const triple = readAmount(String(formData.get("triple") ?? ""));
+  if (!triple.ok) return triple;
+  const hotelName = String(formData.get("hotelName") ?? "").trim();
+  if (hotelName.length > HOTEL_NAME_MAX) return { ok: false, error: `Enter a hotel name of ${HOTEL_NAME_MAX} characters or less.` };
+  return db.transaction(async (tx): Promise<ActionResult> => {
+    await lockRateNames(tx);
+    // A place typed in another case is the same place, kept as it is stored.
+    const place = (await ratePlaces(tx)).find((known) => sameName(known, typed.name)) ?? typed.name;
+    const [taken] = await tx
+      .select({ id: hotelRates.id })
+      .from(hotelRates)
+      .where(and(eq(hotelRates.place, place), eq(hotelRates.startCity, city.city), eq(hotelRates.grade, grade)))
+      .limit(1);
+    if (taken) return { ok: false, error: `${place} from ${city.city} already has a ${grade} hotel rate. Change it in the table.` };
+    const [row] = await tx
+      .insert(hotelRates)
+      .values({ place, startCity: city.city, grade, twin: twin.amount, triple: triple.amount, hotelName, offered: checked(formData.get("offered")) })
+      .returning({ id: hotelRates.id });
+    if (!row) return { ok: false, error: "The hotel rate could not be added." };
+    await recordActivity(tx, actor, { kind: "hotel_rate", recordId: row.id, text: `Added hotel rate ${place}, ${city.city}, ${grade}` });
+    return { ok: true, message: `Hotel rate added: ${place}, ${city.city}, ${grade}.` };
+  });
+}
+
+// BR-90: a new vehicle rate row for a place that has rates. Air rates are stored from Air.
+export async function addVehicleRateAs(actor: SessionUser, formData: FormData): Promise<ActionResult> {
+  if (!canEditRates(actor.role)) return forbidden("You cannot change a price.");
+  const typed = readName(formData.get("place"), "the place");
+  if (!typed.ok) return typed;
+  const city = await readRateCity(formData.get("startCity"));
+  if (!city.ok) return city;
+  const vehicle = readName(formData.get("vehicle"), "the vehicle");
+  if (!vehicle.ok) return vehicle;
+  if (vehicleKey(vehicle.name) === "other") return { ok: false, error: "Other is typed on each quote. Choose another vehicle name." };
+  const rent = readAmount(String(formData.get("rent") ?? ""));
+  if (!rent.ok) return rent;
+  const fuel = readAmount(String(formData.get("fuel") ?? ""));
+  if (!fuel.ok) return fuel;
+  const toll = readAmount(String(formData.get("toll") ?? ""));
+  if (!toll.ok) return toll;
+  const seats = readCount(String(formData.get("seats") ?? ""), "the seats", 60);
+  if (!seats.ok) return seats;
+  if (seats.count < 1) return { ok: false, error: "Enter at least 1 seat." };
+  // A row with no rent, fuel, or toll cannot be on, as on a saved row.
+  const live = checked(formData.get("live")) && !(rent.amount === 0 && fuel.amount === 0 && toll.amount === 0);
+  return db.transaction(async (tx): Promise<ActionResult> => {
+    await lockRateNames(tx);
+    const place = (await ratePlaces(tx)).find((known) => sameName(known, typed.name));
+    if (!place) return { ok: false, error: "Add the place with its first hotel rate on the Hotels tab, then add its vehicles." };
+    const sameTrip = await tx
+      .select({ vehicle: vehicleRates.vehicle })
+      .from(vehicleRates)
+      .where(and(eq(vehicleRates.place, place), eq(vehicleRates.startCity, city.city), eq(vehicleRates.mode, city.mode)));
+    if (sameTrip.some((row) => vehicleKey(row.vehicle) === vehicleKey(vehicle.name))) {
+      return { ok: false, error: `${place} from ${city.city} already has a ${vehicle.name} rate. Change it in the table.` };
+    }
+    const [row] = await tx
+      .insert(vehicleRates)
+      .values({ place, startCity: city.city, mode: city.mode, vehicle: vehicle.name, rent: rent.amount, fuel: fuel.amount, toll: toll.amount, seats: seats.count, live })
+      .returning({ id: vehicleRates.id });
+    if (!row) return { ok: false, error: "The vehicle rate could not be added." };
+    await recordActivity(tx, actor, { kind: "vehicle_rate", recordId: row.id, text: `Added vehicle rate ${vehicle.name}, ${place} from ${city.city}` });
+    return { ok: true, message: `Vehicle rate added: ${vehicle.name}, ${place} from ${city.city}.` };
+  });
+}
+
+// BR-90: rename a place on every hotel rate, vehicle rate, and jeep line, in one save. The public
+// places table is not touched.
+export async function renamePlaceAs(actor: SessionUser, formData: FormData): Promise<ActionResult> {
+  if (!canEditRates(actor.role)) return forbidden("You cannot change a price.");
+  const from = String(formData.get("place") ?? "").trim();
+  if (!from) return { ok: false, error: "That place was not found." };
+  const to = readName(formData.get("name"), "the new name");
+  if (!to.ok) return to;
+  if (to.name === from) return { ok: false, error: "Enter a new name for the place." };
+  return db.transaction(async (tx): Promise<ActionResult> => {
+    await lockRateNames(tx);
+    const known = await ratePlaces(tx);
+    if (!known.includes(from)) return { ok: false, error: "That place was not found." };
+    if (known.some((place) => place !== from && sameName(place, to.name))) return { ok: false, error: "Another place already has that name." };
+    await tx.update(hotelRates).set({ place: to.name }).where(eq(hotelRates.place, from));
+    await tx.update(vehicleRates).set({ place: to.name }).where(eq(vehicleRates.place, from));
+    await tx.update(jeepLines).set({ place: to.name }).where(eq(jeepLines.place, from));
+    await recordActivity(tx, actor, { kind: "place_rename", text: `Renamed rate place ${from} to ${to.name}` });
+    return { ok: true, message: `Place renamed: ${to.name}.` };
+  });
 }
 
 export async function saveJeepLineAs(actor: SessionUser, formData: FormData): Promise<ActionResult> {
@@ -349,6 +569,10 @@ export async function savePriceFromKind(actor: SessionUser, formData: FormData):
   if (kind === "vehicle") return saveVehicleRateAs(actor, formData);
   if (kind === "air") return saveAirExtraAs(actor, formData);
   if (kind === "jeep") return saveJeepLineAs(actor, formData);
+  if (kind === "start_city") return saveStartCityAs(actor, formData);
+  if (kind === "hotel_rate_add") return addHotelRateAs(actor, formData);
+  if (kind === "vehicle_rate_add") return addVehicleRateAs(actor, formData);
+  if (kind === "place_rename") return renamePlaceAs(actor, formData);
   if (kind === "season") return saveMarginAs(actor, formData);
   if (kind === "pricing_rule") return savePricingRulesAs(actor, formData);
   if (kind === "meal_rate") return saveMealRateAs(actor, formData);

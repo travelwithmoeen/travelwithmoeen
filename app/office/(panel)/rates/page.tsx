@@ -1,4 +1,5 @@
-import { loadRateDesk } from "@/components/office/rates/load-rates";
+import { loadRateDesk, ratePlaces, roadCities } from "@/components/office/rates/load-rates";
+import { HotelRateDrawers } from "@/components/office/rates/RateDrawers";
 import { RateTable } from "@/components/office/rates/RateTable";
 import { savedByCells } from "@/components/office/activity";
 import { requestTime } from "@/components/office/format";
@@ -13,6 +14,7 @@ export default async function RatesHotelsPage() {
       <Alert tone="info" title="Hotel nights use these grade rates">
         A quote prices a hotel night from the place, start city, and grade: the twin rate for two or fewer in a room, the 3-share rate for more.
       </Alert>
+      <HotelRateDrawers places={ratePlaces(desk)} roadCities={roadCities(desk)} />
       <RateTable
         kind="hotel"
         noun="hotel rates"
