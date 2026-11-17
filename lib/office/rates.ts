@@ -578,7 +578,7 @@ export async function saveQuoteAs(actor: SessionUser, formData: FormData): Promi
     }
     await recordActivity(tx, actor, { kind: "quote", recordId: saved.id, text: `Saved quote ${saved.id}, ${parsed.input.place}, total Rs ${quote.total.toLocaleString("en-US")}` });
   });
-  return { ok: true, message: `Quote saved. Total ${quote.total}.` };
+  return { ok: true, message: `Quote saved. Total Rs ${quote.total.toLocaleString("en-US")}.` };
 }
 
 export async function savePriceFromKind(actor: SessionUser, formData: FormData): Promise<ActionResult> {

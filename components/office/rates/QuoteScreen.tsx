@@ -297,7 +297,30 @@ export function QuoteScreen({ options, vehicles, margin, rates }: QuoteScreenPro
           inputMode="numeric"
           autoComplete="off"
           value={value ?? (auto === undefined ? "" : String(auto))}
-          onChange={(event) => set(name, event.target.value)}
+          // On Auto the box shows the automatic count selected, so the first key replaces it: typing 3
+          // gives 3, not 13. A click or a tap would put the caret back, so on Auto it selects again.
+          onFocus={(event) => {
+            if (value === null) event.currentTarget.select();
+          }}
+          onMouseUp={(event) => {
+            if (value !== null) return;
+            event.preventDefault();
+            event.currentTarget.select();
+          }}
+          onChange={(event) => {
+            const typed = event.target.value;
+            if (typed.trim()) {
+              set(name, typed);
+              return;
+            }
+            // An emptied box goes back to Auto, and its automatic count is selected again, so the
+            // next key replaces it.
+            const input = event.currentTarget;
+            set(name, null);
+            window.requestAnimationFrame(() => {
+              if (document.activeElement === input) input.select();
+            });
+          }}
         />
       </div>
     );
