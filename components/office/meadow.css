@@ -551,6 +551,18 @@
   .office .sum .sum-total { font: 600 var(--text-xl)/var(--leading-snug) var(--font); color: var(--text); border-top: var(--border-w) solid var(--border); padding-top: var(--space-2); }
   .office .sum .sum-sub { border-top: var(--border-w) solid var(--border); padding-top: var(--space-2); }
   .office .quote-checks { display: flex; flex-wrap: wrap; gap: var(--space-5); align-items: center; }
+  /* T-49 (BR-94): the Stay and services switches, each with its rate, the Auto and Typed tags on the
+     counts, and the parts of the Changes and extras card. */
+  .office .quote-services { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, calc(var(--space-24) * 2)), 1fr)); gap: var(--space-4); }
+  .office .quote-service { align-items: flex-start; }
+  .office .quote-service .track { margin-top: var(--space-half); }
+  .office .quote-rate { display: block; margin: 0; }
+  .office .quote-form .label .badge { margin-left: var(--space-2); vertical-align: middle; }
+  .office .quote-auto { justify-content: end; align-self: end; }
+  .office .quote-part { display: grid; gap: var(--space-3); }
+  .office .quote-part + .quote-part { border-top: var(--border-w) solid var(--border); padding-top: var(--space-4); }
+  .office .quote-part h4 { margin: 0; font: 600 var(--text-sm)/var(--leading-snug) var(--font); color: var(--text); }
+  .office .quote-part > .help { margin: 0; }
   .office .tbl tr.is-edited td { background: var(--warning-soft); }
 
   /* ---------- Wide screens ---------- */

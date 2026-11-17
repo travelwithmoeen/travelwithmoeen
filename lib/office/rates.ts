@@ -19,7 +19,7 @@ import type { SessionUser } from "@/lib/auth/session";
 import { forbidden, type ActionResult } from "@/lib/http/result";
 import { recordActivity } from "@/lib/office/activity";
 import { readRecordId } from "@/lib/office/record-id";
-import { AIR_RATE_CITY, buildQuote, findStartCity, HOTEL_GRADES, readMarginPercent, vehicleKey, type DayEdit, type MarginPercent, type NightEdit, type QuoteInput, type TripMode } from "@/lib/quote";
+import { AIR_RATE_CITY, buildQuote, findStartCity, HOTEL_GRADES, MAX_COUNT, readMarginPercent, vehicleKey, type DayEdit, type MarginPercent, type NightEdit, type QuoteInput, type TripMode } from "@/lib/quote";
 import { loadCatalog, loadRateDesk, readAmount, readCount } from "@/lib/rates";
 
 export async function loadRateDeskAs(actor: SessionUser) {
@@ -469,6 +469,18 @@ export async function quoteInputFromForm(formData: FormData): Promise<{ ok: true
     paidExtras.push({ name: extraName, amount: amount.amount });
   }
   const vehicle = String(formData.get("vehicle") ?? "");
+  // BR-92: a count staff typed. Blank means the automatic count.
+  const typedCount = (field: string, label: string) => {
+    const text = String(formData.get(field) ?? "").trim();
+    return text ? readCount(text, label, MAX_COUNT) : ({ ok: true, count: undefined } as const);
+  };
+  const roomCount = typedCount("roomCount", "the rooms");
+  if (!roomCount.ok) return roomCount;
+  const vehicleCount = typedCount("vehicleCount", "the vehicles");
+  if (!vehicleCount.ok) return vehicleCount;
+  // BR-89: the tickets are on unless the form says off. A form without the field keeps them on.
+  const ticketsValue = formData.get("tickets");
+  const tickets = ticketsValue === null ? true : checked(ticketsValue);
   const input: QuoteInput = {
     place: String(formData.get("place") ?? ""),
     startCity: String(formData.get("startCity") ?? ""),
@@ -483,6 +495,9 @@ export async function quoteInputFromForm(formData: FormData): Promise<{ ok: true
     guide: checked(formData.get("guide")),
     meals: checked(formData.get("meals")),
     lunch: checked(formData.get("lunch")),
+    tickets,
+    roomCount: roomCount.count,
+    vehicleCount: vehicleCount.count,
     seasonPercent,
     nightEdits,
     dayEdits,
@@ -531,6 +546,9 @@ export async function saveQuoteAs(actor: SessionUser, formData: FormData): Promi
         guide: parsed.input.guide,
         meals: parsed.input.meals,
         lunch: Boolean(parsed.input.lunch),
+        roomCount: parsed.input.roomCount ?? null,
+        vehicleCount: parsed.input.vehicleCount ?? null,
+        tickets: parsed.input.tickets !== false,
         seasonPercent: quote.seasonPercent,
         subtotal: quote.subtotal,
         profit: quote.profit,
@@ -560,7 +578,7 @@ export async function saveQuoteAs(actor: SessionUser, formData: FormData): Promi
     }
     await recordActivity(tx, actor, { kind: "quote", recordId: saved.id, text: `Saved quote ${saved.id}, ${parsed.input.place}, total Rs ${quote.total.toLocaleString("en-US")}` });
   });
-  return { ok: true, message: `Quote saved. Total ${quote.total}.` };
+  return { ok: true, message: `Quote saved. Total Rs ${quote.total.toLocaleString("en-US")}.` };
 }
 
 export async function savePriceFromKind(actor: SessionUser, formData: FormData): Promise<ActionResult> {

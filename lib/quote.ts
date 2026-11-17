@@ -27,6 +27,8 @@ export function readMarginPercent(raw: string): { ok: true; percent: MarginPerce
 // Every grade a hotel rate row can have. Premier is stored but not offered to guests.
 export const HOTEL_GRADES: readonly HotelGrade[] = ["Deluxe", "Premier", "Executive", "Luxury", "Ultra Luxury"];
 const MAX_DAYS = 60;
+// The most rooms or vehicles one quote can have.
+export const MAX_COUNT = 60;
 // A twin room holds two. The automatic room count for more than two uses the people-per-room rule.
 const TWIN_ROOM_PEOPLE = 2;
 const TAOBAT_SHEET_PLACE = "Neelum Taobat Arang Kel";
@@ -139,6 +141,8 @@ export type QuoteInput = {
   meals: boolean;
   // Lunch each day, for an office quote only (BR-88).
   lunch?: boolean;
+  // BR-89: the air tickets, on unless the office turns them off. A guest quote always has them.
+  tickets?: boolean;
   seasonPercent?: MarginPercent;
   nightEdits?: NightEdit[];
   dayEdits?: DayEdit[];
@@ -152,9 +156,10 @@ export type QuoteInput = {
 
 export type NightLine = { night: number; rate: number; hotelName: string };
 export type DayLine = { day: number; vehicle: string; rent: number; fuel: number; toll: number; cleared: boolean };
-// working is the sum behind the amount, shown next to it on the office quote (BR-93). From T-55 only
-// the hotel line has it. A guest response never has lines (BR-50).
-export type QuoteLine = { label: string; amount: number; working?: string };
+// working is the sum behind the amount, shown next to it on the office quote (BR-93). It is built here
+// from the same numbers as the amount. Read as a sum, with the words and "on night 2" left out, its
+// numbers give the amount. A guest response never has lines (BR-50).
+export type QuoteLine = { label: string; amount: number; working: string };
 
 export type QuoteSuccess = {
   ok: true;
@@ -170,6 +175,9 @@ export type QuoteSuccess = {
   nearestGrade: boolean;
   vehicleCount: number;
   rooms: number;
+  // BR-92: the counts the quote works out itself, shown with Auto when staff have not typed one.
+  autoVehicleCount: number;
+  autoRooms: number;
   vehicleName: string;
   hotelName: string;
 };
@@ -302,11 +310,13 @@ export function buildQuote(input: QuoteInput, catalog: RateCatalog): QuoteResult
     return { ok: false, error: "That vehicle has no seats." };
   }
 
-  const rooms =
-    input.roomCount ??
-    (input.share === "twin" ? Math.ceil(seats / TWIN_ROOM_PEOPLE) : Math.ceil(seats / rules.peoplePerRoom));
+  const autoRooms = input.share === "twin" ? Math.ceil(seats / TWIN_ROOM_PEOPLE) : Math.ceil(seats / rules.peoplePerRoom);
+  const rooms = input.roomCount ?? autoRooms;
   if (!Number.isInteger(rooms) || rooms < 1) {
     return { ok: false, error: "Enter the rooms." };
+  }
+  if (rooms > MAX_COUNT) {
+    return { ok: false, error: `Enter ${MAX_COUNT} rooms or fewer.` };
   }
   // T-55 (BR-84, sign-off row S-11): only the rooms that hold a third guest use the 3-share rate, and
   // the other rooms use the twin rate. The 3-share rooms are seats minus twice the rooms, from 0 up to
@@ -336,16 +346,22 @@ export function buildQuote(input: QuoteInput, catalog: RateCatalog): QuoteResult
     const roomParts: string[] = [];
     if (tripleRooms > 0) roomParts.push(`${countText(tripleRooms, "room", "rooms")} × ${rupeeText(hotel.triple)} 3-share`);
     if (twinRooms > 0) roomParts.push(`${countText(twinRooms, "room", "rooms")} × ${rupeeText(hotel.twin)} twin`);
-    hotelParts.push(`${roomParts.join(" + ")} × ${countText(plainNights, "night", "nights")}`);
+    // With both kinds of room, the rooms are in brackets, so the nights multiply both.
+    const roomsText = roomParts.length > 1 ? `(${roomParts.join(" + ")})` : roomParts[0];
+    hotelParts.push(`${roomsText} × ${countText(plainNights, "night", "nights")}`);
   }
   for (const night of editedNights) {
     hotelParts.push(`${countText(rooms, "room", "rooms")} × ${rupeeText(night.rate)} on night ${night.night}`);
   }
   const hotelWorking = hotelParts.length > 0 ? hotelParts.join(" + ") : "No hotel nights";
 
-  const vehicleCount = input.vehicleCount ?? Math.ceil(seats / vehicleSeats);
+  const autoVehicleCount = Math.ceil(seats / vehicleSeats);
+  const vehicleCount = input.vehicleCount ?? autoVehicleCount;
   if (!Number.isInteger(vehicleCount) || vehicleCount < 1) {
     return { ok: false, error: "Enter the vehicles." };
+  }
+  if (vehicleCount > MAX_COUNT) {
+    return { ok: false, error: `Enter ${MAX_COUNT} vehicles or fewer.` };
   }
   const days: DayLine[] = [];
   for (let day = 1; day <= input.days; day += 1) {
@@ -393,6 +409,24 @@ export function buildQuote(input: QuoteInput, catalog: RateCatalog): QuoteResult
   const activeDays = days.filter((day) => !day.cleared);
   const dailyVehicle = activeDays.reduce((sum, day) => sum + day.rent + day.fuel, 0);
   const vehicleCost = vehicleCount * (dailyVehicle + (activeDays.length > 0 ? toll : 0));
+  // BR-93: "1 × Gli Car · ((8,000 rent + 0 fuel) × 5 days + 0 toll)". Days with the same vehicle and
+  // amounts are counted together. A vehicle name typed for Other can hold digits, so it shows as Other.
+  const baseName = other ? "Other" : vehicleName;
+  const dayGroups: { vehicle: string; rent: number; fuel: number; count: number }[] = [];
+  for (const day of activeDays) {
+    const name = day.vehicle === vehicleName ? baseName : day.vehicle;
+    const group = dayGroups.find((row) => row.vehicle === name && row.rent === day.rent && row.fuel === day.fuel);
+    if (group) group.count += 1;
+    else dayGroups.push({ vehicle: name, rent: day.rent, fuel: day.fuel, count: 1 });
+  }
+  const daySums = dayGroups.map(
+    (group) =>
+      `(${rupeeText(group.rent)} rent + ${rupeeText(group.fuel)} fuel) × ${countText(group.count, "day", "days")}${dayGroups.length > 1 ? ` ${group.vehicle}` : ""}`,
+  );
+  const vehicleWorking =
+    dayGroups.length === 0
+      ? "No vehicle on any day"
+      : `${vehicleCount} × ${dayGroups.length === 1 ? `${dayGroups[0].vehicle} · ` : ""}(${[...daySums, `${rupeeText(toll)} toll`].join(" + ")})`;
   const guideCost = input.guide ? rules.guidePerDay * input.days : 0;
   // Infants are not counted for meals or breakfast.
   const mealPeople = input.adults + input.children;
@@ -403,6 +437,9 @@ export function buildQuote(input: QuoteInput, catalog: RateCatalog): QuoteResult
   const longRouteDays = input.mode === "road" && start.longRouteAfterDays !== null ? Math.max(input.days - start.longRouteAfterDays, 0) : 0;
   const longRouteCost = start.longRoutePerVehicleDay * longRouteDays * vehicleCount;
 
+  // BR-89: the office can leave the tickets out of an air quote. The rest of the air extras stay.
+  const tickets = input.tickets !== false;
+  let ticketWorking = "";
   let ticketCost = 0;
   let welcomeCost = 0;
   let entryCost = 0;
@@ -412,11 +449,20 @@ export function buildQuote(input: QuoteInput, catalog: RateCatalog): QuoteResult
     // BR-21 and BR-91: the Islamabad ticket plus the start city's air extra.
     const adultFare = catalog.air.islamabadTicket + start.airExtra;
     const childFare = Math.round((adultFare * rules.childFarePercent) / 100);
-    ticketCost =
-      adultFare * input.adults +
-      childFare * input.children +
-      rules.lapInfantFare * input.lapInfants +
-      rules.seatInfantFare * input.seatInfants;
+    if (tickets) {
+      ticketCost =
+        adultFare * input.adults +
+        childFare * input.children +
+        rules.lapInfantFare * input.lapInfants +
+        rules.seatInfantFare * input.seatInfants;
+      const fareText = start.airExtra > 0 ? `(${rupeeText(catalog.air.islamabadTicket)} + ${rupeeText(start.airExtra)} ${start.name})` : rupeeText(adultFare);
+      const ticketParts: string[] = [];
+      if (input.adults > 0) ticketParts.push(`${countText(input.adults, "adult", "adults")} × ${fareText}`);
+      if (input.children > 0) ticketParts.push(`${countText(input.children, "child", "children")} × ${rupeeText(childFare)}`);
+      if (input.lapInfants > 0) ticketParts.push(`${countText(input.lapInfants, "lap infant", "lap infants")} × ${rupeeText(rules.lapInfantFare)}`);
+      if (input.seatInfants > 0) ticketParts.push(`${countText(input.seatInfants, "infant with a seat", "infants with a seat")} × ${rupeeText(rules.seatInfantFare)}`);
+      ticketWorking = ticketParts.join(" + ");
+    }
     welcomeCost = catalog.air.welcomePack * mealPeople;
     entryCost = catalog.air.entry * mealPeople;
     infantExtraCost = catalog.air.infantExtra * (input.lapInfants + input.seatInfants);
@@ -428,28 +474,40 @@ export function buildQuote(input: QuoteInput, catalog: RateCatalog): QuoteResult
   // children. Infants are not counted.
   const jeepCosts = catalog.jeeps
     .filter((line) => line.live && line.place === place && (line.mode === "both" || line.mode === input.mode))
-    .map((line) => ({
-      label: line.label,
-      amount: line.amount * Math.ceil(mealPeople / line.people),
-    }));
+    .map((line) => {
+      const jeeps = Math.ceil(mealPeople / line.people);
+      return { label: line.label, amount: line.amount * jeeps, working: `${countText(jeeps, "jeep", "jeeps")} × ${rupeeText(line.amount)}` };
+    });
   const extras = (input.paidExtras ?? []).filter((extra) => extra.name.trim() && extra.amount > 0);
 
+  const people = (count: number) => countText(count, "person", "people");
+  const infants = input.lapInfants + input.seatInfants;
   const lines: QuoteLine[] = [
-    { label: "Vehicle", amount: vehicleCost },
+    { label: "Vehicle", amount: vehicleCost, working: vehicleWorking },
     { label: "Hotel", amount: hotelCost, working: hotelWorking },
   ];
-  if (guideCost > 0) lines.push({ label: "Guide", amount: guideCost });
-  if (dinnerCost > 0) lines.push({ label: "Dinner", amount: dinnerCost });
-  if (lunchCost > 0) lines.push({ label: "Lunch", amount: lunchCost });
-  if (breakfastCost > 0) lines.push({ label: "Arrival breakfast", amount: breakfastCost });
-  if (longRouteCost > 0) lines.push({ label: `${start.name} road extra`, amount: longRouteCost });
-  if (ticketCost > 0) lines.push({ label: "Air tickets", amount: ticketCost });
-  if (welcomeCost > 0) lines.push({ label: "Welcome pack", amount: welcomeCost });
-  if (entryCost > 0) lines.push({ label: "Entry", amount: entryCost });
-  if (infantExtraCost > 0) lines.push({ label: "Infant extra", amount: infantExtraCost });
-  if (stickerCost > 0) lines.push({ label: "Sticker", amount: stickerCost });
-  for (const jeep of jeepCosts) lines.push({ label: jeep.label, amount: jeep.amount });
-  for (const extra of extras) lines.push({ label: extra.name.trim(), amount: extra.amount });
+  if (guideCost > 0) lines.push({ label: "Guide", amount: guideCost, working: `${rupeeText(rules.guidePerDay)} × ${countText(input.days, "day", "days")}` });
+  if (dinnerCost > 0 && mealRate) {
+    lines.push({ label: "Dinner", amount: dinnerCost, working: `${people(mealPeople)} × ${rupeeText(mealRate.dinner)} × ${countText(nightsCount, "night", "nights")}` });
+  }
+  if (lunchCost > 0 && mealRate) {
+    lines.push({ label: "Lunch", amount: lunchCost, working: `${people(mealPeople)} × ${rupeeText(mealRate.lunch)} × ${countText(input.days, "day", "days")}` });
+  }
+  if (breakfastCost > 0) lines.push({ label: "Arrival breakfast", amount: breakfastCost, working: `${people(mealPeople)} × ${rupeeText(rules.breakfastPerPerson)}` });
+  if (longRouteCost > 0) {
+    lines.push({
+      label: `${start.name} road extra`,
+      amount: longRouteCost,
+      working: `${rupeeText(start.longRoutePerVehicleDay)} × ${countText(longRouteDays, "day", "days")} after day ${start.longRouteAfterDays} × ${countText(vehicleCount, "vehicle", "vehicles")}`,
+    });
+  }
+  if (ticketCost > 0) lines.push({ label: "Air tickets", amount: ticketCost, working: ticketWorking });
+  if (welcomeCost > 0) lines.push({ label: "Welcome pack", amount: welcomeCost, working: `${people(mealPeople)} × ${rupeeText(catalog.air.welcomePack)}` });
+  if (entryCost > 0) lines.push({ label: "Entry", amount: entryCost, working: `${people(mealPeople)} × ${rupeeText(catalog.air.entry)}` });
+  if (infantExtraCost > 0) lines.push({ label: "Infant extra", amount: infantExtraCost, working: `${countText(infants, "infant", "infants")} × ${rupeeText(catalog.air.infantExtra)}` });
+  if (stickerCost > 0) lines.push({ label: "Sticker", amount: stickerCost, working: `${countText(vehicleCount, "vehicle", "vehicles")} × ${rupeeText(catalog.air.sticker)}` });
+  for (const jeep of jeepCosts) lines.push(jeep);
+  for (const extra of extras) lines.push({ label: extra.name.trim(), amount: extra.amount, working: `${rupeeText(extra.amount)} added by staff` });
 
   const subtotal = lines.reduce((sum, line) => sum + line.amount, 0);
   const margin = input.seasonPercent ?? catalog.seasonPercent;
@@ -488,6 +546,8 @@ export function buildQuote(input: QuoteInput, catalog: RateCatalog): QuoteResult
     nearestGrade,
     vehicleCount,
     rooms,
+    autoVehicleCount,
+    autoRooms,
     vehicleName,
     hotelName: nights[0]?.hotelName || hotel.hotelName,
   };

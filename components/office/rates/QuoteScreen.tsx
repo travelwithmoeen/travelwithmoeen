@@ -3,6 +3,8 @@
 import { Fragment, useEffect, useRef, useState, useTransition } from "react";
 import { SaveBar } from "@/components/office/content/SaveBar";
 import { Alert } from "@/components/office/ui/Alert";
+import { Badge } from "@/components/office/ui/Badge";
+import { Button } from "@/components/office/ui/Button";
 import { Card } from "@/components/office/ui/Card";
 import { Field, helpId } from "@/components/office/ui/Field";
 import { Table } from "@/components/office/ui/Table";
@@ -28,6 +30,11 @@ type QuoteFields = {
   // Dinner each night. The field keeps the name meals, which the server reads.
   meals: boolean;
   lunch: boolean;
+  // BR-89: the air tickets, on unless staff turn them off.
+  tickets: boolean;
+  // BR-92: a count staff typed, or null for the automatic count.
+  roomCount: string | null;
+  vehicleCount: string | null;
   night: string;
   nightRate: string;
   nightHotel: string;
@@ -51,7 +58,7 @@ type QuoteResult = {
   profit: number;
   total: number;
   seasonPercent: number;
-  lines: { label: string; amount: number; working?: string }[];
+  lines: { label: string; amount: number; working: string }[];
   nights: { night: number; rate: number; hotelName: string }[];
   days: { day: number; vehicle: string; rent: number; fuel: number; toll: number; cleared: boolean }[];
   averageNightly: number;
@@ -59,6 +66,16 @@ type QuoteResult = {
   nearestGrade: boolean;
   hotelName: string;
   vehicleName: string;
+  autoRooms: number;
+  autoVehicleCount: number;
+};
+
+// The rates the Stay and services switches show beside each choice (BR-94).
+export type QuoteRates = {
+  guidePerDay: number | null;
+  meals: { grade: string; dinner: number; lunch: number }[];
+  islamabadTicket: number | null;
+  airExtras: Record<string, number>;
 };
 
 type Priced = { result: QuoteResult } | { error: string } | null;
@@ -90,9 +107,12 @@ function quoteRequest(fields: QuoteFields) {
     guide: fields.guide,
     meals: fields.meals,
     lunch: fields.lunch,
+    tickets: fields.tickets,
     seasonPercent: fields.seasonPercent,
     otherNote: fields.otherNote,
   };
+  if (fields.roomCount?.trim()) body.roomCount = fields.roomCount;
+  if (fields.vehicleCount?.trim()) body.vehicleCount = fields.vehicleCount;
   if (fields.vehicle === OTHER) {
     Object.assign(body, { otherRent: fields.otherRent, otherFuel: fields.otherFuel, otherToll: fields.otherToll, otherSeats: fields.otherSeats });
   }
@@ -113,6 +133,7 @@ type QuoteScreenProps = {
   options: QuoteOptions;
   vehicles: string[];
   margin: number;
+  rates: QuoteRates;
 };
 
 function tripMode(mode: string): TripMode {
@@ -129,9 +150,9 @@ function offered(fields: QuoteFields, options: QuoteOptions): QuoteFields {
   return startCity === fields.startCity && place === fields.place ? fields : { ...fields, startCity, place };
 }
 
-// The Quote tab in the Meadow layout: the trip and the edits on the left, and the price on the
-// right. The edits are the ones the office already had: one night, one day, and a paid extra.
-export function QuoteScreen({ options, vehicles, margin }: QuoteScreenProps) {
+// The Quote tab, laid out like the costing desk (BR-94): Route, Party, Stay and services, then the
+// changes, with the price and each line's working beside the form, or above it on a phone.
+export function QuoteScreen({ options, vehicles, margin, rates }: QuoteScreenProps) {
   const [fields, setFields] = useState<QuoteFields>(() => offered({
     place: "Skardu Valley",
     mode: "road",
@@ -147,6 +168,9 @@ export function QuoteScreen({ options, vehicles, margin }: QuoteScreenProps) {
     guide: false,
     meals: false,
     lunch: false,
+    tickets: true,
+    roomCount: null,
+    vehicleCount: null,
     night: "",
     nightRate: "",
     nightHotel: "",
@@ -203,8 +227,11 @@ export function QuoteScreen({ options, vehicles, margin }: QuoteScreenProps) {
     const form = new FormData();
     form.set("kind", "quote");
     for (const [name, value] of Object.entries(fields)) {
+      if (value === null) continue;
       if (typeof value === "boolean") {
+        // The tickets are on unless the form says off, so off is sent too.
         if (value) form.set(name, "on");
+        else if (name === "tickets") form.set(name, "off");
       } else {
         form.set(name, value);
       }
@@ -251,12 +278,72 @@ export function QuoteScreen({ options, vehicles, margin }: QuoteScreenProps) {
     </Field>
   );
 
+  const air = fields.mode === "air";
+  const mealRate = rates.meals.find((row) => row.grade === fields.grade);
+  const adultFare = rates.islamabadTicket === null ? null : rates.islamabadTicket + (rates.airExtras[fields.startCity] ?? 0);
+  const typed = fields.roomCount !== null || fields.vehicleCount !== null;
+  // A count field shows the typed number, or the automatic one from the last price.
+  const count = (name: "roomCount" | "vehicleCount", label: string, auto: number | undefined) => {
+    const value = fields[name];
+    return (
+      <div className="field">
+        <label className="label" htmlFor={`quote-${name}`}>
+          {label} {value === null ? <Badge>Auto</Badge> : <Badge tone="accent">Typed</Badge>}
+        </label>
+        <input
+          className="input"
+          id={`quote-${name}`}
+          name={name}
+          inputMode="numeric"
+          autoComplete="off"
+          value={value ?? (auto === undefined ? "" : String(auto))}
+          // On Auto the box shows the automatic count selected, so the first key replaces it: typing 3
+          // gives 3, not 13. A click or a tap would put the caret back, so on Auto it selects again.
+          onFocus={(event) => {
+            if (value === null) event.currentTarget.select();
+          }}
+          onMouseUp={(event) => {
+            if (value !== null) return;
+            event.preventDefault();
+            event.currentTarget.select();
+          }}
+          onChange={(event) => {
+            const typed = event.target.value;
+            if (typed.trim()) {
+              set(name, typed);
+              return;
+            }
+            // An emptied box goes back to Auto, and its automatic count is selected again, so the
+            // next key replaces it.
+            const input = event.currentTarget;
+            set(name, null);
+            window.requestAnimationFrame(() => {
+              if (document.activeElement === input) input.select();
+            });
+          }}
+        />
+      </div>
+    );
+  };
+  const service = (name: "tickets" | "guide" | "meals" | "lunch", label: string, rate: string) => (
+    <label className="switch quote-service">
+      <input type="checkbox" role="switch" name={name} checked={fields[name]} onChange={(event) => set(name, event.target.checked)} />
+      <span className="track" aria-hidden="true">
+        <span className="thumb" />
+      </span>
+      <span>
+        {label}{" "}
+        <small className="help quote-rate">{rate}</small>
+      </span>
+    </label>
+  );
+
   return (
     <form onSubmit={submit} className="stack" aria-busy={saving || undefined}>
       <fieldset className="form-lock" disabled={saving}>
       <div className="quote-form">
         <div className="quote-side">
-          <Card title="Trip" description="The starting quote uses one hotel rate on every night and one vehicle on every day.">
+          <Card title="Route" description="Where the trip goes, how it travels, and for how long.">
             <div className="form-grid">
               {choose("mode", "Travel by", [["road", "Road"], ["air", "Air"]])}
               {choose(
@@ -271,13 +358,44 @@ export function QuoteScreen({ options, vehicles, margin }: QuoteScreenProps) {
                 places.length ? places.map((place) => [place, place]) : [["", "No place is offered from this start city"]],
                 "A place is offered when it has a hotel rate and a vehicle rate for this trip.",
               )}
-              {choose("grade", "Hotel grade", GUEST_GRADES.map((grade) => [grade, grade]))}
-              {choose("vehicle", "Vehicle", [...vehicles.map((name): [string, string] => [name, name]), [OTHER, "Other, typed below"]])}
               {text("days", "Days", { numeric: true })}
+            </div>
+          </Card>
+
+          <Card title="Party" description="The travelers, the rooms, and the vehicles. Rooms and vehicles are worked out for you, and you can type a different count.">
+            <div className="form-grid">
               {text("adults", "Adults", { numeric: true })}
               {text("children", "Children", { numeric: true })}
               {text("lapInfants", "Lap infants", { numeric: true })}
               {text("seatInfants", "Infants with a seat", { numeric: true })}
+              {count("roomCount", "Rooms", result?.autoRooms)}
+              {choose("vehicle", "Vehicle", [...vehicles.map((name): [string, string] => [name, name]), [OTHER, "Other, typed below"]])}
+              {count("vehicleCount", "Vehicles", result?.autoVehicleCount)}
+              <div className="field quote-auto">
+                <Button
+                  variant="ghost"
+                  icon="refresh"
+                  disabled={!typed}
+                  onClick={() => {
+                    setSaved(null);
+                    setFields((current) => ({ ...current, roomCount: null, vehicleCount: null }));
+                  }}
+                >
+                  Back to auto counts
+                </Button>
+              </div>
+            </div>
+          </Card>
+
+          <Card title="Stay and services" description="The hotel grade and what the quote includes, each with its rate.">
+            <div className="form-grid">
+              {choose("grade", "Hotel grade", GUEST_GRADES.map((grade) => [grade, grade]))}
+              <div className="field full quote-services">
+                {air ? service("tickets", "Air tickets", adultFare === null ? "" : `${rupees(adultFare)} an adult`) : null}
+                {service("guide", "Tour guide", rates.guidePerDay === null ? "" : `${rupees(rates.guidePerDay)} a day`)}
+                {service("meals", "Dinner", mealRate ? `${rupees(mealRate.dinner)} a person a night` : "No rate for this grade")}
+                {service("lunch", "Lunch", mealRate ? `${rupees(mealRate.lunch)} a person a day` : "No rate for this grade")}
+              </div>
               <div className="field">
                 <label className="label" htmlFor="quote-seasonPercent">
                   Profit margin for this quote, percent
@@ -312,70 +430,64 @@ export function QuoteScreen({ options, vehicles, margin }: QuoteScreenProps) {
                   onChange={(event) => set("seasonPercent", event.target.value)}
                 />
               </div>
-              <div className="field full quote-checks">
-                <label className="check">
-                  <input type="checkbox" name="guide" checked={fields.guide} onChange={(event) => set("guide", event.target.checked)} />
-                  <span>Guide</span>
-                </label>
-                <label className="check">
-                  <input type="checkbox" name="meals" checked={fields.meals} onChange={(event) => set("meals", event.target.checked)} />
-                  <span>Dinner</span>
-                </label>
-                <label className="check">
-                  <input type="checkbox" name="lunch" checked={fields.lunch} onChange={(event) => set("lunch", event.target.checked)} />
-                  <span>Lunch</span>
-                </label>
-              </div>
             </div>
           </Card>
 
-          {fields.vehicle === OTHER ? (
-            <Card title="Other vehicle" description="A mix the rate tables do not have. Every amount is checked by the server.">
-              <div className="form-grid">
-                <div className="field full">
-                  <label className="label" htmlFor="quote-otherNote">
-                    The mix
-                  </label>
-                  <input className="input" id="quote-otherNote" name="otherNote" value={fields.otherNote} placeholder="For example, a Prado and a Gli car" onChange={(event) => set("otherNote", event.target.value)} />
+          <Card title="Changes and extras" description="One night, one day, a paid extra, and a vehicle mix the rate tables do not have.">
+            <div className="stack">
+              {fields.vehicle === OTHER ? (
+                <section className="quote-part" aria-labelledby="quote-other-head">
+                  <h4 id="quote-other-head">Other vehicle</h4>
+                  <p className="help">Every amount is checked by the server.</p>
+                  <div className="form-grid">
+                    <div className="field full">
+                      <label className="label" htmlFor="quote-otherNote">
+                        The mix
+                      </label>
+                      <input className="input" id="quote-otherNote" name="otherNote" value={fields.otherNote} placeholder="For example, a Prado and a Gli car" onChange={(event) => set("otherNote", event.target.value)} />
+                    </div>
+                    {text("otherRent", "Rent per day", { numeric: true })}
+                    {text("otherFuel", "Fuel per day", { numeric: true })}
+                    {text("otherToll", "Toll", { numeric: true })}
+                    {text("otherSeats", "Seats", { numeric: true })}
+                  </div>
+                </section>
+              ) : null}
+              <section className="quote-part" aria-labelledby="quote-night-head">
+                <h4 id="quote-night-head">Change one night</h4>
+                <p className="help">A different hotel rate on one night. The other nights stay as they were.</p>
+                <div className="form-grid">
+                  {text("night", "Night number", { numeric: true, optional: true })}
+                  {text("nightRate", "Rate for that night", { numeric: true, optional: true })}
+                  <div className="field full">
+                    <label className="label" htmlFor="quote-nightHotel">
+                      Hotel for that night <span className="opt">(optional)</span>
+                    </label>
+                    <input className="input" id="quote-nightHotel" name="nightHotel" value={fields.nightHotel} onChange={(event) => set("nightHotel", event.target.value)} />
+                  </div>
                 </div>
-                {text("otherRent", "Rent per day", { numeric: true })}
-                {text("otherFuel", "Fuel per day", { numeric: true })}
-                {text("otherToll", "Toll", { numeric: true })}
-                {text("otherSeats", "Seats", { numeric: true })}
-              </div>
-            </Card>
-          ) : null}
-
-          <Card title="Change one night" description="A different hotel rate on one night. The other nights stay as they were (BR-46).">
-            <div className="form-grid">
-              {text("night", "Night number", { numeric: true, optional: true })}
-              {text("nightRate", "Rate for that night", { numeric: true, optional: true })}
-              <div className="field full">
-                <label className="label" htmlFor="quote-nightHotel">
-                  Hotel for that night <span className="opt">(optional)</span>
-                </label>
-                <input className="input" id="quote-nightHotel" name="nightHotel" value={fields.nightHotel} onChange={(event) => set("nightHotel", event.target.value)} />
-              </div>
+              </section>
+              <section className="quote-part" aria-labelledby="quote-day-head">
+                <h4 id="quote-day-head">Change one day</h4>
+                <p className="help">No vehicle, a jeep, or a higher vehicle on one day.</p>
+                <div className="form-grid">
+                  {choose("dayChange", "That day", [["", "Keep the vehicle"], ["clear", "No vehicle"], ["jeep", "Jeep"], ["vehicle", "Higher vehicle"]])}
+                  {text("day", "Day number", { numeric: true, optional: !fields.dayChange })}
+                  {fields.dayChange === "vehicle" ? choose("dayVehicle", "Higher vehicle", [["", "Choose a vehicle"], ...vehicles.map((name): [string, string] => [name, name])]) : null}
+                  {fields.dayChange === "jeep" ? text("dayRent", "Jeep rent", { numeric: true }) : null}
+                  {fields.dayChange === "jeep" ? text("dayFuel", "Jeep fuel", { numeric: true }) : null}
+                </div>
+              </section>
+              <section className="quote-part" aria-labelledby="quote-extra-head">
+                <h4 id="quote-extra-head">Paid extra</h4>
+                <p className="help">One added cost, such as a permit or an entry ticket.</p>
+                <div className="form-grid">
+                  {text("extraName", "What it is", { optional: true })}
+                  {text("extraAmount", "Amount", { numeric: true, optional: true })}
+                </div>
+              </section>
             </div>
           </Card>
-
-          <Card title="Change one day" description="No vehicle, a jeep, or a higher vehicle on one day (BR-47).">
-            <div className="form-grid">
-              {choose("dayChange", "That day", [["", "Keep the vehicle"], ["clear", "No vehicle"], ["jeep", "Jeep"], ["vehicle", "Higher vehicle"]])}
-              {text("day", "Day number", { numeric: true, optional: !fields.dayChange })}
-              {fields.dayChange === "vehicle" ? choose("dayVehicle", "Higher vehicle", [["", "Choose a vehicle"], ...vehicles.map((name): [string, string] => [name, name])]) : null}
-              {fields.dayChange === "jeep" ? text("dayRent", "Jeep rent", { numeric: true }) : null}
-              {fields.dayChange === "jeep" ? text("dayFuel", "Jeep fuel", { numeric: true }) : null}
-            </div>
-          </Card>
-
-          <Card title="Paid extra" description="One added cost, such as a permit or an entry ticket.">
-            <div className="form-grid">
-              {text("extraName", "What it is", { optional: true })}
-              {text("extraAmount", "Amount", { numeric: true, optional: true })}
-            </div>
-          </Card>
-
           {result ? (
             <Card title="Nights and days" description="Each night's hotel rate and each day's vehicle. The edited night or day is marked.">
               <div className="form-grid">

@@ -855,6 +855,7 @@ async function assertOfficeRequests(savedIds: number[]) {
     await assertPricingRules(editorCookie, managerCookie);
     await assertDeskPricing(managerCookie);
     await assertStartCities(editorCookie, managerCookie);
+    await assertQuoteScreenV2(editorCookie, managerCookie);
     await assertBadRecordIds(editorCookie, managerCookie, ownerCookie, saved.body.id);
     await assertTourDeleteNotFound(editorCookie, managerCookie);
     await assertNulText(editorCookie);
@@ -952,7 +953,7 @@ type QuoteReply = {
   subtotal?: number;
   profit?: number;
   averageNightly?: number;
-  lines?: { label: string; amount: number; working?: string }[];
+  lines?: { label: string; amount: number; working: string }[];
   nights?: { night: number; rate: number }[];
   days?: { day: number; rent: number; fuel: number; toll: number; cleared: boolean }[];
 };
@@ -1636,7 +1637,7 @@ async function assertDeskPricing(managerCookie: string) {
 
   // 5 adults in 2 rooms: 1 room at 3-share and 1 at twin, and the working shows both.
   const five = hotelLine({ ...road, adults: 5, roomCount: 2 });
-  if (five.amount !== (hotel.triple + hotel.twin) * nights || five.working !== `1 room × ${triple} 3-share + 1 room × ${twin} twin × ${nights} nights`) {
+  if (five.amount !== (hotel.triple + hotel.twin) * nights || five.working !== `(1 room × ${triple} 3-share + 1 room × ${twin} twin) × ${nights} nights`) {
     throw new Error(`5 adults in 2 rooms priced the hotel at ${five.amount} (${five.working ?? ""}).`);
   }
   // 6 adults in 2 rooms: both at 3-share. 4 adults in 2 rooms: all twin.
@@ -1943,6 +1944,173 @@ async function assertStartCities(editorCookie: string, managerCookie: string) {
   if (skardu.subtotal !== 117000 || skardu.total !== 140400) throw new Error(`The Skardu quote is ${skardu.total}, not 140,400.`);
   const names = BACKUP_TABLES.map(([name]) => name);
   if (names.indexOf("start_cities") < 0 || names.indexOf("start_cities") > names.indexOf("activity")) throw new Error("start_cities is not in BACKUP_TABLES before activity.");
+}
+
+// T-49 (BR-93): a line's working read as a sum, with the words and "on night 2" left out. NaN when it
+// is not a sum.
+function workingValue(text: string) {
+  const sum = text
+    .replace(/\b(?:on |after )?(?:night|day) \d+/g, " ")
+    .replace(/[A-Za-z0-9-]*[A-Za-z][A-Za-z0-9-]*/g, " ")
+    .replace(/[·,]/g, "")
+    .replace(/×/g, "*");
+  const tokens = sum.match(/\d+|[+*()]|\S/g) ?? [];
+  let at = 0;
+  // sum := product ("+" product)*, product := part ("*" part)*, part := number | "(" sum ")"
+  const part = (): number => {
+    const token = tokens[at++];
+    if (token === "(") {
+      const value = add();
+      return tokens[at++] === ")" ? value : Number.NaN;
+    }
+    return token !== undefined && /^\d+$/.test(token) ? Number(token) : Number.NaN;
+  };
+  const multiply = (): number => {
+    let value = part();
+    while (tokens[at] === "*") {
+      at += 1;
+      value *= part();
+    }
+    return value;
+  };
+  const add = (): number => {
+    let value = multiply();
+    while (tokens[at] === "+") {
+      at += 1;
+      value += multiply();
+    }
+    return value;
+  };
+  const value = add();
+  return at === tokens.length ? value : Number.NaN;
+}
+
+// T-49 (BR-89, BR-92, BR-93, BR-94, BR-50): each line's working adds up to its amount, the office can
+// leave the air tickets out and type the rooms and vehicles, a guest cannot, and a saved quote keeps
+// the typed counts and the tickets.
+async function assertQuoteScreenV2(editorCookie: string, managerCookie: string) {
+  const office = (extra: Record<string, unknown>) => quoteReply({ seasonPercent: 20, ...extra }, managerCookie);
+  const guest = (extra: Record<string, unknown>) => quoteReply(extra, "");
+  const line = (reply: QuoteReply, label: string) => reply.lines?.find((row) => row.label === label);
+  const air = { mode: "air", vehicle: "Prado", days: 4 };
+
+  // Each line has a working, and its numbers add up to the amount.
+  const cases: [string, Record<string, unknown>][] = [
+    ["Skardu", {}],
+    ["Lahore road, 6 days, guide, dinner, lunch", { startCity: "Lahore", days: 6, guide: true, meals: true, lunch: true }],
+    ["5 adults, typed rooms and vehicles", { adults: 5, roomCount: 2, vehicleCount: 2 }],
+    ["a night edit, a cleared day, and a jeep day", { days: 6, nightEdits: [{ night: 2, rate: 30000 }], dayEdits: [{ day: 3, jeep: true, rent: 20000, fuel: 1000 }] }],
+    ["Karachi air with a child and two infants", { ...air, startCity: "Karachi", children: 1, lapInfants: 1, seatInfants: 1, meals: true }],
+    ["Lahore air with the tickets off", { ...air, startCity: "Lahore", tickets: false }],
+    ["Kalash with jeeps and a paid extra", { place: "Kalash Valley & Chitral", days: 6, adults: 7, paidExtras: [{ name: "T49 permit", amount: 3500 }] }],
+  ];
+  for (const [name, extra] of cases) {
+    const reply = await office(extra);
+    if (!reply.ok || !reply.lines?.length) throw new Error(`The T-49 quote "${name}" was not priced: ${reply.error ?? ""}`);
+    for (const row of reply.lines) {
+      if (!row.working) throw new Error(`The ${row.label} line of "${name}" has no working.`);
+      const value = workingValue(row.working);
+      if (value !== row.amount) throw new Error(`The ${row.label} working of "${name}" reads ${value}, not ${row.amount}: ${row.working}`);
+    }
+  }
+
+  // An air quote with the tickets off has no ticket line and keeps the welcome pack, entry, infant
+  // extra, and sticker. On by default.
+  const withTickets = await office({ ...air, lapInfants: 1 });
+  const noTickets = await office({ ...air, lapInfants: 1, tickets: false });
+  if (!line(withTickets, "Air tickets") || line(noTickets, "Air tickets")) throw new Error("Turning the tickets off did not remove the ticket line.");
+  for (const label of ["Welcome pack", "Entry", "Infant extra", "Sticker"]) {
+    if (line(noTickets, label)?.amount !== line(withTickets, label)?.amount) throw new Error(`With the tickets off, the ${label} line changed.`);
+  }
+  if ((noTickets.subtotal ?? 0) !== (withTickets.subtotal ?? 0) - (line(withTickets, "Air tickets")?.amount ?? 0)) throw new Error("With the tickets off, more than the ticket line changed.");
+
+  // Typing 3 rooms for 2 adults prices 3 rooms. Leaving the count out goes back to 1.
+  const auto = await office({});
+  const autoHotel = line(auto, "Hotel");
+  const threeRooms = await office({ roomCount: 3 });
+  const threeHotel = line(threeRooms, "Hotel");
+  if (!autoHotel || !threeHotel || threeHotel.amount !== autoHotel.amount * 3 || !threeHotel.working.startsWith("3 rooms × ")) {
+    throw new Error(`3 typed rooms priced the hotel at ${threeHotel?.amount ?? 0} (${threeHotel?.working ?? ""}).`);
+  }
+  const back = (await office({})) as QuoteReply & { rooms?: number; autoRooms?: number };
+  if (back.rooms !== 1 || back.autoRooms !== 1 || line(back, "Hotel")?.amount !== autoHotel.amount) throw new Error("Back to auto counts did not return to 1 room.");
+
+  // Typing 2 vehicles doubles the vehicle line.
+  const twoVehicles = await office({ vehicleCount: 2 });
+  if (line(twoVehicles, "Vehicle")?.amount !== (line(auto, "Vehicle")?.amount ?? 0) * 2) throw new Error("2 typed vehicles did not double the vehicle line.");
+  for (const bad of ["0", "61", "abc", "1.5"]) {
+    const refused = await fetch(`${siteBase()}/api/quote`, { method: "POST", headers: { "content-type": "application/json", cookie: managerCookie }, body: JSON.stringify({ ...SKARDU_QUOTE, vehicleCount: bad }) });
+    if (refused.status !== 400) throw new Error(`A typed vehicle count of "${bad}" returned ${refused.status}, not 400.`);
+  }
+
+  // A guest who sends a vehicle count or tickets off gets the normal quote, with no lines or profit.
+  const guestPlain = await guest({});
+  const guestTyped = await guest({ vehicleCount: 2 });
+  const guestAir = await guest({ ...air });
+  const guestAirOff = await guest({ ...air, tickets: false });
+  if (guestTyped.total !== guestPlain.total || guestAirOff.total !== guestAir.total) throw new Error("A guest changed the quote with a vehicle count or tickets off.");
+  if (guestTyped.lines !== undefined || guestAirOff.lines !== undefined || guestAirOff.profit !== undefined) throw new Error("A guest quote showed the lines or the profit.");
+
+  // A night-two edit still changes only that night and the average.
+  const night = await office({ nightEdits: [{ night: 2, rate: 20000 }] });
+  if (night.nights?.[1]?.rate !== 20000 || night.nights.some((row, index) => index !== 1 && row.rate !== auto.nights?.[index]?.rate)) throw new Error("A night-two edit changed another night.");
+  if (night.averageNightly !== ((auto.averageNightly ?? 0) * 4 - (auto.nights?.[1]?.rate ?? 0) + 20000) / 4) throw new Error("A night-two edit did not move the average.");
+
+  // A saved quote keeps the typed counts and the tickets, and rebuilt from the saved row it prices
+  // the same. Without typed counts the columns are empty and the tickets are on.
+  const [before] = await db.select({ id: max(quotes.id) }).from(quotes);
+  const saveForm = (values: Record<string, string | number>) =>
+    formOf({ kind: "quote", place: "Skardu Valley", startCity: "Islamabad", mode: "air", days: 4, adults: 2, grade: "Deluxe", vehicle: "Prado", seasonPercent: 20, ...values });
+  try {
+    const editorSave = await officePost("/api/office/rates", saveForm({ roomCount: 3, vehicleCount: 2, tickets: "off" }), editorCookie);
+    if (editorSave.status !== 403) throw new Error(`An Editor's quote save returned ${editorSave.status}.`);
+    const typedSave = await officePost("/api/office/rates", saveForm({ roomCount: 3, vehicleCount: 2, tickets: "off" }), managerCookie);
+    const plainSave = await officePost("/api/office/rates", saveForm({}), managerCookie);
+    const badSave = await officePost("/api/office/rates", saveForm({ roomCount: "abc" }), managerCookie);
+    if (typedSave.status !== 200 || plainSave.status !== 200 || badSave.status !== 400) throw new Error(`The quote saves returned ${typedSave.status}, ${plainSave.status}, and ${badSave.status}.`);
+    const saved = await db.select().from(quotes).where(gt(quotes.id, before?.id ?? 0)).orderBy(quotes.id);
+    const [typed, plain] = saved;
+    if (saved.length !== 2 || !typed || !plain) throw new Error(`The quote saves stored ${saved.length} quotes, not 2.`);
+    if (typed.roomCount !== 3 || typed.vehicleCount !== 2 || typed.tickets !== false) throw new Error(`A saved quote kept rooms ${typed.roomCount}, vehicles ${typed.vehicleCount}, tickets ${typed.tickets}.`);
+    if (plain.roomCount !== null || plain.vehicleCount !== null || plain.tickets !== true) throw new Error("A saved quote without typed counts did not keep empty counts and the tickets on.");
+    const catalog = await loadCatalog();
+    for (const row of saved) {
+      const rebuilt = buildQuote(
+        {
+          place: row.place,
+          startCity: row.startCity,
+          mode: row.mode === "air" ? "air" : "road",
+          days: row.days,
+          adults: row.adults,
+          children: row.children,
+          lapInfants: row.lapInfants,
+          seatInfants: row.seatInfants,
+          grade: row.grade,
+          vehicle: row.vehicle,
+          guide: row.guide,
+          meals: row.meals,
+          lunch: row.lunch,
+          tickets: row.tickets !== false,
+          roomCount: row.roomCount ?? undefined,
+          vehicleCount: row.vehicleCount ?? undefined,
+          seasonPercent: row.seasonPercent,
+        },
+        catalog,
+      );
+      if (!rebuilt.ok || rebuilt.total !== row.total) throw new Error(`Saved quote ${row.id} rebuilt to ${rebuilt.ok ? rebuilt.total : rebuilt.error}, not ${row.total}.`);
+    }
+  } finally {
+    const made = await db.select({ id: quotes.id }).from(quotes).where(gt(quotes.id, before?.id ?? 0));
+    for (const { id } of made) {
+      await db.delete(quoteNights).where(eq(quoteNights.quoteId, id));
+      await db.delete(quoteDays).where(eq(quoteDays.quoteId, id));
+      await db.delete(quoteExtras).where(eq(quoteExtras.quoteId, id));
+      await db.delete(quotes).where(eq(quotes.id, id));
+    }
+  }
+
+  // The Skardu test is still 140,400.
+  if (auto.subtotal !== 117000 || auto.total !== 140400) throw new Error(`The Skardu quote is ${auto.total}, not 140,400.`);
 }
 
 async function assertProfitMargin(editorCookie: string, managerCookie: string) {

@@ -243,6 +243,11 @@ export const quotes = pgTable("quotes", {
   guide: boolean("guide").notNull(),
   meals: boolean("meals").notNull(),
   lunch: boolean("lunch").notNull().default(false),
+  // T-49 (BR-89, BR-92): the counts staff typed, null when the quote used the automatic count, and
+  // whether the air tickets were in. Null on quotes saved before T-49, which had the tickets.
+  roomCount: integer("room_count"),
+  vehicleCount: integer("vehicle_count"),
+  tickets: boolean("tickets"),
   seasonPercent: integer("season_percent").notNull(),
   subtotal: integer("subtotal").notNull(),
   profit: integer("profit").notNull(),
