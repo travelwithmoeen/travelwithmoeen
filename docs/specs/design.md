@@ -307,7 +307,7 @@ Run `node docs/office-design/src/build.mjs` and open `docs/office-design/meadow.
 - Tokens. Copy the custom properties in `base.css` and `meadow.css` into one office stylesheet, such as `components/office/meadow.css`. Scope every rule under one office root class on the office layout, so no token or class reaches a public page. Do not add them to the Tailwind `@theme`, because that is global.
 - Classes. Port the prototype classes the screens use, such as `card`, `btn`, `field`, `tbl`, `badge`, `alert`, `stat`, `seg-status`, and `drawer`, into the same scoped stylesheet. Wrap them in small components under `components/office/ui/`. A screen uses those components, not new one-off styles.
 - Icons. The prototype draws each icon from one path list, `IC` in `core.js`. Port it as one `Icon` component with the same paths.
-- High contrast. The prototype has a `data-theme="hc"` mode. It is not part of T-37.
+- Appearance and density. The prototype has System, Light, Dark, and High contrast, and Comfortable and Compact, in the account menu. They are not part of T-37. T-62 puts them on a Settings page, as section 16 says.
 - Phone. The prototype sidebar becomes a menu on a phone. Keep that, and keep the quote form full width on a phone.
 
 ### Shell and roles
@@ -468,3 +468,47 @@ The TWM team moved to the Vercel Pro plan on 13 November 2026 after the Hobby li
 - **Role checks.** The cache holds only the file list. The Owner check in `listBackupsAs` runs on every request, outside the cache.
 - **Downloads.** `readBackupAs` still reads the chosen file each time. A download is rare and is not cached.
 - **Testing.** Local runs use the stand-in in section 14a, never a Vercel store. To see the backup list locally, set `BLOB_READ_WRITE_TOKEN` to the stand-in token for that check only, and leave it empty for `check-step3`, whose guard refuses it.
+
+## 16. Office settings page, T-62
+
+The rules are BR-117 to BR-122. The look values come from the prototype, `docs/office-design/src/base.css` and `meadow.css`. Do not design new colours.
+
+- **Name.** Add a nullable `name` text column to `users` in `lib/db/schema.ts`, with a migration under `drizzle/` that takes the next free number. Existing logins get no name. The session reads the name with the email and role, so the account menu can show it without another query.
+- **Profile save.** `POST /api/office/settings/profile`, through `lib/http/handle-form.ts` like every office save, with the logic in `lib/office/settings.ts`. It takes one field, `name`. It trims it, refuses a name over 60 characters with 400 "A name can be up to 60 characters.", stores an empty name as no name, and updates only the row of the signed-in user from the session. It does not read a user id from the request. It writes one activity row, "Changed their name", so the Owner can see who renamed themselves. Add the route to requirements section 13.
+- **Where the name shows.** The account button and the account menu header show the name, with initials from the name. The Users list shows the name above the email. "Saved by" keeps storing the email in the activity row, as today, and shows the current name of the login with that email, with the email in a `title`. A removed login, or a login with no name, shows the email.
+- **Page.** `app/office/(panel)/settings/page.tsx`, open to every signed-in role, with a Profile card (name field and Save, email and role as plain text, and a line that the Owner changes logins under Users), an Appearance card with four segmented buttons, and a Density card with two, each button with `aria-pressed`. Add a Settings item with the `sliders` icon, or a gear icon added to `Icon`, to the account menu in `OfficeFrame`, between the header and Sign out. Do not add it to the side menu.
+- **Choices.** Add `components/office/appearance.ts` with the two cookie names, `twm_office_theme` and `twm_office_density`, the allowed values, `system`, `light`, `dark`, `hc` and `comfortable`, `compact`, and one function that reads a value and returns the default, `light` or `comfortable`, for a missing or unknown value. Set each cookie as the sidebar cookie is set today: `path=/office`, one year, `samesite=lax`. The look stays per browser, not in the database, so the sign-in page can use it too.
+- **No flash.** `app/office/layout.tsx` reads both cookies with `cookies()` from `next/headers` and puts `data-theme` and `data-density` on the `.office` root, so the first paint is already right. For `system` it leaves `data-theme` off. Read the Next 16 guide for `cookies()` in `node_modules/next/dist/docs/` first. The office pages already render on each request, so this changes no caching. Give the root a `data-office-root` attribute too. A press on the Settings page sets the cookie and changes the attribute on the `[data-office-root]` element at once. Do not select `.office` for this: the page-move bar's root also has that class (T-50).
+- **Styles.** In `components/office/meadow.css`, inside the same layer, scope every prototype rule under `.office` in place of `:root`:
+  - Dark: the `.office[data-theme="dark"]` block is already there. Remove its "Not switched on yet" comment. Add the same values under `@media (prefers-color-scheme: dark) { .office:not([data-theme]) { … } }` for System.
+  - High contrast: the `[data-theme="hc"]` colour block, `--focus-w: 3px`, and the `hc` rules for `.badge`, `.alert`, `.card`, `.drawer`, `.dlg`, `.toast`, `.tab`, and `.seg-btn`.
+  - Compact: the `[data-density="compact"]` block, which sets `--size-md`, `--size-lg`, `--pad`, and `--gap`.
+  - Keep the `forced-colors` rules as they are.
+- **The account menu fits.** In the prototype the account menu is 260 pixels wide and the side menu is 244, and the side menu scrolls, so the menu is cut off on the right with a scrollbar. Found on 15 November 2026. The live menu has the same width. With the side menu open, make the account menu exactly as wide as the side menu: set `min-width: 0` on `.office .pop-up` and keep `left: 0; right: 0`. With the side menu collapsed, open it to the right of the side menu, lined up with its bottom, 248 pixels wide, above the page content. Do not add `overflow` to `.office .side`.
+- **Not changed.** The page-move bar keeps the light primary colour in every look, because its root sits outside the `.office` root. It is visible on dark. The public site, its stylesheet, and the Tailwind `@theme` do not change.
+- **Not ported.** The prototype's Keyboard shortcuts item, its Office guide and design link, and its demo bar.
+- **Testing.** Local run only, no Blob use. Screenshot each office screen in each look, at least the dashboard, a rate table, the request inbox, an editor drawer, the Settings page, and the sign-in page, so a part that keeps a light colour is caught. Text checks alone do not catch a look problem.
+
+## 17. Roles and access, T-63
+
+The rules are BR-123 to BR-130. Read section 11 of the requirements and `lib/auth/permissions.ts` first. The aim is that every check keeps its place in the code and only its answer moves to the database.
+
+- **Permissions in code.** `lib/auth/permissions.ts` holds one list of permission keys with their names and help texts: `requests.read`, `requests.status`, `content.edit`, `tours.delete`, `rates.edit`. The Owner-only actions in BR-125 are not keys. They stay `role.isOwner` checks.
+- **Tables.** One migration, next free number:
+  - `roles`: `id`, `name` (unique on `lower(name)`), `is_owner` (true on one row only, enforced by a partial unique index), `created_at`.
+  - `role_permissions`: `role_id`, `permission`, primary key on both, `permission` checked against the key list.
+  - `users.role_id` references `roles.id`, not null, with no cascade delete. The migration adds Owner, Manager, and Editor rows, gives Manager and Editor today's permissions (Manager: `requests.read`, `requests.status`, `rates.edit`; Editor: `requests.read`, `content.edit`, `tours.delete`), sets each login's `role_id` from its `role`, and then drops the `role` column and the `user_role` enum. Test the migration on a copy of the preview backup on a local run before review.
+- **Checks.** The session loads the person's role and its permissions on each request, from the database, so a change applies at once (BR-129). Do not cache permissions. `canEditContent`, `canEditRates`, `canDeleteTour`, `canUpdateRequestStatus` become `can(user, key)` with the same call sites. `canManageUsers`, `canDeleteRequest`, and `canRunBackup` become `isOwner(user)`. The session view sends the same `can…` booleans, so `office-nav.ts` and the screens change only where they read the role name. The activity read filter in section 11 maps areas to permissions: `rates` needs `rates.edit`, `content` needs `content.edit`, `requests` needs `requests.read`, and `users`, `backups`, and `roles` are Owner only.
+- **No escalation.** `POST /api/office/roles` refuses any request from a non-Owner with 403, refuses an unknown permission key with 400, refuses any change to the Owner role with 400, and refuses giving a role an Owner-only action, because those are not keys. A login's role change under Users accepts any role id that exists, and still refuses removing or demoting the last Owner, as today.
+- **Page.** `app/office/(panel)/roles/page.tsx`: a table of roles, permissions as ticks, and the login count. Add role, Rename, Change permissions, and Delete open in the existing drawer and dialog components. The Users screen role picker lists every role.
+- **Activity.** Area `roles`, Owner only, with the role name and the keys added and removed.
+- **Tests.** `scripts/check-step3.ts` today tests the three roles. Keep those cases. Add: a custom role with only `rates.edit` can save a rate and is refused a tour save and a request status change; removing `content.edit` from Editor refuses that Editor's next tour save with 403 without a sign-out; a Manager and an Editor get 403 from `POST /api/office/roles`; an unknown key, a change to Owner, and a delete of a role with logins are each refused; deleting an empty role works.
+
+## 18. Office logo, T-64
+
+The rule is BR-131.
+
+- **File.** Use `public/images/logo/logo.png`, the 200 by 200 file the public `Navbar` already uses. Do not add a copy, and do not upload it to the media store.
+- **Markup.** In `components/office/OfficeFrame.tsx` and `app/office/login/page.tsx`, replace the `TM` text in `<span className="logo">` with `next/image`, `src="/images/logo/logo.png"`, `alt=""`, because the name "Travel With Moeen" is next to it as text, and the `width` and `height` of the shown size. Add `priority` on the sign-in page only. Read the Next 16 guide for `Image` in `node_modules/next/dist/docs/` first.
+- **Size.** 32 pixels in the side menu, open and collapsed, and 64 pixels on the sign-in page, each a circle: `border-radius: 50%` and `object-fit: cover` on `.office .logo`, with the letter-badge background, colour, and font removed. Add a `.office .login-brand .logo` size rule for 64 pixels. Keep the `--logo-bg` and `--logo-ink` tokens, because the dark block sets them, but nothing reads them after this.
+- **Not changed.** The public site header and footer, the browser tab icon, and the Meadow prototype.

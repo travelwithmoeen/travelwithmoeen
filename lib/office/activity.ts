@@ -17,6 +17,8 @@ export const ACTIVITY_AREA_OF_KIND = {
   vehicle_rate: "rates",
   jeep_line: "rates",
   air_extra: "rates",
+  start_city: "rates",
+  place_rename: "rates",
   margin: "rates",
   pricing_rule: "rates",
   meal_rate: "rates",

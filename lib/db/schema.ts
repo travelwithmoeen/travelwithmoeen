@@ -180,6 +180,19 @@ export const airExtras = pgTable("air_extras", {
   sticker: integer("sticker").notNull(),
 });
 
+// BR-91: where a trip starts. The air extra is added to the Islamabad ticket. The long-route extra
+// is an amount per vehicle per day after a number of days on a road trip. A start city is not deleted.
+export const startCities = pgTable("start_cities", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull().unique(),
+  road: boolean("road").notNull(),
+  air: boolean("air").notNull(),
+  airExtra: integer("air_extra").notNull().default(0),
+  longRouteAfterDays: integer("long_route_after_days"),
+  longRoutePerVehicleDay: integer("long_route_per_vehicle_day").notNull().default(0),
+  sortOrder: integer("sort_order").notNull().default(0),
+});
+
 export const jeepLines = pgTable("jeep_lines", {
   id: serial("id").primaryKey(),
   place: text("place").notNull(),
@@ -230,6 +243,11 @@ export const quotes = pgTable("quotes", {
   guide: boolean("guide").notNull(),
   meals: boolean("meals").notNull(),
   lunch: boolean("lunch").notNull().default(false),
+  // T-49 (BR-89, BR-92): the counts staff typed, null when the quote used the automatic count, and
+  // whether the air tickets were in. Null on quotes saved before T-49, which had the tickets.
+  roomCount: integer("room_count"),
+  vehicleCount: integer("vehicle_count"),
+  tickets: boolean("tickets"),
   seasonPercent: integer("season_percent").notNull(),
   subtotal: integer("subtotal").notNull(),
   profit: integer("profit").notNull(),

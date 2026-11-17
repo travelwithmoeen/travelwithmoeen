@@ -205,6 +205,42 @@ On 3 November 2026 the team found that an office upload over about 4.5 MB never 
 | BR-103 | A save that names an uploaded file checks that file before the record changes: it is in this environment's media store under `media/`, it is under the size limit, and its first bytes are a JPEG, PNG, or WebP for a picture, or a PDF for a PDF, as BR-59 and BR-76 say. A file that fails is deleted and the save is refused with the reason. |
 | BR-104 | A refused save deletes the files it uploaded, as T-40 does today. A file uploaded for a save that is never sent, because the page was closed, stays in the store until a later cleanup. |
 
+## 8f. Office settings page, 15 November 2026
+
+The Meadow prototype Moeen reviewed has an Appearance choice and a Density choice in the account menu. The T-37 spec left them out, so the live office has one light look, and a person is shown only by their email. On 15 November 2026 Zeeshan chose one Settings page for a person's own name and look, in place of more items in the account menu. Task T-62 builds these rules. They do not wait for Moeen, and they are not Phase 2.
+
+| ID | Requirement |
+|---|---|
+| BR-117 | Every signed-in Owner, Manager, and Editor has a Settings page at `/office/settings`, for their own login only. It opens from a Settings item in the account menu, between the signed-in name and Sign out. The page has three parts: Profile, Appearance, and Density. It is not Site details, which edits the public site. |
+| BR-118 | Profile shows the person's name, email, and role. The person can set or change their own name, from 1 to 60 characters, or clear it. The email and the role cannot be changed here: the Owner changes logins under Users. A person cannot change another person's name. |
+| BR-119 | When a person has a name, the office shows it in place of the email in the account menu and its initials, in the Users list next to the email, and in "Saved by" with the email shown when the pointer rests on it. With no name, or for a login that has been removed, the office shows the email as today. |
+| BR-120 | Appearance is System, Light, Dark, or High contrast. System follows the light or dark setting of the person's device. Density is Comfortable or Compact. Compact makes buttons, fields, and the gaps between them smaller, so more rows of a rate table or the request inbox fit on the screen. Light and Comfortable are today's look and stay the choice until the person picks another. |
+| BR-121 | An Appearance or Density choice applies at once, without a Save button, and it is kept in that browser for one year, through a reload, a sign-out, and the sign-in page. It applies to the office only. The public site does not change. An office page opens in the chosen look, with no flash of another look first. |
+| BR-122 | Every look meets the WCAG 2.2 AA contrast the prototype was checked for. High contrast has black text and borders on white and a 3-pixel focus ring. The prototype menu also has Keyboard shortcuts and Office guide and design. They are not part of this: the office has no keyboard shortcuts yet, and the design page is for developers. Changing a password is not part of this either: the Owner still removes the login and creates it again. |
+
+## 8g. Roles and access, 15 November 2026
+
+Today the office has three fixed roles, and what each one may do is written in the code (BR-01 to BR-07). There is no page to see it or change it. On 15 November 2026 Zeeshan asked for the Owner to manage roles: change what Manager and Editor may do, and add new roles. Task T-63 builds these rules. It changes rules Moeen approved, so it starts only when sign-off row S-16 is Approved or Changed. Until T-63 is merged, BR-01 to BR-07 apply as written.
+
+| ID | Requirement |
+|---|---|
+| BR-123 | The Owner has a Roles page at `/office/roles`, under Admin in the side menu, next to Users. It lists every role with its permissions and how many logins have it. No other role can open it. |
+| BR-124 | A permission is one thing a role may do. The list is fixed in the code, and each has a plain name and a one-line help text on the page: Read guest requests, Change a guest request's status, Edit tours, places, blog, gallery, reviews, home slides, and site details (with uploads), Delete a tour, and Edit rates, quotes, profit margin, and the live price download. A new permission is added only by a task. |
+| BR-125 | Some things stay with the Owner role only and cannot be given to another role: create, remove, or change a login, manage roles, back up and download backups, delete a price row, and delete a guest request. The Owner role always has every permission. It cannot be renamed, changed, or deleted. |
+| BR-126 | The Owner can add a role with a name from 2 to 40 characters, unique without regard to case, and tick its permissions. The Owner can rename a role other than Owner and change its permissions. Manager and Editor start with exactly the permissions they have today, so nothing changes until the Owner changes it. |
+| BR-127 | The Owner can delete a role other than Owner only when no login has it. A role with logins shows how many, and the delete is refused with "Move these logins to another role first." |
+| BR-128 | Under Users, the Owner picks any role for a login, as today with the three roles. |
+| BR-129 | A change to a role applies on that person's next page or save, with no sign-out. A person who loses a permission is refused from then on, with the same 403 as today, and the side menu, the New menu, and the dashboard show only what their role allows. |
+| BR-130 | Every role change, add, rename, and delete writes an activity row that only the Owner can read, naming the role and the permissions added and removed. The four security tests in section 12 run again before T-63 is accepted. |
+
+## 8h. Office logo, 15 November 2026
+
+On 15 November 2026 Zeeshan asked for the Travel With Moeen logo in the office. Today the office shows a "TM" letter badge. Task T-64 builds this rule. It does not wait for Moeen.
+
+| ID | Requirement |
+|---|---|
+| BR-131 | The office shows the round Travel With Moeen logo, the same picture as the public site header, in place of the "TM" badge: in the side menu next to "Travel With Moeen, Office", where it is the only mark left when the side menu is collapsed, and above the title on the sign-in page. It is a circle, sharp on a high-density screen, and looks right in every office look. The public site does not change. |
+
 ## 9. Phase 3, after the baseline, office media, and Phase 2
 
 These were asked for on September 29, 2026. They are kept in the plan. They are sprint 4. They are not built in the baseline or in office media. The Meadow file shows them on Trip plans so they can be reviewed. They are not part of the live office until Phase 2 and Phase 3. Phase 2 is accepted before Phase 3 starts. Office media is accepted. The Meadow office, BR-82, is accepted before Phase 2 starts.
@@ -324,6 +360,8 @@ This list is the whole project. A new office route is added to this list in the 
 | Rates, profit margin, vehicles, jeep lines, paid extras, pricing rules, rate places, start cities, and the live price Excel download | Owner or Manager. The writes from T-47 and T-48 go through `POST /api/office/rates`, like the other rate saves. |
 | `POST /api/office/tours/delete` | Owner or Editor. Deletes a tour. A Manager is refused. |
 | Create a login, remove a login, change a role, delete a price row, delete a guest request | Owner only. |
+| `GET /office/settings` and `POST /api/office/settings/profile` | A signed-in Owner, Manager, or Editor. The save changes only the name of the signed-in login, read from the session, never from the request. T-62. |
+| `GET /office/roles` and `POST /api/office/roles` | Owner only. Adds, renames, changes, and deletes roles (BR-123 to BR-127). After T-63, the rows in this table that name Manager or Editor mean a role with the matching permission in BR-124. T-63. |
 | `GET /api/office/requests` | A signed-in Owner, Manager, or Editor. |
 | `GET /api/office/activity` | A signed-in Owner, Manager, or Editor. Returns only rows for areas that role can open, which is BR-86. Read only. |
 | `GET /api/office/rates` | Owner or Manager. |

@@ -4,17 +4,17 @@ import path from "path";
 import { spawn } from "child_process";
 import { del, head, list, put } from "@vercel/blob";
 import { upload } from "@vercel/blob/client";
-import { count, eq, gt, like, max } from "drizzle-orm";
+import { and, count, eq, gt, inArray, like, max } from "drizzle-orm";
 import postgres from "postgres";
 import { drizzle } from "drizzle-orm/postgres-js";
 import { db, sql } from "../lib/db";
-import { activity, guestRequests, hotelRates, jeepLines, loginFailures, mealRates, pricingRules, photos, places, posts, quoteDays, quoteExtras, quoteNights, quotes, reviews, seasons, slides, tourDays, tourPlaces, tours, users, vehicleRates } from "../lib/db/schema";
+import { activity, airExtras as airExtrasTable, guestRequests, hotelRates, jeepLines, loginFailures, mealRates, pricingRules, photos, places, posts, quoteDays, quoteExtras, quoteNights, quotes, reviews, seasons, slides, startCities, tourDays, tourPlaces, tours, users, vehicleRates } from "../lib/db/schema";
 import { inferTourPlaceLinks, linkInferredTourPlaces } from "../lib/office/tour-places";
 import { authenticate } from "../lib/auth/authenticate";
 import { createUserAs, removeUserAs } from "../lib/office/users";
 import { officeMediaPath } from "../lib/office/media";
 import { BACKUP_TABLES, readBackupFile } from "../lib/office/backup";
-import { buildQuote, type QuoteInput } from "../lib/quote";
+import { buildQuote, quoteOptions, type QuoteInput } from "../lib/quote";
 import { loadCatalog } from "../lib/rates";
 import { GUEST_EMAIL_LIMIT, GUEST_MESSAGE_LIMIT, GUEST_NAME_LIMIT, GUEST_PHONE_LIMIT } from "../lib/requests";
 
@@ -854,6 +854,8 @@ async function assertOfficeRequests(savedIds: number[]) {
     await assertQuoteEditsThroughRoutes(managerCookie);
     await assertPricingRules(editorCookie, managerCookie);
     await assertDeskPricing(managerCookie);
+    await assertStartCities(editorCookie, managerCookie);
+    await assertQuoteScreenV2(editorCookie, managerCookie);
     await assertBadRecordIds(editorCookie, managerCookie, ownerCookie, saved.body.id);
     await assertTourDeleteNotFound(editorCookie, managerCookie);
     await assertNulText(editorCookie);
@@ -951,7 +953,7 @@ type QuoteReply = {
   subtotal?: number;
   profit?: number;
   averageNightly?: number;
-  lines?: { label: string; amount: number; working?: string }[];
+  lines?: { label: string; amount: number; working: string }[];
   nights?: { night: number; rate: number }[];
   days?: { day: number; rent: number; fuel: number; toll: number; cleared: boolean }[];
 };
@@ -1635,7 +1637,7 @@ async function assertDeskPricing(managerCookie: string) {
 
   // 5 adults in 2 rooms: 1 room at 3-share and 1 at twin, and the working shows both.
   const five = hotelLine({ ...road, adults: 5, roomCount: 2 });
-  if (five.amount !== (hotel.triple + hotel.twin) * nights || five.working !== `1 room × ${triple} 3-share + 1 room × ${twin} twin × ${nights} nights`) {
+  if (five.amount !== (hotel.triple + hotel.twin) * nights || five.working !== `(1 room × ${triple} 3-share + 1 room × ${twin} twin) × ${nights} nights`) {
     throw new Error(`5 adults in 2 rooms priced the hotel at ${five.amount} (${five.working ?? ""}).`);
   }
   // 6 adults in 2 rooms: both at 3-share. 4 adults in 2 rooms: all twin.
@@ -1684,6 +1686,431 @@ async function assertDeskPricing(managerCookie: string) {
   if (office.total !== 140400 || officeHotel?.working !== `1 room × ${twin} twin × ${nights} nights`) {
     throw new Error(`The office Skardu quote is ${office.total ?? 0} with hotel working "${officeHotel?.working ?? ""}".`);
   }
+}
+
+type DeskReply = {
+  hotels: { place: string; startCity: string; offered: boolean }[];
+  vehicles: { place: string; startCity: string; mode: string; live: boolean }[];
+  startCities: { id: number; name: string; road: boolean; air: boolean; airExtra: number; longRouteAfterDays: number | null; longRoutePerVehicleDay: number }[];
+};
+
+// The office Quote screen's lists, from GET /api/office/rates and the one lib/ function the page uses.
+async function officeQuoteOptions(managerCookie: string) {
+  const response = await fetch(`${siteBase()}/api/office/rates`, { headers: { cookie: managerCookie } });
+  const body = (await response.json()) as { ok?: boolean; desk?: DeskReply };
+  if (!body.ok || !body.desk) throw new Error(`A Manager could not read the rates (${response.status}).`);
+  return { desk: body.desk, options: quoteOptions(body.desk.hotels, body.desk.vehicles, body.desk.startCities) };
+}
+
+// The options of one select on a server-rendered office page.
+function selectOptions(html: string, id: string) {
+  const select = new RegExp(`<select[^>]*id="${id}"[^>]*>([\\s\\S]*?)</select>`).exec(html);
+  if (!select) return null;
+  return [...select[1].matchAll(/<option[^>]*value="([^"]*)"/g)].map((match) => decodeHtml(match[1]));
+}
+
+// T-48 (BR-90, BR-91, BR-19 to BR-21, BR-42, BR-86): the start cities and the rate places. The Lahore
+// and Karachi amounts come from the start city, a place is offered only with a hotel rate and a
+// vehicle rate, a rename moves every rate row, and only an Owner or a Manager can save.
+async function assertStartCities(editorCookie: string, managerCookie: string) {
+  const stamp = Date.now();
+  const place = `T48 Place ${stamp}`;
+  const renamed = `T48 Renamed ${stamp}`;
+  const city = `T48 City ${stamp}`;
+  const town = `T48 Town ${stamp}`;
+  const twinCity = `T48 Twin ${stamp}`;
+  const [lahore] = await db.select().from(startCities).where(eq(startCities.name, "Lahore"));
+  const [karachi] = await db.select().from(startCities).where(eq(startCities.name, "Karachi"));
+  const [islamabad] = await db.select().from(startCities).where(eq(startCities.name, "Islamabad"));
+  if (!lahore || !karachi || !islamabad) throw new Error("The start cities Islamabad, Lahore, and Karachi are not stored.");
+  if (!islamabad.road || !islamabad.air || islamabad.airExtra !== 0) throw new Error("Islamabad does not start road and air trips with no air extra.");
+  if (!lahore.road || !lahore.air || lahore.longRouteAfterDays !== 3 || lahore.longRoutePerVehicleDay !== 5000) throw new Error("Lahore does not have the 5,000 long-route extra after 3 days.");
+  if (karachi.road || !karachi.air || karachi.airExtra !== 30000) throw new Error("Karachi is not air only with a 30,000 air extra.");
+  const lahoreForm = (airExtra: number) =>
+    formOf({ kind: "start_city", id: lahore.id, name: lahore.name, road: "on", air: "on", airExtra, longRouteAfterDays: lahore.longRouteAfterDays ?? "", longRoutePerVehicleDay: lahore.longRoutePerVehicleDay });
+  // A good save writes one activity row, and a refused save writes none.
+  const saves = async (form: FormData, cookie: string, status: number, what: string) => {
+    const before = await activityCount();
+    const result = await officePost("/api/office/rates", form, cookie);
+    if (result.status !== status) throw new Error(`${what} returned ${result.status}, not ${status}: ${result.body.error ?? ""}`);
+    const written = (await activityCount()) - before;
+    if (written !== (status === 200 ? 1 : 0)) throw new Error(`${what} wrote ${written} activity rows.`);
+    return result;
+  };
+  const quote = (extra: Record<string, unknown>) => quoteReply({ seasonPercent: 20, ...extra }, managerCookie);
+  const line = (reply: QuoteReply, label: string) => reply.lines?.find((row) => row.label === label)?.amount;
+
+  try {
+    // Karachi is not offered for a road trip, on the screen or in its lists, and a road quote from
+    // Karachi is refused with 400 through the quote route and the office save.
+    const page = await officePage("/office/rates/quote", managerCookie);
+    const shownCities = selectOptions(page.html, "quote-startCity");
+    if (page.status !== 200 || !shownCities || shownCities.includes("Karachi") || !shownCities.includes("Islamabad") || !shownCities.includes("Lahore")) {
+      throw new Error(`The office Quote screen offers these road start cities: ${shownCities?.join(", ") ?? "none"}.`);
+    }
+    const start = await officeQuoteOptions(managerCookie);
+    if (start.options.startCities.road.includes("Karachi") || !start.options.startCities.air.includes("Karachi")) throw new Error("Karachi is offered for a road trip, or not for an air trip.");
+    if (!start.options.places.road.Islamabad?.includes("Skardu Valley")) throw new Error("Skardu Valley is not offered from Islamabad by road.");
+    const karachiRoad = await fetch(`${siteBase()}/api/quote`, {
+      method: "POST",
+      headers: { "content-type": "application/json", cookie: managerCookie },
+      body: JSON.stringify({ ...SKARDU_QUOTE, startCity: "Karachi" }),
+    });
+    if (karachiRoad.status !== 400) throw new Error(`A road quote from Karachi returned ${karachiRoad.status}.`);
+    const savedKarachi = await officePost("/api/office/rates", formOf({ kind: "quote", place: SKARDU_QUOTE.place, mode: "road", startCity: "Karachi", days: 5, adults: 2, grade: "Deluxe", vehicle: "Gli Car" }), managerCookie);
+    if (savedKarachi.status !== 400) throw new Error(`An office save of a road quote from Karachi returned ${savedKarachi.status}.`);
+    const unknown = await quote({ startCity: "Nowhere" });
+    if (unknown.ok) throw new Error("A quote from a city that is not a start city was priced.");
+
+    // A Lahore 5-day road trip adds 10,000 for one vehicle, as before.
+    const lahoreRoad = await quote({ startCity: "Lahore" });
+    if (line(lahoreRoad, "Lahore road extra") !== 10000) throw new Error(`A Lahore 5-day road trip added ${line(lahoreRoad, "Lahore road extra") ?? 0}, not 10,000.`);
+    const lahoreFour = await quote({ startCity: "Lahore", adults: 5 });
+    if (line(lahoreFour, "Lahore road extra") !== 10000 * Math.ceil(5 / 4)) throw new Error(`A Lahore 5-day trip for 5 adults added ${line(lahoreFour, "Lahore road extra") ?? 0}, not 10,000 for each vehicle.`);
+    if (line(await quote({ startCity: "Lahore", days: 3 }), "Lahore road extra") !== undefined) throw new Error("A 3-day Lahore trip added the long-route extra.");
+    const islamabadRoad = await quote({});
+    if (line(islamabadRoad, "Islamabad road extra") !== undefined || islamabadRoad.total !== 140400) throw new Error("The Islamabad Skardu quote changed.");
+
+    // Changing Lahore's air extra changes a Lahore air quote, and only by that amount per adult.
+    const air = { startCity: "Lahore", mode: "air", vehicle: "Prado", days: 4, adults: 1 };
+    const airBefore = line(await quote(air), "Air tickets");
+    const [ticket] = await db.select({ islamabadTicket: airExtrasTable.islamabadTicket }).from(airExtrasTable).limit(1);
+    if (airBefore !== (ticket?.islamabadTicket ?? 0) + lahore.airExtra) throw new Error(`A Lahore air ticket is ${airBefore ?? 0}, not the Islamabad ticket plus Lahore's air extra.`);
+    await saves(lahoreForm(lahore.airExtra + 2500), editorCookie, 403, "An Editor's start city save");
+    await saves(lahoreForm(lahore.airExtra + 2500), managerCookie, 200, "A Manager's Lahore air extra save");
+    const airAfter = line(await quote(air), "Air tickets");
+    if (airAfter !== (airBefore ?? 0) + 2500) throw new Error(`After a 2,500 change to Lahore's air extra, the Lahore air ticket is ${airAfter ?? 0}.`);
+    const karachiAir = line(await quote({ ...air, startCity: "Karachi" }), "Air tickets");
+    if (karachiAir !== (ticket?.islamabadTicket ?? 0) + karachi.airExtra) throw new Error("Changing Lahore's air extra changed a Karachi air ticket.");
+    await saves(lahoreForm(lahore.airExtra), managerCookie, 200, "Putting Lahore's air extra back");
+
+    // The Air extras tab saves without the old Lahore and Karachi adds, and leaves them as they were.
+    const [airRow] = await db.select().from(airExtrasTable).limit(1);
+    if (!airRow) throw new Error("The air extras are not stored.");
+    const airPage = await officePage("/office/rates/air", managerCookie);
+    if (airPage.html.includes('name="lahoreAdd"') || airPage.html.includes('name="karachiAdd"')) throw new Error("The Air extras tab still shows the Lahore and Karachi adds.");
+    await saves(
+      formOf({ kind: "air", islamabadTicket: airRow.islamabadTicket, welcomePack: airRow.welcomePack, entry: airRow.entry, infantExtra: airRow.infantExtra, sticker: airRow.sticker }),
+      managerCookie,
+      200,
+      "An Air extras save without the Lahore and Karachi adds",
+    );
+    const [airKept] = await db.select().from(airExtrasTable).limit(1);
+    if (JSON.stringify(airKept) !== JSON.stringify(airRow)) throw new Error("An unchanged Air extras save changed the row.");
+
+    // The Start cities tab: Owner and Manager only.
+    const editorTab = await officePage("/office/rates/start-cities", editorCookie);
+    if (editorTab.status === 200) throw new Error("An Editor opened the Start cities tab.");
+    const managerTab = await officePage("/office/rates/start-cities", managerCookie);
+    if (managerTab.status !== 200 || !managerTab.html.includes("Karachi") || !managerTab.html.includes("Add start city")) throw new Error(`A Manager could not open the Start cities tab (${managerTab.status}).`);
+
+    // A start city save checks every field.
+    const cityForm = (values: Record<string, string | number>) => formOf({ kind: "start_city", name: city, road: "on", airExtra: 0, longRoutePerVehicleDay: 0, ...values });
+    const refusedCities: [Record<string, string | number>, string][] = [
+      [{ name: "Air" }, "the name Air"],
+      [{ name: "lahore" }, "a second Lahore"],
+      [{ name: "" }, "no name"],
+      [{ road: "" }, "neither road nor air"],
+      [{ airExtra: "-1" }, "a negative air extra"],
+      [{ airExtra: "abc" }, "an air extra that is not a number"],
+      [{ longRoutePerVehicleDay: 100 }, "a long-route extra with no days"],
+      [{ longRouteAfterDays: "1.5", longRoutePerVehicleDay: 100 }, "1.5 days"],
+      [{ id: "abc" }, "the id abc"],
+      [{ id: 999999 }, "a start city that is not stored"],
+    ];
+    for (const [values, what] of refusedCities) {
+      const form = cityForm(values);
+      if (values.road === "") form.delete("road");
+      await saves(form, managerCookie, 400, `A start city with ${what}`);
+    }
+    if ((await db.select().from(startCities).where(like(startCities.name, `T48 % ${stamp}`))).length) throw new Error("A refused start city was stored.");
+
+    // Two saves of one new start city at the same moment: one is stored, and the other gets 400 with
+    // the clash message, not a 500. The same holds for two renames of different places onto one name.
+    const twin = await Promise.all([1, 2].map(() => officePost("/api/office/rates", cityForm({ name: twinCity }), managerCookie)));
+    const twinStatuses = twin.map((reply) => reply.status).sort();
+    if (twinStatuses.join() !== "200,400" || !twin.some((reply) => reply.body.error === "A start city with that name already exists.")) {
+      throw new Error(`Two saves of one new start city at the same moment returned ${twinStatuses.join(" and ")}.`);
+    }
+    if ((await db.select().from(startCities).where(eq(startCities.name, twinCity))).length !== 1) throw new Error("Two saves at the same moment stored two start cities.");
+
+    // A new road start city is offered for road trips only, with no place until it has rates.
+    await saves(cityForm({}), editorCookie, 403, "An Editor's new start city");
+    await saves(cityForm({}), managerCookie, 200, "A Manager's new start city");
+    const [added] = await db.select().from(startCities).where(eq(startCities.name, city));
+    if (!added || !added.road || added.air || added.longRouteAfterDays !== null) throw new Error("The new start city was not stored as sent.");
+    const withCity = await officeQuoteOptions(managerCookie);
+    if (!withCity.options.startCities.road.includes(city) || withCity.options.startCities.air.includes(city)) throw new Error("The new road start city is not offered for road trips only.");
+    if ((withCity.options.places.road[city] ?? []).length !== 0) throw new Error("A start city with no rates offers a place.");
+    const airFromCity = await quote({ ...air, startCity: city });
+    if (airFromCity.ok || !airFromCity.error?.includes("air trip")) throw new Error("An air quote from a road-only start city was priced.");
+
+    // A place with hotel rates only is not offered. A new place name adds the place.
+    const hotelForm = (values: Record<string, string | number>) =>
+      formOf({ kind: "hotel_rate_add", place, startCity: "Islamabad", grade: "Deluxe", twin: 7000, triple: 9000, hotelName: "T48 Hotel", offered: "on", ...values });
+    await saves(hotelForm({}), editorCookie, 403, "An Editor's new hotel rate");
+    for (const [values, what] of [
+      [{ place: "" }, "no place"],
+      [{ startCity: "Karachi" }, "a start city with no road trips"],
+      [{ startCity: "Nowhere" }, "a city that is not a start city"],
+      [{ grade: "Budget" }, "a grade that is not stored"],
+      [{ twin: "-5" }, "a negative twin rate"],
+      [{ triple: "" }, "no 3-share rate"],
+    ] as [Record<string, string | number>, string][]) {
+      await saves(hotelForm(values), managerCookie, 400, `A new hotel rate with ${what}`);
+    }
+    await saves(hotelForm({}), managerCookie, 200, "A Manager's first hotel rate for a new place");
+    await saves(hotelForm({ place: place.toUpperCase() }), managerCookie, 400, "The same hotel rate again, in capitals");
+    const hotelOnly = await officeQuoteOptions(managerCookie);
+    if (hotelOnly.options.places.road.Islamabad?.includes(place)) throw new Error("A place with hotel rates only is offered.");
+    const noVehicle = await quote({ place });
+    if (noVehicle.ok) throw new Error("A place with hotel rates only was quoted.");
+
+    // A place given a vehicle rate as well is offered, and quotes from its rates.
+    const vehicleForm = (values: Record<string, string | number>) =>
+      formOf({ kind: "vehicle_rate_add", place, startCity: "Islamabad", vehicle: "Gli Car", rent: 10000, fuel: 3000, toll: 1000, seats: 4, live: "on", ...values });
+    await saves(vehicleForm({}), editorCookie, 403, "An Editor's new vehicle rate");
+    for (const [values, what] of [
+      [{ place: "T48 Never Added" }, "a place with no rates"],
+      [{ vehicle: "Other" }, "the vehicle Other"],
+      [{ seats: 0 }, "no seats"],
+      [{ rent: "1.5" }, "a rent of 1.5"],
+      [{ startCity: "Karachi" }, "a start city with no road trips"],
+    ] as [Record<string, string | number>, string][]) {
+      await saves(vehicleForm(values), managerCookie, 400, `A new vehicle rate with ${what}`);
+    }
+    await saves(vehicleForm({}), managerCookie, 200, "A Manager's vehicle rate for the new place");
+    await saves(vehicleForm({ vehicle: "gli  car" }), managerCookie, 400, "The same vehicle rate again, in another case");
+    const offeredPlace = await officeQuoteOptions(managerCookie);
+    if (!offeredPlace.options.places.road.Islamabad?.includes(place)) throw new Error("A place with a hotel rate and a vehicle rate is not offered.");
+    if (offeredPlace.options.places.road.Lahore?.includes(place)) throw new Error("A place with Islamabad rates only is offered from Lahore.");
+    const trip = { place, days: 3, adults: 2 };
+    const priced = await quote(trip);
+    if (!priced.ok || line(priced, "Hotel") !== 7000 * 2 || line(priced, "Vehicle") !== 3 * 13000 + 1000) {
+      throw new Error(`The new place quoted ${priced.total ?? priced.error}, with hotel ${line(priced, "Hotel") ?? 0} and vehicle ${line(priced, "Vehicle") ?? 0}.`);
+    }
+
+    // Renaming a place renames its hotel rates, vehicle rates, and jeep lines, and its quote still works.
+    await db.insert(jeepLines).values({ place, mode: "both", label: "T48 jeep", people: 6, amount: 4000, live: true });
+    const withJeep = await quote(trip);
+    if (line(withJeep, "T48 jeep") !== 4000) throw new Error("The new place's jeep line was not priced.");
+    const renameForm = (values: Record<string, string>) => formOf({ kind: "place_rename", place, name: renamed, ...values });
+    await saves(renameForm({}), editorCookie, 403, "An Editor's place rename");
+    await saves(renameForm({ name: "Skardu Valley" }), managerCookie, 400, "A rename onto Skardu Valley");
+    await saves(renameForm({ name: "skardu valley" }), managerCookie, 400, "A rename onto Skardu Valley in lower case");
+    await saves(renameForm({ name: place }), managerCookie, 400, "A rename to the same name");
+    await saves(renameForm({ name: "" }), managerCookie, 400, "A rename to no name");
+    await saves(renameForm({ place: "T48 Never Added" }), managerCookie, 400, "A rename of a place with no rates");
+    await saves(renameForm({}), managerCookie, 200, "A Manager's place rename");
+    const rowsNamed = async (name: string) =>
+      [
+        (await db.select({ id: hotelRates.id }).from(hotelRates).where(eq(hotelRates.place, name))).length,
+        (await db.select({ id: vehicleRates.id }).from(vehicleRates).where(eq(vehicleRates.place, name))).length,
+        (await db.select({ id: jeepLines.id }).from(jeepLines).where(eq(jeepLines.place, name))).length,
+      ].join(",");
+    if ((await rowsNamed(place)) !== "0,0,0" || (await rowsNamed(renamed)) !== "1,1,1") throw new Error("The rename did not move every hotel rate, vehicle rate, and jeep line.");
+    const afterRename = await quote({ ...trip, place: renamed });
+    if (afterRename.total !== withJeep.total || line(afterRename, "T48 jeep") !== 4000) throw new Error("The renamed place does not quote as before.");
+    if ((await quote(trip)).ok) throw new Error("The old place name still quotes.");
+    const skarduRows = await rowsNamed("Skardu Valley");
+
+    // A road start city with its own hotel and vehicle rates offers the place. Renaming the city
+    // renames it on those rate rows in the same save.
+    await saves(hotelForm({ place: renamed, startCity: city }), managerCookie, 200, "A hotel rate from the new start city");
+    await saves(vehicleForm({ place: renamed, startCity: city }), managerCookie, 200, "A vehicle rate from the new start city");
+    const fromCity = await officeQuoteOptions(managerCookie);
+    if (!fromCity.options.places.road[city]?.includes(renamed)) throw new Error("A start city with its own rates does not offer the place.");
+    if (!(await quote({ ...trip, place: renamed, startCity: city })).ok) throw new Error("A quote from the new start city was not priced.");
+    await saves(cityForm({ id: added.id, name: "Islamabad" }), managerCookie, 400, "A start city renamed onto Islamabad");
+    await saves(cityForm({ id: added.id, name: town }), managerCookie, 200, "A start city rename");
+    const cityRows = async (name: string) =>
+      [
+        (await db.select({ id: hotelRates.id }).from(hotelRates).where(eq(hotelRates.startCity, name))).length,
+        (await db.select({ id: vehicleRates.id }).from(vehicleRates).where(eq(vehicleRates.startCity, name))).length,
+      ].join(",");
+    if ((await cityRows(city)) !== "0,0" || (await cityRows(town)) !== "1,1") throw new Error("Renaming the start city did not rename its hotel and vehicle rates.");
+    if (!(await quote({ ...trip, place: renamed, startCity: town })).ok) throw new Error("A quote from the renamed start city was not priced.");
+    if ((await rowsNamed("Skardu Valley")) !== skarduRows) throw new Error("The T-48 checks changed the Skardu Valley rates.");
+  } finally {
+    await db.delete(hotelRates).where(inArray(hotelRates.place, [place, renamed]));
+    await db.delete(vehicleRates).where(inArray(vehicleRates.place, [place, renamed]));
+    await db.delete(jeepLines).where(inArray(jeepLines.place, [place, renamed]));
+    await db.delete(startCities).where(and(like(startCities.name, "T48 %"), inArray(startCities.name, [city, town, twinCity])));
+    await db.update(startCities).set({ airExtra: lahore.airExtra, road: lahore.road, air: lahore.air, longRouteAfterDays: lahore.longRouteAfterDays, longRoutePerVehicleDay: lahore.longRoutePerVehicleDay }).where(eq(startCities.id, lahore.id));
+  }
+
+  // The Skardu test is still 140,400, and start_cities is backed up before activity.
+  const skardu = await quote({});
+  if (skardu.subtotal !== 117000 || skardu.total !== 140400) throw new Error(`The Skardu quote is ${skardu.total}, not 140,400.`);
+  const names = BACKUP_TABLES.map(([name]) => name);
+  if (names.indexOf("start_cities") < 0 || names.indexOf("start_cities") > names.indexOf("activity")) throw new Error("start_cities is not in BACKUP_TABLES before activity.");
+}
+
+// T-49 (BR-93): a line's working read as a sum, with the words and "on night 2" left out. NaN when it
+// is not a sum.
+function workingValue(text: string) {
+  const sum = text
+    .replace(/\b(?:on |after )?(?:night|day) \d+/g, " ")
+    .replace(/[A-Za-z0-9-]*[A-Za-z][A-Za-z0-9-]*/g, " ")
+    .replace(/[·,]/g, "")
+    .replace(/×/g, "*");
+  const tokens = sum.match(/\d+|[+*()]|\S/g) ?? [];
+  let at = 0;
+  // sum := product ("+" product)*, product := part ("*" part)*, part := number | "(" sum ")"
+  const part = (): number => {
+    const token = tokens[at++];
+    if (token === "(") {
+      const value = add();
+      return tokens[at++] === ")" ? value : Number.NaN;
+    }
+    return token !== undefined && /^\d+$/.test(token) ? Number(token) : Number.NaN;
+  };
+  const multiply = (): number => {
+    let value = part();
+    while (tokens[at] === "*") {
+      at += 1;
+      value *= part();
+    }
+    return value;
+  };
+  const add = (): number => {
+    let value = multiply();
+    while (tokens[at] === "+") {
+      at += 1;
+      value += multiply();
+    }
+    return value;
+  };
+  const value = add();
+  return at === tokens.length ? value : Number.NaN;
+}
+
+// T-49 (BR-89, BR-92, BR-93, BR-94, BR-50): each line's working adds up to its amount, the office can
+// leave the air tickets out and type the rooms and vehicles, a guest cannot, and a saved quote keeps
+// the typed counts and the tickets.
+async function assertQuoteScreenV2(editorCookie: string, managerCookie: string) {
+  const office = (extra: Record<string, unknown>) => quoteReply({ seasonPercent: 20, ...extra }, managerCookie);
+  const guest = (extra: Record<string, unknown>) => quoteReply(extra, "");
+  const line = (reply: QuoteReply, label: string) => reply.lines?.find((row) => row.label === label);
+  const air = { mode: "air", vehicle: "Prado", days: 4 };
+
+  // Each line has a working, and its numbers add up to the amount.
+  const cases: [string, Record<string, unknown>][] = [
+    ["Skardu", {}],
+    ["Lahore road, 6 days, guide, dinner, lunch", { startCity: "Lahore", days: 6, guide: true, meals: true, lunch: true }],
+    ["5 adults, typed rooms and vehicles", { adults: 5, roomCount: 2, vehicleCount: 2 }],
+    ["a night edit, a cleared day, and a jeep day", { days: 6, nightEdits: [{ night: 2, rate: 30000 }], dayEdits: [{ day: 3, jeep: true, rent: 20000, fuel: 1000 }] }],
+    ["Karachi air with a child and two infants", { ...air, startCity: "Karachi", children: 1, lapInfants: 1, seatInfants: 1, meals: true }],
+    ["Lahore air with the tickets off", { ...air, startCity: "Lahore", tickets: false }],
+    ["Kalash with jeeps and a paid extra", { place: "Kalash Valley & Chitral", days: 6, adults: 7, paidExtras: [{ name: "T49 permit", amount: 3500 }] }],
+  ];
+  for (const [name, extra] of cases) {
+    const reply = await office(extra);
+    if (!reply.ok || !reply.lines?.length) throw new Error(`The T-49 quote "${name}" was not priced: ${reply.error ?? ""}`);
+    for (const row of reply.lines) {
+      if (!row.working) throw new Error(`The ${row.label} line of "${name}" has no working.`);
+      const value = workingValue(row.working);
+      if (value !== row.amount) throw new Error(`The ${row.label} working of "${name}" reads ${value}, not ${row.amount}: ${row.working}`);
+    }
+  }
+
+  // An air quote with the tickets off has no ticket line and keeps the welcome pack, entry, infant
+  // extra, and sticker. On by default.
+  const withTickets = await office({ ...air, lapInfants: 1 });
+  const noTickets = await office({ ...air, lapInfants: 1, tickets: false });
+  if (!line(withTickets, "Air tickets") || line(noTickets, "Air tickets")) throw new Error("Turning the tickets off did not remove the ticket line.");
+  for (const label of ["Welcome pack", "Entry", "Infant extra", "Sticker"]) {
+    if (line(noTickets, label)?.amount !== line(withTickets, label)?.amount) throw new Error(`With the tickets off, the ${label} line changed.`);
+  }
+  if ((noTickets.subtotal ?? 0) !== (withTickets.subtotal ?? 0) - (line(withTickets, "Air tickets")?.amount ?? 0)) throw new Error("With the tickets off, more than the ticket line changed.");
+
+  // Typing 3 rooms for 2 adults prices 3 rooms. Leaving the count out goes back to 1.
+  const auto = await office({});
+  const autoHotel = line(auto, "Hotel");
+  const threeRooms = await office({ roomCount: 3 });
+  const threeHotel = line(threeRooms, "Hotel");
+  if (!autoHotel || !threeHotel || threeHotel.amount !== autoHotel.amount * 3 || !threeHotel.working.startsWith("3 rooms × ")) {
+    throw new Error(`3 typed rooms priced the hotel at ${threeHotel?.amount ?? 0} (${threeHotel?.working ?? ""}).`);
+  }
+  const back = (await office({})) as QuoteReply & { rooms?: number; autoRooms?: number };
+  if (back.rooms !== 1 || back.autoRooms !== 1 || line(back, "Hotel")?.amount !== autoHotel.amount) throw new Error("Back to auto counts did not return to 1 room.");
+
+  // Typing 2 vehicles doubles the vehicle line.
+  const twoVehicles = await office({ vehicleCount: 2 });
+  if (line(twoVehicles, "Vehicle")?.amount !== (line(auto, "Vehicle")?.amount ?? 0) * 2) throw new Error("2 typed vehicles did not double the vehicle line.");
+  for (const bad of ["0", "61", "abc", "1.5"]) {
+    const refused = await fetch(`${siteBase()}/api/quote`, { method: "POST", headers: { "content-type": "application/json", cookie: managerCookie }, body: JSON.stringify({ ...SKARDU_QUOTE, vehicleCount: bad }) });
+    if (refused.status !== 400) throw new Error(`A typed vehicle count of "${bad}" returned ${refused.status}, not 400.`);
+  }
+
+  // A guest who sends a vehicle count or tickets off gets the normal quote, with no lines or profit.
+  const guestPlain = await guest({});
+  const guestTyped = await guest({ vehicleCount: 2 });
+  const guestAir = await guest({ ...air });
+  const guestAirOff = await guest({ ...air, tickets: false });
+  if (guestTyped.total !== guestPlain.total || guestAirOff.total !== guestAir.total) throw new Error("A guest changed the quote with a vehicle count or tickets off.");
+  if (guestTyped.lines !== undefined || guestAirOff.lines !== undefined || guestAirOff.profit !== undefined) throw new Error("A guest quote showed the lines or the profit.");
+
+  // A night-two edit still changes only that night and the average.
+  const night = await office({ nightEdits: [{ night: 2, rate: 20000 }] });
+  if (night.nights?.[1]?.rate !== 20000 || night.nights.some((row, index) => index !== 1 && row.rate !== auto.nights?.[index]?.rate)) throw new Error("A night-two edit changed another night.");
+  if (night.averageNightly !== ((auto.averageNightly ?? 0) * 4 - (auto.nights?.[1]?.rate ?? 0) + 20000) / 4) throw new Error("A night-two edit did not move the average.");
+
+  // A saved quote keeps the typed counts and the tickets, and rebuilt from the saved row it prices
+  // the same. Without typed counts the columns are empty and the tickets are on.
+  const [before] = await db.select({ id: max(quotes.id) }).from(quotes);
+  const saveForm = (values: Record<string, string | number>) =>
+    formOf({ kind: "quote", place: "Skardu Valley", startCity: "Islamabad", mode: "air", days: 4, adults: 2, grade: "Deluxe", vehicle: "Prado", seasonPercent: 20, ...values });
+  try {
+    const editorSave = await officePost("/api/office/rates", saveForm({ roomCount: 3, vehicleCount: 2, tickets: "off" }), editorCookie);
+    if (editorSave.status !== 403) throw new Error(`An Editor's quote save returned ${editorSave.status}.`);
+    const typedSave = await officePost("/api/office/rates", saveForm({ roomCount: 3, vehicleCount: 2, tickets: "off" }), managerCookie);
+    const plainSave = await officePost("/api/office/rates", saveForm({}), managerCookie);
+    const badSave = await officePost("/api/office/rates", saveForm({ roomCount: "abc" }), managerCookie);
+    if (typedSave.status !== 200 || plainSave.status !== 200 || badSave.status !== 400) throw new Error(`The quote saves returned ${typedSave.status}, ${plainSave.status}, and ${badSave.status}.`);
+    const saved = await db.select().from(quotes).where(gt(quotes.id, before?.id ?? 0)).orderBy(quotes.id);
+    const [typed, plain] = saved;
+    if (saved.length !== 2 || !typed || !plain) throw new Error(`The quote saves stored ${saved.length} quotes, not 2.`);
+    if (typed.roomCount !== 3 || typed.vehicleCount !== 2 || typed.tickets !== false) throw new Error(`A saved quote kept rooms ${typed.roomCount}, vehicles ${typed.vehicleCount}, tickets ${typed.tickets}.`);
+    if (plain.roomCount !== null || plain.vehicleCount !== null || plain.tickets !== true) throw new Error("A saved quote without typed counts did not keep empty counts and the tickets on.");
+    const catalog = await loadCatalog();
+    for (const row of saved) {
+      const rebuilt = buildQuote(
+        {
+          place: row.place,
+          startCity: row.startCity,
+          mode: row.mode === "air" ? "air" : "road",
+          days: row.days,
+          adults: row.adults,
+          children: row.children,
+          lapInfants: row.lapInfants,
+          seatInfants: row.seatInfants,
+          grade: row.grade,
+          vehicle: row.vehicle,
+          guide: row.guide,
+          meals: row.meals,
+          lunch: row.lunch,
+          tickets: row.tickets !== false,
+          roomCount: row.roomCount ?? undefined,
+          vehicleCount: row.vehicleCount ?? undefined,
+          seasonPercent: row.seasonPercent,
+        },
+        catalog,
+      );
+      if (!rebuilt.ok || rebuilt.total !== row.total) throw new Error(`Saved quote ${row.id} rebuilt to ${rebuilt.ok ? rebuilt.total : rebuilt.error}, not ${row.total}.`);
+    }
+  } finally {
+    const made = await db.select({ id: quotes.id }).from(quotes).where(gt(quotes.id, before?.id ?? 0));
+    for (const { id } of made) {
+      await db.delete(quoteNights).where(eq(quoteNights.quoteId, id));
+      await db.delete(quoteDays).where(eq(quoteDays.quoteId, id));
+      await db.delete(quoteExtras).where(eq(quoteExtras.quoteId, id));
+      await db.delete(quotes).where(eq(quotes.id, id));
+    }
+  }
+
+  // The Skardu test is still 140,400.
+  if (auto.subtotal !== 117000 || auto.total !== 140400) throw new Error(`The Skardu quote is ${auto.total}, not 140,400.`);
 }
 
 async function assertProfitMargin(editorCookie: string, managerCookie: string) {

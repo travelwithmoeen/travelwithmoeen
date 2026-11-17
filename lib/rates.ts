@@ -1,6 +1,6 @@
 import { asc } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { airExtras, hotelRates, jeepLines, mealRates, pricingRules, seasons, vehicleRates } from "@/lib/db/schema";
+import { airExtras, hotelRates, jeepLines, mealRates, pricingRules, seasons, startCities, vehicleRates } from "@/lib/db/schema";
 import {
   DEFAULT_MARGIN,
   isMarginPercent,
@@ -9,6 +9,7 @@ import {
   type MarginPercent,
   type PricingRules,
   type RateCatalog,
+  type StartCityRow,
   type TripMode,
   type VehicleRateRow,
 } from "@/lib/quote";
@@ -52,8 +53,24 @@ function toRules(row: typeof pricingRules.$inferSelect | undefined): PricingRule
   };
 }
 
+// The start cities in the order the office set, the oldest first among equals.
+function startCityRows() {
+  return db.select().from(startCities).orderBy(asc(startCities.sortOrder), asc(startCities.id));
+}
+
+function toStartCity(row: typeof startCities.$inferSelect): StartCityRow {
+  return {
+    name: row.name,
+    road: row.road,
+    air: row.air,
+    airExtra: row.airExtra,
+    longRouteAfterDays: row.longRouteAfterDays,
+    longRoutePerVehicleDay: row.longRoutePerVehicleDay,
+  };
+}
+
 export async function loadCatalog(): Promise<RateCatalog> {
-  const [hotels, vehicles, airRows, jeeps, seasonRows, ruleRows, meals] = await Promise.all([
+  const [hotels, vehicles, airRows, jeeps, seasonRows, ruleRows, meals, cities] = await Promise.all([
     db.select().from(hotelRates).orderBy(asc(hotelRates.place), asc(hotelRates.grade)),
     db.select().from(vehicleRates).orderBy(asc(vehicleRates.place), asc(vehicleRates.vehicle)),
     db.select().from(airExtras).limit(1),
@@ -61,6 +78,7 @@ export async function loadCatalog(): Promise<RateCatalog> {
     db.select().from(seasons).limit(1),
     db.select().from(pricingRules).orderBy(asc(pricingRules.id)).limit(1),
     db.select().from(mealRates).orderBy(asc(mealRates.id)),
+    startCityRows(),
   ]);
   const air = airRows[0];
   const margin = savedMargin(seasonRows[0]?.percent);
@@ -69,13 +87,12 @@ export async function loadCatalog(): Promise<RateCatalog> {
     vehicles: vehicles.map(toVehicle),
     air: {
       islamabadTicket: air?.islamabadTicket ?? 0,
-      lahoreAdd: air?.lahoreAdd ?? 0,
-      karachiAdd: air?.karachiAdd ?? 0,
       welcomePack: air?.welcomePack ?? 0,
       entry: air?.entry ?? 0,
       infantExtra: air?.infantExtra ?? 0,
       sticker: air?.sticker ?? 0,
     },
+    startCities: cities.map(toStartCity),
     jeeps: jeeps.map(toJeep),
     seasonPercent: margin,
     rules: toRules(ruleRows[0]),
@@ -121,8 +138,21 @@ function toJeep(row: typeof jeepLines.$inferSelect): JeepLineRow {
   };
 }
 
+// The Air extras tab row. The Lahore and Karachi adds stay in the table but are read from the start
+// cities from T-48, so the tab does not show them.
+function airDeskRow(row: typeof airExtras.$inferSelect) {
+  return {
+    id: row.id,
+    islamabadTicket: row.islamabadTicket,
+    welcomePack: row.welcomePack,
+    entry: row.entry,
+    infantExtra: row.infantExtra,
+    sticker: row.sticker,
+  };
+}
+
 export async function loadRateDesk() {
-  const [hotels, vehicles, airRows, jeeps, seasonRows, ruleRows, meals] = await Promise.all([
+  const [hotels, vehicles, airRows, jeeps, seasonRows, ruleRows, meals, cities] = await Promise.all([
     db.select().from(hotelRates).orderBy(asc(hotelRates.place), asc(hotelRates.startCity), asc(hotelRates.grade)),
     // The id last keeps rows with the same place and vehicle in a steady order after a save.
     db.select().from(vehicleRates).orderBy(asc(vehicleRates.place), asc(vehicleRates.vehicle), asc(vehicleRates.id)),
@@ -131,11 +161,13 @@ export async function loadRateDesk() {
     db.select().from(seasons).limit(1),
     db.select().from(pricingRules).orderBy(asc(pricingRules.id)).limit(1),
     db.select().from(mealRates).orderBy(asc(mealRates.id)),
+    startCityRows(),
   ]);
   return {
     hotels,
     vehicles,
-    air: airRows[0] ?? null,
+    air: airRows[0] ? airDeskRow(airRows[0]) : null,
+    startCities: cities,
     jeeps,
     seasonPercent: savedMargin(seasonRows[0]?.percent),
     rules: ruleRows[0] ?? null,

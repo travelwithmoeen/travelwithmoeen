@@ -1,4 +1,5 @@
-import { loadRateDesk } from "@/components/office/rates/load-rates";
+import { loadRateDesk, ratePlaces, roadCities, websiteBuilderPlaces } from "@/components/office/rates/load-rates";
+import { VehicleRateDrawers } from "@/components/office/rates/RateDrawers";
 import { RateTable } from "@/components/office/rates/RateTable";
 import { savedByCells } from "@/components/office/activity";
 import { requestTime } from "@/components/office/format";
@@ -6,8 +7,11 @@ import { getSavedBy } from "@/lib/http/office-session";
 
 export default async function RatesVehiclesPage() {
   const [desk, savedBy] = await Promise.all([loadRateDesk(), getSavedBy("vehicle_rate")]);
+  const vehicles = [...new Set(desk.vehicles.map((row) => row.vehicle))].sort((a, b) => a.localeCompare(b));
   return (
-    <RateTable
+    <>
+      <VehicleRateDrawers places={ratePlaces(desk)} roadCities={roadCities(desk)} websitePlaces={websiteBuilderPlaces()} vehicles={vehicles} />
+      <RateTable
       kind="vehicle"
       noun="vehicle rates"
       searchLabel="Search place or vehicle"
@@ -25,6 +29,7 @@ export default async function RatesVehiclesPage() {
       rows={desk.vehicles.map((row) => ({ id: row.id, values: { place: row.place, startCity: row.startCity, vehicle: row.vehicle, rent: row.rent, fuel: row.fuel, toll: row.toll, seats: row.seats, live: row.live } }))}
       savedBy={savedByCells(savedBy, requestTime())}
       nameKeys={["place", "startCity", "vehicle"]}
-    />
+      />
+    </>
   );
 }

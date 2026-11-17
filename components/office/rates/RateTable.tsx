@@ -22,7 +22,7 @@ export type RateColumn = {
 export type RateRow = { id: number; values: Record<string, string | number | boolean> };
 
 type RateTableProps = {
-  kind: "hotel" | "vehicle" | "jeep" | "meal_rate";
+  kind: "hotel" | "vehicle" | "jeep" | "meal_rate" | "start_city";
   noun: string;
   columns: RateColumn[];
   rows: RateRow[];
@@ -35,6 +35,8 @@ type RateTableProps = {
   savedBy?: Record<string, SavedCell>;
   // A short table, such as the four meal grades, needs no search or filters.
   toolbar?: boolean;
+  // The office top bar label while the rows save (BR-98).
+  busyLabel?: string;
 };
 
 type Draft = Record<number, Record<string, string | boolean>>;
@@ -59,7 +61,7 @@ function SavedLine({ saved }: { saved?: SavedCell }) {
 
 // The prototype rate table: every row editable, one save bar. Save sends each changed row as its
 // own POST /api/office/rates with the fields the server reads, and the server checks every amount.
-export function RateTable({ kind, noun, columns, rows, filters = [], searchLabel = `Search ${noun}`, nameKeys, savedBy = {}, toolbar = true }: RateTableProps) {
+export function RateTable({ kind, noun, columns, rows, filters = [], searchLabel = `Search ${noun}`, nameKeys, savedBy = {}, toolbar = true, busyLabel = "Saving rates" }: RateTableProps) {
   const rowName = (row: RateRow) => nameKeys.map((key) => String(row.values[key])).join(", ");
   const router = useRouter();
   const [draft, setDraft] = useState<Draft>({});
@@ -123,7 +125,7 @@ export function RateTable({ kind, noun, columns, rows, filters = [], searchLabel
             form.set(column.key, String(value));
           }
         }
-        const result = await postOfficeForm("/api/office/rates", form, "Saving rates");
+        const result = await postOfficeForm("/api/office/rates", form, busyLabel);
         if (result.ok) savedCount += 1;
         else failed[id] = result.error;
       }
@@ -233,7 +235,10 @@ export function RateTable({ kind, noun, columns, rows, filters = [], searchLabel
                             </span>
                           </label>
                         ) : column.type === "name" ? (
-                          <input className="input input-sm" value={String(value)} aria-label={label} disabled={pending} onChange={(event) => edit(row.id, column.key, event.target.value)} />
+                          <>
+                            <input className="input input-sm" value={String(value)} aria-label={label} disabled={pending} onChange={(event) => edit(row.id, column.key, event.target.value)} />
+                            {index === 0 ? <SavedLine saved={savedBy[String(row.id)]} /> : null}
+                          </>
                         ) : (
                           <span className={column.type === "money" ? "money money-sm" : "count-cell"}>
                             {column.type === "money" ? (

@@ -5,7 +5,7 @@ import { hotelRates, loginFailures, photos, tours, users } from "../lib/db/schem
 import { signInRefusalLine } from "../lib/auth/login-guard";
 import { createUserAs, removeUserAs } from "../lib/office/users";
 import { authenticate } from "../lib/auth/authenticate";
-import { buildQuote, GUEST_GRADES, vehicleKey } from "../lib/quote";
+import { buildQuote, findStartCity, GUEST_GRADES, vehicleKey } from "../lib/quote";
 import { loadCatalog } from "../lib/rates";
 
 const LOGIN_ERROR = "That email or password is not right.";
@@ -341,7 +341,8 @@ async function quotePost(payload: unknown, cookie = "") {
 
 async function assertQuotes() {
   const catalog = await loadCatalog();
-  if (catalog.air.karachiAdd !== 30000) throw new Error("The Karachi air extra is not 30,000.");
+  // From T-48 the Karachi air extra is stored on the Karachi start city (BR-91).
+  if (findStartCity(catalog.startCities, "Karachi")?.airExtra !== 30000) throw new Error("The Karachi air extra is not 30,000.");
   if ((GUEST_GRADES as readonly string[]).includes("Premier")) throw new Error("Premier is offered to guests.");
 
   const base = {
