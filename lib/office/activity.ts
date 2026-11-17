@@ -1,6 +1,6 @@
 import { and, desc, eq, inArray, lt } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { activity } from "@/lib/db/schema";
+import { activity, users } from "@/lib/db/schema";
 import { canEditContent, canEditRates, canManageUsers, canRunBackup, type Role } from "@/lib/auth/permissions";
 import type { SessionUser } from "@/lib/auth/session";
 
@@ -25,6 +25,8 @@ export const ACTIVITY_AREA_OF_KIND = {
   quote: "rates",
   request: "requests",
   user: "users",
+  // T-62: a person changed their own name. The Owner sees it with the other login rows.
+  profile: "users",
   backup: "backups",
 } as const;
 
@@ -35,6 +37,8 @@ export type ActivityRow = {
   id: number;
   at: string;
   userEmail: string;
+  // T-62 (BR-119): the current name of the login with that email. Null for no name or a removed login.
+  userName: string | null;
   area: ActivityArea;
   kind: ActivityKind;
   recordId: string;
@@ -83,16 +87,28 @@ export async function recordActivity(
   await writer.delete(activity).where(lt(activity.at, new Date(Date.now() - KEEP_DAYS * DAY_MS)));
 }
 
-function toRow(row: typeof activity.$inferSelect): ActivityRow {
+function toRow(row: typeof activity.$inferSelect, names: Map<string, string>): ActivityRow {
   return {
     id: row.id,
     at: row.at.toISOString(),
     userEmail: row.userEmail,
+    userName: names.get(row.userEmail) ?? null,
     area: row.area as ActivityArea,
     kind: row.kind as ActivityKind,
     recordId: row.recordId,
     text: row.text,
   };
+}
+
+// The rows keep the email that saved them. The name shown is the current name of that login, so a
+// rename shows on old rows too, and a removed login shows its email.
+async function withNames(rows: (typeof activity.$inferSelect)[]) {
+  const emails = [...new Set(rows.map((row) => row.userEmail))];
+  const named = emails.length
+    ? await db.select({ email: users.email, name: users.name }).from(users).where(inArray(users.email, emails))
+    : [];
+  const names = new Map(named.flatMap((row) => (row.name ? [[row.email, row.name] as const] : [])));
+  return rows.map((row) => toRow(row, names));
 }
 
 // The newest rows the actor's role may read, for the dashboard feed.
@@ -104,7 +120,7 @@ export async function listActivityAs(actor: SessionUser, limit = FEED_LIMIT) {
     .where(inArray(activity.area, activityAreasFor(actor.role)))
     .orderBy(desc(activity.at), desc(activity.id))
     .limit(take);
-  return { ok: true as const, rows: rows.map(toRow) };
+  return { ok: true as const, rows: await withNames(rows) };
 }
 
 // "Saved by" on a screen: the newest row for each record of one kind, or for the records named.
@@ -118,5 +134,5 @@ export async function latestActivityAs(actor: SessionUser, kind: string, recordI
     .from(activity)
     .where(recordIds.length ? and(eq(activity.kind, kind), inArray(activity.recordId, recordIds)) : eq(activity.kind, kind))
     .orderBy(activity.recordId, desc(activity.at), desc(activity.id));
-  return { ok: true as const, rows: rows.map(toRow) };
+  return { ok: true as const, rows: await withNames(rows) };
 }

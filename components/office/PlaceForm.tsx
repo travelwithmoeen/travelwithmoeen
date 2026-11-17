@@ -16,6 +16,7 @@ import { Field } from "@/components/office/ui/Field";
 import { Icon } from "@/components/office/ui/Icon";
 import type { ActionResult } from "@/lib/http/result";
 import type { Destination } from "@/data/destinations";
+import type { SavedBy } from "@/components/office/activity";
 
 const SECTIONS = [
   { id: "place-basics", label: "Basics" },
@@ -24,7 +25,7 @@ const SECTIONS = [
   { id: "place-sections", label: "Sections" },
 ];
 
-export function PlaceForm({ place, frame, savedBy }: { place: Destination; frame: EditorFrame; savedBy?: string }) {
+export function PlaceForm({ place, frame, savedBy }: { place: Destination; frame: EditorFrame; savedBy?: SavedBy }) {
   const [title, setTitle] = useState(place.title);
   const [excerpt, setExcerpt] = useState(place.excerpt);
   const [location, setLocation] = useState(place.location ?? "");

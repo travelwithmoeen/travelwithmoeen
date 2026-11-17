@@ -14,8 +14,9 @@ import { Card } from "@/components/office/ui/Card";
 import { Field } from "@/components/office/ui/Field";
 import type { ActionResult } from "@/lib/http/result";
 import type { GalleryImage } from "@/data/gallery";
+import type { SavedBy } from "@/components/office/activity";
 
-export function PhotoForm({ photo, frame, savedBy }: { photo: GalleryImage | null; frame: EditorFrame; savedBy?: string }) {
+export function PhotoForm({ photo, frame, savedBy }: { photo: GalleryImage | null; frame: EditorFrame; savedBy?: SavedBy }) {
   const [src, setSrc] = useState(photo?.src ?? "");
   const [chosenPreview, setChosenPreview] = useState("");
   const [alt, setAlt] = useState(photo?.alt ?? "");

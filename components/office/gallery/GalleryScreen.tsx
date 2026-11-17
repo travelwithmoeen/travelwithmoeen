@@ -37,7 +37,7 @@ export async function GalleryScreen({ edit }: { edit?: string }) {
   }));
   const index = open ? photos.findIndex((photo) => photo.id === open.id) : -1;
 
-  const savedBy = open ? savedByText((await getSavedBy("photo", [open.id]))[String(open.id)], requestTime()) : "";
+  const savedBy = open ? savedByText((await getSavedBy("photo", [open.id]))[String(open.id)], requestTime()) : undefined;
   return (
     <>
       <PageHead

@@ -4,7 +4,7 @@ import path from "path";
 import { spawn } from "child_process";
 import { del, head, list, put } from "@vercel/blob";
 import { upload } from "@vercel/blob/client";
-import { and, count, eq, gt, inArray, like, max } from "drizzle-orm";
+import { and, count, desc, eq, gt, inArray, like, max } from "drizzle-orm";
 import postgres from "postgres";
 import { drizzle } from "drizzle-orm/postgres-js";
 import { db, sql } from "../lib/db";
@@ -865,6 +865,7 @@ async function assertOfficeRequests(savedIds: number[]) {
     await assertOldFileRemovedAfterSave(editorCookie);
     await assertDeleteRemovesRecordAndFile(editorCookie);
     await assertActivity(editorCookie, managerCookie, ownerCookie, { id: saved.body.id, phone, message });
+    await assertProfileSettings(editorCookie, managerCookie, ownerCookie);
     await assertParallelPhotoAdds(editorCookie);
     const ownerDelete = await officePost("/api/office/requests/delete", deleteForm, ownerCookie);
     if (ownerDelete.status !== 200 || !ownerDelete.body.ok) {
@@ -2111,6 +2112,82 @@ async function assertQuoteScreenV2(editorCookie: string, managerCookie: string) 
 
   // The Skardu test is still 140,400.
   if (auto.subtotal !== 117000 || auto.total !== 140400) throw new Error(`The Skardu quote is ${auto.total}, not 140,400.`);
+}
+
+// T-62 (BR-117 to BR-119): each person sets, changes, and clears only their own name, and the office
+// shows it in the account menu, the Users list, and "Saved by", with the email when it is cleared.
+async function assertProfileSettings(editorCookie: string, managerCookie: string, ownerCookie: string) {
+  const people = [["Owner", ownerCookie], ["Manager", managerCookie], ["Editor", editorCookie]] as const;
+  const sessionOf = async (cookie: string) => (await (await fetch(`${siteBase()}/api/office/session`, { headers: { cookie } })).json()) as { id: number; email: string; name?: string | null };
+  const sessions = await Promise.all(people.map(([, cookie]) => sessionOf(cookie)));
+  const ids = sessions.map((session) => session.id);
+  const before = await db.select({ id: users.id, name: users.name }).from(users).where(inArray(users.id, ids));
+  const nameOf = async (id: number) => (await db.select({ name: users.name }).from(users).where(eq(users.id, id)))[0]?.name ?? null;
+  const save = (form: Record<string, string>, cookie: string) => officePost("/api/office/settings/profile", formOf(form), cookie);
+  const stamp = Date.now();
+  try {
+    // The Settings page opens for every role, from the Settings item in the account menu.
+    for (const [role, cookie] of people) {
+      const page = await officePage("/office/settings", cookie);
+      if (page.status !== 200 || !page.html.includes("Profile") || !page.html.includes("Appearance") || !page.html.includes("Density")) throw new Error(`The ${role} could not open the Settings page (${page.status}).`);
+      if (!page.html.includes('href="/office/settings"')) throw new Error(`The ${role}'s account menu has no Settings item.`);
+    }
+    // No session: 401, and nothing changes.
+    const signedOut = await officePost("/api/office/settings/profile", formOf({ name: "Nobody" }), "");
+    if (signedOut.status !== 401) throw new Error(`A name save with no session returned ${signedOut.status}.`);
+    for (const [index, [role, cookie]] of people.entries()) {
+      const id = ids[index];
+      const name = `T62 ${role} ${stamp}`;
+      const activityBefore = await activityCount();
+      // Set: the name is trimmed and saved, and one activity row is written.
+      const set = await save({ name: `  ${name}  ` }, cookie);
+      if (set.status !== 200 || (await nameOf(id)) !== name) throw new Error(`The ${role} could not set a name (${set.status}).`);
+      if ((await activityCount()) - activityBefore !== 1) throw new Error(`The ${role}'s name save did not write one activity row.`);
+      const [row] = await db.select().from(activity).where(and(eq(activity.kind, "profile"), eq(activity.userId, id))).orderBy(desc(activity.id)).limit(1);
+      if (row?.text !== "Changed their name" || row.area !== "users" || row.recordId !== String(id)) throw new Error(`The ${role}'s name change activity row is wrong: ${JSON.stringify(row)}`);
+      // The session reply carries the name, for the account menu.
+      if ((await sessionOf(cookie)).name !== name) throw new Error(`The ${role}'s session does not carry the name.`);
+      const dashboard = await officePage("/office", cookie);
+      if (!dashboard.html.includes(name)) throw new Error(`The ${role}'s account menu does not show the name.`);
+      // Change, with another login's id sent: still only the signed-in person's own name changes.
+      const otherId = ids[(index + 1) % ids.length];
+      const otherBefore = await nameOf(otherId);
+      const changed = await save({ name: `${name} changed`, id: String(otherId), userId: String(otherId) }, cookie);
+      if (changed.status !== 200 || (await nameOf(id)) !== `${name} changed` || (await nameOf(otherId)) !== otherBefore) throw new Error(`A ${role} name save with another login's id changed the wrong row.`);
+      // 60 characters is allowed. 61 returns 400 and changes nothing.
+      const sixty = "N".repeat(60);
+      if ((await save({ name: sixty }, cookie)).status !== 200 || (await nameOf(id)) !== sixty) throw new Error(`The ${role} could not save a 60-character name.`);
+      const tooLong = await save({ name: "N".repeat(61) }, cookie);
+      if (tooLong.status !== 400 || tooLong.body.error !== "A name can be up to 60 characters." || (await nameOf(id)) !== sixty) throw new Error(`A 61-character name returned ${tooLong.status} or changed the name.`);
+      // Clear: an empty name is no name, and the email shows again.
+      const cleared = await save({ name: "   " }, cookie);
+      if (cleared.status !== 200 || (await nameOf(id)) !== null || (await sessionOf(cookie)).name !== null) throw new Error(`The ${role} could not clear the name.`);
+      await save({ name }, cookie);
+    }
+    // The Users list shows the names above the emails.
+    const list = (await (await fetch(`${siteBase()}/api/office/users`, { headers: { cookie: ownerCookie } })).json()) as { users?: { id: number; name: string | null }[] };
+    for (const [index, [role]] of people.entries()) {
+      if (list.users?.find((user) => user.id === ids[index])?.name !== `T62 ${role} ${stamp}`) throw new Error(`The Users list does not show the ${role}'s name.`);
+    }
+    const usersPage = await officePage("/office/users", ownerCookie);
+    if (!usersPage.html.includes(`T62 Manager ${stamp}`) || !usersPage.html.includes(sessions[1].email)) throw new Error("The Users page does not show the name with the email.");
+    // "Saved by" shows the current name, with the email kept on the row and shown on hover.
+    const feed = (await (await fetch(`${siteBase()}/api/office/activity?kind=profile`, { headers: { cookie: ownerCookie } })).json()) as { rows?: { userEmail: string; userName: string | null; recordId: string }[] };
+    const editorRow = feed.rows?.find((row) => row.recordId === String(ids[2]));
+    if (editorRow?.userName !== `T62 Editor ${stamp}` || editorRow.userEmail !== sessions[2].email) throw new Error(`"Saved by" does not show the Editor's current name: ${JSON.stringify(editorRow)}`);
+    const ownerDashboard = await officePage("/office", ownerCookie);
+    if (!ownerDashboard.html.includes(`title="${sessions[2].email}"`)) throw new Error("The activity feed does not keep the email on hover.");
+    // The name change rows are for the Owner: a Manager and an Editor cannot read them.
+    const managerFeed = await fetch(`${siteBase()}/api/office/activity?kind=profile`, { headers: { cookie: managerCookie } });
+    const editorFeed = await fetch(`${siteBase()}/api/office/activity?kind=profile`, { headers: { cookie: editorCookie } });
+    if (managerFeed.status !== 403 || editorFeed.status !== 403) throw new Error(`A Manager or an Editor read the name change rows (${managerFeed.status}, ${editorFeed.status}).`);
+    // Cleared: "Saved by" falls back to the email.
+    await save({ name: "" }, editorCookie);
+    const after = (await (await fetch(`${siteBase()}/api/office/activity?kind=profile`, { headers: { cookie: ownerCookie } })).json()) as { rows?: { userName: string | null; recordId: string }[] };
+    if (after.rows?.find((row) => row.recordId === String(ids[2]))?.userName !== null) throw new Error('"Saved by" did not fall back to the email for a cleared name.');
+  } finally {
+    for (const row of before) await db.update(users).set({ name: row.name }).where(eq(users.id, row.id));
+  }
 }
 
 async function assertProfitMargin(editorCookie: string, managerCookie: string) {

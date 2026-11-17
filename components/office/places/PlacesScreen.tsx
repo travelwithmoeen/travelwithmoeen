@@ -32,7 +32,7 @@ export async function PlacesScreen({ openSlug }: { openSlug?: string }) {
   });
   const index = open ? places.findIndex((place) => place.slug === open.slug) : -1;
 
-  const savedBy = open ? savedByText((await getSavedBy("place", [open.slug]))[String(open.slug)], requestTime()) : "";
+  const savedBy = open ? savedByText((await getSavedBy("place", [open.slug]))[String(open.slug)], requestTime()) : undefined;
   return (
     <>
       <PageHead title="Places" description="Destination pages on the website. Each place lists the tours that point to it." />

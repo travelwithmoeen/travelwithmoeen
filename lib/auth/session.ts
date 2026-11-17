@@ -12,6 +12,8 @@ export type SessionUser = {
   id: number;
   email: string;
   role: Role;
+  // T-62 (BR-119): the person's own name. Null or missing means no name, and the email shows.
+  name?: string | null;
 };
 
 type Payload = { uid: number; exp: number };
@@ -78,7 +80,7 @@ export async function getCurrentUser(): Promise<SessionUser | null> {
   if (!payload) return null;
   const [user] = await db.select().from(users).where(eq(users.id, payload.uid)).limit(1);
   if (!user) return null;
-  return { id: user.id, email: user.email, role: user.role };
+  return { id: user.id, email: user.email, role: user.role, name: user.name ?? null };
 }
 
 export async function requireUser(): Promise<SessionUser> {

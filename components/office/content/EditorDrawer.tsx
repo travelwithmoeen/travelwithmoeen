@@ -7,6 +7,7 @@ import { buttonClass } from "@/components/office/ui/Button";
 import { Drawer } from "@/components/office/ui/Drawer";
 import { Icon } from "@/components/office/ui/Icon";
 import { cancelNavigationProgress } from "@/components/ui/NavigationProgress";
+import type { SavedBy } from "@/components/office/activity";
 
 const LEAVE_QUESTION = "Leave without saving? Your changes will be lost.";
 
@@ -23,7 +24,7 @@ type EditorDrawerProps = {
   sections?: { id: string; label: string }[];
   preview?: React.ReactNode;
   // "Last saved 5 minutes ago by editor@…", from the activity record (BR-86). Empty for a new record.
-  savedBy?: string;
+  savedBy?: SavedBy;
   children: React.ReactNode;
 };
 
@@ -101,10 +102,10 @@ export function EditorDrawer({ title, description, badge, closeHref, previousHre
       badge={badge}
       meta={
         savedBy ? (
-          <>
+          <span title={savedBy.title}>
             <Icon name="clock" />
-            {savedBy}
-          </>
+            {savedBy.text}
+          </span>
         ) : null
       }
       toolbar={toolbar}

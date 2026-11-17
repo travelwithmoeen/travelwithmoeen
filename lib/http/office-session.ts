@@ -4,6 +4,8 @@ import type { Role } from "@/lib/http/result";
 export type OfficeSession = {
   id: number;
   email: string;
+  // T-62 (BR-119): the person's own name, or null.
+  name: string | null;
   role: Role;
   canEditContent: boolean;
   canManageUsers: boolean;
@@ -18,6 +20,7 @@ export type OfficeSession = {
 export type OfficeUserRow = {
   id: number;
   email: string;
+  name: string | null;
   role: Role;
 };
 
@@ -47,6 +50,7 @@ export async function getOfficeSession(): Promise<OfficeSession | null> {
   return {
     id: body.id,
     email: body.email,
+    name: typeof body.name === "string" && body.name ? body.name : null,
     role: body.role,
     canEditContent: Boolean(body.canEditContent),
     canManageUsers: Boolean(body.canManageUsers),
@@ -101,6 +105,8 @@ export type OfficeActivityRow = {
   id: number;
   at: string;
   userEmail: string;
+  // T-62 (BR-119): the current name of the login with that email, or null.
+  userName: string | null;
   area: "content" | "rates" | "requests" | "users" | "backups";
   kind: string;
   recordId: string;

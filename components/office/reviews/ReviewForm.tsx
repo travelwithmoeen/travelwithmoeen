@@ -14,8 +14,9 @@ import { Card } from "@/components/office/ui/Card";
 import { Field } from "@/components/office/ui/Field";
 import type { ActionResult } from "@/lib/http/result";
 import type { Testimonial } from "@/data/testimonials";
+import type { SavedBy } from "@/components/office/activity";
 
-export function ReviewForm({ review, frame, savedBy }: { review: Testimonial | null; frame: EditorFrame; savedBy?: string }) {
+export function ReviewForm({ review, frame, savedBy }: { review: Testimonial | null; frame: EditorFrame; savedBy?: SavedBy }) {
   const [name, setName] = useState(review?.name ?? "");
   const [text, setText] = useState(review?.text ?? "");
   const [rating, setRating] = useState(String(review?.rating ?? 5));

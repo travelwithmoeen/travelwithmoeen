@@ -37,7 +37,7 @@ export async function ReviewsScreen({ edit }: { edit?: string }) {
   }));
   const index = open ? reviews.findIndex((review) => review.id === open.id) : -1;
 
-  const savedBy = open ? savedByText((await getSavedBy("review", [open.id]))[String(open.id)], requestTime()) : "";
+  const savedBy = open ? savedByText((await getSavedBy("review", [open.id]))[String(open.id)], requestTime()) : undefined;
   return (
     <>
       <PageHead
