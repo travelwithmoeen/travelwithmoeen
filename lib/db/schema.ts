@@ -35,6 +35,8 @@ export const users = pgTable("users", {
   email: text("email").notNull().unique(),
   passwordHash: text("password_hash").notNull(),
   role: userRole("role").notNull(),
+  // T-62 (BR-118): the person's own name, set on the Settings page. Null shows the email.
+  name: text("name"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 

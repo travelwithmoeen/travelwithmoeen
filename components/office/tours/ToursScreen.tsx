@@ -37,7 +37,7 @@ export async function ToursScreen({ openId }: { openId?: string }) {
     };
   });
   const index = open ? tours.findIndex((tour) => tour.id === open.id) : -1;
-  const savedBy = open ? savedByText((await getSavedBy("tour", [open.id]))[open.id], requestTime()) : "";
+  const savedBy = open ? savedByText((await getSavedBy("tour", [open.id]))[open.id], requestTime()) : undefined;
 
   return (
     <>

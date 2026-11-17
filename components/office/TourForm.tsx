@@ -19,6 +19,7 @@ import { Field } from "@/components/office/ui/Field";
 import { Icon } from "@/components/office/ui/Icon";
 import type { ActionResult } from "@/lib/http/result";
 import type { Tour } from "@/data/tours";
+import type { SavedBy } from "@/components/office/activity";
 
 type DayDraft = { title: string; description: string; highlights: string };
 
@@ -49,7 +50,7 @@ export function TourForm({
   places: { slug: string; title: string }[];
   mode: "create" | "edit";
   frame?: EditorFrame;
-  savedBy?: string;
+  savedBy?: SavedBy;
 }) {
   const [name, setName] = useState(tour.name);
   const [description, setDescription] = useState(tour.description);

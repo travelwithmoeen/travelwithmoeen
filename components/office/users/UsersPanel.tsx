@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { ROLE_NAME } from "@/components/office/office-nav";
+import { initialsOf } from "@/components/office/people";
 import { Alert } from "@/components/office/ui/Alert";
 import { Button } from "@/components/office/ui/Button";
 import { Card } from "@/components/office/ui/Card";
@@ -32,9 +33,6 @@ function withoutUser(roles: Record<number, Role>, userId: number) {
   return rest;
 }
 
-function initialsOf(email: string) {
-  return email.split("@")[0].replace(/[^a-z0-9]/gi, "").slice(0, 2).toUpperCase() || "?";
-}
 
 export function UsersPanel({ users, selfId }: { users: OfficeUserRow[]; selfId: number }) {
   const router = useRouter();
@@ -163,10 +161,12 @@ export function UsersPanel({ users, selfId }: { users: OfficeUserRow[]; selfId: 
                 <td>
                   <span className="user-cell">
                     <span className="avatar" aria-hidden="true">
-                      {initialsOf(user.email)}
+                      {initialsOf(user.email, user.name)}
                     </span>
+                    {/* T-62 (BR-119): the name above the email. With no name, the email as before. */}
                     <span>
-                      <b>{user.email}</b>
+                      <b>{user.name || user.email}</b>
+                      {user.name ? <small className="cell-sub">{user.email}</small> : null}
                       {self ? <small className="cell-sub">You</small> : null}
                     </span>
                   </span>

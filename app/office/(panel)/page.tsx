@@ -1,3 +1,4 @@
+import { initialsOf } from "@/components/office/people";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { activityHref } from "@/components/office/activity";
@@ -194,12 +195,13 @@ export default async function OfficeDashboardPage() {
             {activity.map((row) => (
               <li key={row.id}>
                 <span className="avatar" aria-hidden="true">
-                  {row.userEmail.slice(0, 2).toUpperCase()}
+                  {initialsOf(row.userEmail, row.userName)}
                 </span>
                 <span className="feed-main">
                   <Link href={activityHref(row)}>{row.text}</Link>
                   <small>
-                    {row.userEmail} ·{" "}
+                    {/* T-62 (BR-119): the current name of the login, with its email on hover. */}
+                    {row.userName ? <span title={row.userEmail}>{row.userName}</span> : row.userEmail} ·{" "}
                     <time dateTime={row.at} title={formatDateTime(row.at)}>
                       {relativeTime(row.at, now)}
                     </time>

@@ -35,7 +35,7 @@ export async function SlidesScreen({ edit }: { edit?: string }) {
   }));
   const index = open ? slides.findIndex((slide) => slide.id === open.id) : -1;
 
-  const savedBy = open ? savedByText((await getSavedBy("slide", [open.id]))[String(open.id)], requestTime()) : "";
+  const savedBy = open ? savedByText((await getSavedBy("slide", [open.id]))[String(open.id)], requestTime()) : undefined;
   return (
     <>
       <PageHead

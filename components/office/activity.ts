@@ -1,6 +1,10 @@
 import { formatDateTime, relativeTime } from "@/components/office/format";
 
-type SavedRow = { at: string; userEmail: string };
+type SavedRow = { at: string; userEmail: string; userName?: string | null };
+
+// T-62 (BR-119): "Saved by" shows the current name of the login that saved, with its email on hover.
+// With no name, or for a removed login, it shows the email, as before.
+export type SavedBy = { text: string; title: string };
 
 // "Just now" and "Yesterday" read as "saved just now" mid-sentence. A date such as "Oct 20, 2026"
 // and "5 minutes ago" stay as they are.
@@ -10,9 +14,9 @@ function inSentence(when: string) {
 
 // The prototype's "Last saved 5 minutes ago by editor@…" line. Made on the server with the request
 // time, so the browser shows the same text.
-export function savedByText(row: SavedRow | undefined, now: number) {
-  if (!row) return "";
-  return `Last saved ${inSentence(relativeTime(row.at, now))} by ${row.userEmail}`;
+export function savedByText(row: SavedRow | undefined, now: number): SavedBy | undefined {
+  if (!row) return undefined;
+  return { text: `Last saved ${inSentence(relativeTime(row.at, now))} by ${row.userName || row.userEmail}`, title: row.userEmail };
 }
 
 export type SavedCell = { when: string; who: string; full: string };
@@ -23,7 +27,11 @@ export function savedByCells(rows: Record<string, SavedRow>, now: number): Recor
   return Object.fromEntries(
     Object.entries(rows).map(([id, row]) => [
       id,
-      { when: inSentence(relativeTime(row.at, now)), who: row.userEmail.split("@")[0], full: `Last saved ${formatDateTime(row.at)} by ${row.userEmail}` },
+      {
+        when: inSentence(relativeTime(row.at, now)),
+        who: row.userName || row.userEmail.split("@")[0],
+        full: `Last saved ${formatDateTime(row.at)} by ${row.userName ? `${row.userName}, ${row.userEmail}` : row.userEmail}`,
+      },
     ]),
   );
 }

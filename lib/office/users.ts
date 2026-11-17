@@ -16,7 +16,7 @@ export async function listUsersAs(actor: SessionUser) {
     return forbidden("Only the Owner can see logins.");
   }
   const rows = await db
-    .select({ id: users.id, email: users.email, role: users.role })
+    .select({ id: users.id, email: users.email, name: users.name, role: users.role })
     .from(users)
     .orderBy(asc(users.email));
   return { ok: true as const, users: rows };

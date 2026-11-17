@@ -8,6 +8,7 @@ import { Card } from "@/components/office/ui/Card";
 import { Field } from "@/components/office/ui/Field";
 import { postOfficeForm } from "@/lib/http/office-client";
 import type { ActionResult } from "@/lib/http/result";
+import type { SavedBy } from "@/components/office/activity";
 
 const FIELDS: { name: keyof Air; label: string }[] = [
   { name: "islamabadTicket", label: "Islamabad ticket" },
@@ -17,7 +18,7 @@ const FIELDS: { name: keyof Air; label: string }[] = [
   { name: "sticker", label: "Sticker" },
 ];
 
-export function AirExtrasForm({ air, savedBy }: { air: Air; savedBy?: string }) {
+export function AirExtrasForm({ air, savedBy }: { air: Air; savedBy?: SavedBy }) {
   const router = useRouter();
   const [state, setState] = useState<ActionResult | null>(null);
   const [pending, start] = useTransition();
