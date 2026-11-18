@@ -868,6 +868,7 @@ async function assertOfficeRequests(savedIds: number[]) {
     await assertActivity(editorCookie, managerCookie, ownerCookie, { id: saved.body.id, phone, message });
     await assertProfileSettings(editorCookie, managerCookie, ownerCookie);
     await assertRoles(owner, editorCookie, managerCookie, ownerCookie, requestId);
+    await assertRoleSameMomentSaves(ownerCookie);
     await assertParallelPhotoAdds(editorCookie);
     const ownerDelete = await officePost("/api/office/requests/delete", deleteForm, ownerCookie);
     if (ownerDelete.status !== 200 || !ownerDelete.body.ok) {
@@ -1082,6 +1083,81 @@ async function assertRoles(owner: SessionUser, editorCookie: string, managerCook
     await db.insert(rolePermissions).values(editorBefore.map((permission) => ({ roleId: editorRole.id, permission })));
     await removeRoleCheckRows();
     if (tourId) await db.delete(tours).where(eq(tours.id, tourId));
+  }
+}
+
+// T-63 review: two saves of one role at the same moment both apply, one after the other, with no
+// false "name taken" message. Each activity row names the keys that save really added and removed.
+const SAME_MOMENT_ROLE = "T63 Same moment";
+
+// The keys an activity row says were added and removed, such as "Changed the role X: added a, b; removed c".
+function roleChange(text: string) {
+  const detail = text.slice(text.indexOf(": ") + 2);
+  const part = (word: string) => detail.split("; ").find((item) => item.startsWith(`${word} `))?.slice(word.length + 1).split(", ") ?? [];
+  return { added: part("added"), removed: part("removed") };
+}
+
+async function assertRoleSameMomentSaves(ownerCookie: string) {
+  // The role and its activity rows are removed before and after, by name and by the id it had.
+  let roleId = 0;
+  const removeRole = async () => {
+    const [left] = await db.select({ id: roles.id }).from(roles).where(eq(dsql`lower(${roles.name})`, SAME_MOMENT_ROLE.toLowerCase()));
+    for (const id of [left?.id, roleId].filter((value): value is number => Boolean(value))) {
+      await db.delete(activity).where(and(eq(activity.kind, "role"), eq(activity.recordId, String(id))));
+      await db.delete(roles).where(eq(roles.id, id));
+    }
+  };
+  await removeRole();
+  try {
+    const added = await officePost("/api/office/roles", roleForm({ action: "add", name: SAME_MOMENT_ROLE }, ["rates.edit"]), ownerCookie);
+    if (added.status !== 200) throw new Error(`The same-moment role was not added: ${added.body.error ?? added.status}.`);
+    const [role] = await db.select({ id: roles.id }).from(roles).where(eq(roles.name, SAME_MOMENT_ROLE));
+    if (!role) throw new Error("The same-moment role is not stored.");
+    roleId = role.id;
+    // Sets with no key in common could merge. Sets that share rates.edit collide on the
+    // role_permissions key, which the review saw as "A role with that name already exists."
+    const apart = [["rates.edit", "requests.read"], ["content.edit"]];
+    const sharing = [["rates.edit", "requests.read"], ["rates.edit", "content.edit"]];
+    for (let pair = 0; pair < 16; pair += 1) {
+      const sets = pair % 2 === 0 ? apart : sharing;
+      const replies = await Promise.all(sets.map((permissions) => officePost("/api/office/roles", roleForm({ action: "update", roleId: role.id, name: SAME_MOMENT_ROLE }, permissions), ownerCookie)));
+      for (const reply of replies) {
+        if (reply.status !== 200 || !reply.body.ok) throw new Error(`Two saves of one role at the same moment: one returned ${reply.status}: ${reply.body.error}.`);
+      }
+      const stored = (await storedPermissions(role.id)).join(" ");
+      if (!sets.some((permissions) => [...permissions].sort().join(" ") === stored)) throw new Error(`After two saves at the same moment the role has ${stored}.`);
+    }
+    // Replaying the activity rows from the starting keys gives the stored keys, and no row adds a
+    // key that was already there or removes one that was not.
+    const rows = await db.select({ text: activity.text }).from(activity).where(and(eq(activity.kind, "role"), eq(activity.recordId, String(role.id)))).orderBy(activity.id);
+    let state = new Set<string>();
+    for (const [index, row] of rows.entries()) {
+      if (index === 0) {
+        if (row.text !== `Added the role ${SAME_MOMENT_ROLE} with rates.edit`) throw new Error(`The first activity row is "${row.text}".`);
+        state = new Set(["rates.edit"]);
+        continue;
+      }
+      const change = roleChange(row.text);
+      if (change.added.some((key) => state.has(key)) || change.removed.some((key) => !state.has(key))) {
+        throw new Error(`The activity row "${row.text}" does not match the keys the role had.`);
+      }
+      for (const key of change.removed) state.delete(key);
+      for (const key of change.added) state.add(key);
+    }
+    if ([...state].sort().join(" ") !== (await storedPermissions(role.id)).join(" ")) throw new Error("The role activity rows do not add up to the stored keys.");
+    if (rows.length < 17) throw new Error(`Thirty-two saves wrote only ${rows.length - 1} change rows.`);
+
+    // An edit and a delete at the same moment: one runs after the other, never a 500 or a false message.
+    const [edit, gone] = await Promise.all([
+      officePost("/api/office/roles", roleForm({ action: "update", roleId: role.id, name: SAME_MOMENT_ROLE }, ["tours.delete"]), ownerCookie),
+      officePost("/api/office/roles", roleForm({ action: "delete", roleId: role.id }), ownerCookie),
+    ]);
+    const editFine = edit.status === 200 || (edit.status === 400 && edit.body.error === "That role was not found.");
+    if (gone.status !== 200 || !editFine) throw new Error(`An edit and a delete at the same moment returned ${edit.status} (${edit.body.error ?? "saved"}) and ${gone.status} (${gone.body.error ?? "deleted"}).`);
+    const [after] = await db.select({ id: roles.id }).from(roles).where(eq(roles.id, role.id));
+    if (after || (await storedPermissions(role.id)).length) throw new Error("After an edit and a delete at the same moment the role is still stored.");
+  } finally {
+    await removeRole();
   }
 }
 

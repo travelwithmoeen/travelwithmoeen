@@ -1,6 +1,6 @@
 import { asc, count, eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { FOREIGN_KEY_VIOLATION, pgErrorCode, UNIQUE_VIOLATION } from "@/lib/db/pg-error";
+import { FOREIGN_KEY_VIOLATION, pgConstraintName, pgErrorCode, UNIQUE_VIOLATION } from "@/lib/db/pg-error";
 import { rolePermissions, roles, users } from "@/lib/db/schema";
 import { isOwner, isPermissionKey, OWNER_ONLY, PERMISSION_KEYS, PERMISSIONS, type PermissionKey } from "@/lib/auth/permissions";
 import type { SessionUser } from "@/lib/auth/session";
@@ -15,6 +15,17 @@ const NAME_MIN = 2;
 const NAME_MAX = 40;
 const OWNER_LOCKED = "The Owner role cannot be changed.";
 const NAME_TAKEN = "A role with that name already exists.";
+const NOT_FOUND = "That role was not found.";
+const HAS_LOGINS = "Move these logins to another role first.";
+// Only this index means the name is taken. Any other unique error is a save that ran into another.
+const NAME_INDEX = "roles_name_lower_idx";
+const SAVED_MEANWHILE = "Someone else just saved this role. Open it again.";
+
+type Outcome = { ok: false; error: string } | { ok: true; changed: boolean };
+
+function uniqueError(error: unknown) {
+  return pgConstraintName(error) === NAME_INDEX ? NAME_TAKEN : SAVED_MEANWHILE;
+}
 
 // Every role, the Owner role first, each with its permissions and how many logins have it. The Owner
 // role is listed with every permission, because it always has them (BR-125).
@@ -102,7 +113,7 @@ async function addRole(actor: SessionUser, formData: FormData): Promise<ActionRe
       await recordActivity(tx, actor, { kind: "role", recordId: created.id, text: `Added the role ${name.name} with ${keys}` });
     });
   } catch (error) {
-    if (pgErrorCode(error) === UNIQUE_VIOLATION) return { ok: false, error: NAME_TAKEN };
+    if (pgErrorCode(error) === UNIQUE_VIOLATION) return { ok: false, error: uniqueError(error) };
     throw error;
   }
   return { ok: true, message: `Role added: ${name.name}.` };
@@ -110,61 +121,72 @@ async function addRole(actor: SessionUser, formData: FormData): Promise<ActionRe
 
 async function updateRole(actor: SessionUser, formData: FormData): Promise<ActionResult> {
   const id = readRoleId(formData.get("roleId"));
-  if (id === null) return { ok: false, error: "That role was not found." };
-  const [role] = await db.select({ id: roles.id, name: roles.name, isOwner: roles.isOwner }).from(roles).where(eq(roles.id, id)).limit(1);
-  if (!role) return { ok: false, error: "That role was not found." };
+  if (id === null) return { ok: false, error: NOT_FOUND };
+  const [role] = await db.select({ id: roles.id, isOwner: roles.isOwner }).from(roles).where(eq(roles.id, id)).limit(1);
+  if (!role) return { ok: false, error: NOT_FOUND };
   if (role.isOwner) return { ok: false, error: OWNER_LOCKED };
   const name = readName(formData.get("name"));
   if ("error" in name) return { ok: false, error: name.error };
   const picked = readPermissions(formData);
   if ("error" in picked) return { ok: false, error: picked.error };
-  if (await nameTaken(name.name, role.id)) return { ok: false, error: NAME_TAKEN };
+  if (await nameTaken(name.name, id)) return { ok: false, error: NAME_TAKEN };
 
-  let changed = false;
+  let outcome: Outcome;
   try {
-    await db.transaction(async (tx) => {
-      const current = await tx.select({ permission: rolePermissions.permission }).from(rolePermissions).where(eq(rolePermissions.roleId, role.id));
+    outcome = await db.transaction(async (tx): Promise<Outcome> => {
+      // T-63 review: the role row is locked first, so a second save of this role waits for this one
+      // and then reads what it saved. Its activity row then names the right keys added and removed.
+      const [locked] = await tx.select({ id: roles.id, name: roles.name, isOwner: roles.isOwner }).from(roles).where(eq(roles.id, id)).for("update");
+      if (!locked) return { ok: false, error: NOT_FOUND };
+      if (locked.isOwner) return { ok: false, error: OWNER_LOCKED };
+      const current = await tx.select({ permission: rolePermissions.permission }).from(rolePermissions).where(eq(rolePermissions.roleId, id));
       const before = PERMISSION_KEYS.filter((key) => current.some((row) => row.permission === key));
-      const renamed = name.name !== role.name;
+      const renamed = name.name !== locked.name;
       const keys = changeText(before, picked.permissions);
-      if (!renamed && !keys) return;
-      changed = true;
-      if (renamed) await tx.update(roles).set({ name: name.name }).where(eq(roles.id, role.id));
+      if (!renamed && !keys) return { ok: true, changed: false };
+      if (renamed) await tx.update(roles).set({ name: name.name }).where(eq(roles.id, id));
       if (keys) {
-        await tx.delete(rolePermissions).where(eq(rolePermissions.roleId, role.id));
+        await tx.delete(rolePermissions).where(eq(rolePermissions.roleId, id));
         if (picked.permissions.length) {
-          await tx.insert(rolePermissions).values(picked.permissions.map((permission) => ({ roleId: role.id, permission })));
+          await tx.insert(rolePermissions).values(picked.permissions.map((permission) => ({ roleId: id, permission })));
         }
       }
-      const parts = [renamed ? `Renamed the role ${role.name} to ${name.name}` : `Changed the role ${role.name}`];
+      const parts = [renamed ? `Renamed the role ${locked.name} to ${name.name}` : `Changed the role ${locked.name}`];
       if (keys) parts.push(keys);
-      await recordActivity(tx, actor, { kind: "role", recordId: role.id, text: parts.join(": ") });
+      await recordActivity(tx, actor, { kind: "role", recordId: id, text: parts.join(": ") });
+      return { ok: true, changed: true };
     });
   } catch (error) {
-    if (pgErrorCode(error) === UNIQUE_VIOLATION) return { ok: false, error: NAME_TAKEN };
+    if (pgErrorCode(error) === UNIQUE_VIOLATION) return { ok: false, error: uniqueError(error) };
     throw error;
   }
-  return { ok: true, message: changed ? `Role saved: ${name.name}.` : "Nothing changed." };
+  if (!outcome.ok) return outcome;
+  return { ok: true, message: outcome.changed ? `Role saved: ${name.name}.` : "Nothing changed." };
 }
 
 async function deleteRole(actor: SessionUser, formData: FormData): Promise<ActionResult> {
   const id = readRoleId(formData.get("roleId"));
-  if (id === null) return { ok: false, error: "That role was not found." };
-  const [role] = await db.select({ id: roles.id, name: roles.name, isOwner: roles.isOwner }).from(roles).where(eq(roles.id, id)).limit(1);
-  if (!role) return { ok: false, error: "That role was not found." };
-  if (role.isOwner) return { ok: false, error: OWNER_LOCKED };
-  const [logins] = await db.select({ value: count() }).from(users).where(eq(users.roleId, role.id));
-  if ((logins?.value ?? 0) > 0) return { ok: false, error: "Move these logins to another role first." };
+  if (id === null) return { ok: false, error: NOT_FOUND };
+  let deleted = "";
   try {
-    await db.transaction(async (tx) => {
+    const outcome = await db.transaction(async (tx): Promise<Outcome> => {
+      // Locked like a save, so a delete and an edit of one role run one after the other.
+      const [locked] = await tx.select({ id: roles.id, name: roles.name, isOwner: roles.isOwner }).from(roles).where(eq(roles.id, id)).for("update");
+      if (!locked) return { ok: false, error: NOT_FOUND };
+      if (locked.isOwner) return { ok: false, error: OWNER_LOCKED };
+      const [logins] = await tx.select({ value: count() }).from(users).where(eq(users.roleId, id));
+      if ((logins?.value ?? 0) > 0) return { ok: false, error: HAS_LOGINS };
       // The permissions go with it (on delete cascade). users.role_id has no cascade, so a login
       // given this role meanwhile stops the delete.
-      await tx.delete(roles).where(eq(roles.id, role.id));
-      await recordActivity(tx, actor, { kind: "role", recordId: role.id, text: `Deleted the role ${role.name}` });
+      await tx.delete(roles).where(eq(roles.id, id));
+      await recordActivity(tx, actor, { kind: "role", recordId: id, text: `Deleted the role ${locked.name}` });
+      deleted = locked.name;
+      return { ok: true, changed: true };
     });
+    if (!outcome.ok) return outcome;
   } catch (error) {
-    if (pgErrorCode(error) === FOREIGN_KEY_VIOLATION) return { ok: false, error: "Move these logins to another role first." };
+    if (pgErrorCode(error) === FOREIGN_KEY_VIOLATION) return { ok: false, error: HAS_LOGINS };
     throw error;
   }
-  return { ok: true, message: `Role deleted: ${role.name}.` };
+  return { ok: true, message: `Role deleted: ${deleted}.` };
 }

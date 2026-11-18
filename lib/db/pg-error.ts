@@ -8,3 +8,10 @@ export function pgErrorCode(error: unknown): string | undefined {
 
 export const UNIQUE_VIOLATION = "23505";
 export const FOREIGN_KEY_VIOLATION = "23503";
+
+// The name of the index or constraint that refused the row, such as roles_name_lower_idx.
+export function pgConstraintName(error: unknown): string | undefined {
+  const value = error as { constraint_name?: unknown; cause?: { constraint_name?: unknown } } | null;
+  const name = value?.constraint_name ?? value?.cause?.constraint_name;
+  return typeof name === "string" ? name : undefined;
+}
