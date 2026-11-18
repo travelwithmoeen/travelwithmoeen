@@ -19,6 +19,8 @@ import {
   quoteNights,
   quotes,
   reviews,
+  rolePermissions,
+  roles,
   seasons,
   siteSettings,
   slides,
@@ -29,7 +31,7 @@ import {
   users,
   vehicleRates,
 } from "@/lib/db/schema";
-import { canRunBackup } from "@/lib/auth/permissions";
+import { isOwner } from "@/lib/auth/permissions";
 import type { SessionUser } from "@/lib/auth/session";
 import { forbidden, type ActionResult } from "@/lib/http/result";
 import { recordActivity } from "@/lib/office/activity";
@@ -40,6 +42,9 @@ const KEEP = 30;
 
 // Parents come before the tables that point at them, so a restore can insert in this order.
 export const BACKUP_TABLES = [
+  // T-63: a login points at its role, so the roles come first.
+  ["roles", roles],
+  ["role_permissions", rolePermissions],
   ["users", users],
   ["login_failures", loginFailures],
   ["tours", tours],
@@ -150,7 +155,7 @@ export async function runBackup(): Promise<ActionResult> {
 }
 
 export async function backupAs(actor: SessionUser): Promise<ActionResult> {
-  if (!canRunBackup(actor.role)) {
+  if (!isOwner(actor)) {
     return forbidden("Only the Owner can run a backup.");
   }
   const result = await runBackup();
@@ -160,7 +165,7 @@ export async function backupAs(actor: SessionUser): Promise<ActionResult> {
 }
 
 export async function listBackupsAs(actor: SessionUser) {
-  if (!canRunBackup(actor.role)) {
+  if (!isOwner(actor)) {
     return forbidden("Only the Owner can see backups.");
   }
   if (!storageReady()) {
@@ -170,7 +175,7 @@ export async function listBackupsAs(actor: SessionUser) {
 }
 
 export async function readBackupAs(actor: SessionUser, name: string) {
-  if (!canRunBackup(actor.role)) {
+  if (!isOwner(actor)) {
     return { ok: false as const, error: "Only the Owner can download a backup.", status: 403 as const };
   }
   if (!storageReady() || !isBackupName(name)) {

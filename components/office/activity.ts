@@ -56,6 +56,7 @@ const LIST_OF_KIND: Record<string, string> = {
   quote: "/office/rates/quote",
   request: "/office/requests",
   user: "/office/users",
+  role: "/office/roles",
   backup: "/office/backup",
 };
 

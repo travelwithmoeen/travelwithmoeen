@@ -1,20 +1,11 @@
 import { createHmac, timingSafeEqual } from "crypto";
 import { cookies } from "next/headers";
-import { eq } from "drizzle-orm";
-import { db } from "@/lib/db";
-import { users } from "@/lib/db/schema";
-import type { Role } from "@/lib/auth/permissions";
+import { loadSessionUser, type SessionUser } from "@/lib/auth/session-user";
+
+export type { SessionUser };
 
 const COOKIE = "twm_office";
 const MAX_AGE_SECONDS = 60 * 60 * 24 * 7;
-
-export type SessionUser = {
-  id: number;
-  email: string;
-  role: Role;
-  // T-62 (BR-119): the person's own name. Null or missing means no name, and the email shows.
-  name?: string | null;
-};
 
 type Payload = { uid: number; exp: number };
 
@@ -78,9 +69,8 @@ export async function getCurrentUser(): Promise<SessionUser | null> {
   const jar = await cookies();
   const payload = readSessionToken(jar.get(COOKIE)?.value);
   if (!payload) return null;
-  const [user] = await db.select().from(users).where(eq(users.id, payload.uid)).limit(1);
-  if (!user) return null;
-  return { id: user.id, email: user.email, role: user.role, name: user.name ?? null };
+  // T-63 (BR-129): the role and its permissions are read on each request, not kept in the cookie.
+  return (await loadSessionUser({ id: payload.uid }))?.user ?? null;
 }
 
 export async function requireUser(): Promise<SessionUser> {

@@ -1,7 +1,7 @@
 import { count, desc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { guestRequests } from "@/lib/db/schema";
-import { canDeleteRequest, canUpdateRequestStatus } from "@/lib/auth/permissions";
+import { can, isOwner } from "@/lib/auth/permissions";
 import type { SessionUser } from "@/lib/auth/session";
 import { forbidden, type ActionResult } from "@/lib/http/result";
 import { recordActivity } from "@/lib/office/activity";
@@ -29,7 +29,8 @@ function isRequestStatus(value: string): value is RequestStatus {
 
 
 export async function listRequestsAs(actor: SessionUser) {
-  if (actor.role !== "owner" && actor.role !== "manager" && actor.role !== "editor") {
+  // T-63: a role reads the inbox only with the Read guest requests permission.
+  if (!can(actor, "requests.read")) {
     return forbidden("You cannot read guest requests.");
   }
   const rows = await db.select().from(guestRequests).orderBy(desc(guestRequests.createdAt));
@@ -48,13 +49,13 @@ export async function listRequestsAs(actor: SessionUser) {
 
 // The sidebar count. Every role that may read the list may read the count.
 export async function countNewRequestsAs(actor: SessionUser) {
-  if (actor.role !== "owner" && actor.role !== "manager" && actor.role !== "editor") return 0;
+  if (!can(actor, "requests.read")) return 0;
   const [row] = await db.select({ total: count() }).from(guestRequests).where(eq(guestRequests.status, "new"));
   return row?.total ?? 0;
 }
 
 export async function updateRequestStatusAs(actor: SessionUser, id: number | null, status: string): Promise<ActionResult> {
-  if (!canUpdateRequestStatus(actor.role)) {
+  if (!can(actor, "requests.status")) {
     return forbidden("You cannot change a request status.");
   }
   // The role is checked first, so a role that may not make this save gets 403 for any id (T-52).
@@ -73,7 +74,7 @@ export async function updateRequestStatusAs(actor: SessionUser, id: number | nul
 }
 
 export async function deleteRequestAs(actor: SessionUser, id: number | null): Promise<ActionResult> {
-  if (!canDeleteRequest(actor.role)) {
+  if (!isOwner(actor)) {
     return forbidden("Only the Owner can delete a guest request.");
   }
   if (id === null) return { ok: false, error: "That request was not found." };

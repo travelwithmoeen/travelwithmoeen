@@ -3,14 +3,13 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { chooseDensity, chooseTheme, type OfficeDensity, type OfficeTheme } from "@/components/office/appearance";
-import { ROLE_NAME } from "@/components/office/office-nav";
 import { Alert } from "@/components/office/ui/Alert";
 import { Button } from "@/components/office/ui/Button";
 import { Card } from "@/components/office/ui/Card";
 import { Field, helpId } from "@/components/office/ui/Field";
 import { PageHead } from "@/components/office/ui/PageHead";
 import { postOfficeForm } from "@/lib/http/office-client";
-import type { ActionResult, Role } from "@/lib/http/result";
+import type { ActionResult } from "@/lib/http/result";
 
 const THEME_CHOICES: [OfficeTheme, string][] = [
   ["system", "System"],
@@ -26,7 +25,7 @@ const DENSITY_CHOICES: [OfficeDensity, string][] = [
 type SettingsScreenProps = {
   name: string | null;
   email: string;
-  role: Role;
+  roleName: string;
   theme: OfficeTheme;
   density: OfficeDensity;
 };
@@ -45,7 +44,7 @@ function Choices<T extends string>({ label, choices, value, onChoose }: { label:
 }
 
 // T-62 (BR-117 to BR-121): the person's own name, and how the office looks in this browser.
-export function SettingsScreen({ name, email, role, theme: startTheme, density: startDensity }: SettingsScreenProps) {
+export function SettingsScreen({ name, email, roleName, theme: startTheme, density: startDensity }: SettingsScreenProps) {
   const router = useRouter();
   const [theme, setTheme] = useState(startTheme);
   const [density, setDensity] = useState(startDensity);
@@ -86,7 +85,7 @@ export function SettingsScreen({ name, email, role, theme: startTheme, density: 
             <dt>Email</dt>
             <dd>{email}</dd>
             <dt>Role</dt>
-            <dd>{ROLE_NAME[role]}</dd>
+            <dd>{roleName}</dd>
           </dl>
           <p className="help">The Owner changes logins and roles under Users.</p>
         </Card>

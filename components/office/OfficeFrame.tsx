@@ -8,7 +8,6 @@ import { OfficePlaceholder } from "@/components/office/OfficePlaceholder";
 import { initialsOf, shownName as nameOf } from "@/components/office/people";
 import { SignOutButton } from "@/components/office/SignOutButton";
 import {
-  ROLE_NAME,
   SIDEBAR_COOKIE,
   isCurrentOfficeLink,
   type OfficeNavGroup,
@@ -17,7 +16,6 @@ import {
 import { Button } from "@/components/office/ui/Button";
 import { Icon } from "@/components/office/ui/Icon";
 import { usePendingPath } from "@/components/ui/NavigationProgress";
-import type { Role } from "@/lib/http/result";
 
 const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
 
@@ -27,7 +25,8 @@ type OfficeFrameProps = {
   email: string;
   // T-62 (BR-119): the person's own name, shown in place of the email. Null shows the email.
   name: string | null;
-  role: Role;
+  // T-63: the name of the person's role, such as Manager or a custom role.
+  roleName: string;
   nav: OfficeNavGroup[];
   newLinks: OfficeNavLink[];
   newRequestCount: number;
@@ -40,7 +39,7 @@ function firstFocusable(root: HTMLElement | null) {
   return root?.querySelector<HTMLElement>("a, button") ?? null;
 }
 
-export function OfficeFrame({ email, name, role, nav, newLinks, newRequestCount, startCollapsed, children }: OfficeFrameProps) {
+export function OfficeFrame({ email, name, roleName, nav, newLinks, newRequestCount, startCollapsed, children }: OfficeFrameProps) {
   const shownName = nameOf(email, name);
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(startCollapsed);
@@ -195,7 +194,7 @@ export function OfficeFrame({ email, name, role, nav, newLinks, newRequestCount,
               </span>
               <span className="me-text">
                 <b>{shownName}</b>
-                <small>{ROLE_NAME[role]}</small>
+                <small>{roleName}</small>
               </span>
               <Icon name="chevU" className="me-chev" />
             </button>
@@ -203,7 +202,7 @@ export function OfficeFrame({ email, name, role, nav, newLinks, newRequestCount,
               <div className="pop-head">
                 <b>{shownName}</b>
                 {name ? <small>{email}</small> : null}
-                <small>Signed in as {ROLE_NAME[role]}</small>
+                <small>Signed in as {roleName}</small>
               </div>
               {/* T-62 (BR-117): the person's own Settings, between the header and Sign out. */}
               <Link className="pop-item" href="/office/settings" onClick={() => setOpenMenu(null)} aria-current={pathname === "/office/settings" ? "page" : undefined}>

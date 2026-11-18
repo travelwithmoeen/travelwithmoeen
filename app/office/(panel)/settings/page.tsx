@@ -13,7 +13,7 @@ export default async function SettingsPage() {
     <SettingsScreen
       name={user.name}
       email={user.email}
-      role={user.role}
+      roleName={user.roleName}
       theme={readTheme(cookieStore.get(THEME_COOKIE)?.value)}
       density={readDensity(cookieStore.get(DENSITY_COOKIE)?.value)}
     />
