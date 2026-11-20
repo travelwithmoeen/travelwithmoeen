@@ -162,9 +162,8 @@ function TourCard({ tour }: { tour: TourPlan }) {
 }
 
 export function TourPlans() {
-  const plugin = React.useRef(
-    Autoplay({ delay: 3000, stopOnInteraction: true })
-  );
+  // Made once, and kept in state, not a ref, because it is read while rendering (T-65 lint).
+  const [plugin] = React.useState(() => Autoplay({ delay: 3000, stopOnInteraction: true }));
 
   return (
     <section className="py-24 px-6 bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50">
@@ -192,15 +191,15 @@ export function TourPlans() {
         {/* Tour Cards Carousel */}
         <div className="relative px-12">
           <Carousel
-            plugins={[plugin.current]}
+            plugins={[plugin]}
             className="w-full"
             opts={{
               align: "start",
               loop: true,
               slidesToScroll: 1,
             }}
-            onMouseEnter={plugin.current.stop}
-            onMouseLeave={plugin.current.reset}
+            onMouseEnter={plugin.stop}
+            onMouseLeave={plugin.reset}
           >
             <CarouselContent className="-ml-4">
               {tourPlans.map((tour) => (
