@@ -4,11 +4,12 @@ import path from "path";
 import { spawn } from "child_process";
 import { del, head, list, put } from "@vercel/blob";
 import { upload } from "@vercel/blob/client";
-import { and, count, desc, eq, gt, inArray, like, max } from "drizzle-orm";
+import { and, count, desc, eq, gt, inArray, like, max, sql as dsql } from "drizzle-orm";
 import postgres from "postgres";
 import { drizzle } from "drizzle-orm/postgres-js";
 import { db, sql } from "../lib/db";
-import { activity, airExtras as airExtrasTable, guestRequests, hotelRates, jeepLines, loginFailures, mealRates, pricingRules, photos, places, posts, quoteDays, quoteExtras, quoteNights, quotes, reviews, seasons, slides, startCities, tourDays, tourPlaces, tours, users, vehicleRates } from "../lib/db/schema";
+import { activity, airExtras as airExtrasTable, guestRequests, hotelRates, jeepLines, loginFailures, mealRates, pricingRules, photos, places, posts, quoteDays, quoteExtras, quoteNights, quotes, reviews, rolePermissions, roles, seasons, slides, startCities, tourDays, tourPlaces, tours, users, vehicleRates } from "../lib/db/schema";
+import type { SessionUser } from "../lib/auth/session";
 import { inferTourPlaceLinks, linkInferredTourPlaces } from "../lib/office/tour-places";
 import { authenticate } from "../lib/auth/authenticate";
 import { createUserAs, removeUserAs } from "../lib/office/users";
@@ -866,6 +867,8 @@ async function assertOfficeRequests(savedIds: number[]) {
     await assertDeleteRemovesRecordAndFile(editorCookie);
     await assertActivity(editorCookie, managerCookie, ownerCookie, { id: saved.body.id, phone, message });
     await assertProfileSettings(editorCookie, managerCookie, ownerCookie);
+    await assertRoles(owner, editorCookie, managerCookie, ownerCookie, requestId);
+    await assertRoleSameMomentSaves(ownerCookie);
     await assertParallelPhotoAdds(editorCookie);
     const ownerDelete = await officePost("/api/office/requests/delete", deleteForm, ownerCookie);
     if (ownerDelete.status !== 200 || !ownerDelete.body.ok) {
@@ -883,6 +886,281 @@ async function assertOfficeRequests(savedIds: number[]) {
   }
 }
 
+// T-63 (BR-123 to BR-130, design section 17): roles the Owner manages.
+const ROLE_CHECK_NAME = "T63 Sales check";
+const ROLE_CHECK_RENAMED = "T63 Sales renamed";
+const SALES_EMAIL = "step3-sales@travelwithmoeen.test";
+const SALES_PASSWORD = "Step3Sales-pass1";
+
+function roleForm(values: Record<string, string | number>, permissions: string[] = []) {
+  const form = formOf(values);
+  for (const permission of permissions) form.append("permission", permission);
+  return form;
+}
+
+type RolesReply = { ok?: boolean; roles?: { id: number; name: string; isOwner: boolean; permissions: string[]; logins: number }[] };
+
+async function rolesGet(cookie: string) {
+  const response = await fetch(`${siteBase()}/api/office/roles`, { headers: cookie ? { cookie } : {} });
+  return { status: response.status, body: (await response.json().catch(() => ({}))) as RolesReply };
+}
+
+async function storedPermissions(roleId: number) {
+  const rows = await db.select({ permission: rolePermissions.permission }).from(rolePermissions).where(eq(rolePermissions.roleId, roleId));
+  return rows.map((row) => row.permission).sort();
+}
+
+async function removeRoleCheckRows() {
+  await db.delete(users).where(eq(users.email, SALES_EMAIL));
+  await db.delete(loginFailures).where(eq(loginFailures.email, SALES_EMAIL));
+  for (const name of [ROLE_CHECK_NAME, ROLE_CHECK_RENAMED]) {
+    await db.delete(roles).where(eq(dsql`lower(${roles.name})`, name.toLowerCase()));
+  }
+}
+
+async function assertRoles(owner: SessionUser, editorCookie: string, managerCookie: string, ownerCookie: string, requestId: string) {
+  await removeRoleCheckRows();
+  const [editorRole] = await db.select().from(roles).where(eq(dsql`lower(${roles.name})`, "editor")).limit(1);
+  const [ownerRole] = await db.select().from(roles).where(eq(roles.isOwner, true)).limit(1);
+  if (!editorRole || !ownerRole) throw new Error("The Editor or Owner role is missing.");
+  const editorBefore = await storedPermissions(editorRole.id);
+  if (editorBefore.join(" ") !== "content.edit requests.read tours.delete") {
+    throw new Error(`The Editor role starts with ${editorBefore.join(", ")}, not its T-63 starting permissions.`);
+  }
+  const [shipped] = await db.select({ image: tours.image }).from(tours).where(like(tours.image, "/images/%")).limit(1);
+  let tourId = "";
+  try {
+    // A Manager and an Editor are refused with 403, for a read and for every change, and nothing changes.
+    for (const [who, cookie] of [["Manager", managerCookie], ["Editor", editorCookie]] as const) {
+      const read = await rolesGet(cookie);
+      if (read.status !== 403 || read.body.roles) throw new Error(`A ${who} roles read returned ${read.status}.`);
+      const refused = [
+        roleForm({ action: "add", name: ROLE_CHECK_NAME }, ["rates.edit"]),
+        roleForm({ action: "update", roleId: editorRole.id, name: editorRole.name }, ["requests.read", "content.edit", "tours.delete", "rates.edit"]),
+        roleForm({ action: "update", roleId: ownerRole.id, name: "Boss" }),
+        roleForm({ action: "delete", roleId: editorRole.id }),
+      ];
+      for (const form of refused) {
+        const result = await officePost("/api/office/roles", form, cookie);
+        if (result.status !== 403) throw new Error(`A ${who} roles change returned ${result.status}.`);
+      }
+    }
+    if ((await storedPermissions(editorRole.id)).join(" ") !== editorBefore.join(" ")) throw new Error("A refused roles change changed the Editor role.");
+    const [added] = await db.select({ id: roles.id }).from(roles).where(eq(dsql`lower(${roles.name})`, ROLE_CHECK_NAME.toLowerCase()));
+    if (added) throw new Error("A refused add left a role.");
+    const signedOut = await officePost("/api/office/roles", roleForm({ action: "add", name: ROLE_CHECK_NAME }), "");
+    if (signedOut.status !== 401) throw new Error(`A roles change with no session returned ${signedOut.status}.`);
+
+    // The Owner is refused an unknown key, an Owner-only action as a key, a bad name, and any Owner role change.
+    const ownerRefused: [string, FormData, string][] = [
+      ["an unknown key", roleForm({ action: "add", name: ROLE_CHECK_NAME }, ["rates.edit", "rates.everything"]), "That permission does not exist."],
+      ["an Owner-only action", roleForm({ action: "add", name: ROLE_CHECK_NAME }, ["users.manage"]), "That permission does not exist."],
+      ["a one-letter name", roleForm({ action: "add", name: "S" }, ["rates.edit"]), "Use a role name of 2 to 40 characters."],
+      ["a 41-letter name", roleForm({ action: "add", name: "S".repeat(41) }, ["rates.edit"]), "Use a role name of 2 to 40 characters."],
+      ["a taken name", roleForm({ action: "add", name: " MANAGER " }, ["rates.edit"]), "A role with that name already exists."],
+      ["renaming Owner", roleForm({ action: "update", roleId: ownerRole.id, name: "Boss" }), "The Owner role cannot be changed."],
+      ["changing Owner", roleForm({ action: "update", roleId: ownerRole.id, name: ownerRole.name }, ["rates.edit"]), "The Owner role cannot be changed."],
+      ["deleting Owner", roleForm({ action: "delete", roleId: ownerRole.id }), "The Owner role cannot be changed."],
+      ["no action", roleForm({ name: ROLE_CHECK_NAME }), "Choose add, update, or delete."],
+    ];
+    for (const [what, form, error] of ownerRefused) {
+      const result = await officePost("/api/office/roles", form, ownerCookie);
+      if (result.status !== 400 || result.body.error !== error) throw new Error(`An Owner roles save with ${what} returned ${result.status}: ${result.body.error}.`);
+    }
+    const [ownerNow] = await db.select().from(roles).where(eq(roles.id, ownerRole.id));
+    if (ownerNow?.name !== ownerRole.name || !ownerNow.isOwner || (await storedPermissions(ownerRole.id)).length) throw new Error("A refused save changed the Owner role.");
+
+    // A custom role with only rates.edit.
+    const addedRole = await officePost("/api/office/roles", roleForm({ action: "add", name: ROLE_CHECK_NAME }, ["rates.edit"]), ownerCookie);
+    if (addedRole.status !== 200 || !addedRole.body.ok) throw new Error(`The Owner could not add a role: ${addedRole.body.error ?? addedRole.status}.`);
+    const [sales] = await db.select().from(roles).where(eq(roles.name, ROLE_CHECK_NAME));
+    if (!sales || sales.isOwner || (await storedPermissions(sales.id)).join(" ") !== "rates.edit") throw new Error("The added role does not have only rates.edit.");
+    const listed = await rolesGet(ownerCookie);
+    const row = listed.body.roles?.find((item) => item.id === sales.id);
+    if (listed.status !== 200 || listed.body.roles?.[0]?.isOwner !== true || listed.body.roles[0].permissions.length !== 5 || row?.permissions.join(" ") !== "rates.edit" || row.logins !== 0) {
+      throw new Error("The roles list does not show the Owner first with every permission, and the new role with rates.edit and no logins.");
+    }
+
+    const created = await createUserAs(owner, { email: SALES_EMAIL, password: SALES_PASSWORD, role: String(sales.id) });
+    if (!created.ok) throw new Error(`The Owner could not give the new role to a login: ${created.error}.`);
+    const salesLogin = await signIn(SALES_EMAIL, SALES_PASSWORD);
+    const salesCookie = sessionCookie(salesLogin.response);
+    if (!salesCookie) throw new Error("The custom-role login did not get a session.");
+    const [season] = await db.select({ percent: seasons.percent }).from(seasons).limit(1);
+    const rateSave = await officePost("/api/office/rates", marginForm(String(season?.percent ?? 20)), salesCookie);
+    if (rateSave.status !== 200 || !rateSave.body.ok) throw new Error(`The rates.edit role could not save a rate: ${rateSave.body.error ?? rateSave.status}.`);
+    const [anyTour] = await db.select().from(tours).limit(1);
+    if (!anyTour) throw new Error("There is no tour for the role check.");
+    const salesTour = await officePost("/api/office/tours", tourForm(anyTour), salesCookie);
+    if (salesTour.status !== 403) throw new Error(`The rates.edit role tour save returned ${salesTour.status}.`);
+    const statusForm = formOf({ id: requestId, status: "closed" });
+    const salesStatus = await officePost("/api/office/requests/status", statusForm, salesCookie);
+    if (salesStatus.status !== 403) throw new Error(`The rates.edit role request status change returned ${salesStatus.status}.`);
+    const salesRequests = await officeGet("/api/office/requests", salesCookie);
+    if (salesRequests.status !== 403) throw new Error(`The rates.edit role request list returned ${salesRequests.status}.`);
+    const salesHome = await officePage("/office", salesCookie);
+    if (salesHome.status !== 200 || sidebarLinks(salesHome.html).join(" ") !== "/office /office/rates") {
+      throw new Error(`The rates.edit role sidebar shows ${sidebarLinks(salesHome.html).join(" ")}.`);
+    }
+    if (salesHome.html.includes("Latest requests") || salesHome.html.includes("New requests")) throw new Error("The rates.edit role dashboard shows guest requests.");
+    const salesInbox = await officePage("/office/requests", salesCookie);
+    if (salesInbox.status < 300 || salesInbox.status >= 400) throw new Error(`The rates.edit role requests page returned ${salesInbox.status}.`);
+    const salesFeed = await activityGet("?limit=100", salesCookie);
+    if (salesFeed.status !== 200 || salesFeed.rows.some((item) => item.area !== "rates")) throw new Error("The rates.edit role reads activity outside rates.");
+
+    // A role with a login is not deleted.
+    const busyDelete = await officePost("/api/office/roles", roleForm({ action: "delete", roleId: sales.id }), ownerCookie);
+    if (busyDelete.status !== 400 || busyDelete.body.error !== "Move these logins to another role first.") {
+      throw new Error(`Deleting a role with a login returned ${busyDelete.status}: ${busyDelete.body.error}.`);
+    }
+
+    // Removing content.edit from Editor refuses that Editor's next tour save, with no sign-out.
+    if (!shipped) throw new Error("No tour has a shipped photo for the T-63 tour.");
+    const addForm = newTourForm("T-63 Valley", {});
+    addForm.set("name", "T-63 check tour");
+    addForm.set("image", shipped.image);
+    const tourAdded = await officePost("/api/office/tours/create", addForm, editorCookie);
+    if (tourAdded.status !== 200 || !tourAdded.body.ok) throw new Error(`The T-63 tour was not added: ${tourAdded.body.error ?? tourAdded.status}.`);
+    const [checkTour] = await db.select().from(tours).where(eq(tours.location, "T-63 Valley")).limit(1);
+    if (!checkTour) throw new Error("The T-63 tour is not in the database.");
+    tourId = checkTour.id;
+    const before = await officePost("/api/office/tours", tourForm(checkTour), editorCookie);
+    if (before.status !== 200 || !before.body.ok) throw new Error(`The Editor could not save the T-63 tour: ${before.body.error ?? before.status}.`);
+    const narrowed = await officePost("/api/office/roles", roleForm({ action: "update", roleId: editorRole.id, name: editorRole.name }, ["requests.read", "tours.delete"]), ownerCookie);
+    if (narrowed.status !== 200 || !narrowed.body.ok) throw new Error(`The Owner could not take content.edit from Editor: ${narrowed.body.error ?? narrowed.status}.`);
+    const after = await officePost("/api/office/tours", tourForm(checkTour), editorCookie);
+    if (after.status !== 403) throw new Error(`The Editor's next tour save after losing content.edit returned ${after.status}.`);
+    const editorSession = await officeGet("/api/office/session", editorCookie);
+    const view = editorSession.body as { ok?: boolean; canEditContent?: boolean; canDeleteTour?: boolean };
+    if (editorSession.status !== 200 || !view.ok || view.canEditContent !== false || view.canDeleteTour !== true) {
+      throw new Error("The Editor was signed out, or the session still shows content.edit.");
+    }
+    const editorHome = await officePage("/office", editorCookie);
+    if (editorHome.status !== 200 || sidebarLinks(editorHome.html).join(" ") !== "/office /office/requests") {
+      throw new Error(`After losing content.edit the Editor sidebar shows ${sidebarLinks(editorHome.html).join(" ")}.`);
+    }
+    const editorTours = await officePage("/office/tours", editorCookie);
+    if (editorTours.status < 300 || editorTours.status >= 400) throw new Error(`After losing content.edit the Editor tours page returned ${editorTours.status}.`);
+    const restored = await officePost("/api/office/roles", roleForm({ action: "update", roleId: editorRole.id, name: editorRole.name }, editorBefore), ownerCookie);
+    if (restored.status !== 200 || (await storedPermissions(editorRole.id)).join(" ") !== editorBefore.join(" ")) throw new Error("The Editor permissions were not put back.");
+    const again = await officePost("/api/office/tours", tourForm(checkTour), editorCookie);
+    if (again.status !== 200 || !again.body.ok) throw new Error(`With content.edit back, the Editor tour save returned ${again.status}.`);
+
+    // Each change writes a roles row that only the Owner reads, with the keys added and removed.
+    const ownerFeed = await activityGet("?limit=100", ownerCookie);
+    const texts = ownerFeed.rows.filter((item) => item.kind === "role" && item.area === "roles").map((item) => item.text);
+    const wanted = [
+      `Added the role ${ROLE_CHECK_NAME} with rates.edit`,
+      `Changed the role ${editorRole.name}: removed content.edit`,
+      `Changed the role ${editorRole.name}: added content.edit`,
+    ];
+    for (const text of wanted) if (!texts.includes(text)) throw new Error(`The Owner activity has no row "${text}".`);
+    for (const [who, cookie] of [["Manager", managerCookie], ["Editor", editorCookie], ["rates.edit role", salesCookie]] as const) {
+      const feed = await activityGet("?limit=100", cookie);
+      if (feed.rows.some((item) => item.area === "roles")) throw new Error(`The ${who} reads roles activity.`);
+      const saved = await activityGet("?kind=role", cookie);
+      if (saved.status !== 403) throw new Error(`The ${who} roles Saved by read returned ${saved.status}.`);
+    }
+
+    // Rename, then delete once it has no login. Its permissions go with it.
+    const removed = await removeUserAs(owner, (await authenticate(SALES_EMAIL, SALES_PASSWORD))?.id ?? null);
+    if (!removed.ok) throw new Error("The custom-role login was not removed.");
+    const renamed = await officePost("/api/office/roles", roleForm({ action: "update", roleId: sales.id, name: ROLE_CHECK_RENAMED }, ["rates.edit", "requests.read"]), ownerCookie);
+    if (renamed.status !== 200 || !renamed.body.ok) throw new Error(`The Owner could not rename the role: ${renamed.body.error ?? renamed.status}.`);
+    const [renamedRow] = await db.select().from(roles).where(eq(roles.id, sales.id));
+    if (renamedRow?.name !== ROLE_CHECK_RENAMED || (await storedPermissions(sales.id)).join(" ") !== "rates.edit requests.read") throw new Error("The rename did not save the name and permissions.");
+    const deleted = await officePost("/api/office/roles", roleForm({ action: "delete", roleId: sales.id }), ownerCookie);
+    if (deleted.status !== 200 || !deleted.body.ok) throw new Error(`Deleting an empty role returned ${deleted.status}: ${deleted.body.error}.`);
+    const [gone] = await db.select().from(roles).where(eq(roles.id, sales.id));
+    if (gone || (await storedPermissions(sales.id)).length) throw new Error("The deleted role or its permissions are still stored.");
+    const finalFeed = await activityGet("?limit=100", ownerCookie);
+    const finalTexts = finalFeed.rows.filter((item) => item.kind === "role").map((item) => item.text);
+    for (const text of [`Renamed the role ${ROLE_CHECK_NAME} to ${ROLE_CHECK_RENAMED}: added requests.read`, `Deleted the role ${ROLE_CHECK_RENAMED}`]) {
+      if (!finalTexts.includes(text)) throw new Error(`The Owner activity has no row "${text}".`);
+    }
+  } finally {
+    await db.delete(rolePermissions).where(eq(rolePermissions.roleId, editorRole.id));
+    await db.insert(rolePermissions).values(editorBefore.map((permission) => ({ roleId: editorRole.id, permission })));
+    await removeRoleCheckRows();
+    if (tourId) await db.delete(tours).where(eq(tours.id, tourId));
+  }
+}
+
+// T-63 review: two saves of one role at the same moment both apply, one after the other, with no
+// false "name taken" message. Each activity row names the keys that save really added and removed.
+const SAME_MOMENT_ROLE = "T63 Same moment";
+
+// The keys an activity row says were added and removed, such as "Changed the role X: added a, b; removed c".
+function roleChange(text: string) {
+  const detail = text.slice(text.indexOf(": ") + 2);
+  const part = (word: string) => detail.split("; ").find((item) => item.startsWith(`${word} `))?.slice(word.length + 1).split(", ") ?? [];
+  return { added: part("added"), removed: part("removed") };
+}
+
+async function assertRoleSameMomentSaves(ownerCookie: string) {
+  // The role and its activity rows are removed before and after, by name and by the id it had.
+  let roleId = 0;
+  const removeRole = async () => {
+    const [left] = await db.select({ id: roles.id }).from(roles).where(eq(dsql`lower(${roles.name})`, SAME_MOMENT_ROLE.toLowerCase()));
+    for (const id of [left?.id, roleId].filter((value): value is number => Boolean(value))) {
+      await db.delete(activity).where(and(eq(activity.kind, "role"), eq(activity.recordId, String(id))));
+      await db.delete(roles).where(eq(roles.id, id));
+    }
+  };
+  await removeRole();
+  try {
+    const added = await officePost("/api/office/roles", roleForm({ action: "add", name: SAME_MOMENT_ROLE }, ["rates.edit"]), ownerCookie);
+    if (added.status !== 200) throw new Error(`The same-moment role was not added: ${added.body.error ?? added.status}.`);
+    const [role] = await db.select({ id: roles.id }).from(roles).where(eq(roles.name, SAME_MOMENT_ROLE));
+    if (!role) throw new Error("The same-moment role is not stored.");
+    roleId = role.id;
+    // Sets with no key in common could merge. Sets that share rates.edit collide on the
+    // role_permissions key, which the review saw as "A role with that name already exists."
+    const apart = [["rates.edit", "requests.read"], ["content.edit"]];
+    const sharing = [["rates.edit", "requests.read"], ["rates.edit", "content.edit"]];
+    for (let pair = 0; pair < 16; pair += 1) {
+      const sets = pair % 2 === 0 ? apart : sharing;
+      const replies = await Promise.all(sets.map((permissions) => officePost("/api/office/roles", roleForm({ action: "update", roleId: role.id, name: SAME_MOMENT_ROLE }, permissions), ownerCookie)));
+      for (const reply of replies) {
+        if (reply.status !== 200 || !reply.body.ok) throw new Error(`Two saves of one role at the same moment: one returned ${reply.status}: ${reply.body.error}.`);
+      }
+      const stored = (await storedPermissions(role.id)).join(" ");
+      if (!sets.some((permissions) => [...permissions].sort().join(" ") === stored)) throw new Error(`After two saves at the same moment the role has ${stored}.`);
+    }
+    // Replaying the activity rows from the starting keys gives the stored keys, and no row adds a
+    // key that was already there or removes one that was not.
+    const rows = await db.select({ text: activity.text }).from(activity).where(and(eq(activity.kind, "role"), eq(activity.recordId, String(role.id)))).orderBy(activity.id);
+    let state = new Set<string>();
+    for (const [index, row] of rows.entries()) {
+      if (index === 0) {
+        if (row.text !== `Added the role ${SAME_MOMENT_ROLE} with rates.edit`) throw new Error(`The first activity row is "${row.text}".`);
+        state = new Set(["rates.edit"]);
+        continue;
+      }
+      const change = roleChange(row.text);
+      if (change.added.some((key) => state.has(key)) || change.removed.some((key) => !state.has(key))) {
+        throw new Error(`The activity row "${row.text}" does not match the keys the role had.`);
+      }
+      for (const key of change.removed) state.delete(key);
+      for (const key of change.added) state.add(key);
+    }
+    if ([...state].sort().join(" ") !== (await storedPermissions(role.id)).join(" ")) throw new Error("The role activity rows do not add up to the stored keys.");
+    if (rows.length < 17) throw new Error(`Thirty-two saves wrote only ${rows.length - 1} change rows.`);
+
+    // An edit and a delete at the same moment: one runs after the other, never a 500 or a false message.
+    const [edit, gone] = await Promise.all([
+      officePost("/api/office/roles", roleForm({ action: "update", roleId: role.id, name: SAME_MOMENT_ROLE }, ["tours.delete"]), ownerCookie),
+      officePost("/api/office/roles", roleForm({ action: "delete", roleId: role.id }), ownerCookie),
+    ]);
+    const editFine = edit.status === 200 || (edit.status === 400 && edit.body.error === "That role was not found.");
+    if (gone.status !== 200 || !editFine) throw new Error(`An edit and a delete at the same moment returned ${edit.status} (${edit.body.error ?? "saved"}) and ${gone.status} (${gone.body.error ?? "deleted"}).`);
+    const [after] = await db.select({ id: roles.id }).from(roles).where(eq(roles.id, role.id));
+    if (after || (await storedPermissions(role.id)).length) throw new Error("After an edit and a delete at the same moment the role is still stored.");
+  } finally {
+    await removeRole();
+  }
+}
+
 const OFFICE_LINKS_BY_ROLE = {
   owner: [
     "/office",
@@ -896,6 +1174,8 @@ const OFFICE_LINKS_BY_ROLE = {
     "/office/slides",
     "/office/site",
     "/office/users",
+    // T-63: the Roles page, next to Users (BR-123).
+    "/office/roles",
     "/office/backup",
   ],
   manager: ["/office", "/office/requests", "/office/rates"],
@@ -1086,7 +1366,7 @@ async function assertBadRecordIds(editorCookie: string, managerCookie: string, o
       await db.select().from(photos).orderBy(photos.id),
       await db.select().from(reviews).orderBy(reviews.id),
       await db.select().from(slides).orderBy(slides.id),
-      await db.select({ id: users.id, email: users.email, role: users.role }).from(users).orderBy(users.id),
+      await db.select({ id: users.id, email: users.email, roleId: users.roleId }).from(users).orderBy(users.id),
       await db.select().from(guestRequests).orderBy(guestRequests.id),
       await activityCount(),
     ]);

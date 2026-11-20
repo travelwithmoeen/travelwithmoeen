@@ -1,12 +1,16 @@
 import { headers } from "next/headers";
-import type { Role } from "@/lib/http/result";
 
 export type OfficeSession = {
   id: number;
   email: string;
   // T-62 (BR-119): the person's own name, or null.
   name: string | null;
-  role: Role;
+  // T-63: the role, read on each request, so a change applies on the next page (BR-129).
+  roleId: number;
+  roleName: string;
+  isOwner: boolean;
+  canReadRequests: boolean;
+  canManageRoles: boolean;
   canEditContent: boolean;
   canManageUsers: boolean;
   canDeleteTour: boolean;
@@ -21,8 +25,12 @@ export type OfficeUserRow = {
   id: number;
   email: string;
   name: string | null;
-  role: Role;
+  roleId: number;
+  roleName: string;
+  isOwner: boolean;
 };
+
+export type OfficeRoleChoice = { id: number; name: string; isOwner: boolean };
 
 async function officeUrl(path: string) {
   const configured = (process.env.API_BASE_URL ?? "").trim().replace(/\/$/, "");
@@ -46,12 +54,16 @@ export async function getOfficeSession(): Promise<OfficeSession | null> {
   const response = await officeRequest("/api/office/session");
   if (!response.ok) return null;
   const body = (await response.json()) as { ok: boolean } & Partial<OfficeSession>;
-  if (!body.ok || !body.email || !body.role || body.id === undefined) return null;
+  if (!body.ok || !body.email || !body.roleName || body.id === undefined || body.roleId === undefined) return null;
   return {
     id: body.id,
     email: body.email,
     name: typeof body.name === "string" && body.name ? body.name : null,
-    role: body.role,
+    roleId: Number(body.roleId),
+    roleName: String(body.roleName),
+    isOwner: Boolean(body.isOwner),
+    canReadRequests: Boolean(body.canReadRequests),
+    canManageRoles: Boolean(body.canManageRoles),
     canEditContent: Boolean(body.canEditContent),
     canManageUsers: Boolean(body.canManageUsers),
     canDeleteTour: Boolean(body.canDeleteTour),
@@ -61,6 +73,18 @@ export async function getOfficeSession(): Promise<OfficeSession | null> {
     canRunBackup: Boolean(body.canRunBackup),
     newRequestCount: Number(body.newRequestCount) || 0,
   };
+}
+
+// T-63: the Roles page. Owner only, so any other reply is an empty page.
+export type OfficeRoleRow = { id: number; name: string; isOwner: boolean; permissions: string[]; logins: number };
+export type OfficePermission = { key: string; short: string; name: string; help: string };
+export type OfficeRoles = { roles: OfficeRoleRow[]; permissions: OfficePermission[]; ownerOnly: string[] };
+
+export async function getOfficeRoles(): Promise<OfficeRoles> {
+  const response = await officeRequest("/api/office/roles");
+  if (!response.ok) return { roles: [], permissions: [], ownerOnly: [] };
+  const body = (await response.json()) as { ok: boolean } & Partial<OfficeRoles>;
+  return { roles: body.roles ?? [], permissions: body.permissions ?? [], ownerOnly: body.ownerOnly ?? [] };
 }
 
 export type OfficeRequestRow = {
@@ -81,11 +105,11 @@ export async function getOfficeRequests(): Promise<OfficeRequestRow[]> {
   return body.requests ?? [];
 }
 
-export async function getOfficeUsers(): Promise<OfficeUserRow[]> {
+export async function getOfficeUsers(): Promise<{ users: OfficeUserRow[]; roles: OfficeRoleChoice[] }> {
   const response = await officeRequest("/api/office/users");
-  if (!response.ok) return [];
-  const body = (await response.json()) as { ok: boolean; users?: OfficeUserRow[] };
-  return body.users ?? [];
+  if (!response.ok) return { users: [], roles: [] };
+  const body = (await response.json()) as { ok: boolean; users?: OfficeUserRow[]; roles?: OfficeRoleChoice[] };
+  return { users: body.users ?? [], roles: body.roles ?? [] };
 }
 
 export type OfficeBackupRow = {
@@ -107,7 +131,7 @@ export type OfficeActivityRow = {
   userEmail: string;
   // T-62 (BR-119): the current name of the login with that email, or null.
   userName: string | null;
-  area: "content" | "rates" | "requests" | "users" | "backups";
+  area: "content" | "rates" | "requests" | "users" | "backups" | "roles";
   kind: string;
   recordId: string;
   text: string;

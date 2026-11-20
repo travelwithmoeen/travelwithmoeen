@@ -88,7 +88,7 @@ async function main() {
   if (wrong) throw new Error("A wrong password was accepted.");
 
   const owner = await authenticate(email, password);
-  if (!owner || owner.role !== "owner") throw new Error("The Owner password was refused.");
+  if (!owner || !owner.isOwner) throw new Error("The Owner password was refused.");
 
   const editorEmail = "editor-step1-check@travelwithmoeen.test";
   const managerEmail = "manager-step1-check@travelwithmoeen.test";
