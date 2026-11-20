@@ -111,6 +111,9 @@ const Carousel = React.forwardRef<
         return
       }
 
+      // The arrows read the carousel's first state once it exists. Embla is outside React, so this
+      // effect is the place to read it (T-65: react-hooks 7.1 flags any setState in an effect).
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       onSelect(api)
       api.on("reInit", onSelect)
       api.on("select", onSelect)

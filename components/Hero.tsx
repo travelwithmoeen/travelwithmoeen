@@ -26,20 +26,19 @@ export function Hero() {
   const [api, setApi] = React.useState<CarouselApi>();
   const [current, setCurrent] = React.useState(0);
 
-  const plugin = React.useRef(
-    Autoplay({ delay: 3000, stopOnInteraction: false })
-  );
+  // Made once, and kept in state, not a ref, because it is read while rendering (T-65 lint).
+  const [plugin] = React.useState(() => Autoplay({ delay: 3000, stopOnInteraction: false }));
 
+  // The carousel starts on slide 0, which is the first value of current, so only later moves set it.
   React.useEffect(() => {
     if (!api) {
       return;
     }
-
-    setCurrent(api.selectedScrollSnap());
-
-    api.on("select", () => {
-      setCurrent(api.selectedScrollSnap());
-    });
+    const onSelect = () => setCurrent(api.selectedScrollSnap());
+    api.on("select", onSelect);
+    return () => {
+      api.off("select", onSelect);
+    };
   }, [api]);
 
   return (
@@ -47,7 +46,7 @@ export function Hero() {
       {/* Background Carousel */}
       <Carousel
         setApi={setApi}
-        plugins={[plugin.current]}
+        plugins={[plugin]}
         opts={{
           loop: true,
           duration: 30,
