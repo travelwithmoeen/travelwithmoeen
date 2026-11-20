@@ -473,18 +473,19 @@ The TWM team moved to the Vercel Pro plan on 13 November 2026 after the Hobby li
 
 Requirements section 8e. The references are the sample package PDF in the feedback folder and the day library in the costing desk, `ITIN`, which stays in the feedback folder. Read the rules from the requirements, not from the desk or the sample.
 
-### Tables, `drizzle/0007_packages.sql`
+### Tables, `drizzle/0009_packages.sql`
 
-One additive migration, after T-48's `0005` and T-49's `0006`.
+One additive migration, after T-63's `0008`.
 
 | Table | Columns |
 |---|---|
 | `day_plans` | `id` serial, `place` text, a rate place, `part` text: `out_air`, `out_road`, `middle`, `back_air`, or `back_road`, `position` integer, `title` text, `overnight` text, `sections` jsonb, a list of `{ label, text }`. |
+| `place_hotel_names` | `place` text, a rate place, `grade` text, `names` text, primary key on both. A blank line is not stored. |
 | `package_options` | `id` serial, `name` text unique, `places` text array, empty for every place, `day_one` jsonb `{ label, text }` or null, `swap_from` text, a middle day title, or null, `swap_to` integer, a `day_plans` id, or null, `rest_days` boolean, `badge` text or null, `intro` text or null, `not_included` text array, `sort_order` integer. |
 | `package_sections` | `id` serial, `title` text, `kind` text: `text`, `rows`, or `steps`, `body` jsonb, `sort_order` integer. |
 | `quote_packages` | `quote_id` integer primary key, references `quotes` on delete cascade, `title` text, `all_grades` boolean, `flight_note` boolean, `option_ids` integer array, `pictures` text array of up to 3 media addresses. |
 
-Add the four tables to `BACKUP_TABLES` before `activity`.
+Add the five tables to `BACKUP_TABLES` before `activity`.
 
 ### Building the days, `lib/package.ts`
 
@@ -506,13 +507,13 @@ Add the four tables to `BACKUP_TABLES` before `activity`.
 
 ### Screens
 
-- **Day plans**, `/office/rates/day-plans`: pick a place, then its five parts, each a list of days that can be added, changed, deleted, and moved up or down.
+- **Day plans**, `/office/rates/day-plans`: pick a place, then its five parts, each a list of days that can be added, changed, deleted, and moved up or down. Under them, one hotel-names line for each grade, saved on its own, which is BR-111. The document's hotel line for a grade joins the lines of the overnight places from `packageDays`, in order.
 - **Package options** and **Fixed sections**, `/office/rates/package-options` and `/office/rates/package-sections`: a list with an add drawer, edit, delete, and order.
 - **Package**, a tab on a saved quote: the title, starting from the place, days, mode, start city, and party, then All categories, Flight ticket note, the option ticks, and 1 to 3 pictures. It shows a preview of the document, with Download PDF and Download Word.
 
 ### Starting data
 
-The day plans, the three options, and the fixed sections are loaded on the preview site as a data step, from the desk's `ITIN` and the sample PDF, after T-60 is merged, as with the rates. The desk file is never added to the repository.
+The day plans, the three options, and the fixed sections are loaded on the preview site as a data step, from the day plans in costing desk v1.9 (18 November 2026, 14 places) and the sample PDF, after T-60 is merged, as with the rates. The Skardu Valley and Khaplu hotel-names lines come from the sample PDF, and staff type the rest. The desk file holds bank details and is never added to the repository.
 
 ## 16. Office settings page, T-62
 
