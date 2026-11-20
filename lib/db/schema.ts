@@ -1,5 +1,7 @@
+import { sql } from "drizzle-orm";
 import {
   boolean,
+  check,
   integer,
   jsonb,
   pgEnum,
@@ -15,7 +17,6 @@ import type { BlogSection } from "@/data/blog";
 import type { DestinationSection } from "@/data/destinations";
 import type { TourCategory, TourPackage, PackageType } from "@/data/tours";
 
-export const userRole = pgEnum("user_role", ["owner", "manager", "editor"]);
 export const priceSource = pgEnum("price_source", ["excel", "website"]);
 export const guestRequestKind = pgEnum("guest_request_kind", ["contact", "custom", "booking"]);
 export const guestRequestStatus = pgEnum("guest_request_status", ["new", "in_progress", "closed"]);
@@ -30,11 +31,47 @@ export const loginFailures = pgTable(
   (table) => [index("login_failures_email_failed_at_idx").on(table.email, table.failedAt)],
 );
 
+// T-63 (BR-123 to BR-127): the roles the Owner manages. Exactly one row is the Owner role, which has
+// every permission and cannot be changed. A name is unique without regard to case.
+export const roles = pgTable(
+  "roles",
+  {
+    id: serial("id").primaryKey(),
+    name: text("name").notNull(),
+    isOwner: boolean("is_owner").notNull().default(false),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex("roles_name_lower_idx").on(sql`lower(${table.name})`),
+    uniqueIndex("roles_one_owner_idx").on(table.isOwner).where(sql`${table.isOwner}`),
+  ],
+);
+
+// The permissions of each role other than Owner. Keys are the list in lib/auth/permissions.ts.
+export const rolePermissions = pgTable(
+  "role_permissions",
+  {
+    roleId: integer("role_id")
+      .notNull()
+      .references(() => roles.id, { onDelete: "cascade" }),
+    permission: text("permission").notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.roleId, table.permission] }),
+    check("role_permissions_permission_check", sql`${table.permission} in ('requests.read', 'requests.status', 'content.edit', 'tours.delete', 'rates.edit')`),
+  ],
+);
+
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   email: text("email").notNull().unique(),
   passwordHash: text("password_hash").notNull(),
-  role: userRole("role").notNull(),
+  // T-63: the login's role. A role with logins cannot be deleted, so there is no cascade.
+  roleId: integer("role_id")
+    .notNull()
+    .references(() => roles.id),
+  // T-62 (BR-118): the person's own name, set on the Settings page. Null shows the email.
+  name: text("name"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
@@ -180,6 +217,19 @@ export const airExtras = pgTable("air_extras", {
   sticker: integer("sticker").notNull(),
 });
 
+// BR-91: where a trip starts. The air extra is added to the Islamabad ticket. The long-route extra
+// is an amount per vehicle per day after a number of days on a road trip. A start city is not deleted.
+export const startCities = pgTable("start_cities", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull().unique(),
+  road: boolean("road").notNull(),
+  air: boolean("air").notNull(),
+  airExtra: integer("air_extra").notNull().default(0),
+  longRouteAfterDays: integer("long_route_after_days"),
+  longRoutePerVehicleDay: integer("long_route_per_vehicle_day").notNull().default(0),
+  sortOrder: integer("sort_order").notNull().default(0),
+});
+
 export const jeepLines = pgTable("jeep_lines", {
   id: serial("id").primaryKey(),
   place: text("place").notNull(),
@@ -230,6 +280,11 @@ export const quotes = pgTable("quotes", {
   guide: boolean("guide").notNull(),
   meals: boolean("meals").notNull(),
   lunch: boolean("lunch").notNull().default(false),
+  // T-49 (BR-89, BR-92): the counts staff typed, null when the quote used the automatic count, and
+  // whether the air tickets were in. Null on quotes saved before T-49, which had the tickets.
+  roomCount: integer("room_count"),
+  vehicleCount: integer("vehicle_count"),
+  tickets: boolean("tickets"),
   seasonPercent: integer("season_percent").notNull(),
   subtotal: integer("subtotal").notNull(),
   profit: integer("profit").notNull(),

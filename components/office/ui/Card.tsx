@@ -1,10 +1,11 @@
 import { Icon } from "@/components/office/ui/Icon";
+import type { SavedBy } from "@/components/office/activity";
 
 type CardProps = {
   title?: string;
   description?: string;
   // "Last saved 5 minutes ago by manager@…" for a card that is one record (BR-86).
-  savedBy?: string;
+  savedBy?: SavedBy;
   actions?: React.ReactNode;
   danger?: boolean;
   id?: string;
@@ -22,9 +23,9 @@ export function Card({ title, description, savedBy, actions, danger = false, id,
             <h3>{title}</h3>
             {description ? <p>{description}</p> : null}
             {savedBy ? (
-              <p className="meta">
+              <p className="meta" title={savedBy.title}>
                 <Icon name="clock" />
-                {savedBy}
+                {savedBy.text}
               </p>
             ) : null}
           </div>

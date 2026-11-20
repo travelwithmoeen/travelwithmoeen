@@ -1,5 +1,5 @@
 import { getQuoteAccess } from "@/lib/auth/quote-access";
-import { buildQuote, readMarginPercent, type DayEdit, type MarginPercent, type NightEdit, type QuoteInput } from "@/lib/quote";
+import { buildQuote, MAX_COUNT, readMarginPercent, type DayEdit, type MarginPercent, type NightEdit, type QuoteInput } from "@/lib/quote";
 import { loadCatalog, readAmount, readCount } from "@/lib/rates";
 
 function text(body: Record<string, unknown>, key: string) {
@@ -49,9 +49,18 @@ export async function POST(request: Request) {
     meals: body.meals === true,
     // Lunch is an office choice (BR-88). A guest who sends it gets the quote without it.
     lunch: rateEditor && body.lunch === true,
+    // BR-89: only the office can leave the air tickets out. A guest quote always has them.
+    tickets: rateEditor ? body.tickets !== false : true,
     seasonPercent: margin,
     otherNote: text(body, "otherNote"),
   };
+  // BR-92: only an Owner or a Manager can type a vehicle count. A guest gets the automatic count.
+  const vehicleCountText = text(body, "vehicleCount").trim();
+  if (rateEditor && vehicleCountText) {
+    const vehicles = readCount(vehicleCountText, "the vehicles", MAX_COUNT);
+    if (!vehicles.ok) return Response.json(vehicles, { status: 400 });
+    input.vehicleCount = vehicles.count;
+  }
   const share = text(body, "share");
   if (share === "twin" || share === "triple") input.share = share;
   if (input.vehicle.trim().toLowerCase() === "other") {

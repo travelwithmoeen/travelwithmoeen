@@ -1,13 +1,14 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Fragment, useEffect, useRef, useState } from "react";
 import { OfficeBusy } from "@/components/office/OfficeBusy";
 import { OfficePlaceholder } from "@/components/office/OfficePlaceholder";
+import { initialsOf, shownName as nameOf } from "@/components/office/people";
 import { SignOutButton } from "@/components/office/SignOutButton";
 import {
-  ROLE_NAME,
   SIDEBAR_COOKIE,
   isCurrentOfficeLink,
   type OfficeNavGroup,
@@ -16,7 +17,6 @@ import {
 import { Button } from "@/components/office/ui/Button";
 import { Icon } from "@/components/office/ui/Icon";
 import { usePendingPath } from "@/components/ui/NavigationProgress";
-import type { Role } from "@/lib/http/result";
 
 const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
 
@@ -24,7 +24,10 @@ type OpenMenu = "new" | "account" | null;
 
 type OfficeFrameProps = {
   email: string;
-  role: Role;
+  // T-62 (BR-119): the person's own name, shown in place of the email. Null shows the email.
+  name: string | null;
+  // T-63: the name of the person's role, such as Manager or a custom role.
+  roleName: string;
   nav: OfficeNavGroup[];
   newLinks: OfficeNavLink[];
   newRequestCount: number;
@@ -32,15 +35,13 @@ type OfficeFrameProps = {
   children: React.ReactNode;
 };
 
-function initialsOf(email: string) {
-  return email.split("@")[0].replace(/[^a-z0-9]/gi, "").slice(0, 2).toUpperCase() || "TM";
-}
 
 function firstFocusable(root: HTMLElement | null) {
   return root?.querySelector<HTMLElement>("a, button") ?? null;
 }
 
-export function OfficeFrame({ email, role, nav, newLinks, newRequestCount, startCollapsed, children }: OfficeFrameProps) {
+export function OfficeFrame({ email, name, roleName, nav, newLinks, newRequestCount, startCollapsed, children }: OfficeFrameProps) {
+  const shownName = nameOf(email, name);
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(startCollapsed);
   const [navOpen, setNavOpen] = useState(false);
@@ -65,7 +66,9 @@ export function OfficeFrame({ email, role, nav, newLinks, newRequestCount, start
   const pendingPath = usePendingPath();
   const loadingPage = Boolean(pendingPath && pendingPath.startsWith("/office") && pendingPath !== pathname);
 
-  const currentLabel = nav.flatMap((group) => group.links).find((link) => isCurrentOfficeLink(link.href, pathname))?.label ?? "Office";
+  // Settings opens from the account menu, not the side menu, so its title is named here.
+  const currentLabel =
+    pathname === "/office/settings" ? "Settings" : nav.flatMap((group) => group.links).find((link) => isCurrentOfficeLink(link.href, pathname))?.label ?? "Office";
 
   useEffect(() => {
     if (navOpen) firstFocusable(sideRef.current?.querySelector("nav") ?? null)?.focus();
@@ -118,9 +121,7 @@ export function OfficeFrame({ email, role, nav, newLinks, newRequestCount, start
       <div className={shellClass}>
         <aside className="side" id="office-side" aria-label="Office" ref={sideRef}>
           <div className="brand">
-            <span className="logo" aria-hidden="true">
-              TM
-            </span>
+            <Image className="logo" src="/images/logo/logo.png" alt="" width={32} height={32} />
             <span className="brand-text">
               <b>Travel With Moeen</b>
               <small>Office</small>
@@ -184,23 +185,29 @@ export function OfficeFrame({ email, role, nav, newLinks, newRequestCount, start
               type="button"
               aria-expanded={openMenu === "account"}
               aria-haspopup="true"
-              title={collapsed ? email : undefined}
+              title={collapsed ? shownName : undefined}
               onClick={() => toggleMenu("account")}
             >
               <span className="avatar" aria-hidden="true">
-                {initialsOf(email)}
+                {initialsOf(email, name)}
               </span>
               <span className="me-text">
-                <b>{email}</b>
-                <small>{ROLE_NAME[role]}</small>
+                <b>{shownName}</b>
+                <small>{roleName}</small>
               </span>
               <Icon name="chevU" className="me-chev" />
             </button>
             <div className="pop pop-up" hidden={openMenu !== "account"}>
               <div className="pop-head">
-                <b>{email}</b>
-                <small>Signed in as {ROLE_NAME[role]}</small>
+                <b>{shownName}</b>
+                {name ? <small>{email}</small> : null}
+                <small>Signed in as {roleName}</small>
               </div>
+              {/* T-62 (BR-117): the person's own Settings, between the header and Sign out. */}
+              <Link className="pop-item" href="/office/settings" onClick={() => setOpenMenu(null)} aria-current={pathname === "/office/settings" ? "page" : undefined}>
+                <Icon name="sliders" />
+                Settings
+              </Link>
               <SignOutButton />
             </div>
           </div>

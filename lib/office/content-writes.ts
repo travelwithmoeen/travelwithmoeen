@@ -1,7 +1,7 @@
 import { eq, inArray, max } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { photos, places, posts, reviews, siteSettings, slides, tourDays, tourPlaces, tours } from "@/lib/db/schema";
-import { canDeleteTour, canEditContent, canEditRates } from "@/lib/auth/permissions";
+import { can } from "@/lib/auth/permissions";
 import type { SessionUser } from "@/lib/auth/session";
 import type { BlogSection } from "@/data/blog";
 import type { DestinationSection } from "@/data/destinations";
@@ -70,14 +70,14 @@ function sameTitle(left: string, right: string) {
 }
 
 export async function savePriceAs(actor: SessionUser): Promise<ActionResult> {
-  if (!canEditRates(actor.role)) {
+  if (!can(actor, "rates.edit")) {
     return forbidden("You cannot change a price.");
   }
   return { ok: false, error: "Rates are not open yet." };
 }
 
 export async function updateTourAs(actor: SessionUser, input: TourEditInput): Promise<ActionResult> {
-  if (!canEditContent(actor.role)) {
+  if (!can(actor, "content.edit")) {
     return forbidden("You cannot edit a tour.");
   }
   const name = input.name.trim();
@@ -146,7 +146,7 @@ export async function updateTourAs(actor: SessionUser, input: TourEditInput): Pr
 }
 
 export async function createTourAs(actor: SessionUser, input: Omit<TourEditInput, "id">): Promise<ActionResult> {
-  if (!canEditContent(actor.role)) {
+  if (!can(actor, "content.edit")) {
     return forbidden("You cannot add a tour.");
   }
   const name = input.name.trim();
@@ -231,7 +231,7 @@ export async function createTourAs(actor: SessionUser, input: Omit<TourEditInput
 }
 
 export async function deleteTourAs(actor: SessionUser, tourId: string): Promise<ActionResult> {
-  if (!canDeleteTour(actor.role)) {
+  if (!can(actor, "tours.delete")) {
     return forbidden("You cannot delete a tour.");
   }
   // An empty id, or one no tour has, is not found: nothing is deleted and no row is written (T-53).
@@ -262,7 +262,7 @@ export async function updatePlaceAs(
     content: DestinationSection[];
   },
 ): Promise<ActionResult> {
-  if (!canEditContent(actor.role)) {
+  if (!can(actor, "content.edit")) {
     return forbidden("You cannot edit a place.");
   }
   if (!input.title.trim()) {
@@ -319,7 +319,7 @@ export async function updatePostAs(
     content: BlogSection[];
   },
 ): Promise<ActionResult> {
-  if (!canEditContent(actor.role)) {
+  if (!can(actor, "content.edit")) {
     return forbidden("You cannot edit a blog post.");
   }
   if (!input.title.trim()) {
@@ -357,7 +357,7 @@ export async function savePhotoAs(
   actor: SessionUser,
   input: { id?: number; src: string; alt: string; category: string; span: string; homeOnly: boolean },
 ): Promise<ActionResult> {
-  if (!canEditContent(actor.role)) {
+  if (!can(actor, "content.edit")) {
     return forbidden("You cannot edit the gallery.");
   }
   if (!input.src.trim() || !input.alt.trim()) {
@@ -408,7 +408,7 @@ export async function savePhotoAs(
 }
 
 export async function deletePhotoAs(actor: SessionUser, id: number | null): Promise<ActionResult> {
-  if (!canEditContent(actor.role)) {
+  if (!can(actor, "content.edit")) {
     return forbidden("You cannot edit the gallery.");
   }
   // A bad id, or one with no photo, is not found: nothing is deleted and no row is written (T-52).
@@ -427,7 +427,7 @@ export async function saveReviewAs(
   actor: SessionUser,
   input: { id?: number; name: string; avatar: string; location: string; text: string; rating: number },
 ): Promise<ActionResult> {
-  if (!canEditContent(actor.role)) {
+  if (!can(actor, "content.edit")) {
     return forbidden("You cannot edit reviews.");
   }
   if (!input.name.trim() || !input.text.trim()) {
@@ -476,7 +476,7 @@ export async function saveReviewAs(
 }
 
 export async function deleteReviewAs(actor: SessionUser, id: number | null): Promise<ActionResult> {
-  if (!canEditContent(actor.role)) {
+  if (!can(actor, "content.edit")) {
     return forbidden("You cannot edit reviews.");
   }
   // A bad id, or one with no review, is not found: nothing is deleted and no row is written (T-52).
@@ -495,7 +495,7 @@ export async function saveSlideAs(
   actor: SessionUser,
   input: { id?: number; image: string; title: string; rotation: number; sortOrder: number },
 ): Promise<ActionResult> {
-  if (!canEditContent(actor.role)) {
+  if (!can(actor, "content.edit")) {
     return forbidden("You cannot edit home slides.");
   }
   if (!input.image.trim() || !input.title.trim()) {
@@ -540,7 +540,7 @@ export async function saveSlideAs(
 }
 
 export async function deleteSlideAs(actor: SessionUser, id: number | null): Promise<ActionResult> {
-  if (!canEditContent(actor.role)) {
+  if (!can(actor, "content.edit")) {
     return forbidden("You cannot edit home slides.");
   }
   // A bad id, or one with no slide, is not found: nothing is deleted and no row is written (T-52).
@@ -569,7 +569,7 @@ export async function updateSiteSettingsAs(
     youtubeUrl: string;
   },
 ): Promise<ActionResult> {
-  if (!canEditContent(actor.role)) {
+  if (!can(actor, "content.edit")) {
     return forbidden("You cannot edit site details.");
   }
   await db.transaction(async (tx) => {

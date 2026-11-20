@@ -8,6 +8,7 @@ import { Card } from "@/components/office/ui/Card";
 import { Field, helpId } from "@/components/office/ui/Field";
 import { postOfficeForm } from "@/lib/http/office-client";
 import type { ActionResult } from "@/lib/http/result";
+import type { SavedBy } from "@/components/office/activity";
 
 type RuleField = { name: keyof PricingRules; label: string; help: string; unit: "money" | "percent" | "people" };
 
@@ -21,7 +22,7 @@ const FIELDS: RuleField[] = [
 ];
 
 // BR-87: the pricing rules the quote reads. The server checks every value when you save.
-export function PricingRulesForm({ rules, savedBy }: { rules: PricingRules; savedBy?: string }) {
+export function PricingRulesForm({ rules, savedBy }: { rules: PricingRules; savedBy?: SavedBy }) {
   const router = useRouter();
   const [state, setState] = useState<ActionResult | null>(null);
   const [pending, start] = useTransition();

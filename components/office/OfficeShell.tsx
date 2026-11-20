@@ -13,7 +13,8 @@ export async function OfficeShell({ children }: { children: React.ReactNode }) {
   return (
     <OfficeFrame
       email={user.email}
-      role={user.role}
+      name={user.name}
+      roleName={user.roleName}
       nav={officeNavFor(user)}
       newLinks={officeNewLinksFor(user)}
       newRequestCount={user.newRequestCount}

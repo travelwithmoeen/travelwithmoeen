@@ -2,48 +2,38 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { ROLE_NAME } from "@/components/office/office-nav";
+import { initialsOf } from "@/components/office/people";
 import { Alert } from "@/components/office/ui/Alert";
 import { Button } from "@/components/office/ui/Button";
 import { Card } from "@/components/office/ui/Card";
 import { Field, helpId } from "@/components/office/ui/Field";
-import { Icon } from "@/components/office/ui/Icon";
 import { PageHead } from "@/components/office/ui/PageHead";
 import { Table } from "@/components/office/ui/Table";
 import { postOfficeForm } from "@/lib/http/office-client";
-import type { OfficeUserRow } from "@/lib/http/office-session";
-import { ROLES, type Role } from "@/lib/http/result";
+import Link from "next/link";
+import type { OfficeRoleChoice, OfficeUserRow } from "@/lib/http/office-session";
 
 type Notice = { tone: "success" | "danger"; text: string } | null;
 
-const ROLE_RULES: [string, boolean, boolean, boolean][] = [
-  ["Read requests", true, true, true],
-  ["Change a request status", true, true, false],
-  ["Delete a request", true, false, false],
-  ["Rates and quotes", true, true, false],
-  ["Website content", true, false, true],
-  ["Delete a tour", true, false, true],
-  ["Logins and backups", true, false, false],
-];
-
-function withoutUser(roles: Record<number, Role>, userId: number) {
+// Pending role changes, by login id, as the chosen role id.
+function withoutUser(roles: Record<number, number>, userId: number) {
   const rest = { ...roles };
   delete rest[userId];
   return rest;
 }
 
-function initialsOf(email: string) {
-  return email.split("@")[0].replace(/[^a-z0-9]/gi, "").slice(0, 2).toUpperCase() || "?";
-}
 
-export function UsersPanel({ users, selfId }: { users: OfficeUserRow[]; selfId: number }) {
+export function UsersPanel({ users, roles: roleList, selfId }: { users: OfficeUserRow[]; roles: OfficeRoleChoice[]; selfId: number }) {
   const router = useRouter();
   const [creating, setCreating] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [roles, setRoles] = useState<Record<number, Role>>({});
+  const [roles, setRoles] = useState<Record<number, number>>({});
   const [removing, setRemoving] = useState<number | null>(null);
   const [notice, setNotice] = useState<Notice>(null);
   const [pending, start] = useTransition();
+  // A new login starts on the least access: the Editor role if it is there, else the first role that is not Owner.
+  const defaultRoleId =
+    roleList.find((role) => role.name.toLowerCase() === "editor")?.id ?? roleList.find((role) => !role.isOwner)?.id ?? roleList[0]?.id ?? 0;
 
   // Calls an existing users route. The server checks the role and the last-Owner rule.
   const send = (path: string, form: FormData, label: string, after: () => void) =>
@@ -67,7 +57,7 @@ export function UsersPanel({ users, selfId }: { users: OfficeUserRow[]; selfId: 
   const saveRole = (user: OfficeUserRow) => {
     const form = new FormData();
     form.set("userId", String(user.id));
-    form.set("role", roles[user.id]);
+    form.set("role", String(roles[user.id]));
     send("/api/office/users/role", form, "Saving role", () => setRoles((current) => withoutUser(current, user.id)));
   };
 
@@ -101,10 +91,12 @@ export function UsersPanel({ users, selfId }: { users: OfficeUserRow[]; selfId: 
                 <input className="input" id="new-email" name="email" type="email" autoComplete="off" required />
               </Field>
               <Field id="new-role" label="Role">
-                <select className="select" id="new-role" name="role" defaultValue="editor">
-                  <option value="editor">Editor</option>
-                  <option value="manager">Manager</option>
-                  <option value="owner">Owner</option>
+                <select className="select" id="new-role" name="role" defaultValue={String(defaultRoleId)}>
+                  {roleList.map((role) => (
+                    <option key={role.id} value={role.id}>
+                      {role.name}
+                    </option>
+                  ))}
                 </select>
               </Field>
               <div className="field full">
@@ -156,17 +148,20 @@ export function UsersPanel({ users, selfId }: { users: OfficeUserRow[]; selfId: 
         <tbody>
           {users.map((user) => {
             const self = user.id === selfId;
-            const chosen = roles[user.id] ?? user.role;
-            const changed = chosen !== user.role;
+            const chosen = roles[user.id] ?? user.roleId;
+            const changed = chosen !== user.roleId;
+            const chosenName = roleList.find((role) => role.id === chosen)?.name ?? user.roleName;
             return (
               <tr key={user.id}>
                 <td>
                   <span className="user-cell">
                     <span className="avatar" aria-hidden="true">
-                      {initialsOf(user.email)}
+                      {initialsOf(user.email, user.name)}
                     </span>
+                    {/* T-62 (BR-119): the name above the email. With no name, the email as before. */}
                     <span>
-                      <b>{user.email}</b>
+                      <b>{user.name || user.email}</b>
+                      {user.name ? <small className="cell-sub">{user.email}</small> : null}
                       {self ? <small className="cell-sub">You</small> : null}
                     </span>
                   </span>
@@ -180,11 +175,11 @@ export function UsersPanel({ users, selfId }: { users: OfficeUserRow[]; selfId: 
                     id={`role-${user.id}`}
                     value={chosen}
                     disabled={pending}
-                    onChange={(event) => setRoles((current) => ({ ...current, [user.id]: event.target.value as Role }))}
+                    onChange={(event) => setRoles((current) => ({ ...current, [user.id]: Number(event.target.value) }))}
                   >
-                    {ROLES.map((role) => (
-                      <option key={role} value={role}>
-                        {ROLE_NAME[role]}
+                    {roleList.map((role) => (
+                      <option key={role.id} value={role.id}>
+                        {role.name}
                       </option>
                     ))}
                   </select>
@@ -194,7 +189,7 @@ export function UsersPanel({ users, selfId }: { users: OfficeUserRow[]; selfId: 
                     {changed ? (
                       <>
                         <Button size="sm" variant="primary" disabled={pending} busy={pending} onClick={() => saveRole(user)}>
-                          Make {ROLE_NAME[chosen]}
+                          Make {chosenName}
                         </Button>
                         <Button size="sm" variant="ghost" disabled={pending} onClick={() => setRoles((current) => withoutUser(current, user.id))}>
                           Cancel
@@ -226,29 +221,9 @@ export function UsersPanel({ users, selfId }: { users: OfficeUserRow[]; selfId: 
       </Table>
 
       <Card title="What each role can do" description="Only the Owner can create a login or change a role. The last Owner cannot be removed or changed to another role.">
-        <Table label="What each role can do" flat plain>
-          <thead>
-            <tr>
-              <th scope="col">Area</th>
-              <th scope="col">Owner</th>
-              <th scope="col">Manager</th>
-              <th scope="col">Editor</th>
-            </tr>
-          </thead>
-          <tbody>
-            {ROLE_RULES.map(([area, ...allowed]) => (
-              <tr key={area}>
-                <th scope="row">{area}</th>
-                {allowed.map((yes, index) => (
-                  <td key={index}>
-                    {yes ? <Icon name="check" className="yes" /> : <span className="muted">—</span>}
-                    <span className="sr-only">{yes ? "Yes" : "No"}</span>
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </Table>
+        <p className="help">
+          Each role and its permissions are on the <Link href="/office/roles">Roles</Link> page. A change there applies on the next page each person opens.
+        </p>
       </Card>
     </>
   );

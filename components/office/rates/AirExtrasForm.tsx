@@ -8,18 +8,17 @@ import { Card } from "@/components/office/ui/Card";
 import { Field } from "@/components/office/ui/Field";
 import { postOfficeForm } from "@/lib/http/office-client";
 import type { ActionResult } from "@/lib/http/result";
+import type { SavedBy } from "@/components/office/activity";
 
 const FIELDS: { name: keyof Air; label: string }[] = [
   { name: "islamabadTicket", label: "Islamabad ticket" },
-  { name: "lahoreAdd", label: "Lahore add" },
-  { name: "karachiAdd", label: "Karachi add" },
   { name: "welcomePack", label: "Welcome pack" },
   { name: "entry", label: "Entry" },
   { name: "infantExtra", label: "Infant extra" },
   { name: "sticker", label: "Sticker" },
 ];
 
-export function AirExtrasForm({ air, savedBy }: { air: Air; savedBy?: string }) {
+export function AirExtrasForm({ air, savedBy }: { air: Air; savedBy?: SavedBy }) {
   const router = useRouter();
   const [state, setState] = useState<ActionResult | null>(null);
   const [pending, start] = useTransition();
@@ -40,7 +39,7 @@ export function AirExtrasForm({ air, savedBy }: { air: Air; savedBy?: string }) 
     <form onSubmit={submit} className="stack" aria-busy={pending || undefined}>
       <fieldset className="form-lock" disabled={pending}>
       <input type="hidden" name="kind" value="air" />
-      <Card title="Air extras" description="Added to every By Air quote, per guest." savedBy={savedBy}>
+      <Card title="Air extras" description="Added to every By Air quote. The air extra of each start city, such as Lahore or Karachi, is on the Start cities tab." savedBy={savedBy}>
         <div className="form-grid">
           {FIELDS.map((field) => (
             <Field key={field.name} id={`air-${field.name}`} label={field.label}>

@@ -73,8 +73,8 @@
     -webkit-font-smoothing: antialiased;
   }
 
-  /* Meadow dark. Not switched on yet: the screens still on the old look set their own
-     light colors. It is turned on once every screen uses these tokens. */
+  /* T-62 (BR-120): Meadow dark, chosen on the Settings page. The root carries data-theme from the
+     twm_office_theme cookie, read in app/office/layout.tsx. */
   .office[data-theme="dark"] {
     --canvas: #111214; --surface: #18191c; --surface-2: #1f2024; --surface-hover: #232428; --selected: #12302c; --field-bg: #18191c;
     --border: #2a2c31; --border-strong: #7b818c; --card-line: #2a2c31;
@@ -90,6 +90,53 @@
     --shadow-3: 0 24px 48px -12px rgba(0, 0, 0, .7);
     color-scheme: dark;
   }
+  /* System: no data-theme, so the device setting decides. The same values as Dark. */
+  @media (prefers-color-scheme: dark) {
+    .office[data-office-root]:not([data-theme]) {
+      --canvas: #111214; --surface: #18191c; --surface-2: #1f2024; --surface-hover: #232428; --selected: #12302c; --field-bg: #18191c;
+      --border: #2a2c31; --border-strong: #7b818c; --card-line: #2a2c31;
+      --text: #ecedee; --text-2: #b4b8bf; --text-3: #959ba5; --link: #5fd4c4;
+      --primary: #2dd4bf; --primary-hover: #5eead4; --on-primary: #04201d; --primary-soft: #11302c; --primary-soft-text: #7ee8d9; --focus: #5eead4;
+      --danger: #f87171; --on-danger: #2a0909; --danger-soft: #3a1717; --danger-text: #fca5a5;
+      --success-soft: #102a1a; --success-text: #86efac; --warning-soft: #33240a; --warning-text: #fcd34d; --info-soft: #13223a; --info-text: #93c5fd;
+      --accent: #fbbf24; --accent-soft: #33280a; --accent-text: #fde68a; --accent-ink: #2b1d00;
+      --nav-bg: #141518; --nav-text: #d4d6da; --nav-muted: #959ba5; --nav-hover: #1d1e22; --nav-active: #26282d; --nav-active-text: #ffffff; --nav-indicator: #2dd4bf; --nav-line: #2a2c31;
+      --logo-bg: #2dd4bf; --logo-ink: #04201d; --topbar-bg: #111214; --warning-dot: #fbbf24; --overlay: rgba(0, 0, 0, .6);
+      --shadow-1: 0 1px 2px rgba(0, 0, 0, .4);
+      --shadow-2: 0 8px 20px -6px rgba(0, 0, 0, .6);
+      --shadow-3: 0 24px 48px -12px rgba(0, 0, 0, .7);
+      color-scheme: dark;
+    }
+  }
+
+  /* High contrast, from the prototype: black text and borders on white, and a 3-pixel focus ring. */
+  .office[data-theme="hc"] {
+    --canvas: #ffffff; --surface: #ffffff; --surface-2: #efefef; --surface-hover: #e4e4e4; --selected: #fff2b3; --field-bg: #ffffff;
+    --border: #000000; --border-strong: #000000; --card-line: #000000;
+    --text: #000000; --text-2: #1a1a1a; --text-3: #2e2e2e; --link: #0030a0;
+    --primary: #00544c; --primary-hover: #000000; --on-primary: #ffffff; --primary-soft: #e3ebff; --primary-soft-text: #001a57; --focus: #000000;
+    --danger: #a00000; --on-danger: #ffffff; --danger-soft: #ffecec; --danger-text: #8a0000;
+    --success-soft: #e6f7ea; --success-text: #004d1a; --warning-soft: #fff1cc; --warning-text: #5c3100; --info-soft: #e3ebff; --info-text: #001a57;
+    --accent: #ffd400; --accent-soft: #ffe880; --accent-text: #000000; --accent-ink: #000000;
+    --nav-bg: #ffffff; --nav-text: #000000; --nav-muted: #1a1a1a; --nav-hover: #e4e4e4; --nav-active: #000000; --nav-active-text: #ffffff; --nav-indicator: #ffffff; --nav-line: #000000;
+    --logo-bg: #000000; --logo-ink: #ffffff; --topbar-bg: #ffffff; --warning-dot: #000000; --overlay: rgba(0, 0, 0, .75);
+    --shadow-1: none;
+    --shadow-2: none;
+    --shadow-3: 0 0 0 3px #000;
+    --hc-ink: #000;
+    --focus-w: 3px;
+    color-scheme: light;
+  }
+
+  /* Compact, from the prototype: smaller controls and gaps, so more rows fit. */
+  .office[data-density="compact"] { --size-md: 32px; --size-lg: 40px; --pad: var(--space-4); --gap: var(--space-3); }
+  /* The prototype's Compact makes the controls and the page gaps smaller. A rate row is as tall as its
+     wrapped place name, so in Compact the cells also get less padding and a snug line height, which
+     fits more rows of a rate table and the request inbox on the screen (BR-120). */
+  .office[data-density="compact"] .tbl th { padding: var(--space-2) var(--space-3); }
+  .office[data-density="compact"] .tbl td { padding: var(--space-1) var(--space-3); height: var(--size-md); line-height: var(--leading-snug); }
+  .office[data-density="compact"] .row { padding-block: var(--space-2); line-height: var(--leading-snug); }
+
 
   @media (prefers-reduced-motion: reduce) {
     .office { --dur: 0ms; }
@@ -163,7 +210,13 @@
   .office .pop-wrap { position: relative; }
   .office .pop { position: absolute; top: calc(100% + var(--space-2)); left: 0; z-index: var(--z-overlay); min-width: calc(var(--space-24) * 2 + var(--space-5) + var(--space-2)); background: var(--surface); color: var(--text); border: var(--border-w) solid var(--border); border-radius: var(--r-m); box-shadow: var(--shadow-3); padding: var(--space-2); display: grid; gap: var(--space-half); }
   .office .pop-right { left: auto; right: 0; }
-  .office .pop-up { top: auto; bottom: calc(100% + var(--space-2)); left: 0; right: 0; min-width: calc(var(--space-20) * 3 + var(--space-5)); }
+  /* T-62: as wide as the side menu, so it is not cut off and makes no scrollbar. */
+  .office .pop-up { top: auto; bottom: calc(100% + var(--space-2)); left: 0; right: 0; min-width: 0; }
+  /* On a computer, while the account menu is open, the side menu sits above the page, so the save bar
+     cannot cover it. On a tablet or phone the side menu is already a panel above everything. */
+  @media (min-width: 961px) {
+    .office .side:has(.pop-up:not([hidden])) { z-index: var(--z-overlay); }
+  }
   .office .pop-head { display: grid; padding: var(--space-2) var(--space-3) var(--space-3); border-bottom: var(--border-w) solid var(--border); margin-bottom: var(--space-1); overflow-wrap: anywhere; }
   .office .pop-head small { color: var(--text-2); }
   .office .pop-item { display: flex; gap: var(--space-3); align-items: center; padding: var(--space-2) var(--space-3); border-radius: var(--r-s); color: var(--text); text-decoration: none; background: none; border: 0; font: 500 var(--text-sm) var(--font); cursor: pointer; text-align: left; width: 100%; }
@@ -173,7 +226,8 @@
   .office .shell-side { display: grid; grid-template-columns: var(--side-w) minmax(0, 1fr); min-height: 100vh; }
   .office .side { position: sticky; top: 0; height: 100vh; background: var(--nav-bg); color: var(--nav-text); display: flex; flex-direction: column; padding: var(--space-3); gap: var(--space-half); z-index: var(--z-sticky); border-right: var(--border-w) solid var(--border); }
   .office .brand { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-1) var(--space-2) var(--space-4); color: inherit; text-decoration: none; }
-  .office .logo { width: var(--space-8); height: var(--space-8); border-radius: var(--r-s); display: grid; place-items: center; background: var(--logo-bg); color: var(--logo-ink); font: 700 var(--text-sm)/var(--leading-none) var(--font); flex: none; }
+  /* T-64 (BR-131): the round logo, the same file as the public header. --logo-bg and --logo-ink stay in the looks, unread. */
+  .office .logo { width: var(--space-8); height: var(--space-8); border-radius: 50%; object-fit: cover; flex: none; }
   .office .brand-text { display: grid; line-height: var(--leading-tight); flex: 1; min-width: 0; }
   .office .brand-text b { font-size: var(--text-sm); letter-spacing: var(--tracking-snug); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .office .brand-text small { color: var(--nav-muted); font-size: var(--text-xs); }
@@ -210,7 +264,8 @@
     .office .is-collapsed .nav-item .count { position: absolute; top: var(--space-half); right: var(--space-1); min-width: var(--space-4); height: var(--space-4); padding: 0 var(--space-1); }
     .office .is-collapsed .nav-sec + .nav-item { margin-top: var(--space-3); }
     .office .is-collapsed .me { justify-content: center; padding: var(--space-2) 0; }
-    .office .is-collapsed .pop-up { left: 0; right: auto; }
+    /* T-62: on the collapsed rail the account menu opens to the right of it, lined up with its bottom. */
+    .office .is-collapsed .pop-up { left: calc(100% + var(--space-4)); right: auto; bottom: calc(var(--space-3) * -1); width: calc(var(--space-24) * 2 + var(--space-12) + var(--space-2)); }
   }
 
   /* Top bar and page */
@@ -255,7 +310,9 @@
   .office .login { min-height: 100vh; display: grid; place-items: center; padding: var(--space-10) var(--space-4); outline: none; }
   .office .login-box { width: min(calc(var(--space-24) * 4 + var(--space-8) + var(--space-1)), 100%); display: flex; flex-direction: column; gap: var(--stack); }
   .office .login-box > * { margin-block: 0; min-width: 0; }
-  .office .login-brand { display: flex; gap: var(--space-3); align-items: center; justify-content: center; margin-bottom: var(--space-1); font-size: var(--text-md); }
+  /* T-64 review: on the sign-in page the logo sits above the name (BR-131). */
+  .office .login-brand { display: flex; flex-direction: column; gap: var(--space-2); align-items: center; justify-content: center; text-align: center; margin-bottom: var(--space-1); font-size: var(--text-md); }
+  .office .login-brand .logo { width: var(--space-16); height: var(--space-16); }
   .office .login-card .card-body { padding: var(--space-8); gap: var(--space-5); }
   .office .login h1 { font: var(--h1); letter-spacing: var(--h1-ls); outline: none; }
   .office .login .desc { color: var(--text-2); margin-top: var(--space-1); overflow-wrap: anywhere; }
@@ -297,6 +354,11 @@
   .office .tbl tbody tr:hover td { background: var(--surface-hover); }
   .office .tbl .r { text-align: right; font-variant-numeric: tabular-nums; }
   .office .tbl .clip { max-width: calc(var(--space-24) * 3 + var(--space-12) + var(--space-1)); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-2); }
+  /* T-63: the Roles page. The login count stays on one line, and the Owner-only list has its lock beside each line. */
+  .office .tbl .nowrap { white-space: nowrap; }
+  .office .owner-only { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-2); }
+  .office .owner-only li { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-sm); }
+  .office .owner-only svg { flex: none; color: var(--text-2); }
   .office .tbl-plain th[scope="row"] { position: static; background: none; font-size: var(--text-sm); color: var(--text); width: 30%; white-space: normal; }
   .office .cell-sub { display: block; color: var(--text-2); font-size: var(--text-xs); }
 
@@ -320,6 +382,8 @@
   .office .drawer .desc { color: var(--text-2); margin-top: var(--space-1); }
   .office .card-head .meta, .office .page-head .meta { display: flex; gap: var(--space-2); align-items: center; font-size: var(--text-xs); color: var(--text-3); margin: var(--space-2) 0 0; }
   .office .drawer .meta { display: flex; gap: var(--space-2); align-items: center; font-size: var(--text-xs); color: var(--text-3); margin-top: var(--space-2); }
+  /* T-62: "Saved by" in a drawer sits in a span that carries the email on hover. */
+  .office .drawer .meta > span { display: inline-flex; gap: var(--space-2); align-items: center; }
   .office .drawer-body { flex: 1; overflow: auto; padding: var(--space-5); display: flex; flex-direction: column; gap: var(--stack); }
   .office .drawer-body > * { margin-block: 0; min-width: 0; }
   .office .drawer .card { box-shadow: none; }
@@ -551,6 +615,18 @@
   .office .sum .sum-total { font: 600 var(--text-xl)/var(--leading-snug) var(--font); color: var(--text); border-top: var(--border-w) solid var(--border); padding-top: var(--space-2); }
   .office .sum .sum-sub { border-top: var(--border-w) solid var(--border); padding-top: var(--space-2); }
   .office .quote-checks { display: flex; flex-wrap: wrap; gap: var(--space-5); align-items: center; }
+  /* T-49 (BR-94): the Stay and services switches, each with its rate, the Auto and Typed tags on the
+     counts, and the parts of the Changes and extras card. */
+  .office .quote-services { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, calc(var(--space-24) * 2)), 1fr)); gap: var(--space-4); }
+  .office .quote-service { align-items: flex-start; }
+  .office .quote-service .track { margin-top: var(--space-half); }
+  .office .quote-rate { display: block; margin: 0; }
+  .office .quote-form .label .badge { margin-left: var(--space-2); vertical-align: middle; }
+  .office .quote-auto { justify-content: end; align-self: end; }
+  .office .quote-part { display: grid; gap: var(--space-3); }
+  .office .quote-part + .quote-part { border-top: var(--border-w) solid var(--border); padding-top: var(--space-4); }
+  .office .quote-part h4 { margin: 0; font: 600 var(--text-sm)/var(--leading-snug) var(--font); color: var(--text); }
+  .office .quote-part > .help { margin: 0; }
   .office .tbl tr.is-edited td { background: var(--warning-soft); }
 
   /* ---------- Wide screens ---------- */
@@ -613,6 +689,27 @@
     .office .tbl-wrap:not(.flat) .tbl tbody tr:hover td { background: none; }
     .office .tbl-wrap:not(.flat) .tbl td > .badge { justify-self: start; }
   }
+
+  /* T-62: the Appearance and Density choices on the Settings page, from the prototype. */
+  /* The group edge uses --border-strong, like a field, and the pressed button has a --primary line and
+     bold text, so the edge and the choice both meet the 3:1 non-text contrast in every look. */
+  .office .seg-mini { display: flex; flex-wrap: wrap; gap: var(--space-half); padding: var(--space-half); border: var(--border-w) solid var(--border-strong); border-radius: var(--r-s); background: var(--surface-2); }
+  .office .seg-btn { flex: 1; min-height: var(--size-sm); padding: 0 var(--space-3); border: 0; border-radius: var(--r-s); background: none; color: var(--text-2); font: 500 var(--text-sm) var(--font); cursor: pointer; white-space: nowrap; }
+  .office .seg-btn:hover { color: var(--text); background: var(--surface-hover); }
+  .office .seg-btn[aria-pressed="true"] { background: var(--surface); color: var(--text); font-weight: 600; box-shadow: inset 0 0 0 var(--border-w-lg) var(--primary); }
+  .office .settings-facts { display: grid; grid-template-columns: max-content 1fr; gap: var(--space-2) var(--space-4); margin: 0; }
+  .office .settings-facts dt { color: var(--text-2); }
+  .office .settings-facts dd { margin: 0; overflow-wrap: anywhere; }
+
+  /* T-62: High contrast borders, from the prototype. */
+  .office[data-theme="hc"] .badge { border-color: currentColor; }
+  .office[data-theme="hc"] .alert { border: var(--border-w-lg) solid var(--hc-ink); }
+  .office[data-theme="hc"] .card { border: var(--border-w-lg) solid var(--hc-ink); box-shadow: none; }
+  .office[data-theme="hc"] .drawer { border-left: var(--border-w-xl) solid var(--hc-ink); }
+  .office[data-theme="hc"] .dlg { border: var(--border-w-xl) solid var(--hc-ink); }
+  .office[data-theme="hc"] .toast { border: var(--border-w-lg) solid var(--hc-ink); }
+  .office[data-theme="hc"] .tab[aria-current="page"], .office[data-theme="hc"] .tab[aria-pressed="true"] { outline: var(--border-w-lg) solid var(--hc-ink); }
+  .office[data-theme="hc"] .seg-btn[aria-pressed="true"] { outline: var(--border-w-lg) solid var(--hc-ink); }
 
   @media (forced-colors: active) {
     .office .btn, .office .input, .office .card, .office .badge, .office .nav-item[aria-current="page"] { border: var(--border-w) solid CanvasText; }

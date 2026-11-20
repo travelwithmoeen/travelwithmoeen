@@ -10,6 +10,8 @@ type RequestsSearch = { status?: string; id?: string };
 export default async function RequestsPage({ searchParams }: { searchParams: Promise<RequestsSearch> }) {
   const actor = await getOfficeSession();
   if (!actor) redirect("/office/login");
+  // T-63: the inbox needs requests.read. The route refuses the rest as well.
+  if (!actor.canReadRequests) redirect("/office");
   const [rows, search] = await Promise.all([getOfficeRequests(), searchParams]);
   const status = isRequestStatus(search.status) ? search.status : "";
   const id = Number(search.id);

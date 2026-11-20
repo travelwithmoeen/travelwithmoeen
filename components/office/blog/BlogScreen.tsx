@@ -29,7 +29,7 @@ export async function BlogScreen({ openSlug }: { openSlug?: string }) {
   }));
   const index = open ? posts.findIndex((post) => post.slug === open.slug) : -1;
 
-  const savedBy = open ? savedByText((await getSavedBy("post", [open.slug]))[String(open.slug)], requestTime()) : "";
+  const savedBy = open ? savedByText((await getSavedBy("post", [open.slug]))[String(open.slug)], requestTime()) : undefined;
   return (
     <>
       <PageHead title="Blog" description="Travel guides and stories on the website." />

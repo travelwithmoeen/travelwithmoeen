@@ -380,7 +380,7 @@ This list is the whole project. A new office route is added to this list in the 
 | `POST /api/office/tours/delete` | Owner or Editor. Deletes a tour. A Manager is refused. |
 | Create a login, remove a login, change a role, delete a price row, delete a guest request | Owner only. |
 | `GET /office/settings` and `POST /api/office/settings/profile` | A signed-in Owner, Manager, or Editor. The save changes only the name of the signed-in login, read from the session, never from the request. T-62. |
-| `GET /office/roles` and `POST /api/office/roles` | Owner only. Adds, renames, changes, and deletes roles (BR-123 to BR-127). After T-63, the rows in this table that name Manager or Editor mean a role with the matching permission in BR-124. T-63. |
+| `GET /office/roles`, `GET /api/office/roles`, and `POST /api/office/roles` | Owner only. Adds, renames, changes, and deletes roles (BR-123 to BR-127). After T-63, the rows in this table that name Manager or Editor mean a role with the matching permission in BR-124. T-63. |
 | `GET /api/office/requests` | A signed-in Owner, Manager, or Editor. |
 | `GET /api/office/activity` | A signed-in Owner, Manager, or Editor. Returns only rows for areas that role can open, which is BR-86. Read only. |
 | `GET /api/office/rates` | Owner or Manager. |

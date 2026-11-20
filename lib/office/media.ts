@@ -1,7 +1,7 @@
 import { randomBytes } from "crypto";
 import { del, head, put } from "@vercel/blob";
 import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
-import { canEditContent } from "@/lib/auth/permissions";
+import { can } from "@/lib/auth/permissions";
 import type { SessionUser } from "@/lib/auth/session";
 import { forbidden, type ActionResult } from "@/lib/http/result";
 
@@ -131,7 +131,7 @@ function isTokenRequest(body: unknown): body is HandleUploadBody {
 // POST /api/office/uploads. Only an Owner or an Editor gets a permission. There is no
 // onUploadCompleted: it needs a public callback address, and the save checks the file instead.
 export async function uploadPermissionAs(actor: SessionUser, body: unknown, request: Request) {
-  if (!canEditContent(actor.role)) return { ok: false as const, error: "You cannot upload a file.", status: 403 as const };
+  if (!can(actor, "content.edit")) return { ok: false as const, error: "You cannot upload a file.", status: 403 as const };
   if (!isTokenRequest(body)) return { ok: false as const, error: "Send the upload again." };
   try {
     const reply = await handleUpload({
@@ -187,7 +187,7 @@ function isStoreAddress(url: string) {
 // upload that fails is the uploader's own, so it is deleted. That includes a fresh upload whose
 // extension does not fit the kind, such as upload-<suffix>.pdf named as a gallery photo (T-56).
 export async function checkUploadedFile(actor: SessionUser, value: string, kind: UploadKind): Promise<string | ActionResult> {
-  if (!canEditContent(actor.role)) return forbidden(kind === "pdf" ? "You cannot edit a tour." : "You cannot edit a photo.");
+  if (!can(actor, "content.edit")) return forbidden(kind === "pdf" ? "You cannot edit a tour." : "You cannot edit a photo.");
   const url = value.trim();
   const path = officeMediaPath(url);
   const name = path ? FRESH_UPLOAD_NAME.exec(path) : null;
@@ -250,7 +250,7 @@ async function storePublicFile(bytes: Buffer, kind: string, contentType: string)
 }
 
 export async function saveUploadedImage(actor: SessionUser, file: File): Promise<string | ActionResult> {
-  if (!canEditContent(actor.role)) {
+  if (!can(actor, "content.edit")) {
     return forbidden("You cannot edit a photo.");
   }
   if (file.size > MAX_IMAGE_BYTES) {
@@ -269,7 +269,7 @@ export async function saveUploadedImage(actor: SessionUser, file: File): Promise
 }
 
 export async function saveUploadedPdf(actor: SessionUser, file: File): Promise<string | ActionResult> {
-  if (!canEditContent(actor.role)) {
+  if (!can(actor, "content.edit")) {
     return forbidden("You cannot edit a tour.");
   }
   if (file.size > MAX_PDF_BYTES) {

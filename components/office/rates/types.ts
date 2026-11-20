@@ -23,12 +23,20 @@ export type Vehicle = {
 };
 export type Air = {
   islamabadTicket: number;
-  lahoreAdd: number;
-  karachiAdd: number;
   welcomePack: number;
   entry: number;
   infantExtra: number;
   sticker: number;
+};
+export type StartCity = {
+  id: number;
+  name: string;
+  road: boolean;
+  air: boolean;
+  airExtra: number;
+  longRouteAfterDays: number | null;
+  longRoutePerVehicleDay: number;
+  sortOrder: number;
 };
 export type Jeep = { id: number; place: string; mode: string; label: string; amount: number; live: boolean };
 
@@ -46,6 +54,7 @@ export type RateDeskView = {
   hotels: Hotel[];
   vehicles: Vehicle[];
   air: Air | null;
+  startCities: StartCity[];
   jeeps: Jeep[];
   seasonPercent: number;
   rules: PricingRules | null;
