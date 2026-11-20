@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Fragment, useEffect, useRef, useState } from "react";
@@ -120,9 +121,7 @@ export function OfficeFrame({ email, name, roleName, nav, newLinks, newRequestCo
       <div className={shellClass}>
         <aside className="side" id="office-side" aria-label="Office" ref={sideRef}>
           <div className="brand">
-            <span className="logo" aria-hidden="true">
-              TM
-            </span>
+            <Image className="logo" src="/images/logo/logo.png" alt="" width={32} height={32} />
             <span className="brand-text">
               <b>Travel With Moeen</b>
               <small>Office</small>

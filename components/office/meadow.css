@@ -226,7 +226,8 @@
   .office .shell-side { display: grid; grid-template-columns: var(--side-w) minmax(0, 1fr); min-height: 100vh; }
   .office .side { position: sticky; top: 0; height: 100vh; background: var(--nav-bg); color: var(--nav-text); display: flex; flex-direction: column; padding: var(--space-3); gap: var(--space-half); z-index: var(--z-sticky); border-right: var(--border-w) solid var(--border); }
   .office .brand { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-1) var(--space-2) var(--space-4); color: inherit; text-decoration: none; }
-  .office .logo { width: var(--space-8); height: var(--space-8); border-radius: var(--r-s); display: grid; place-items: center; background: var(--logo-bg); color: var(--logo-ink); font: 700 var(--text-sm)/var(--leading-none) var(--font); flex: none; }
+  /* T-64 (BR-131): the round logo, the same file as the public header. --logo-bg and --logo-ink stay in the looks, unread. */
+  .office .logo { width: var(--space-8); height: var(--space-8); border-radius: 50%; object-fit: cover; flex: none; }
   .office .brand-text { display: grid; line-height: var(--leading-tight); flex: 1; min-width: 0; }
   .office .brand-text b { font-size: var(--text-sm); letter-spacing: var(--tracking-snug); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .office .brand-text small { color: var(--nav-muted); font-size: var(--text-xs); }
@@ -310,6 +311,7 @@
   .office .login-box { width: min(calc(var(--space-24) * 4 + var(--space-8) + var(--space-1)), 100%); display: flex; flex-direction: column; gap: var(--stack); }
   .office .login-box > * { margin-block: 0; min-width: 0; }
   .office .login-brand { display: flex; gap: var(--space-3); align-items: center; justify-content: center; margin-bottom: var(--space-1); font-size: var(--text-md); }
+  .office .login-brand .logo { width: var(--space-16); height: var(--space-16); }
   .office .login-card .card-body { padding: var(--space-8); gap: var(--space-5); }
   .office .login h1 { font: var(--h1); letter-spacing: var(--h1-ls); outline: none; }
   .office .login .desc { color: var(--text-2); margin-top: var(--space-1); overflow-wrap: anywhere; }
