@@ -310,7 +310,8 @@
   .office .login { min-height: 100vh; display: grid; place-items: center; padding: var(--space-10) var(--space-4); outline: none; }
   .office .login-box { width: min(calc(var(--space-24) * 4 + var(--space-8) + var(--space-1)), 100%); display: flex; flex-direction: column; gap: var(--stack); }
   .office .login-box > * { margin-block: 0; min-width: 0; }
-  .office .login-brand { display: flex; gap: var(--space-3); align-items: center; justify-content: center; margin-bottom: var(--space-1); font-size: var(--text-md); }
+  /* T-64 review: on the sign-in page the logo sits above the name (BR-131). */
+  .office .login-brand { display: flex; flex-direction: column; gap: var(--space-2); align-items: center; justify-content: center; text-align: center; margin-bottom: var(--space-1); font-size: var(--text-md); }
   .office .login-brand .logo { width: var(--space-16); height: var(--space-16); }
   .office .login-card .card-body { padding: var(--space-8); gap: var(--space-5); }
   .office .login h1 { font: var(--h1); letter-spacing: var(--h1-ls); outline: none; }
