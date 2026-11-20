@@ -1,6 +1,7 @@
 import { readFileSync } from "fs";
 import { getTableColumns, sql } from "drizzle-orm";
 import { db } from "../lib/db";
+import { STARTING_ROLES } from "../lib/auth/permissions";
 import { BACKUP_FORMAT, BACKUP_TABLES, type BackupFile } from "../lib/office/backup";
 
 const CHUNK = 100;
@@ -29,14 +30,32 @@ function isSerialId(table: (typeof BACKUP_TABLES)[number][1]) {
   return id?.columnType === "PgSerial";
 }
 
+// T-63: a backup made before T-63 has no roles tables, and each login has a role of owner, manager,
+// or editor. It gets the starting roles, with the permissions they had then, the same as migration
+// 0008, and each login the id of its role. A role it cannot match stops the restore.
+function withRoles(backup: BackupFile): BackupFile {
+  if (backup.tables.roles) return backup;
+  const roleRows = STARTING_ROLES.map((role, index) => ({ id: index + 1, name: role.name, isOwner: role.isOwner, createdAt: backup.createdAt }));
+  const permissionRows = STARTING_ROLES.flatMap((role, index) => role.permissions.map((permission) => ({ roleId: index + 1, permission })));
+  const users = (backup.tables.users ?? []).map((row) => {
+    const { role, ...rest } = row as Record<string, unknown> & { role?: unknown };
+    const found = roleRows.find((item) => item.name.toLowerCase() === String(role));
+    if (!found) throw new Error(`The login ${String(rest.email)} has the role ${String(role)}, which is not owner, manager, or editor.`);
+    return { ...rest, roleId: found.id };
+  });
+  console.log("This backup was made before T-63. It gets the Owner, Manager, and Editor roles.");
+  return { ...backup, tables: { ...backup.tables, roles: roleRows, role_permissions: permissionRows, users } };
+}
+
 async function main() {
   const [file, flag] = process.argv.slice(2);
   if (!file || flag !== "--yes") usage();
 
-  const backup = JSON.parse(readFileSync(file, "utf8")) as BackupFile;
-  if (backup.format !== BACKUP_FORMAT) {
+  const read = JSON.parse(readFileSync(file, "utf8")) as BackupFile;
+  if (read.format !== BACKUP_FORMAT) {
     throw new Error(`${file} is not a ${BACKUP_FORMAT} file.`);
   }
+  const backup = withRoles(read);
   const target = new URL(process.env.DATABASE_URL ?? "");
   console.log(`Restoring ${file} (taken ${backup.createdAt}) into ${target.hostname}${target.pathname}`);
 

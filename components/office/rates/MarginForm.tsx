@@ -8,10 +8,11 @@ import { helpId } from "@/components/office/ui/Field";
 import { postOfficeForm } from "@/lib/http/office-client";
 import type { ActionResult } from "@/lib/http/result";
 import { MARGIN_MAX } from "@/lib/quote";
+import type { SavedBy } from "@/components/office/activity";
 
 // The saved profit margin: one whole percent from 0 to 100, with a slider (BR-22). The server
 // checks the number. The number box and the slider follow each other.
-export function MarginForm({ margin, savedBy }: { margin: number; savedBy?: string }) {
+export function MarginForm({ margin, savedBy }: { margin: number; savedBy?: SavedBy }) {
   const router = useRouter();
   const [value, setValue] = useState(String(margin));
   const [result, setResult] = useState<ActionResult | null>(null);

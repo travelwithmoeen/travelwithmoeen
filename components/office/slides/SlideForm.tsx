@@ -14,8 +14,9 @@ import { Card } from "@/components/office/ui/Card";
 import { Field } from "@/components/office/ui/Field";
 import type { ActionResult } from "@/lib/http/result";
 import type { HomeSlide } from "@/lib/content-types";
+import type { SavedBy } from "@/components/office/activity";
 
-export function SlideForm({ slide, position, frame, savedBy }: { slide: HomeSlide | null; position: number; frame: EditorFrame; savedBy?: string }) {
+export function SlideForm({ slide, position, frame, savedBy }: { slide: HomeSlide | null; position: number; frame: EditorFrame; savedBy?: SavedBy }) {
   const [title, setTitle] = useState(slide?.title ?? "");
   const [rotation, setRotation] = useState(String(slide?.rotation ?? 0));
   const [image, setImage] = useState(slide?.image ?? "");

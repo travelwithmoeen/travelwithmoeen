@@ -14,7 +14,7 @@ import {
   startCities,
   vehicleRates,
 } from "@/lib/db/schema";
-import { canEditRates } from "@/lib/auth/permissions";
+import { can } from "@/lib/auth/permissions";
 import type { SessionUser } from "@/lib/auth/session";
 import { forbidden, type ActionResult } from "@/lib/http/result";
 import { recordActivity } from "@/lib/office/activity";
@@ -23,7 +23,7 @@ import { AIR_RATE_CITY, buildQuote, findStartCity, HOTEL_GRADES, MAX_COUNT, read
 import { loadCatalog, loadRateDesk, readAmount, readCount } from "@/lib/rates";
 
 export async function loadRateDeskAs(actor: SessionUser) {
-  if (!canEditRates(actor.role)) return forbidden("You cannot read the rates.");
+  if (!can(actor, "rates.edit")) return forbidden("You cannot read the rates.");
   return { ok: true as const, desk: await loadRateDesk() };
 }
 
@@ -32,7 +32,7 @@ function checked(value: FormDataEntryValue | null) {
 }
 
 export async function saveHotelRateAs(actor: SessionUser, formData: FormData): Promise<ActionResult> {
-  if (!canEditRates(actor.role)) return forbidden("You cannot change a price.");
+  if (!can(actor, "rates.edit")) return forbidden("You cannot change a price.");
   const id = readRecordId(formData.get("id"));
   if (id === null) return { ok: false, error: "That hotel rate was not found." };
   const twin = readAmount(String(formData.get("twin") ?? ""));
@@ -57,7 +57,7 @@ export async function saveHotelRateAs(actor: SessionUser, formData: FormData): P
 }
 
 export async function saveVehicleRateAs(actor: SessionUser, formData: FormData): Promise<ActionResult> {
-  if (!canEditRates(actor.role)) return forbidden("You cannot change a price.");
+  if (!can(actor, "rates.edit")) return forbidden("You cannot change a price.");
   const id = readRecordId(formData.get("id"));
   if (id === null) return { ok: false, error: "That vehicle rate was not found." };
   const rent = readAmount(String(formData.get("rent") ?? ""));
@@ -86,7 +86,7 @@ export async function saveVehicleRateAs(actor: SessionUser, formData: FormData):
 }
 
 export async function saveAirExtraAs(actor: SessionUser, formData: FormData): Promise<ActionResult> {
-  if (!canEditRates(actor.role)) return forbidden("You cannot change a price.");
+  if (!can(actor, "rates.edit")) return forbidden("You cannot change a price.");
   // From T-48 the Lahore and Karachi adds are saved on the start city (BR-91), so they are not read here.
   const fields = ["islamabadTicket", "welcomePack", "entry", "infantExtra", "sticker"] as const;
   const amounts: Record<(typeof fields)[number], number> = {
@@ -162,7 +162,7 @@ async function readRateCity(value: FormDataEntryValue | null): Promise<{ ok: tru
 // BR-91: add a start city, or change one. Renaming it renames it on its hotel and vehicle rate rows
 // in the same save. A start city is not deleted.
 export async function saveStartCityAs(actor: SessionUser, formData: FormData): Promise<ActionResult> {
-  if (!canEditRates(actor.role)) return forbidden("You cannot change a price.");
+  if (!can(actor, "rates.edit")) return forbidden("You cannot change a price.");
   const idText = String(formData.get("id") ?? "").trim();
   const id = idText ? readRecordId(idText) : null;
   if (idText && id === null) return { ok: false, error: "That start city was not found." };
@@ -233,7 +233,7 @@ export async function saveStartCityAs(actor: SessionUser, formData: FormData): P
 
 // BR-90: a new hotel rate row. A new place name adds the place with this, its first hotel rate.
 export async function addHotelRateAs(actor: SessionUser, formData: FormData): Promise<ActionResult> {
-  if (!canEditRates(actor.role)) return forbidden("You cannot change a price.");
+  if (!can(actor, "rates.edit")) return forbidden("You cannot change a price.");
   const typed = readName(formData.get("place"), "the place");
   if (!typed.ok) return typed;
   const city = await readRateCity(formData.get("startCity"));
@@ -268,7 +268,7 @@ export async function addHotelRateAs(actor: SessionUser, formData: FormData): Pr
 
 // BR-90: a new vehicle rate row for a place that has rates. Air rates are stored from Air.
 export async function addVehicleRateAs(actor: SessionUser, formData: FormData): Promise<ActionResult> {
-  if (!canEditRates(actor.role)) return forbidden("You cannot change a price.");
+  if (!can(actor, "rates.edit")) return forbidden("You cannot change a price.");
   const typed = readName(formData.get("place"), "the place");
   if (!typed.ok) return typed;
   const city = await readRateCity(formData.get("startCity"));
@@ -311,7 +311,7 @@ export async function addVehicleRateAs(actor: SessionUser, formData: FormData): 
 // BR-90: rename a place on every hotel rate, vehicle rate, and jeep line, in one save. The public
 // places table is not touched.
 export async function renamePlaceAs(actor: SessionUser, formData: FormData): Promise<ActionResult> {
-  if (!canEditRates(actor.role)) return forbidden("You cannot change a price.");
+  if (!can(actor, "rates.edit")) return forbidden("You cannot change a price.");
   const from = String(formData.get("place") ?? "").trim();
   if (!from) return { ok: false, error: "That place was not found." };
   const to = readName(formData.get("name"), "the new name");
@@ -331,7 +331,7 @@ export async function renamePlaceAs(actor: SessionUser, formData: FormData): Pro
 }
 
 export async function saveJeepLineAs(actor: SessionUser, formData: FormData): Promise<ActionResult> {
-  if (!canEditRates(actor.role)) return forbidden("You cannot change a price.");
+  if (!can(actor, "rates.edit")) return forbidden("You cannot change a price.");
   const id = readRecordId(formData.get("id"));
   if (id === null) return { ok: false, error: "That jeep line was not found." };
   const amount = readAmount(String(formData.get("amount") ?? ""));
@@ -348,7 +348,7 @@ export async function saveJeepLineAs(actor: SessionUser, formData: FormData): Pr
 // BR-87: the pricing rules, kept in one row. Each amount is checked like a rate. The child air fare
 // is a whole percent from 0 to 100, and people per room a whole number from 1 to 6.
 export async function savePricingRulesAs(actor: SessionUser, formData: FormData): Promise<ActionResult> {
-  if (!canEditRates(actor.role)) return forbidden("You cannot change a price.");
+  if (!can(actor, "rates.edit")) return forbidden("You cannot change a price.");
   const guide = readAmount(String(formData.get("guidePerDay") ?? ""));
   if (!guide.ok) return guide;
   const breakfast = readAmount(String(formData.get("breakfastPerPerson") ?? ""));
@@ -382,7 +382,7 @@ export async function savePricingRulesAs(actor: SessionUser, formData: FormData)
 
 // BR-87 and BR-88: one grade's dinner rate per night and lunch rate per day, per person.
 export async function saveMealRateAs(actor: SessionUser, formData: FormData): Promise<ActionResult> {
-  if (!canEditRates(actor.role)) return forbidden("You cannot change a price.");
+  if (!can(actor, "rates.edit")) return forbidden("You cannot change a price.");
   const id = readRecordId(formData.get("id"));
   if (id === null) return { ok: false, error: "That meal rate was not found." };
   const dinner = readAmount(String(formData.get("dinner") ?? ""));
@@ -400,7 +400,7 @@ export async function saveMealRateAs(actor: SessionUser, formData: FormData): Pr
 
 // The saved profit margin, one whole percent from 0 to 100, kept in the one seasons row.
 export async function saveMarginAs(actor: SessionUser, formData: FormData): Promise<ActionResult> {
-  if (!canEditRates(actor.role)) return forbidden("You cannot change a price.");
+  if (!can(actor, "rates.edit")) return forbidden("You cannot change a price.");
   const margin = readMarginPercent(String(formData.get("percent") ?? ""));
   if (!margin.ok) return margin;
   const [row] = await db.select({ id: seasons.id }).from(seasons).limit(1);
@@ -522,7 +522,7 @@ export async function quoteInputFromForm(formData: FormData): Promise<{ ok: true
 }
 
 export async function saveQuoteAs(actor: SessionUser, formData: FormData): Promise<ActionResult> {
-  if (!canEditRates(actor.role)) return forbidden("You cannot change a price.");
+  if (!can(actor, "rates.edit")) return forbidden("You cannot change a price.");
   const parsed = await quoteInputFromForm(formData);
   if (!parsed.ok) return parsed;
   const catalog = await loadCatalog();
@@ -595,6 +595,6 @@ export async function savePriceFromKind(actor: SessionUser, formData: FormData):
   if (kind === "pricing_rule") return savePricingRulesAs(actor, formData);
   if (kind === "meal_rate") return saveMealRateAs(actor, formData);
   if (kind === "quote") return saveQuoteAs(actor, formData);
-  if (!canEditRates(actor.role)) return forbidden("You cannot change a price.");
+  if (!can(actor, "rates.edit")) return forbidden("You cannot change a price.");
   return { ok: false, error: "Choose a rate to save." };
 }

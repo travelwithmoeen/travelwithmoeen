@@ -5,6 +5,6 @@ import { getOfficeSession, getOfficeUsers } from "@/lib/http/office-session";
 export default async function UsersPage() {
   const actor = await getOfficeSession();
   if (!actor?.canManageUsers) redirect("/office");
-  const users = await getOfficeUsers();
-  return <UsersPanel users={users} selfId={actor.id} />;
+  const { users, roles } = await getOfficeUsers();
+  return <UsersPanel users={users} roles={roles} selfId={actor.id} />;
 }

@@ -1,7 +1,7 @@
+import { initialsOf } from "@/components/office/people";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { activityHref } from "@/components/office/activity";
-import { ROLE_NAME } from "@/components/office/office-nav";
 import { formatDateTime, greetingAt, hoursSince, relativeTime, requestTime } from "@/components/office/format";
 import { StatusBadge, guestName, initialOf, messagePreview } from "@/components/office/requests/request-labels";
 import { Alert } from "@/components/office/ui/Alert";
@@ -36,7 +36,8 @@ export default async function OfficeDashboardPage() {
 
   // Each read runs only for a role that may call its route.
   const [requests, desk, backups, tours, activity] = await Promise.all([
-    getOfficeRequests(),
+    // T-63: requests only for a role with requests.read. The route refuses the rest.
+    user.canReadRequests ? getOfficeRequests() : [],
     user.canEditRates ? getRateDesk() : null,
     user.canRunBackup ? getOfficeBackups() : null,
     user.canEditRates ? null : getTours(),
@@ -83,7 +84,7 @@ export default async function OfficeDashboardPage() {
     <>
       <PageHead
         title={greetingAt(now)}
-        description={`${formatDateTime(new Date(now).toISOString(), { dateStyle: "full" })} · signed in as ${ROLE_NAME[user.role]}.`}
+        description={`${formatDateTime(new Date(now).toISOString(), { dateStyle: "full" })} · signed in as ${user.roleName}.`}
       />
       {/* Placeholder until S-9: one example trip where the dashboard does not match the costing file. */}
       <Alert tone="info" title="Costing file">
@@ -91,14 +92,18 @@ export default async function OfficeDashboardPage() {
       </Alert>
 
       <Stats>
-        <Stat
-          icon="inbox"
-          label="New requests"
-          value={waiting.length}
-          meta={waiting.length ? `Oldest ${relativeTime(waiting[waiting.length - 1].createdAt, now).toLowerCase()}` : "All caught up"}
-          href="/office/requests?status=new"
-        />
-        <Stat icon="clock" label="In progress" value={inProgress.length} meta="Waiting on you or the guest" href="/office/requests?status=in_progress" />
+        {user.canReadRequests ? (
+          <>
+            <Stat
+              icon="inbox"
+              label="New requests"
+              value={waiting.length}
+              meta={waiting.length ? `Oldest ${relativeTime(waiting[waiting.length - 1].createdAt, now).toLowerCase()}` : "All caught up"}
+              href="/office/requests?status=new"
+            />
+            <Stat icon="clock" label="In progress" value={inProgress.length} meta="Waiting on you or the guest" href="/office/requests?status=in_progress" />
+          </>
+        ) : null}
         {user.canEditRates ? (
           <Stat icon="tag" label="Profit margin" value={desk ? `${desk.seasonPercent}%` : "Not loaded"} meta="Guests see this on the total" href="/office/rates/margin" />
         ) : (
@@ -107,7 +112,7 @@ export default async function OfficeDashboardPage() {
             label="Tours live"
             value={tours?.length ?? 0}
             meta={`${tours?.filter((tour) => tour.featured).length ?? 0} featured`}
-            href="/office/tours"
+            href={user.canEditContent ? "/office/tours" : undefined}
           />
         )}
         {user.canRunBackup ? (
@@ -118,48 +123,50 @@ export default async function OfficeDashboardPage() {
             meta={lastBackup ? formatDateTime(lastBackup.uploadedAt, { dateStyle: "medium" }) : "No backup yet"}
             href="/office/backup"
           />
-        ) : (
+        ) : user.canReadRequests ? (
           <Stat icon="checkCircle" label="Closed" value={closed.length} meta="Requests done" href="/office/requests?status=closed" />
-        )}
+        ) : null}
       </Stats>
 
       <div className="dash-grid">
-        <Card
-          title="Latest requests"
-          description="Newest first"
-          flush
-          actions={
-            <Link className={buttonClass({ variant: "ghost", size: "sm" })} href="/office/requests">
-              Open inbox
-            </Link>
-          }
-        >
-          {latest.length ? (
-            <ul className="mini-list">
-              {latest.map((row) => (
-                <li key={row.id}>
-                  <Link href={`/office/requests?id=${row.id}`}>
-                    <span className="avatar" aria-hidden="true">
-                      {initialOf(guestName(row))}
-                    </span>
-                    <span className="mini-main">
-                      <b>{guestName(row)}</b>
-                      <small>{messagePreview(row.message)}</small>
-                    </span>
-                    <span className="mini-meta">
-                      <small title={formatDateTime(row.createdAt)}>{relativeTime(row.createdAt, now)}</small>
-                      <StatusBadge status={row.status} />
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <EmptyState icon="inbox" title="No requests yet">
-              Contacts, custom trips, and bookings from the website appear here.
-            </EmptyState>
-          )}
-        </Card>
+        {user.canReadRequests ? (
+          <Card
+            title="Latest requests"
+            description="Newest first"
+            flush
+            actions={
+              <Link className={buttonClass({ variant: "ghost", size: "sm" })} href="/office/requests">
+                Open inbox
+              </Link>
+            }
+          >
+            {latest.length ? (
+              <ul className="mini-list">
+                {latest.map((row) => (
+                  <li key={row.id}>
+                    <Link href={`/office/requests?id=${row.id}`}>
+                      <span className="avatar" aria-hidden="true">
+                        {initialOf(guestName(row))}
+                      </span>
+                      <span className="mini-main">
+                        <b>{guestName(row)}</b>
+                        <small>{messagePreview(row.message)}</small>
+                      </span>
+                      <span className="mini-meta">
+                        <small title={formatDateTime(row.createdAt)}>{relativeTime(row.createdAt, now)}</small>
+                        <StatusBadge status={row.status} />
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <EmptyState icon="inbox" title="No requests yet">
+                Contacts, custom trips, and bookings from the website appear here.
+              </EmptyState>
+            )}
+          </Card>
+        ) : null}
 
         <Card title="Needs attention" description={openTodos ? "Things to look at today" : "Nothing waiting"} flush>
           <ul className="todo">
@@ -194,12 +201,13 @@ export default async function OfficeDashboardPage() {
             {activity.map((row) => (
               <li key={row.id}>
                 <span className="avatar" aria-hidden="true">
-                  {row.userEmail.slice(0, 2).toUpperCase()}
+                  {initialsOf(row.userEmail, row.userName)}
                 </span>
                 <span className="feed-main">
                   <Link href={activityHref(row)}>{row.text}</Link>
                   <small>
-                    {row.userEmail} ·{" "}
+                    {/* T-62 (BR-119): the current name of the login, with its email on hover. */}
+                    {row.userName ? <span title={row.userEmail}>{row.userName}</span> : row.userEmail} ·{" "}
                     <time dateTime={row.at} title={formatDateTime(row.at)}>
                       {relativeTime(row.at, now)}
                     </time>

@@ -15,6 +15,7 @@ import { Field } from "@/components/office/ui/Field";
 import { Icon } from "@/components/office/ui/Icon";
 import type { ActionResult } from "@/lib/http/result";
 import type { Blog } from "@/data/blog";
+import type { SavedBy } from "@/components/office/activity";
 
 const SECTIONS = [
   { id: "post-basics", label: "Basics" },
@@ -22,7 +23,7 @@ const SECTIONS = [
   { id: "post-sections", label: "Sections" },
 ];
 
-export function PostForm({ post, frame, savedBy }: { post: Blog; frame: EditorFrame; savedBy?: string }) {
+export function PostForm({ post, frame, savedBy }: { post: Blog; frame: EditorFrame; savedBy?: SavedBy }) {
   const [title, setTitle] = useState(post.title);
   const [excerpt, setExcerpt] = useState(post.excerpt);
   const [author, setAuthor] = useState(post.author);

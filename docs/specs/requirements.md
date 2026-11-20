@@ -205,6 +205,25 @@ On 3 November 2026 the team found that an office upload over about 4.5 MB never 
 | BR-103 | A save that names an uploaded file checks that file before the record changes: it is in this environment's media store under `media/`, it is under the size limit, and its first bytes are a JPEG, PNG, or WebP for a picture, or a PDF for a PDF, as BR-59 and BR-76 say. A file that fails is deleted and the save is refused with the reason. |
 | BR-104 | A refused save deletes the files it uploaded, as T-40 does today. A file uploaded for a save that is never sent, because the page was closed, stays in the store until a later cleanup. |
 
+## 8e. Package download, 13 November 2026
+
+Moeen's team sent a sample package, "5 Days Autumn Skardu & Khaplu By Air from Islamabad (Couple)", and answered the package questions on 13 November 2026. The sample stays in the feedback folder. The office builds the same document from a saved quote and downloads it as PDF or Word. A rule marked with a sign-off row waits for that row in `docs/specs/tasks.md`. Tasks T-58 to T-61 build these rules. They are not Phase 2. They cover staff packages only, and a guest still never sees staff lines or the profit, which is BR-66.
+
+| ID | Requirement |
+|---|---|
+| BR-105 | The office keeps its own day plans for each rate place, as the costing desk does. A rate place has days for the way out by air, the way out by road, the middle days, the way back by air, and the way back by road. Each day has a title, the overnight place, and labelled paragraphs, such as Morning, Afternoon, and Evening. `{ORIGIN}` in a paragraph is replaced with the start city. |
+| BR-106 | A package's days are the way out for its mode, then middle days in their order, then the way back, so the count matches the quote's days. When there are more days than middle days, the extra days are free days at the last overnight place. |
+| BR-107 | The office keeps package options that staff can add, change, and delete, such as Autumn season, Basho instead of Deosai, and Relaxed pace. An option can add a labelled paragraph to day 1, swap one middle day for another, add rest days, change the header badge and the opening paragraph, and add lines to Services not included. Rest days are one for every three middle days, at least one, and leave at least one sightseeing day. Each option is ticked or not on each package. |
+| BR-108 | The office keeps the fixed sections that staff can add, change, delete, and put in order: check-in and check-out, payment procedure, cancellation policy, code of conduct, and contact. Each section has a title and its text, rows, or numbered items. |
+| BR-109 | The price table shows every grade when All categories is ticked, and only the quote's grade when it is not. Each grade is priced with the same quote, with only the grade changed. |
+| BR-110 | Each price on the document is the quote total rounded up to the next 10,000, such as 332,999 to 340,000 and 586,800 to 590,000. The per person price is that rounded total divided by the adults and children. Sign-off row S-13. |
+| BR-111 | The office keeps one hotel-names line for each rate place and grade, which staff can change, such as Skardu Valley, Deluxe: "Hotel Himalaya – Kesar Place Skardu". The hotel line for a grade joins the lines of the trip's overnight places, in the order the trip reaches them, such as "Hotel Himalaya – Kesar Place Skardu / North Palace Khaplu". A place with a blank line is left out. Sign-off row S-14, changed 21 November 2026. |
+| BR-112 | A night is priced at the rate row of that night's overnight place, for the quote's start city or Air and grade, when that place has one. Otherwise it uses the quote's place, as today. This is how the desk prices 3 nights in Skardu and 1 in Khaplu. A typed night rate still wins, which is BR-46. Sign-off row S-15. |
+| BR-113 | The flight ticket note shows the adult fare and the child fare from the pricing rules and the start city, the same fares the quote uses. It can be left off a package. |
+| BR-114 | The header shows 1, 2, or 3 pictures, chosen from the office gallery or uploaded with the direct upload in BR-101, with the package title, the route, the opening paragraph, and a line with the travellers, the vehicle, and the grade. |
+| BR-115 | Services included and not included are built from the quote: air tickets both ways when tickets are on, the vehicle, fuel and toll, entry tickets on an air trip, the nights at each overnight place, and the breakfasts. Lunch, dinner, and the guide are listed as not included when they are off. Option lines and the fixed "Travel insurance" and "Items of a personal nature" lines follow. |
+| BR-116 | Only the Owner and the Manager can build and download a package, and change day plans, hotel-names lines, package options, and fixed sections. After T-63, the Manager here means a role with the rates permission. Each save writes one activity row in area `rates`. The document never shows the net cost, the lines, or the profit. |
+
 ## 8f. Office settings page, 15 November 2026
 
 The Meadow prototype Moeen reviewed has an Appearance choice and a Density choice in the account menu. The T-37 spec left them out, so the live office has one light look, and a person is shown only by their email. On 15 November 2026 Zeeshan chose one Settings page for a person's own name and look, in place of more items in the account menu. Task T-62 builds these rules. They do not wait for Moeen, and they are not Phase 2.
@@ -361,7 +380,7 @@ This list is the whole project. A new office route is added to this list in the 
 | `POST /api/office/tours/delete` | Owner or Editor. Deletes a tour. A Manager is refused. |
 | Create a login, remove a login, change a role, delete a price row, delete a guest request | Owner only. |
 | `GET /office/settings` and `POST /api/office/settings/profile` | A signed-in Owner, Manager, or Editor. The save changes only the name of the signed-in login, read from the session, never from the request. T-62. |
-| `GET /office/roles` and `POST /api/office/roles` | Owner only. Adds, renames, changes, and deletes roles (BR-123 to BR-127). After T-63, the rows in this table that name Manager or Editor mean a role with the matching permission in BR-124. T-63. |
+| `GET /office/roles`, `GET /api/office/roles`, and `POST /api/office/roles` | Owner only. Adds, renames, changes, and deletes roles (BR-123 to BR-127). After T-63, the rows in this table that name Manager or Editor mean a role with the matching permission in BR-124. T-63. |
 | `GET /api/office/requests` | A signed-in Owner, Manager, or Editor. |
 | `GET /api/office/activity` | A signed-in Owner, Manager, or Editor. Returns only rows for areas that role can open, which is BR-86. Read only. |
 | `GET /api/office/rates` | Owner or Manager. |
@@ -369,6 +388,8 @@ This list is the whole project. A new office route is added to this list in the 
 | `POST /api/office/requests/delete` | Owner only. |
 | `GET /api/office/backup`, `POST /api/office/backup`, and `GET /api/office/backup/file` | Owner only. Lists, takes, and downloads database backups. A backup is kept in private storage and is never under `public/`. |
 | `POST /api/backup` | The nightly scheduled run only. It must send the backup secret. No session. |
+| `GET` and `POST /api/office/day-plans`, `/api/office/package-options`, and `/api/office/package-sections` | Owner or Manager. Reads and changes day plans, package options, and fixed sections. T-58 to T-60. |
+| `GET /api/office/quotes/[id]/package` | Owner or Manager. Returns the package document for a saved quote, as a page to print to PDF or, with `?format=word`, as a Word file. It never holds the lines or the profit. T-61. |
 | Read guest requests | Owner, Manager, or Editor. |
 | Change a guest request status | Owner or Manager. |
 | Guest PDF or image | The guest sees one total. Staff lines and profit stay off that file. |
