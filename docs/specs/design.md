@@ -156,6 +156,8 @@ One function. Do not keep a second copy of the math in the React components. Do 
 10. A jeep line that is turned on, and that matches the place and road or air, is added once for each group of six adults and children, at the full amount on the line. From T-55, infants are not counted. Before T-55, every traveler was counted. Do not multiply 90,000 by 3.
 11. Subtotal is the sum of those lines. Total equals subtotal times (1 plus the profit margin). The margin is a whole percent from 0 to 100. The Skardu test uses 20 percent, which is 1.20. Do not divide by 1.20.
 
+Phase 2 and Phase 3 change four of these steps, each only once the office has typed its numbers, so the Skardu test keeps its figure. Step 3: from T-74, a day's fuel can come from its kilometers, BR-141. Step 5: from T-75, the guide uses the place's own price, BR-142. Step 9: from T-72, the adult fare starts from the place's own air fare, BR-137, and from T-76, the stops' entry tickets replace the 4,000 entry, BR-143. Step 11: from T-73, the margin follows the order in BR-140. Design section 20 says how.
+
 The guest builder keeps today's minimum trip length for each place. That limit is not applied to an office quote. The Skardu test is 5 days even though the public road minimum for Skardu is 6.
 
 The test quote is Islamabad, Skardu Valley, 5 days, 2 adults, Gli car, Deluxe, no guide, no meals, a profit margin of 20 percent, and no night or day edit. The package includes a hotel and transport. The total must be 140,400. That is a subtotal of 117,000 times 1.20.
@@ -569,24 +571,28 @@ One additive migration, after T-58's `0009`. T-70 adds it whole.
 
 Add `day_plan_stops` and `place_air_fares` to `BACKUP_TABLES` before `activity`. `scripts/restore-backup.ts` restores a backup from before T-70, which has no stops and no fares.
 
+### Renames
+
+`renamePlaceAs` in `lib/office/rates.ts` renames a place on hotel rates, vehicle rates, and jeep lines. Each task that adds a table keyed by a place adds it to that same save, with a check case: T-70 adds `day_plans` and `place_hotel_names` from T-58, T-72 adds `place_air_fares`, T-74 adds `route_km`, and T-75 adds `guide_rates`. T-74 also renames `route_km.start_city` in `saveStartCityAs` when a start city is renamed.
+
 ### Hours
 
 - `lib/package.ts` gains `dayHours(day)`, the drive hours plus the stops' hours, and `dayFlags(day, comfortHours)`, which gives `long` when the total is over the limit and `rushed` when a stop is extra. The Day plans screen, the Package tab, and the document all call them, so the rule is in one place.
 - On the Day plans screen, each day gets its drive hours and a Stops list under its sections. A stop can be added, changed, deleted, and moved up or down, with its name, hours, and an Extra tick. The day shows its total, such as "6.5 hours", and the Long day or Rushed day badge. Stops save through `POST /api/office/day-plans`, with one activity row for each save.
-- Hours are typed as numbers such as 1.5. A value that is not a half-hour step from 0 to 16 returns 400.
+- Hours are typed as numbers such as 1.5. A value that is not a half-hour step from 0 to 16 returns 400. A 13th stop on a day, and a name that is blank or over 80 characters, return 400.
 - The comfort limit is a field on the Pricing rules tab, with the same steps.
-- The package document shows, under each day, "Stops: Shangrila, about 2 hours · Upper Kachura, about 1.5 hours" and "About 6.5 hours". A day with no stops shows neither.
+- The package document shows, under each day, "Stops: Shangrila, about 2 hours · Upper Kachura, about 1.5 hours" and "About 6.5 hours". One function prints the hours, so 0.5 is "about half an hour" and 1 is "about 1 hour". A day with no stops shows neither line.
 
 ### Trip styles
 
-- The tour editor gets a Trip style select with None and the four styles. The public `TourCard` and the tour page show the style as a small label in the site's existing badge style. `/tours` gets a style filter next to its other filters, read from the address as `?style=Comfort`, so a filtered list can be shared. The public look is otherwise unchanged.
+- The tour editor gets a Trip style select with None and the four styles. The public `TourCard` and the tour page show "Style: Adventure" as a small label in the site's existing badge style, apart from the grade badges `TourCard` already shows. `/tours` gets a style filter next to its other filters, read from the address as `?style=Comfort`, so a filtered list can be shared. The public look is otherwise unchanged.
 - The Package tab gets the same select. With Comfort, each day over `comfort_hours` is named, such as "Day 3 is about 10 hours, over the 8 hour comfort limit."
 
 ### Jeep lines and air fares
 
-- The Jeep lines tab gets Add jeep line, with the place, Road, Air, or Both, the label, the people, and the amount, and a Delete that only the Owner sees. They save through `POST /api/office/rates` with two new kinds, `jeep-add` and `jeep-delete`, as the other rate rows do. `buildQuote` already prices any live jeep line, so it needs no change for jeeps.
-- A new Air fares tab lists every rate place with its own fare, or "Islamabad ticket" when it has none. A blank fare deletes the row. `buildQuote` reads `place_air_fares` for the quote's place and uses it in place of `airExtras.islamabadTicket`. The ticket line's working names the place's fare.
-- There are no starting rows. The office types the Kashmir, Swat, and Chitral air rows, fares, and jeep lines when the team sends the amounts. The check adds its own test rows and removes them.
+- The Jeep lines tab gets Add jeep line, with the place picked from the rate places, Road, Air, or Both, the label, the people, and the amount, and a Delete that only the Owner sees. They save through `POST /api/office/rates` with two new kinds, `jeep_add` and `jeep_delete`, named like the existing kinds. A place name that is not a rate place returns 400, so a typing slip cannot start a new place. `buildQuote` already prices every live jeep line for the place and mode, so it needs no change for jeeps.
+- A new Air fares tab lists every rate place with its own fare, or "Islamabad ticket" when it has none. A blank fare deletes the row. `buildQuote` reads `place_air_fares` for the quote's place and uses it in place of `airExtras.islamabadTicket`. The ticket line's working names the place's fare. The flight ticket note in BR-113 uses the same fare.
+- There are no starting rows. The office types the air rows, fares, and jeep lines for Neelum Valley Kashmir, Swat Kalam & Malam Jabba, and Kalash Valley & Chitral when the team sends the amounts. The check adds its own test rows and removes them. The public builder keeps its own place list, BR-91, so the check prices a guest air quote with `POST /api/quote` and no session.
 
 ## 20. Phase 3, T-73 to T-79
 
@@ -598,43 +604,50 @@ One additive migration, after T-70's `0010`. T-73 adds it whole.
 
 | Table | Columns |
 |---|---|
-| `season_plans` | `id` serial, `name` text unique, `from_month`, `from_day`, `to_month`, and `to_day` integers, `margin` integer from 0 to 100, `sort_order` integer. The migration adds the four starting rows in BR-139, each with the margin copied from `seasons.percent`. |
-| `quotes` | adds `travel_date` date null, `season_name` text null, `code` text unique not null, `source` text not null default `office`, which is `office` or `guest`, and `flights` text not null default empty. The migration gives each existing row a code, with the same alphabet as `lib/quote-code.ts`. |
+| `season_plans` | `id` serial, `name` text unique, `from_month`, `from_day`, `to_month`, and `to_day` integers, `margin` integer from 0 to 100 or null, `sort_order` integer. The migration adds the four starting rows in BR-139, each with a null margin. |
+| `quotes` | adds `travel_date` date null, `season_name` text null, `code` text unique not null, `source` text not null default `office`, which is `office` or `guest`, and `flights` text not null default empty. |
 | `pricing_rules` | adds `petrol_per_liter` and `diesel_per_liter`, integers, null until the office types them. |
-| `vehicle_fuel` | `vehicle` text primary key, a vehicle name from `vehicle_rates`, `fuel` text, `petrol` or `diesel`, and `km_per_liter` numeric(4,1). Starting rows: Gli Car, petrol, 14, and Parado, which is the Prado, diesel, 5. |
-| `route_km` | `place`, `start_city`, and `mode` text, with the primary key on all three, `out_and_back` integer, and `per_middle_day` integer, default 0. |
+| `vehicle_fuel` | `vehicle` text primary key, matched with `vehicleKey` in `lib/quote.ts`, so Prado and Parado are one vehicle, `fuel` text, `petrol` or `diesel`, and `km_per_liter` numeric(3,1). Starting rows: Gli Car, petrol, 14, and Prado, diesel, 5. An Other vehicle on a quote keeps its typed fuel. |
+| `route_km` | `place`, `start_city`, and `mode` text, with the primary key on all three, `out_and_back` integer, and `per_middle_day` integer, default 0. An air route's `start_city` is `Air`. |
 | `guide_rates` | `place` text primary key, `per_day` integer. |
 | `day_plan_stops` | adds `ticket` integer not null default 0, for each adult and child. |
 | `guest_quote_saves` | `address_hash` text and `saved_at` timestamptz, with one index on both. |
 
-Add the new tables to `BACKUP_TABLES` before `activity`, except `guest_quote_saves`, which is not backed up. `restore-backup.ts` restores a backup from before T-73: it gets the starting season rows, and each quote without a code gets one.
+The `code` column is added as null, each existing row gets a code in a loop that draws again when a code is taken, and then the column is set to not null and given its unique index. Add the new tables to `BACKUP_TABLES` before `activity`, except `guest_quote_saves`, which is not backed up. `restore-backup.ts` restores a backup from before T-73: it gets the four starting seasons with a null margin, and each quote without a code gets one from `lib/quote-code.ts`.
+
+### Codes, from T-73
+
+- `lib/quote-code.ts` makes the code with `crypto.randomInt` from the alphabet `ABCDEFGHJKLMNPQRSTUVWXYZ23456789`, stores it as `TWM-` and the 6 characters, and draws again when the unique index refuses it. A typed code is trimmed and put in upper case before it is looked up.
+- From T-73, `saveQuoteAs` stores a code on every office save, with the source, the date, and the season, so no save fails on the new column. T-77 shows the code and adds the guest save and the Quotes list.
 
 ### Seasons and the travel date
 
-- `lib/seasons.ts` gains `seasonFor(date, plans)`: the plan whose days hold the date's day and month, across the year end when the first day falls after the last. `buildQuote` takes an optional `travelDate`. With a season, the margin starts at that season's percent, and the quote returns the season's name. The office margin slider still works. A saved quote stores the date and the season name.
-- A Seasons tab under Rates and quotes edits the season rows, and can add or delete one. The overlap check runs on every save, inside the transaction.
-- The guest builder gets "Travel date (optional)", a date field. `POST /api/quote` accepts `travelDate` as `YYYY-MM-DD`. A guest date before today, in Pakistan time, returns 400.
+- `lib/seasons.ts` gains `seasonFor(date, plans)`: the plan whose days hold the date's day and month, across the year end when the first day falls after the last. `buildQuote` takes an optional `travelDate`. The margin is `input.seasonPercent` when an Owner or a Manager sent one, then the season's margin, then `catalog.seasonPercent`, the BR-22 margin. The quote returns the season's name.
+- The office Quote screen sends `seasonPercent` on every quote today. From T-73, choosing or changing the travel date sets the margin field to the season's margin, or to the BR-22 margin, before the quote is priced. The help text "Guests always get the saved margin." becomes "Guests get the season's margin for their travel date, or the saved margin." The `POST /api/quote` row in requirements section 13 says the same.
+- A Seasons tab under Rates and quotes edits the season rows, and can add or delete one. A blank margin saves as null. The overlap check runs on every save, inside the transaction.
+- The guest builder gets "Travel date (optional)", a date field. `POST /api/quote` accepts `travelDate` as `YYYY-MM-DD`. A date that does not exist, such as 2027-02-30, a date more than 3 years after today, and a guest date before today, in Pakistan time, return 400.
 
 ### Fuel, guide, and tickets in `buildQuote`
 
-- The catalog that `buildQuote` reads gains `vehicleFuel`, `routeKm`, `guideRates`, the two fuel prices, and the stops of the trip's days. Each rule is one function next to the line it changes, and each line's working says which rule priced it, such as "(1,300 + 60 × 3) km ÷ 14 km per liter × 280" or "8,000 fuel × 5 days".
-- Fuel by kilometers replaces only the fuel part of BR-32, for each vehicle: `ceil(km ÷ kmPerLiter × price)`, times the vehicle count. The rent and the toll do not change.
+- The catalog that `buildQuote` reads gains `vehicleFuel`, `routeKm`, `guideRates`, the two fuel prices, and the stops of the trip's days. Each rule is one function next to the line it changes, and each line's working says which rule priced it.
+- Fuel by kilometers works on the day list `buildQuote` already makes, with the rule in BR-141. Each day's fuel is `ceil(km × price ÷ kmPerLiter)` for that day's vehicle. That fuel is what `quote_days.fuel` stores for the day, so the day table and a saved quote still add up. The working shows the day kilometers, such as "650 km × 280 ÷ 14 km per liter", in place of "8,000 fuel".
 - The guide line uses `guide_rates` for the quote's place, or else `pricingRules.guidePerDay`.
-- Tickets: `packageDays` gives the days, the stops' tickets are added up, and the sum is times the adults and children. The line is "Entry tickets", with working such as "Deosai 1,500 + Khunjerab 800 = 2,300 × 3 people". The BR-39 entry is then left out.
-- With every new table empty, every quote total is the same as before T-73. The Step 2 and Step 3 figures do not change, and the check proves that before it adds its test rows.
+- Tickets: `packageDays` with no options gives the days, the stops' tickets are added up, and the sum is times the adults and children. The line is "Entry tickets", with working such as "Deosai 1,500 + Khunjerab 800 = 2,300 × 3 people". On an air quote, the BR-39 entry of 4,000 is then left out, and the infant extra stays. The package document's price table passes the package's options to `packageDays`.
+- With every new table empty, and every season margin null, every quote total is the same as before T-73. The Step 2 and Step 3 figures do not change, and the check proves that before it adds its test rows.
 
-### Codes and the Quotes list
+### Guest saves and the Quotes list
 
-- `lib/quote-code.ts` makes the code with `crypto.randomInt` from the alphabet `ABCDEFGHJKLMNPQRSTUVWXYZ23456789`, and tries again when the unique index refuses it.
-- `saveQuoteAs` stores the code, the source, the date, and the season. `POST /api/quote/save` saves a guest quote through the same `lib/` function, with the source `guest`, after the limit check in BR-145. The address is the first `x-forwarded-for` value, which Vercel sets, hashed with SHA-256 and `SESSION_SECRET`. A booking sent from the builder after a save starts its message with "Quote TWM-XXXXXX".
-- `/office/rates/quotes` lists saved quotes, 50 to a page, with the code search. `/office/rates/quotes/[id]` opens one, with the tabs Quote, Package from T-61, and Files.
+- A new `saveGuestQuote(input)` in `lib/` shares the insert with `saveQuoteAs`. It prices the quote again with `buildQuote` from the guest's choices, with the same checks as a guest `POST /api/quote`: no margin, night or day edit, lunch, or tickets-off. It never takes a total from the request, stores the source `guest`, and writes no activity row, because no office user made it.
+- The limit check, the count, and the insert run in one transaction. The address is the first `x-forwarded-for` value, which Vercel sets, and a request without it counts in one shared bucket. The hash is HMAC-SHA256 keyed with `SESSION_SECRET`. Each guest save deletes count rows older than one day and guest quotes older than 180 days, at most 100 of each, before it counts. The site limit counts guest quotes saved in the last 24 hours.
+- The builder's Download PDF button saves the quote and opens `/quote/TWM-XXXXXX` in a new tab. The WhatsApp button saves the quote, then saves a `booking` request through `POST /api/requests` with the message it already builds, starting with "Quote TWM-XXXXXX", then opens WhatsApp with the same first line. The builder keeps the last code with the choices it was saved for. When the save returns 429 or fails, the booking and WhatsApp still go, without the code line.
+- `/office/rates/quotes` lists saved quotes, 50 to a page, with the code search and the office, guest, or both filter. `/office/rates/quotes/[id]` opens one, with the tabs Quote, Package from T-61, and Files.
 
 ### Files
 
-- `GET /quote/[code]` is a public page for a guest quote only. An office quote's code returns 404 there. It renders the guest PDF page, with `robots: noindex` and a print style sheet for A4, from the saved quote, not from today's rates.
-- The office routes in requirements section 13 render the guest PDF and the driver copy of any saved quote the same way, from the saved quote and its package. They share one HTML builder with the T-61 document for the header and the print styles.
-- The check proves BR-66 by searching each guest PDF for every line amount, the subtotal, and the profit, and each driver copy for "Rs", "PKR", and every amount on the quote.
+- `GET /quote/[code]` is a public page for a guest quote only. An office quote's code returns 404 there. It renders the guest PDF page, with `robots: noindex`, `Cache-Control: no-store`, and a print style sheet for A4, from the saved quote's own columns: place, days, mode, start city, date, party, grade, and total. It never reads today's rates.
+- The office routes in requirements section 13 render the guest PDF the same way, and the driver copy from the saved quote, its nights and days, and its package. Each night's hotel name is the night's own `hotel_name`, or else the BR-111 line for that place and grade. The days, overnight places, stops, and jeep labels come from today's day plans and jeep lines, with the package's options when there is a `quote_packages` row, and with none when there is not. The flight details are plain text, up to 2,000 characters, escaped when printed. Both pages share one HTML builder with the T-61 document for the header and the print styles.
+- The check proves BR-66 by searching each guest PDF for every line amount, the subtotal, and the profit, and each driver copy for "Rs", "PKR", and every amount on the quote. It also searches the guest PDF of a quote saved with a booking for the booking's name and phone.
 
 ### Excel
 
-- `GET /api/office/rates/export` writes an `.xlsx` with one sheet for each table in BR-149, built with `zlib`, the same way `lib/excel-rates.ts` reads one. No new package is added. The file name is `twm-live-prices-YYYY-MM-DD.xlsx`. The check reads the file back with the zip reader in `lib/excel-rates.ts` and compares each sheet's row count with its table.
+- `GET /api/office/rates/export` writes an `.xlsx` with one sheet for each table in BR-149, each with a header row, built with `zlib`, the same way `lib/excel-rates.ts` reads one. No new package is added. The file name is `twm-live-prices-YYYY-MM-DD.xlsx`. The check reads the file back with the zip reader in `lib/excel-rates.ts` and compares each sheet's row count, not counting the header row, with its table.
