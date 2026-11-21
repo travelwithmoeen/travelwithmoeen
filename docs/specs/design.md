@@ -34,6 +34,7 @@ The site is a Next.js App Router app. These public routes stay, and their conten
 | Gallery | `data/gallery.ts` |
 | Reviews | `data/testimonials.ts` |
 | Rates used by the live site | `data/pricing.ts` and `lib/calculatePackagePrice.ts` |
+| Rates from the costing desk v1.9, prices only | `data/rates/costing-desk-v1.9.json`, loaded into a local database by `npm run db:load-rates` (T-68). Preview has these prices since 21 November 2026. |
 | Home slides | Seed list in `scripts/seed-content.ts`. `components/FanGallery1.tsx` only draws the cards it is given. |
 | Phone, email, address, social links | `components/Navbar.tsx`, `components/Footer.tsx`, `components/home/SocialMediaSection.tsx`, `app/contact/page.tsx` |
 | Tour card price | `components/TourCard.tsx` calls `calculatePackagePrice` with Deluxe and Islamabad, and falls back to `basePrice` |
