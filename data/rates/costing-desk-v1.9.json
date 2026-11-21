@@ -1,0 +1,2944 @@
+{
+  "source": "Costing desk v1.9, 18 November 2026. Prices, hotel names, and quote rules only.",
+  "hotels": [
+    {
+      "place": "Skardu Valley",
+      "startCity": "Islamabad",
+      "grade": "Deluxe",
+      "twin": 9000,
+      "triple": 12000,
+      "hotelName": "Tarangfa Lodges Chilas or Indus Hotel / Hotel Himalaya / Al Noor Starlet Hotel / Dirleh Resort / (Deluxe room) / Demanchi Naran Valley"
+    },
+    {
+      "place": "Skardu Valley",
+      "startCity": "Islamabad",
+      "grade": "Executive",
+      "twin": 24000,
+      "triple": 28000,
+      "hotelName": "Grace Continental Chilas / Khar Hotel Skardu / Guman resort / PC Lagacy/ Rivage Resort Skardu / The Sarai Hotel & Resort Naran"
+    },
+    {
+      "place": "Skardu Valley",
+      "startCity": "Islamabad",
+      "grade": "Luxury",
+      "twin": 40000,
+      "triple": 44000,
+      "hotelName": "Shangrila Hotel Chilas / Khoj Resorts (Deluxe room) or Rivage Resort Skardu (Executive rooms) / Northern Retreat by Hotel Demanchi"
+    },
+    {
+      "place": "Skardu Valley",
+      "startCity": "Islamabad",
+      "grade": "Ultra Luxury",
+      "twin": 60000,
+      "triple": 60000,
+      "hotelName": "Shangrila Hotel Chilas / Shangrila (Executive Room) / Himmel by Luxus (Deluxe room) /Khoj Resorts (River view loft villa) / Swiss Rock Hotel & Resort"
+    },
+    {
+      "place": "Hunza Valley",
+      "startCity": "Islamabad",
+      "grade": "Deluxe",
+      "twin": 10000,
+      "triple": 13000,
+      "hotelName": "Tarangfa Lodges Chilas or Indus Hotel / Shaheen Resort Hunza (SRH) / Hunza Blossom In / Karakuram Hotel / Hotel Himalaya (Deluxe room Hunza ) / Demanchi Hotel Naran"
+    },
+    {
+      "place": "Hunza Valley",
+      "startCity": "Islamabad",
+      "grade": "Executive",
+      "twin": 24000,
+      "triple": 28000,
+      "hotelName": "Grace Continental Chilas / Hard Rock Hunza Resort / Best Western/ Villas Roomy Resort / The Sarai Hotel & Resort Naran"
+    },
+    {
+      "place": "Hunza Valley",
+      "startCity": "Islamabad",
+      "grade": "Luxury",
+      "twin": 40000,
+      "triple": 44000,
+      "hotelName": "Shangrila Hotel Chilas / Horizon Resort Attabad Lake (Deluxe room) or Offto Resort Hunza / Northern Retreat by Hotel Demanchi"
+    },
+    {
+      "place": "Hunza Valley",
+      "startCity": "Islamabad",
+      "grade": "Ultra Luxury",
+      "twin": 60000,
+      "triple": 65000,
+      "hotelName": "Shangrila Hotel Chilas / Best Western / Darbar Hotel / Hunza Serena Hotel (Hunza)/ PC Skardu (Deluxe room Hunza Hotel ) / Swiss Rock Hotel & Resort Naran"
+    },
+    {
+      "place": "Skardu & Hunza",
+      "startCity": "Islamabad",
+      "grade": "Deluxe",
+      "twin": 10000,
+      "triple": 13000,
+      "hotelName": "Tarangfa Lodges Chilas or Indus Hotel / Dirleh Resort Skardu / AlNoorHotel /Mulbery Resort Hunza / Roomy Dastan Hunza / Demanchi Hotel Naran"
+    },
+    {
+      "place": "Skardu & Hunza",
+      "startCity": "Islamabad",
+      "grade": "Executive",
+      "twin": 24000,
+      "triple": 28000,
+      "hotelName": "Grace Continental Chilas / Khar Hotel Skardu / Guman resort / PC Lagacy/ Rivage Resort Skardu Hard Rock Hunza Resort / Villas Roomy Resort Hunza / The Sarai Hotel & Resort Naran"
+    },
+    {
+      "place": "Skardu & Hunza",
+      "startCity": "Islamabad",
+      "grade": "Luxury",
+      "twin": 40000,
+      "triple": 44000,
+      "hotelName": "Shangrila Hotel Chilas / Khoj Resorts (Deluxe room) or Rivage Resort Skardu (Executive rooms) Skardu Horizon Resort Attabad Lake (Deluxe room) or Offto Resort Hunza / Northern Retreat by Hotel Demanchi"
+    },
+    {
+      "place": "Skardu & Hunza",
+      "startCity": "Islamabad",
+      "grade": "Ultra Luxury",
+      "twin": 60000,
+      "triple": 65000,
+      "hotelName": "Shangrila Hotel Chilas / Shangrila (Executive Room) / Himmel by Luxus (Deluxe room) /Khoj Resorts (River view loft villa) (Deluxe room Skardu Hotel ) Best Western / Darbar Hotel / Hunza Serena Hotel (Deluxe room Hunza Hotel )/ Swiss Rock Hotel & Resort Naran"
+    },
+    {
+      "place": "Minimarg Astor Valley",
+      "startCity": "Islamabad",
+      "grade": "Deluxe",
+      "twin": 10000,
+      "triple": 13000,
+      "hotelName": "Tarangfa Lodges Chilas or Indus Hotel / Minimarg Camping Side Benazir Palace Hotel & Restaurant Gorikot Astore / Demanchi Hotel"
+    },
+    {
+      "place": "Minimarg Astor Valley",
+      "startCity": "Islamabad",
+      "grade": "Executive",
+      "twin": 19000,
+      "triple": 22000,
+      "hotelName": "Grace Continental Chilas Minimarg Camping Side Wazir Guest House Rama Astore / The Sarai Hotel & Resort Naran"
+    },
+    {
+      "place": "Minimarg Astor Valley",
+      "startCity": "Islamabad",
+      "grade": "Luxury",
+      "twin": 30000,
+      "triple": 40000,
+      "hotelName": "Shangrila Hotel Chilas / Minimarg Army Camping Side Mulberry Lodge Astore / Northern Retreat by Hotel Demanchi"
+    },
+    {
+      "place": "Minimarg Astor Valley",
+      "startCity": "Islamabad",
+      "grade": "Ultra Luxury",
+      "twin": 50000,
+      "triple": 60000,
+      "hotelName": "Shangrila Hotel Chilas / Minimarg Army Camping Side Mulberry Lodge Astore / Swiss Rock Hotel & Resort Naran"
+    },
+    {
+      "place": "Fairy Meadows Nanga Base Camp",
+      "startCity": "Islamabad",
+      "grade": "Deluxe",
+      "twin": 15000,
+      "triple": 17000,
+      "hotelName": "Tarangfa Hotel Chilas or Indus Hotel / Fairy Meadows View Camping Side / Demanchi Naran Valley"
+    },
+    {
+      "place": "Fairy Meadows Nanga Base Camp",
+      "startCity": "Islamabad",
+      "grade": "Executive",
+      "twin": 20000,
+      "triple": 23000,
+      "hotelName": "Grace Continental Chilas / Raikot Sarai fairy meadows / Grace Continental Chilas / The Sarai Hotel & Resort Naran"
+    },
+    {
+      "place": "Fairy Meadows Nanga Base Camp",
+      "startCity": "Islamabad",
+      "grade": "Luxury",
+      "twin": 30000,
+      "triple": 35000,
+      "hotelName": "Shangrila Hotel Chilas/ Raikot Sarai fairy meadows / Northern Retreat by Hotel Demanchi"
+    },
+    {
+      "place": "Fairy Meadows Nanga Base Camp",
+      "startCity": "Islamabad",
+      "grade": "Ultra Luxury",
+      "twin": 32000,
+      "triple": 37000,
+      "hotelName": "Shangrila Hotel Chilas / Raikot Sarai fairy meadows / Swiss Rock Hotel & Resort Naran"
+    },
+    {
+      "place": "Murree Patriata Galiyat",
+      "startCity": "Islamabad",
+      "grade": "Deluxe",
+      "twin": 12000,
+      "triple": 15000,
+      "hotelName": "Grand Taj hotel / The Cloud Xpress"
+    },
+    {
+      "place": "Murree Patriata Galiyat",
+      "startCity": "Islamabad",
+      "grade": "Executive",
+      "twin": 25000,
+      "triple": 30000,
+      "hotelName": "Khattak lodges Murree/ Shangrila Hotel Murree for Hotel Summer Retreat"
+    },
+    {
+      "place": "Murree Patriata Galiyat",
+      "startCity": "Islamabad",
+      "grade": "Luxury",
+      "twin": 27000,
+      "triple": 33000,
+      "hotelName": "Roomy lodges Murree / Shangrila Hotel Murree for Hotel Summer Retreat"
+    },
+    {
+      "place": "Murree Patriata Galiyat",
+      "startCity": "Islamabad",
+      "grade": "Ultra Luxury",
+      "twin": 30000,
+      "triple": 36000,
+      "hotelName": "Felettis Grand / Shangrila Hotel Murree for Hotel Summer Retreat"
+    },
+    {
+      "place": "Murree Ayubia Nathiagali",
+      "startCity": "Islamabad",
+      "grade": "Deluxe",
+      "twin": 15000,
+      "triple": 18000,
+      "hotelName": "Hotel One Mall Road / Crown Inn Hotel"
+    },
+    {
+      "place": "Murree Ayubia Nathiagali",
+      "startCity": "Islamabad",
+      "grade": "Executive",
+      "twin": 22000,
+      "triple": 25000,
+      "hotelName": "Felettis Grand / Shanrila Hotel Murree"
+    },
+    {
+      "place": "Murree Ayubia Nathiagali",
+      "startCity": "Islamabad",
+      "grade": "Luxury",
+      "twin": 30000,
+      "triple": 35000,
+      "hotelName": "Fiora Hotel / PC Bhurban Murree"
+    },
+    {
+      "place": "Murree Ayubia Nathiagali",
+      "startCity": "Islamabad",
+      "grade": "Ultra Luxury",
+      "twin": 35000,
+      "triple": 38000,
+      "hotelName": "Double Tree by Hilton / Alpine Resort Nathiagali"
+    },
+    {
+      "place": "Naran Kaghan & Babusar Top",
+      "startCity": "Islamabad",
+      "grade": "Deluxe",
+      "twin": 15000,
+      "triple": 28000,
+      "hotelName": "Demanchi hotel Naran"
+    },
+    {
+      "place": "Naran Kaghan & Babusar Top",
+      "startCity": "Islamabad",
+      "grade": "Executive",
+      "twin": 21000,
+      "triple": 23000,
+      "hotelName": "Home Naran"
+    },
+    {
+      "place": "Naran Kaghan & Babusar Top",
+      "startCity": "Islamabad",
+      "grade": "Luxury",
+      "twin": 23000,
+      "triple": 25000,
+      "hotelName": "Heritage hotel Naran / Northern Retreat by Hotel Demanchi"
+    },
+    {
+      "place": "Naran Kaghan & Babusar Top",
+      "startCity": "Islamabad",
+      "grade": "Ultra Luxury",
+      "twin": 25000,
+      "triple": 27000,
+      "hotelName": "The Sarai Hotel & Resort Naran / Northern Retreat by Hotel Demanchi"
+    },
+    {
+      "place": "Neelum Valley Kashmir",
+      "startCity": "Islamabad",
+      "grade": "Deluxe",
+      "twin": 6000,
+      "triple": 8000,
+      "hotelName": "Neelum Cinaar Resort"
+    },
+    {
+      "place": "Neelum Valley Kashmir",
+      "startCity": "Islamabad",
+      "grade": "Executive",
+      "twin": 12000,
+      "triple": 15000,
+      "hotelName": "Hotel Neelum Elites"
+    },
+    {
+      "place": "Neelum Valley Kashmir",
+      "startCity": "Islamabad",
+      "grade": "Luxury",
+      "twin": 17000,
+      "triple": 20000,
+      "hotelName": "Wanderlust Chapter 1"
+    },
+    {
+      "place": "Neelum Valley Kashmir",
+      "startCity": "Islamabad",
+      "grade": "Ultra Luxury",
+      "twin": 25000,
+      "triple": 30000,
+      "hotelName": "Roameo Resort"
+    },
+    {
+      "place": "Taobat",
+      "startCity": "Islamabad",
+      "grade": "Deluxe",
+      "twin": 6000,
+      "triple": 8000,
+      "hotelName": "Neelum Cinaar Resort"
+    },
+    {
+      "place": "Taobat",
+      "startCity": "Islamabad",
+      "grade": "Executive",
+      "twin": 12000,
+      "triple": 15000,
+      "hotelName": "Hotel Neelum Elites"
+    },
+    {
+      "place": "Taobat",
+      "startCity": "Islamabad",
+      "grade": "Luxury",
+      "twin": 17000,
+      "triple": 20000,
+      "hotelName": "Wanderlust Chapter 1"
+    },
+    {
+      "place": "Taobat",
+      "startCity": "Islamabad",
+      "grade": "Ultra Luxury",
+      "twin": 25000,
+      "triple": 30000,
+      "hotelName": "Roameo Resort"
+    },
+    {
+      "place": "Swat Kalam & Malam Jabba",
+      "startCity": "Islamabad",
+      "grade": "Deluxe",
+      "twin": 9000,
+      "triple": 12000,
+      "hotelName": "Demanchi hotel Kalam or Equivalent"
+    },
+    {
+      "place": "Swat Kalam & Malam Jabba",
+      "startCity": "Islamabad",
+      "grade": "Executive",
+      "twin": 18000,
+      "triple": 21000,
+      "hotelName": "Maria Hotel Kalam"
+    },
+    {
+      "place": "Swat Kalam & Malam Jabba",
+      "startCity": "Islamabad",
+      "grade": "Luxury",
+      "twin": 22000,
+      "triple": 24000,
+      "hotelName": "The Jungle in resort"
+    },
+    {
+      "place": "Swat Kalam & Malam Jabba",
+      "startCity": "Islamabad",
+      "grade": "Ultra Luxury",
+      "twin": 25000,
+      "triple": 32000,
+      "hotelName": "(Zen Luxus Kalam or Walnut Heights by Roomy, Kalam)"
+    },
+    {
+      "place": "Islamabad",
+      "startCity": "Islamabad",
+      "grade": "Deluxe",
+      "twin": 15000,
+      "triple": 20000,
+      "hotelName": "Roomy Signature / Grand Islamabad"
+    },
+    {
+      "place": "Islamabad",
+      "startCity": "Islamabad",
+      "grade": "Executive",
+      "twin": 35000,
+      "triple": 40000,
+      "hotelName": "Serena Hotel / Hotel Hill view Islamabad"
+    },
+    {
+      "place": "Islamabad",
+      "startCity": "Islamabad",
+      "grade": "Luxury",
+      "twin": 42000,
+      "triple": 45000,
+      "hotelName": "Sintra Hotel / Ramada Hotel/IFQ Hotel and Resort"
+    },
+    {
+      "place": "Islamabad",
+      "startCity": "Islamabad",
+      "grade": "Ultra Luxury",
+      "twin": 47000,
+      "triple": 50000,
+      "hotelName": "Islamabad Marriot Hotel"
+    },
+    {
+      "place": "Kalash Valley & Chitral",
+      "startCity": "Islamabad",
+      "grade": "Deluxe",
+      "twin": 29000,
+      "triple": 32000,
+      "hotelName": "Height Away Cottage/Mountain Inn Chitral"
+    },
+    {
+      "place": "Kalash Valley & Chitral",
+      "startCity": "Islamabad",
+      "grade": "Executive",
+      "twin": 35000,
+      "triple": 38000,
+      "hotelName": "Legendary hotel Chitral/Tirch Mir View Hotel"
+    },
+    {
+      "place": "Kalash Valley & Chitral",
+      "startCity": "Islamabad",
+      "grade": "Luxury",
+      "twin": 37000,
+      "triple": 40000,
+      "hotelName": "Hindkush Sarai Chitral/Pamir Riverside Inn Chitral"
+    },
+    {
+      "place": "Kalash Valley & Chitral",
+      "startCity": "Islamabad",
+      "grade": "Ultra Luxury",
+      "twin": 40000,
+      "triple": 45000,
+      "hotelName": "Ayun Fort Inn/Hindukash Heights"
+    },
+    {
+      "place": "Kumrat and Katora Lake",
+      "startCity": "Islamabad",
+      "grade": "Deluxe",
+      "twin": 13000,
+      "triple": 16000,
+      "hotelName": "Kumrat valley resort"
+    },
+    {
+      "place": "Kumrat and Katora Lake",
+      "startCity": "Islamabad",
+      "grade": "Executive",
+      "twin": 19000,
+      "triple": 22000,
+      "hotelName": "Panjkora Resort/ Latitude resort"
+    },
+    {
+      "place": "Kumrat and Katora Lake",
+      "startCity": "Islamabad",
+      "grade": "Luxury",
+      "twin": 22000,
+      "triple": 25000,
+      "hotelName": "Valhalla Resort/Celine Resorts Kumrat"
+    },
+    {
+      "place": "Kumrat and Katora Lake",
+      "startCity": "Islamabad",
+      "grade": "Ultra Luxury",
+      "twin": 28000,
+      "triple": 31000,
+      "hotelName": "Kumrat Glamping Resort/The WoodPeckers"
+    },
+    {
+      "place": "Skardu Valley",
+      "startCity": "Lahore",
+      "grade": "Deluxe",
+      "twin": 9000,
+      "triple": 12000,
+      "hotelName": "Tarangfa Lodges Chilas or Indus Hotel / Hotel Himalaya / Al Noor Starlet Hotel / Dirleh Resort / (Deluxe room) / Demanchi Naran Valley"
+    },
+    {
+      "place": "Skardu Valley",
+      "startCity": "Lahore",
+      "grade": "Premier",
+      "twin": 13000,
+      "triple": 15000,
+      "hotelName": "Grace Continental Chilas / Tibet / Hotel Himalaya (Executive room) / Qayam Skardu / Hotel Home Naran"
+    },
+    {
+      "place": "Skardu Valley",
+      "startCity": "Lahore",
+      "grade": "Executive",
+      "twin": 19000,
+      "triple": 22000,
+      "hotelName": "Grace Continental Chilas / Khar Hotel Skardu / Guman resort / PC Lagacy/ Rivage Resort Skardu / The Sarai Hotel & Resort Naran"
+    },
+    {
+      "place": "Skardu Valley",
+      "startCity": "Lahore",
+      "grade": "Luxury",
+      "twin": 30000,
+      "triple": 40000,
+      "hotelName": "Shangrila Hotel Chilas / Khoj Resorts (Deluxe room) or Rivage Resort Skardu (Executive rooms) / Northern Retreat by Hotel Demanchi"
+    },
+    {
+      "place": "Skardu Valley",
+      "startCity": "Lahore",
+      "grade": "Ultra Luxury",
+      "twin": 50000,
+      "triple": 60000,
+      "hotelName": "Shangrila Hotel Chilas / Shangrila (Executive Room) / Himmel by Luxus (Deluxe room) /Khoj Resorts (River view loft villa) / Swiss Rock Hotel & Resort"
+    },
+    {
+      "place": "Hunza Valley",
+      "startCity": "Lahore",
+      "grade": "Deluxe",
+      "twin": 10000,
+      "triple": 13000,
+      "hotelName": "Tarangfa Lodges Chilas or Indus Hotel / Shaheen Resort Hunza (SRH) / Hunza Blossom In / Karakuram Hotel / Hotel Himalaya (Deluxe room Hunza ) / Demanchi Hotel Naran"
+    },
+    {
+      "place": "Hunza Valley",
+      "startCity": "Lahore",
+      "grade": "Premier",
+      "twin": 13000,
+      "triple": 15000,
+      "hotelName": "Grace Continental Chilas / Qayam Hunza / Roomy Dastan/ Qayam Skardu (Skardu) / Hotel Home Naran"
+    },
+    {
+      "place": "Hunza Valley",
+      "startCity": "Lahore",
+      "grade": "Executive",
+      "twin": 19000,
+      "triple": 22000,
+      "hotelName": "Grace Continental Chilas / Hard Rock Hunza Resort / Best Western/ Villas Roomy Resort / The Sarai Hotel & Resort Naran"
+    },
+    {
+      "place": "Hunza Valley",
+      "startCity": "Lahore",
+      "grade": "Luxury",
+      "twin": 30000,
+      "triple": 40000,
+      "hotelName": "Shangrila Hotel Chilas / Horizon Resort Attabad Lake (Deluxe room) or Offto Resort Hunza / Northern Retreat by Hotel Demanchi"
+    },
+    {
+      "place": "Hunza Valley",
+      "startCity": "Lahore",
+      "grade": "Ultra Luxury",
+      "twin": 50000,
+      "triple": 60000,
+      "hotelName": "Shangrila Hotel Chilas / Best Western / Darbar Hotel / Hunza Serena Hotel (Hunza)/ PC Skardu (Deluxe room Hunza Hotel ) / Swiss Rock Hotel & Resort Naran"
+    },
+    {
+      "place": "Skardu & Hunza",
+      "startCity": "Lahore",
+      "grade": "Deluxe",
+      "twin": 10000,
+      "triple": 13000,
+      "hotelName": "Tarangfa Lodges Chilas or Indus Hotel / Dirleh Resort Skardu/ Qayam Skardu /Mulbery Resort Hunza / Roomy Dastan Hunza / Demanchi Hotel Naran"
+    },
+    {
+      "place": "Skardu & Hunza",
+      "startCity": "Lahore",
+      "grade": "Premier",
+      "twin": 13000,
+      "triple": 15000,
+      "hotelName": "Grace Continental Chilas / Summit Embassy Hotel / Qayam Skardu /Qayam Hunza / Roomy Dastan Hunza / Hotel Home Naran"
+    },
+    {
+      "place": "Skardu & Hunza",
+      "startCity": "Lahore",
+      "grade": "Executive",
+      "twin": 19000,
+      "triple": 22000,
+      "hotelName": "Grace Continental Chilas / Khar Hotel Skardu / Guman resort / PC Lagacy/ Rivage Resort Skardu Hard Rock Hunza Resort / Villas Roomy Resort Hunza / The Sarai Hotel & Resort Naran"
+    },
+    {
+      "place": "Skardu & Hunza",
+      "startCity": "Lahore",
+      "grade": "Luxury",
+      "twin": 30000,
+      "triple": 40000,
+      "hotelName": "Shangrila Hotel Chilas / Khoj Resorts (Deluxe room) or Rivage Resort Skardu (Executive rooms) Skardu Horizon Resort Attabad Lake (Deluxe room) or Offto Resort Hunza / Northern Retreat by Hotel Demanchi"
+    },
+    {
+      "place": "Skardu & Hunza",
+      "startCity": "Lahore",
+      "grade": "Ultra Luxury",
+      "twin": 50000,
+      "triple": 60000,
+      "hotelName": "Shangrila Hotel Chilas / Shangrila (Executive Room) / Himmel by Luxus (Deluxe room) /Khoj Resorts (River view loft villa) (Deluxe room Skardu Hotel ) Best Western / Darbar Hotel / Hunza Serena Hotel (Deluxe room Hunza Hotel )/ Swiss Rock Hotel & Resort Naran"
+    },
+    {
+      "place": "Minimarg Astor Valley",
+      "startCity": "Lahore",
+      "grade": "Deluxe",
+      "twin": 10000,
+      "triple": 13000,
+      "hotelName": "Tarangfa Lodges Chilas or Indus Hotel / Minimarg Camping Side Benazir Palace Hotel & Restaurant Gorikot Astore / Demanchi Hotel"
+    },
+    {
+      "place": "Minimarg Astor Valley",
+      "startCity": "Lahore",
+      "grade": "Premier",
+      "twin": 13000,
+      "triple": 15000,
+      "hotelName": "Grace Continental Chilas / Minimarg Camping Side Wazir Guest House Rama Astore / Hotel Home Naran"
+    },
+    {
+      "place": "Minimarg Astor Valley",
+      "startCity": "Lahore",
+      "grade": "Executive",
+      "twin": 19000,
+      "triple": 22000,
+      "hotelName": "Grace Continental Chilas / Khar Hotel Skardu (deluxe room) Minimarg Camping Side Wazir Guest House Rama Astore / The Sarai Hotel & Resort Naran"
+    },
+    {
+      "place": "Minimarg Astor Valley",
+      "startCity": "Lahore",
+      "grade": "Luxury",
+      "twin": 30000,
+      "triple": 40000,
+      "hotelName": "Shangrila Hotel Chilas / Minimarg Army Camping Side Mulberry Lodge Astore / Northern Retreat by Hotel Demanchi"
+    },
+    {
+      "place": "Minimarg Astor Valley",
+      "startCity": "Lahore",
+      "grade": "Ultra Luxury",
+      "twin": 50000,
+      "triple": 60000,
+      "hotelName": "Shangrila Hotel Chilas / Minimarg Army Camping Side Mulberry Lodge Astore / Swiss Rock Hotel & Resort Naran"
+    },
+    {
+      "place": "Fairy Meadows Nanga Base Camp",
+      "startCity": "Lahore",
+      "grade": "Deluxe",
+      "twin": 15000,
+      "triple": 17000,
+      "hotelName": "Tarangfa Hotel Chilas or Indus Hotel / Fairy Meadows View Camping Side / Demanchi Naran Valley"
+    },
+    {
+      "place": "Fairy Meadows Nanga Base Camp",
+      "startCity": "Lahore",
+      "grade": "Premier",
+      "twin": 16000,
+      "triple": 18000,
+      "hotelName": "Grace Continental Chilas (deluxe room) /Fairy Meadows View Camping Side / Hotel Home Naran"
+    },
+    {
+      "place": "Fairy Meadows Nanga Base Camp",
+      "startCity": "Lahore",
+      "grade": "Executive",
+      "twin": 20000,
+      "triple": 23000,
+      "hotelName": "Grace Continental Chilas / Raikot Sarai fairy meadows / Grace Continental Chilas / The Sarai Hotel & Resort Naran"
+    },
+    {
+      "place": "Fairy Meadows Nanga Base Camp",
+      "startCity": "Lahore",
+      "grade": "Luxury",
+      "twin": 30000,
+      "triple": 35000,
+      "hotelName": "Shangrila Hotel Chilas/ Raikot Sarai fairy meadows / Northern Retreat by Hotel Demanchi"
+    },
+    {
+      "place": "Fairy Meadows Nanga Base Camp",
+      "startCity": "Lahore",
+      "grade": "Ultra Luxury",
+      "twin": 32000,
+      "triple": 37000,
+      "hotelName": "Shangrila Hotel Chilas / Raikot Sarai fairy meadows / Swiss Rock Hotel & Resort Naran"
+    },
+    {
+      "place": "Murree Patriata Galiyat",
+      "startCity": "Lahore",
+      "grade": "Deluxe",
+      "twin": 12000,
+      "triple": 15000,
+      "hotelName": "Grand Taj hotel / The Cloud Xpress"
+    },
+    {
+      "place": "Murree Patriata Galiyat",
+      "startCity": "Lahore",
+      "grade": "Premier",
+      "twin": 13000,
+      "triple": 16000,
+      "hotelName": "Umda hotel / The Cloud Xpress"
+    },
+    {
+      "place": "Murree Patriata Galiyat",
+      "startCity": "Lahore",
+      "grade": "Executive",
+      "twin": 25000,
+      "triple": 30000,
+      "hotelName": "Khattak lodges Murree/ Shangrila Hotel Murree for Hotel Summer Retreat"
+    },
+    {
+      "place": "Murree Patriata Galiyat",
+      "startCity": "Lahore",
+      "grade": "Luxury",
+      "twin": 27000,
+      "triple": 33000,
+      "hotelName": "Roomy lodges Murree / Shangrila Hotel Murree for Hotel Summer Retreat"
+    },
+    {
+      "place": "Murree Patriata Galiyat",
+      "startCity": "Lahore",
+      "grade": "Ultra Luxury",
+      "twin": 30000,
+      "triple": 36000,
+      "hotelName": "Felettis Grand / Shangrila Hotel Murree for Hotel Summer Retreat"
+    },
+    {
+      "place": "Murree Ayubia Nathiagali",
+      "startCity": "Lahore",
+      "grade": "Deluxe",
+      "twin": 15000,
+      "triple": 18000,
+      "hotelName": "Hotel One Mall Road / Crown Inn Hotel"
+    },
+    {
+      "place": "Murree Ayubia Nathiagali",
+      "startCity": "Lahore",
+      "grade": "Premier",
+      "twin": 16000,
+      "triple": 17000,
+      "hotelName": "Umda hotel/ Crown Inn Hotel"
+    },
+    {
+      "place": "Murree Ayubia Nathiagali",
+      "startCity": "Lahore",
+      "grade": "Executive",
+      "twin": 22000,
+      "triple": 25000,
+      "hotelName": "Felettis Grand / Shanrila Hotel Murree"
+    },
+    {
+      "place": "Murree Ayubia Nathiagali",
+      "startCity": "Lahore",
+      "grade": "Luxury",
+      "twin": 30000,
+      "triple": 35000,
+      "hotelName": "Fiora Hotel / PC Bhurban Murree"
+    },
+    {
+      "place": "Murree Ayubia Nathiagali",
+      "startCity": "Lahore",
+      "grade": "Ultra Luxury",
+      "twin": 35000,
+      "triple": 38000,
+      "hotelName": "Double Tree by Hilton / Alpine Resort Nathiagali"
+    },
+    {
+      "place": "Naran Kaghan & Babusar Top",
+      "startCity": "Lahore",
+      "grade": "Deluxe",
+      "twin": 15000,
+      "triple": 28000,
+      "hotelName": "Demanchi hotel Naran"
+    },
+    {
+      "place": "Naran Kaghan & Babusar Top",
+      "startCity": "Lahore",
+      "grade": "Premier",
+      "twin": 19000,
+      "triple": 22000,
+      "hotelName": "Millienium Hotel Naran"
+    },
+    {
+      "place": "Naran Kaghan & Babusar Top",
+      "startCity": "Lahore",
+      "grade": "Executive",
+      "twin": 21000,
+      "triple": 23000,
+      "hotelName": "Home Naran"
+    },
+    {
+      "place": "Naran Kaghan & Babusar Top",
+      "startCity": "Lahore",
+      "grade": "Luxury",
+      "twin": 23000,
+      "triple": 25000,
+      "hotelName": "Heritage hotel Naran / Northern Retreat by Hotel Demanchi"
+    },
+    {
+      "place": "Naran Kaghan & Babusar Top",
+      "startCity": "Lahore",
+      "grade": "Ultra Luxury",
+      "twin": 25000,
+      "triple": 27000,
+      "hotelName": "The Sarai Hotel & Resort Naran / Northern Retreat by Hotel Demanchi"
+    },
+    {
+      "place": "Neelum Valley Kashmir",
+      "startCity": "Lahore",
+      "grade": "Deluxe",
+      "twin": 6000,
+      "triple": 8000,
+      "hotelName": "Neelum Cinaar Resort"
+    },
+    {
+      "place": "Neelum Valley Kashmir",
+      "startCity": "Lahore",
+      "grade": "Premier",
+      "twin": 9000,
+      "triple": 12000,
+      "hotelName": "Green Valley Resort"
+    },
+    {
+      "place": "Neelum Valley Kashmir",
+      "startCity": "Lahore",
+      "grade": "Executive",
+      "twin": 12000,
+      "triple": 15000,
+      "hotelName": "Hotel Neelum Elites"
+    },
+    {
+      "place": "Neelum Valley Kashmir",
+      "startCity": "Lahore",
+      "grade": "Luxury",
+      "twin": 17000,
+      "triple": 20000,
+      "hotelName": "Wanderlust Chapter 1"
+    },
+    {
+      "place": "Neelum Valley Kashmir",
+      "startCity": "Lahore",
+      "grade": "Ultra Luxury",
+      "twin": 25000,
+      "triple": 30000,
+      "hotelName": "Roameo Resort"
+    },
+    {
+      "place": "Taobat",
+      "startCity": "Lahore",
+      "grade": "Deluxe",
+      "twin": 6000,
+      "triple": 8000,
+      "hotelName": "Neelum Cinaar Resort"
+    },
+    {
+      "place": "Taobat",
+      "startCity": "Lahore",
+      "grade": "Premier",
+      "twin": 9000,
+      "triple": 12000,
+      "hotelName": "Green Valley Resort"
+    },
+    {
+      "place": "Taobat",
+      "startCity": "Lahore",
+      "grade": "Executive",
+      "twin": 12000,
+      "triple": 15000,
+      "hotelName": "Hotel Neelum Elites"
+    },
+    {
+      "place": "Taobat",
+      "startCity": "Lahore",
+      "grade": "Luxury",
+      "twin": 17000,
+      "triple": 20000,
+      "hotelName": "Wanderlust Chapter 1"
+    },
+    {
+      "place": "Taobat",
+      "startCity": "Lahore",
+      "grade": "Ultra Luxury",
+      "twin": 25000,
+      "triple": 30000,
+      "hotelName": "Roameo Resort"
+    },
+    {
+      "place": "Swat Kalam & Malam Jabba",
+      "startCity": "Lahore",
+      "grade": "Deluxe",
+      "twin": 9000,
+      "triple": 12000,
+      "hotelName": "Demanchi hotel Kalam or Equivalent"
+    },
+    {
+      "place": "Swat Kalam & Malam Jabba",
+      "startCity": "Lahore",
+      "grade": "Premier",
+      "twin": 12000,
+      "triple": 15000,
+      "hotelName": "Hotel One Kalam"
+    },
+    {
+      "place": "Swat Kalam & Malam Jabba",
+      "startCity": "Lahore",
+      "grade": "Executive",
+      "twin": 18000,
+      "triple": 21000,
+      "hotelName": "Maria Hotel Kalam"
+    },
+    {
+      "place": "Swat Kalam & Malam Jabba",
+      "startCity": "Lahore",
+      "grade": "Luxury",
+      "twin": 22000,
+      "triple": 24000,
+      "hotelName": "The Jungle in resort"
+    },
+    {
+      "place": "Swat Kalam & Malam Jabba",
+      "startCity": "Lahore",
+      "grade": "Ultra Luxury",
+      "twin": 25000,
+      "triple": 32000,
+      "hotelName": "(Zen Luxus Kalam or Walnut Heights by Roomy, Kalam)"
+    },
+    {
+      "place": "Islamabad",
+      "startCity": "Lahore",
+      "grade": "Deluxe",
+      "twin": 15000,
+      "triple": 20000,
+      "hotelName": "Roomy Signature / Grand Islamabad"
+    },
+    {
+      "place": "Islamabad",
+      "startCity": "Lahore",
+      "grade": "Premier",
+      "twin": 23000,
+      "triple": 27000,
+      "hotelName": "Canadian Inn Hotel"
+    },
+    {
+      "place": "Islamabad",
+      "startCity": "Lahore",
+      "grade": "Executive",
+      "twin": 35000,
+      "triple": 40000,
+      "hotelName": "Serena Hotel / Hotel Hill view Islamabad"
+    },
+    {
+      "place": "Islamabad",
+      "startCity": "Lahore",
+      "grade": "Luxury",
+      "twin": 30000,
+      "triple": 33000,
+      "hotelName": "Sintra Hotel / Ramada Hotel/IFQ Hotel and Resort"
+    },
+    {
+      "place": "Islamabad",
+      "startCity": "Lahore",
+      "grade": "Ultra Luxury",
+      "twin": 35000,
+      "triple": 40000,
+      "hotelName": "Islamabad Marriot Hotel"
+    },
+    {
+      "place": "Kalash Valley & Chitral",
+      "startCity": "Lahore",
+      "grade": "Deluxe",
+      "twin": 29000,
+      "triple": 32000,
+      "hotelName": "Height Away Cottage/Mountain Inn Chitral"
+    },
+    {
+      "place": "Kalash Valley & Chitral",
+      "startCity": "Lahore",
+      "grade": "Premier",
+      "twin": 32000,
+      "triple": 35000,
+      "hotelName": "Town Inn Guest House/Chinar Inn"
+    },
+    {
+      "place": "Kalash Valley & Chitral",
+      "startCity": "Lahore",
+      "grade": "Executive",
+      "twin": 35000,
+      "triple": 38000,
+      "hotelName": "Legendary hotel Chitral/Tirch Mir View Hotel"
+    },
+    {
+      "place": "Kalash Valley & Chitral",
+      "startCity": "Lahore",
+      "grade": "Luxury",
+      "twin": 37000,
+      "triple": 40000,
+      "hotelName": "Hindkush Sarai Chitral/Pamir Riverside Inn Chitral"
+    },
+    {
+      "place": "Kalash Valley & Chitral",
+      "startCity": "Lahore",
+      "grade": "Ultra Luxury",
+      "twin": 40000,
+      "triple": 45000,
+      "hotelName": "Ayun Fort Inn/Hindukash Heights"
+    },
+    {
+      "place": "Kumrat and Katora Lake",
+      "startCity": "Lahore",
+      "grade": "Deluxe",
+      "twin": 13000,
+      "triple": 16000,
+      "hotelName": "Kumrat valley resort"
+    },
+    {
+      "place": "Kumrat and Katora Lake",
+      "startCity": "Lahore",
+      "grade": "Premier",
+      "twin": 16000,
+      "triple": 19000,
+      "hotelName": "Hotel Green hill"
+    },
+    {
+      "place": "Kumrat and Katora Lake",
+      "startCity": "Lahore",
+      "grade": "Executive",
+      "twin": 19000,
+      "triple": 22000,
+      "hotelName": "Panjkora Resort/ Latitude resort"
+    },
+    {
+      "place": "Kumrat and Katora Lake",
+      "startCity": "Lahore",
+      "grade": "Luxury",
+      "twin": 22000,
+      "triple": 25000,
+      "hotelName": "Valhalla Resort/Celine Resorts Kumrat"
+    },
+    {
+      "place": "Kumrat and Katora Lake",
+      "startCity": "Lahore",
+      "grade": "Ultra Luxury",
+      "twin": 28000,
+      "triple": 31000,
+      "hotelName": "Kumrat Glamping Resort/The WoodPeckers"
+    },
+    {
+      "place": "Skardu Valley",
+      "startCity": "Air",
+      "grade": "Deluxe",
+      "twin": 9000,
+      "triple": 12000,
+      "hotelName": "Hotel Himalaya – Kesar Place Skardu – Dynasty Hotel Skardu (Deluxe Room)"
+    },
+    {
+      "place": "Skardu Valley",
+      "startCity": "Air",
+      "grade": "Executive",
+      "twin": 22000,
+      "triple": 25000,
+      "hotelName": "Khar Hotel Skardu  - Qayam Skardu – Maple Resort – Honeymoon Resort Skardu (Executive Room)"
+    },
+    {
+      "place": "Skardu Valley",
+      "startCity": "Air",
+      "grade": "Luxury",
+      "twin": 45000,
+      "triple": 50000,
+      "hotelName": "Shangrila Resort (Shangrila View Room) –  Rivage Resort (Executive Suite ) – Khoj Resort (River's Edge King Hammock Villa) – Himmel Resort (Riverfront Chalet)"
+    },
+    {
+      "place": "Skardu Valley",
+      "startCity": "Air",
+      "grade": "Ultra Luxury",
+      "twin": 65000,
+      "triple": 70000,
+      "hotelName": "Shangrila Resort (Shangrila Lake side Room) - Rivage Resort (Presidential Suite) – Khoj Resort (River's Edge Loft Hammock Villa) - – Himmel Resort (Royal Suit one Large Studio)"
+    },
+    {
+      "place": "Hunza Valley",
+      "startCity": "Air",
+      "grade": "Deluxe",
+      "twin": 10000,
+      "triple": 12000,
+      "hotelName": "Shaheen Resort Hunza (SRH) /Hunza Embassy Hotel/ Karakuram Hotel / Snow Land Hotel / Hotel Himalaya /Al Noor Starlet Hotel (Deluxe room)"
+    },
+    {
+      "place": "Hunza Valley",
+      "startCity": "Air",
+      "grade": "Executive",
+      "twin": 22000,
+      "triple": 25000,
+      "hotelName": "Hard Rock Hunza Resort / Best Western/ Villas Roomy Resort / Khar Hotel Skardu / Guman resort /Dera Lamsa Resort / Rivage Resort Skardu/ Qayam Skardu"
+    },
+    {
+      "place": "Hunza Valley",
+      "startCity": "Air",
+      "grade": "Luxury",
+      "twin": 45000,
+      "triple": 50000,
+      "hotelName": "Horizon Resort Attabad Lake (Deluxe room) or Offto Resort Hunza /Khoj Resorts (River view loft villa) / Rivage Resort Skardu (Executive rooms) / Dera lamsa Resort (Executiverooms)"
+    },
+    {
+      "place": "Hunza Valley",
+      "startCity": "Air",
+      "grade": "Ultra Luxury",
+      "twin": 65000,
+      "triple": 70000,
+      "hotelName": "Best Western / Darbar Hotel / Hunza Serena Hotel (Hunza)/ PC Skardu for 1 night (Deluxe room Hunza Hotel ) / Shangrila (Lakeside) / Himmel by Luxus (Deluxe room) / Khoj Resorts River Edge king hammock villa/ Rivage Resort Paramedic 360 rooms"
+    },
+    {
+      "place": "Minimarg Astor Valley",
+      "startCity": "Air",
+      "grade": "Deluxe",
+      "twin": 13000,
+      "triple": 15000,
+      "hotelName": "Minimarg Camping Side (2 nights) Snow Land Hotel / Hotel Himalaya /Al Noor Starlet Hotel (Deluxe room) (2 nights)"
+    },
+    {
+      "place": "Minimarg Astor Valley",
+      "startCity": "Air",
+      "grade": "Executive",
+      "twin": 20000,
+      "triple": 23000,
+      "hotelName": "Minimarg Camping Side (2 nights) Khar Hotel Skardu / Guman resort /Dera Lamsa Resort / Rivage Resort Skardu/ Qayam Skardu(1 night)"
+    },
+    {
+      "place": "Minimarg Astor Valley",
+      "startCity": "Air",
+      "grade": "Luxury",
+      "twin": 24000,
+      "triple": 28000,
+      "hotelName": "Minimarg Army Camping Side (2 nights) Khoj Resorts (River view loft villa) / Rivage Resort Skardu (Executive rooms) / Dera lamsa Resort (Executiverooms)(2 night)"
+    },
+    {
+      "place": "Minimarg Astor Valley",
+      "startCity": "Air",
+      "grade": "Ultra Luxury",
+      "twin": 26000,
+      "triple": 30000,
+      "hotelName": "Minimarg Army Camping Side (2 nights) Shangrila (Lakeside) / Himmel by Luxus (Deluxe room) / Khoj Resorts River Edge king hammock villa/ Rivage Resort Paramedic 360 rooms (2 night)"
+    },
+    {
+      "place": "Fairy Meadows Nanga Base Camp",
+      "startCity": "Air",
+      "grade": "Deluxe",
+      "twin": 10000,
+      "triple": 12000,
+      "hotelName": "Snow land (deluxe room) (2 nights)/Fairy Meadows View Camping Side (2 nights)"
+    },
+    {
+      "place": "Fairy Meadows Nanga Base Camp",
+      "startCity": "Air",
+      "grade": "Executive",
+      "twin": 15000,
+      "triple": 18000,
+      "hotelName": "Raikot Sarai fairy meadows (2 nights) Khar Hotel Skardu / Guman resort /Dera Lamsa Resort / Rivage Resort Skardu/ Qayam Skardu (2 nights)"
+    },
+    {
+      "place": "Fairy Meadows Nanga Base Camp",
+      "startCity": "Air",
+      "grade": "Luxury",
+      "twin": 20000,
+      "triple": 23000,
+      "hotelName": "Raikot Sarai fairy meadows (2 nights) Khoj Resorts (River view loft villa) / Rivage Resort Skardu (Executive rooms) / Dera lamsa Resort (Executiverooms) (2 night)"
+    },
+    {
+      "place": "Fairy Meadows Nanga Base Camp",
+      "startCity": "Air",
+      "grade": "Ultra Luxury",
+      "twin": 25000,
+      "triple": 30000,
+      "hotelName": "Raikot Sarai fairy meadows (2 nights) Shangrila (Lakeside) / Himmel by Luxus (Deluxe room) / Khoj Resorts River Edge king hammock villa/ Rivage Resort Paramedic 360 rooms (2 night)"
+    },
+    {
+      "place": "Skardu & Hunza",
+      "startCity": "Air",
+      "grade": "Deluxe",
+      "twin": 10000,
+      "triple": 12000,
+      "hotelName": "Hotel Himalaya – Kesar Place Skardu – Dynasty Hotel Skardu (Deluxe Room Skardu ) Shaheen Resort Hunza(SRH) / Hunza Blossom In / (Deluxe room Hunza )"
+    },
+    {
+      "place": "Skardu & Hunza",
+      "startCity": "Air",
+      "grade": "Executive",
+      "twin": 23000,
+      "triple": 25000,
+      "hotelName": "Khar Hotel Skardu  - Qayam Skardu– Maple Resort – Honeymoon Resort Skardu (Executive Room) Skardu - Hard Rock Hunza Resort / Villas Roomy Resort Hunza"
+    },
+    {
+      "place": "Skardu & Hunza",
+      "startCity": "Air",
+      "grade": "Luxury",
+      "twin": 45000,
+      "triple": 50000,
+      "hotelName": "Shangrila Resort (Shangrila View Room) –  Rivage Resort (Executive Suite ) – Khoj Resort (River's Edge King Hammock Villa) – Himmel Resort (Riverfront Chalet) Skardu Horizon Resort Attabad Lake (Deluxe room) or Offto Resort Hunza"
+    },
+    {
+      "place": "Skardu & Hunza",
+      "startCity": "Air",
+      "grade": "Ultra Luxury",
+      "twin": 65000,
+      "triple": 70000,
+      "hotelName": "Shangrila Resort (Shangrila Lake side Room) - Rivage Resort (Presidential Suite) – Khoj Resort (River's Edge Loft Hammock Villa) – Himmel Resort (Royal Suit one Large Studio) (Skardu) / Best Western / Darbar Hotel / Hunza Serena Hotel (Deluxe room Hunza Hotel)"
+    },
+    {
+      "place": "Khaplu",
+      "startCity": "Air",
+      "grade": "Deluxe",
+      "twin": 8999,
+      "triple": 9499,
+      "hotelName": "North Palace Khaplu (Deluxe Twin / Triplet Room)"
+    },
+    {
+      "place": "Khaplu",
+      "startCity": "Air",
+      "grade": "Premier",
+      "twin": 12999,
+      "triple": 14499,
+      "hotelName": "North Palace Khaplu (Royal King Suite)"
+    },
+    {
+      "place": "Khaplu",
+      "startCity": "Air",
+      "grade": "Executive",
+      "twin": 16000,
+      "triple": 19000,
+      "hotelName": "Destination Hotel Khaplu (Deluxe Double / Twin Room)"
+    },
+    {
+      "place": "Khaplu",
+      "startCity": "Air",
+      "grade": "Luxury",
+      "twin": 28350,
+      "triple": 31350,
+      "hotelName": "Serena Khaplu Palace (Standard Deluxe Garden or Fort Room)"
+    },
+    {
+      "place": "Khaplu",
+      "startCity": "Air",
+      "grade": "Ultra Luxury",
+      "twin": 52500,
+      "triple": 55500,
+      "hotelName": "Serena Khaplu Palace (Heritage Suite or Royal Suite)"
+    },
+    {
+      "place": "Khaplu",
+      "startCity": "Islamabad",
+      "grade": "Deluxe",
+      "twin": 8999,
+      "triple": 9499,
+      "hotelName": "North Palace Khaplu (Deluxe Twin / Triplet Room)"
+    },
+    {
+      "place": "Khaplu",
+      "startCity": "Islamabad",
+      "grade": "Premier",
+      "twin": 12999,
+      "triple": 14499,
+      "hotelName": "North Palace Khaplu (Royal King Suite)"
+    },
+    {
+      "place": "Khaplu",
+      "startCity": "Islamabad",
+      "grade": "Executive",
+      "twin": 16000,
+      "triple": 19000,
+      "hotelName": "Destination Hotel Khaplu (Deluxe Double / Twin Room)"
+    },
+    {
+      "place": "Khaplu",
+      "startCity": "Islamabad",
+      "grade": "Luxury",
+      "twin": 28350,
+      "triple": 31350,
+      "hotelName": "Serena Khaplu Palace (Standard Deluxe Garden or Fort Room)"
+    },
+    {
+      "place": "Khaplu",
+      "startCity": "Islamabad",
+      "grade": "Ultra Luxury",
+      "twin": 52500,
+      "triple": 55500,
+      "hotelName": "Serena Khaplu Palace (Heritage Suite or Royal Suite)"
+    },
+    {
+      "place": "Khaplu",
+      "startCity": "Lahore",
+      "grade": "Deluxe",
+      "twin": 8999,
+      "triple": 9499,
+      "hotelName": "North Palace Khaplu (Deluxe Twin / Triplet Room)"
+    },
+    {
+      "place": "Khaplu",
+      "startCity": "Lahore",
+      "grade": "Premier",
+      "twin": 12999,
+      "triple": 14499,
+      "hotelName": "North Palace Khaplu (Royal King Suite)"
+    },
+    {
+      "place": "Khaplu",
+      "startCity": "Lahore",
+      "grade": "Executive",
+      "twin": 16000,
+      "triple": 19000,
+      "hotelName": "Destination Hotel Khaplu (Deluxe Double / Twin Room)"
+    },
+    {
+      "place": "Khaplu",
+      "startCity": "Lahore",
+      "grade": "Luxury",
+      "twin": 28350,
+      "triple": 31350,
+      "hotelName": "Serena Khaplu Palace (Standard Deluxe Garden or Fort Room)"
+    },
+    {
+      "place": "Khaplu",
+      "startCity": "Lahore",
+      "grade": "Ultra Luxury",
+      "twin": 52500,
+      "triple": 55500,
+      "hotelName": "Serena Khaplu Palace (Heritage Suite or Royal Suite)"
+    }
+  ],
+  "vehicles": [
+    {
+      "place": "Skardu Valley",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Coaster 5c",
+      "rent": 17000,
+      "fuel": 20000,
+      "toll": 12000,
+      "seats": 22
+    },
+    {
+      "place": "Skardu Valley",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Coaster 4c",
+      "rent": 16000,
+      "fuel": 20000,
+      "toll": 12000,
+      "seats": 22
+    },
+    {
+      "place": "Skardu Valley",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Grand Cabin",
+      "rent": 12000,
+      "fuel": 12000,
+      "toll": 10000,
+      "seats": 12
+    },
+    {
+      "place": "Skardu Valley",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Honda BRV",
+      "rent": 10000,
+      "fuel": 10000,
+      "toll": 8000,
+      "seats": 6
+    },
+    {
+      "place": "Skardu Valley",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Gli Car",
+      "rent": 8000,
+      "fuel": 7000,
+      "toll": 5000,
+      "seats": 4
+    },
+    {
+      "place": "Hunza Valley",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Coaster 5c",
+      "rent": 17000,
+      "fuel": 22000,
+      "toll": 12000,
+      "seats": 22
+    },
+    {
+      "place": "Hunza Valley",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Coaster 4c",
+      "rent": 16000,
+      "fuel": 22000,
+      "toll": 12000,
+      "seats": 22
+    },
+    {
+      "place": "Hunza Valley",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Grand Cabin",
+      "rent": 12000,
+      "fuel": 15000,
+      "toll": 10000,
+      "seats": 12
+    },
+    {
+      "place": "Hunza Valley",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Honda BRV",
+      "rent": 10000,
+      "fuel": 10000,
+      "toll": 8000,
+      "seats": 5
+    },
+    {
+      "place": "Hunza Valley",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Gli Car",
+      "rent": 8000,
+      "fuel": 8000,
+      "toll": 5000,
+      "seats": 4
+    },
+    {
+      "place": "Skardu & Hunza",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Coaster 5c",
+      "rent": 17000,
+      "fuel": 24000,
+      "toll": 12000,
+      "seats": 22
+    },
+    {
+      "place": "Skardu & Hunza",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Coaster 4c",
+      "rent": 16000,
+      "fuel": 24000,
+      "toll": 12000,
+      "seats": 22
+    },
+    {
+      "place": "Skardu & Hunza",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Grand Cabin",
+      "rent": 12000,
+      "fuel": 17000,
+      "toll": 10000,
+      "seats": 12
+    },
+    {
+      "place": "Skardu & Hunza",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Honda BRV",
+      "rent": 10000,
+      "fuel": 12000,
+      "toll": 8000,
+      "seats": 5
+    },
+    {
+      "place": "Skardu & Hunza",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Gli Car",
+      "rent": 8000,
+      "fuel": 10000,
+      "toll": 5000,
+      "seats": 4
+    },
+    {
+      "place": "Minimarg Astor Valley",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Coaster 5c",
+      "rent": 17000,
+      "fuel": 20000,
+      "toll": 10000,
+      "seats": 25
+    },
+    {
+      "place": "Minimarg Astor Valley",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Coaster 4c",
+      "rent": 16000,
+      "fuel": 20000,
+      "toll": 10000,
+      "seats": 25
+    },
+    {
+      "place": "Minimarg Astor Valley",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Grand Cabin",
+      "rent": 12000,
+      "fuel": 15000,
+      "toll": 8000,
+      "seats": 12
+    },
+    {
+      "place": "Minimarg Astor Valley",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Honda BRV",
+      "rent": 9000,
+      "fuel": 10000,
+      "toll": 4000,
+      "seats": 6
+    },
+    {
+      "place": "Minimarg Astor Valley",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Gli Car",
+      "rent": 7000,
+      "fuel": 8000,
+      "toll": 3500,
+      "seats": 4
+    },
+    {
+      "place": "Fairy Meadows Nanga Base Camp",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Coaster 5c",
+      "rent": 17000,
+      "fuel": 17000,
+      "toll": 10000,
+      "seats": 25
+    },
+    {
+      "place": "Fairy Meadows Nanga Base Camp",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Coaster 4c",
+      "rent": 16000,
+      "fuel": 17000,
+      "toll": 10000,
+      "seats": 25
+    },
+    {
+      "place": "Fairy Meadows Nanga Base Camp",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Grand Cabin",
+      "rent": 12000,
+      "fuel": 12000,
+      "toll": 8000,
+      "seats": 12
+    },
+    {
+      "place": "Fairy Meadows Nanga Base Camp",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Honda BRV",
+      "rent": 9000,
+      "fuel": 10000,
+      "toll": 5000,
+      "seats": 6
+    },
+    {
+      "place": "Fairy Meadows Nanga Base Camp",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Gli Car",
+      "rent": 7000,
+      "fuel": 8000,
+      "toll": 4000,
+      "seats": 4
+    },
+    {
+      "place": "Murree Patriata Galiyat",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Coaster 5c",
+      "rent": 17000,
+      "fuel": 18000,
+      "toll": 6000,
+      "seats": 25
+    },
+    {
+      "place": "Murree Patriata Galiyat",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Coaster 4c",
+      "rent": 16000,
+      "fuel": 18000,
+      "toll": 6000,
+      "seats": 25
+    },
+    {
+      "place": "Murree Patriata Galiyat",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Grand Cabin",
+      "rent": 12000,
+      "fuel": 10000,
+      "toll": 5000,
+      "seats": 12
+    },
+    {
+      "place": "Murree Patriata Galiyat",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Honda BRV",
+      "rent": 9000,
+      "fuel": 8000,
+      "toll": 4000,
+      "seats": 6
+    },
+    {
+      "place": "Murree Patriata Galiyat",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Gli Car",
+      "rent": 8000,
+      "fuel": 6000,
+      "toll": 3500,
+      "seats": 4
+    },
+    {
+      "place": "Murree Ayubia Nathiagali",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Coaster 5c",
+      "rent": 17000,
+      "fuel": 15000,
+      "toll": 6000,
+      "seats": 25
+    },
+    {
+      "place": "Murree Ayubia Nathiagali",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Coaster 4c",
+      "rent": 16000,
+      "fuel": 15000,
+      "toll": 6000,
+      "seats": 25
+    },
+    {
+      "place": "Murree Ayubia Nathiagali",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Grand Cabin",
+      "rent": 12000,
+      "fuel": 10000,
+      "toll": 5000,
+      "seats": 12
+    },
+    {
+      "place": "Murree Ayubia Nathiagali",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Honda BRV",
+      "rent": 9000,
+      "fuel": 8000,
+      "toll": 4000,
+      "seats": 6
+    },
+    {
+      "place": "Murree Ayubia Nathiagali",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Gli Car",
+      "rent": 8000,
+      "fuel": 6000,
+      "toll": 3500,
+      "seats": 4
+    },
+    {
+      "place": "Naran Kaghan & Babusar Top",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Coaster 5c",
+      "rent": 17000,
+      "fuel": 22000,
+      "toll": 10000,
+      "seats": 22
+    },
+    {
+      "place": "Naran Kaghan & Babusar Top",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Coaster 4c",
+      "rent": 16000,
+      "fuel": 20000,
+      "toll": 10000,
+      "seats": 22
+    },
+    {
+      "place": "Naran Kaghan & Babusar Top",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Grand Cabin",
+      "rent": 12000,
+      "fuel": 15000,
+      "toll": 8000,
+      "seats": 12
+    },
+    {
+      "place": "Naran Kaghan & Babusar Top",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Honda BRV",
+      "rent": 9000,
+      "fuel": 10000,
+      "toll": 5000,
+      "seats": 6
+    },
+    {
+      "place": "Naran Kaghan & Babusar Top",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Gli Car",
+      "rent": 8000,
+      "fuel": 8000,
+      "toll": 3500,
+      "seats": 4
+    },
+    {
+      "place": "Neelum Valley Kashmir",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Coaster 5c",
+      "rent": 17000,
+      "fuel": 16000,
+      "toll": 8000,
+      "seats": 25
+    },
+    {
+      "place": "Neelum Valley Kashmir",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Coaster 4c",
+      "rent": 16000,
+      "fuel": 16000,
+      "toll": 8000,
+      "seats": 25
+    },
+    {
+      "place": "Neelum Valley Kashmir",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Grand Cabin",
+      "rent": 12000,
+      "fuel": 11000,
+      "toll": 5000,
+      "seats": 12
+    },
+    {
+      "place": "Neelum Valley Kashmir",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Honda BRV",
+      "rent": 10000,
+      "fuel": 9000,
+      "toll": 5000,
+      "seats": 6
+    },
+    {
+      "place": "Neelum Valley Kashmir",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Gli Car",
+      "rent": 8000,
+      "fuel": 7000,
+      "toll": 3500,
+      "seats": 4
+    },
+    {
+      "place": "Taobat",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Coaster 5c",
+      "rent": 17000,
+      "fuel": 15000,
+      "toll": 6000,
+      "seats": 25
+    },
+    {
+      "place": "Taobat",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Coaster 4c",
+      "rent": 16000,
+      "fuel": 15000,
+      "toll": 6000,
+      "seats": 25
+    },
+    {
+      "place": "Taobat",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Grand Cabin",
+      "rent": 12000,
+      "fuel": 11000,
+      "toll": 5000,
+      "seats": 12
+    },
+    {
+      "place": "Taobat",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Honda BRV",
+      "rent": 9000,
+      "fuel": 9000,
+      "toll": 4000,
+      "seats": 6
+    },
+    {
+      "place": "Taobat",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Gli Car",
+      "rent": 8000,
+      "fuel": 7000,
+      "toll": 5000,
+      "seats": 4
+    },
+    {
+      "place": "Swat Kalam & Malam Jabba",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Coaster 5c",
+      "rent": 17000,
+      "fuel": 20000,
+      "toll": 10000,
+      "seats": 25
+    },
+    {
+      "place": "Swat Kalam & Malam Jabba",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Coaster 4c",
+      "rent": 16000,
+      "fuel": 20000,
+      "toll": 10000,
+      "seats": 25
+    },
+    {
+      "place": "Swat Kalam & Malam Jabba",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Grand Cabin",
+      "rent": 12000,
+      "fuel": 12000,
+      "toll": 8000,
+      "seats": 12
+    },
+    {
+      "place": "Swat Kalam & Malam Jabba",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Honda BRV",
+      "rent": 9000,
+      "fuel": 10000,
+      "toll": 5000,
+      "seats": 6
+    },
+    {
+      "place": "Swat Kalam & Malam Jabba",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Gli Car",
+      "rent": 8000,
+      "fuel": 8000,
+      "toll": 5000,
+      "seats": 4
+    },
+    {
+      "place": "Islamabad",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Coaster 5c",
+      "rent": 17000,
+      "fuel": 8000,
+      "toll": 2000,
+      "seats": 25
+    },
+    {
+      "place": "Islamabad",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Coaster 4c",
+      "rent": 16000,
+      "fuel": 8000,
+      "toll": 2000,
+      "seats": 25
+    },
+    {
+      "place": "Islamabad",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Grand Cabin",
+      "rent": 12000,
+      "fuel": 6000,
+      "toll": 1000,
+      "seats": 12
+    },
+    {
+      "place": "Islamabad",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Honda BRV",
+      "rent": 9000,
+      "fuel": 4000,
+      "toll": 500,
+      "seats": 6
+    },
+    {
+      "place": "Islamabad",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Gli Car",
+      "rent": 8000,
+      "fuel": 3000,
+      "toll": 3000,
+      "seats": 4
+    },
+    {
+      "place": "Kalash Valley & Chitral",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Coaster 5c",
+      "rent": 17000,
+      "fuel": 20000,
+      "toll": 10000,
+      "seats": 25
+    },
+    {
+      "place": "Kalash Valley & Chitral",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Coaster 4c",
+      "rent": 16000,
+      "fuel": 20000,
+      "toll": 10000,
+      "seats": 25
+    },
+    {
+      "place": "Kalash Valley & Chitral",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Grand Cabin",
+      "rent": 12000,
+      "fuel": 15000,
+      "toll": 8000,
+      "seats": 12
+    },
+    {
+      "place": "Kalash Valley & Chitral",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Honda BRV",
+      "rent": 9000,
+      "fuel": 10000,
+      "toll": 5000,
+      "seats": 6
+    },
+    {
+      "place": "Kalash Valley & Chitral",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Gli Car",
+      "rent": 8000,
+      "fuel": 8000,
+      "toll": 5000,
+      "seats": 4
+    },
+    {
+      "place": "Kumrat and Katora Lake",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Coaster 5c",
+      "rent": 17000,
+      "fuel": 22000,
+      "toll": 10000,
+      "seats": 25
+    },
+    {
+      "place": "Kumrat and Katora Lake",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Coaster 4c",
+      "rent": 16000,
+      "fuel": 20000,
+      "toll": 10000,
+      "seats": 25
+    },
+    {
+      "place": "Kumrat and Katora Lake",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Grand Cabin",
+      "rent": 12000,
+      "fuel": 15000,
+      "toll": 5000,
+      "seats": 12
+    },
+    {
+      "place": "Kumrat and Katora Lake",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Honda BRV",
+      "rent": 9000,
+      "fuel": 12000,
+      "toll": 4000,
+      "seats": 6
+    },
+    {
+      "place": "Kumrat and Katora Lake",
+      "startCity": "Islamabad",
+      "mode": "road",
+      "vehicle": "Gli Car",
+      "rent": 8000,
+      "fuel": 8000,
+      "toll": 3500,
+      "seats": 4
+    },
+    {
+      "place": "Skardu Valley",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Coaster 5c",
+      "rent": 18000,
+      "fuel": 23000,
+      "toll": 15000,
+      "seats": 25
+    },
+    {
+      "place": "Skardu Valley",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Coaster 4c",
+      "rent": 17000,
+      "fuel": 23000,
+      "toll": 15000,
+      "seats": 25
+    },
+    {
+      "place": "Skardu Valley",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Grand Cabin",
+      "rent": 13000,
+      "fuel": 18000,
+      "toll": 10000,
+      "seats": 12
+    },
+    {
+      "place": "Skardu Valley",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Honda BRV",
+      "rent": 9000,
+      "fuel": 12000,
+      "toll": 6000,
+      "seats": 6
+    },
+    {
+      "place": "Skardu Valley",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Gli Car",
+      "rent": 7500,
+      "fuel": 10000,
+      "toll": 5000,
+      "seats": 4
+    },
+    {
+      "place": "Hunza Valley",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Coaster 5c",
+      "rent": 18000,
+      "fuel": 23000,
+      "toll": 15000,
+      "seats": 25
+    },
+    {
+      "place": "Hunza Valley",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Coaster 4c",
+      "rent": 17000,
+      "fuel": 23000,
+      "toll": 15000,
+      "seats": 25
+    },
+    {
+      "place": "Hunza Valley",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Grand Cabin",
+      "rent": 13000,
+      "fuel": 18000,
+      "toll": 10000,
+      "seats": 12
+    },
+    {
+      "place": "Hunza Valley",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Honda BRV",
+      "rent": 9000,
+      "fuel": 12000,
+      "toll": 6000,
+      "seats": 6
+    },
+    {
+      "place": "Hunza Valley",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Gli Car",
+      "rent": 7500,
+      "fuel": 10000,
+      "toll": 5000,
+      "seats": 4
+    },
+    {
+      "place": "Skardu & Hunza",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Coaster 5c",
+      "rent": 18000,
+      "fuel": 26000,
+      "toll": 17000,
+      "seats": 25
+    },
+    {
+      "place": "Skardu & Hunza",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Coaster 4c",
+      "rent": 17000,
+      "fuel": 26000,
+      "toll": 17000,
+      "seats": 25
+    },
+    {
+      "place": "Skardu & Hunza",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Grand Cabin",
+      "rent": 13000,
+      "fuel": 20000,
+      "toll": 15000,
+      "seats": 12
+    },
+    {
+      "place": "Skardu & Hunza",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Honda BRV",
+      "rent": 9000,
+      "fuel": 12000,
+      "toll": 8000,
+      "seats": 6
+    },
+    {
+      "place": "Skardu & Hunza",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Gli Car",
+      "rent": 7500,
+      "fuel": 10000,
+      "toll": 8000,
+      "seats": 4
+    },
+    {
+      "place": "Minimarg Astor Valley",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Coaster 5c",
+      "rent": 17000,
+      "fuel": 22000,
+      "toll": 12000,
+      "seats": 25
+    },
+    {
+      "place": "Minimarg Astor Valley",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Coaster 4c",
+      "rent": 16000,
+      "fuel": 22000,
+      "toll": 12000,
+      "seats": 25
+    },
+    {
+      "place": "Minimarg Astor Valley",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Grand Cabin",
+      "rent": 12000,
+      "fuel": 16000,
+      "toll": 10000,
+      "seats": 12
+    },
+    {
+      "place": "Minimarg Astor Valley",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Honda BRV",
+      "rent": 9000,
+      "fuel": 10000,
+      "toll": 6000,
+      "seats": 6
+    },
+    {
+      "place": "Minimarg Astor Valley",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Gli Car",
+      "rent": 7000,
+      "fuel": 8000,
+      "toll": 5000,
+      "seats": 4
+    },
+    {
+      "place": "Fairy Meadows Nanga Base Camp",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Coaster 5c",
+      "rent": 17000,
+      "fuel": 18000,
+      "toll": 12000,
+      "seats": 25
+    },
+    {
+      "place": "Fairy Meadows Nanga Base Camp",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Coaster 4c",
+      "rent": 16000,
+      "fuel": 18000,
+      "toll": 12000,
+      "seats": 25
+    },
+    {
+      "place": "Fairy Meadows Nanga Base Camp",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Grand Cabin",
+      "rent": 12000,
+      "fuel": 15000,
+      "toll": 10000,
+      "seats": 12
+    },
+    {
+      "place": "Fairy Meadows Nanga Base Camp",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Honda BRV",
+      "rent": 9000,
+      "fuel": 10000,
+      "toll": 6000,
+      "seats": 6
+    },
+    {
+      "place": "Fairy Meadows Nanga Base Camp",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Gli Car",
+      "rent": 7000,
+      "fuel": 10000,
+      "toll": 5000,
+      "seats": 4
+    },
+    {
+      "place": "Murree Patriata Galiyat",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Coaster 5c",
+      "rent": 20000,
+      "fuel": 70000,
+      "toll": 10000,
+      "seats": 25
+    },
+    {
+      "place": "Murree Patriata Galiyat",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Coaster 4c",
+      "rent": 20000,
+      "fuel": 70000,
+      "toll": 10000,
+      "seats": 25
+    },
+    {
+      "place": "Murree Patriata Galiyat",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Grand Cabin",
+      "rent": 12000,
+      "fuel": 60000,
+      "toll": 8000,
+      "seats": 12
+    },
+    {
+      "place": "Murree Patriata Galiyat",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Honda BRV",
+      "rent": 9000,
+      "fuel": 40000,
+      "toll": 6000,
+      "seats": 6
+    },
+    {
+      "place": "Murree Patriata Galiyat",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Gli Car",
+      "rent": 7000,
+      "fuel": 15000,
+      "toll": 5000,
+      "seats": 4
+    },
+    {
+      "place": "Murree Ayubia Nathiagali",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Coaster 5c",
+      "rent": 20000,
+      "fuel": 60000,
+      "toll": 10000,
+      "seats": 25
+    },
+    {
+      "place": "Murree Ayubia Nathiagali",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Coaster 4c",
+      "rent": 20000,
+      "fuel": 60000,
+      "toll": 10000,
+      "seats": 25
+    },
+    {
+      "place": "Murree Ayubia Nathiagali",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Grand Cabin",
+      "rent": 12000,
+      "fuel": 40000,
+      "toll": 8000,
+      "seats": 12
+    },
+    {
+      "place": "Murree Ayubia Nathiagali",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Honda BRV",
+      "rent": 9000,
+      "fuel": 12000,
+      "toll": 6000,
+      "seats": 6
+    },
+    {
+      "place": "Murree Ayubia Nathiagali",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Gli Car",
+      "rent": 7000,
+      "fuel": 10000,
+      "toll": 5000,
+      "seats": 4
+    },
+    {
+      "place": "Naran Kaghan & Babusar Top",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Coaster 5c",
+      "rent": 17000,
+      "fuel": 25000,
+      "toll": 10000,
+      "seats": 25
+    },
+    {
+      "place": "Naran Kaghan & Babusar Top",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Coaster 4c",
+      "rent": 16000,
+      "fuel": 25000,
+      "toll": 10000,
+      "seats": 25
+    },
+    {
+      "place": "Naran Kaghan & Babusar Top",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Grand Cabin",
+      "rent": 12000,
+      "fuel": 12000,
+      "toll": 8000,
+      "seats": 12
+    },
+    {
+      "place": "Naran Kaghan & Babusar Top",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Honda BRV",
+      "rent": 9000,
+      "fuel": 10000,
+      "toll": 6000,
+      "seats": 6
+    },
+    {
+      "place": "Naran Kaghan & Babusar Top",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Gli Car",
+      "rent": 7000,
+      "fuel": 8000,
+      "toll": 4000,
+      "seats": 4
+    },
+    {
+      "place": "Neelum Valley Kashmir",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Coaster 5c",
+      "rent": 17000,
+      "fuel": 25000,
+      "toll": 12000,
+      "seats": 25
+    },
+    {
+      "place": "Neelum Valley Kashmir",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Coaster 4c",
+      "rent": 16000,
+      "fuel": 25000,
+      "toll": 12000,
+      "seats": 25
+    },
+    {
+      "place": "Neelum Valley Kashmir",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Grand Cabin",
+      "rent": 12000,
+      "fuel": 12000,
+      "toll": 10000,
+      "seats": 12
+    },
+    {
+      "place": "Neelum Valley Kashmir",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Honda BRV",
+      "rent": 9000,
+      "fuel": 10000,
+      "toll": 6000,
+      "seats": 6
+    },
+    {
+      "place": "Neelum Valley Kashmir",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Gli Car",
+      "rent": 7000,
+      "fuel": 8000,
+      "toll": 4000,
+      "seats": 4
+    },
+    {
+      "place": "Taobat",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Coaster 5c",
+      "rent": 17000,
+      "fuel": 25000,
+      "toll": 12000,
+      "seats": 25
+    },
+    {
+      "place": "Taobat",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Coaster 4c",
+      "rent": 16000,
+      "fuel": 25000,
+      "toll": 12000,
+      "seats": 25
+    },
+    {
+      "place": "Taobat",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Grand Cabin",
+      "rent": 12000,
+      "fuel": 12000,
+      "toll": 10000,
+      "seats": 12
+    },
+    {
+      "place": "Taobat",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Honda BRV",
+      "rent": 9000,
+      "fuel": 10000,
+      "toll": 6000,
+      "seats": 6
+    },
+    {
+      "place": "Taobat",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Gli Car",
+      "rent": 7000,
+      "fuel": 8000,
+      "toll": 4000,
+      "seats": 4
+    },
+    {
+      "place": "Swat Kalam & Malam Jabba",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Coaster 5c",
+      "rent": 17000,
+      "fuel": 25000,
+      "toll": 12000,
+      "seats": 25
+    },
+    {
+      "place": "Swat Kalam & Malam Jabba",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Coaster 4c",
+      "rent": 16000,
+      "fuel": 25000,
+      "toll": 12000,
+      "seats": 25
+    },
+    {
+      "place": "Swat Kalam & Malam Jabba",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Grand Cabin",
+      "rent": 12000,
+      "fuel": 12000,
+      "toll": 8000,
+      "seats": 12
+    },
+    {
+      "place": "Swat Kalam & Malam Jabba",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Honda BRV",
+      "rent": 9000,
+      "fuel": 10000,
+      "toll": 6000,
+      "seats": 6
+    },
+    {
+      "place": "Swat Kalam & Malam Jabba",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Gli Car",
+      "rent": 7000,
+      "fuel": 8000,
+      "toll": 4000,
+      "seats": 4
+    },
+    {
+      "place": "Islamabad",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Coaster 5c",
+      "rent": 17000,
+      "fuel": 60000,
+      "toll": 12000,
+      "seats": 25
+    },
+    {
+      "place": "Islamabad",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Coaster 4c",
+      "rent": 16000,
+      "fuel": 60000,
+      "toll": 12000,
+      "seats": 25
+    },
+    {
+      "place": "Islamabad",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Grand Cabin",
+      "rent": 12000,
+      "fuel": 45000,
+      "toll": 10000,
+      "seats": 12
+    },
+    {
+      "place": "Islamabad",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Honda BRV",
+      "rent": 9000,
+      "fuel": 25000,
+      "toll": 8000,
+      "seats": 6
+    },
+    {
+      "place": "Islamabad",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Gli Car",
+      "rent": 7000,
+      "fuel": 13000,
+      "toll": 4000,
+      "seats": 4
+    },
+    {
+      "place": "Kalash Valley & Chitral",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Coaster 5c",
+      "rent": 17000,
+      "fuel": 20000,
+      "toll": 12000,
+      "seats": 25
+    },
+    {
+      "place": "Kalash Valley & Chitral",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Coaster 4c",
+      "rent": 16000,
+      "fuel": 20000,
+      "toll": 12000,
+      "seats": 25
+    },
+    {
+      "place": "Kalash Valley & Chitral",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Grand Cabin",
+      "rent": 12000,
+      "fuel": 15000,
+      "toll": 10000,
+      "seats": 12
+    },
+    {
+      "place": "Kalash Valley & Chitral",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Honda BRV",
+      "rent": 9000,
+      "fuel": 12000,
+      "toll": 6000,
+      "seats": 6
+    },
+    {
+      "place": "Kalash Valley & Chitral",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Gli Car",
+      "rent": 7000,
+      "fuel": 10000,
+      "toll": 3500,
+      "seats": 4
+    },
+    {
+      "place": "Kumrat and Katora Lake",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Coaster 5c",
+      "rent": 17000,
+      "fuel": 25000,
+      "toll": 12000,
+      "seats": 25
+    },
+    {
+      "place": "Kumrat and Katora Lake",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Coaster 4c",
+      "rent": 16000,
+      "fuel": 25000,
+      "toll": 12000,
+      "seats": 25
+    },
+    {
+      "place": "Kumrat and Katora Lake",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Grand Cabin",
+      "rent": 12000,
+      "fuel": 18000,
+      "toll": 10000,
+      "seats": 12
+    },
+    {
+      "place": "Kumrat and Katora Lake",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Honda BRV",
+      "rent": 9000,
+      "fuel": 15000,
+      "toll": 6000,
+      "seats": 6
+    },
+    {
+      "place": "Kumrat and Katora Lake",
+      "startCity": "Lahore",
+      "mode": "road",
+      "vehicle": "Gli Car",
+      "rent": 7000,
+      "fuel": 10000,
+      "toll": 4000,
+      "seats": 4
+    },
+    {
+      "place": "Skardu Valley",
+      "startCity": "Air",
+      "mode": "air",
+      "vehicle": "Prado",
+      "rent": 7000,
+      "fuel": 8000,
+      "toll": 500,
+      "seats": 5
+    },
+    {
+      "place": "Skardu Valley",
+      "startCity": "Air",
+      "mode": "air",
+      "vehicle": "Coaster 4c",
+      "rent": 19000,
+      "fuel": 15000,
+      "toll": 5000,
+      "seats": 21
+    },
+    {
+      "place": "Skardu Valley",
+      "startCity": "Air",
+      "mode": "air",
+      "vehicle": "Grand Cabin",
+      "rent": 12000,
+      "fuel": 12000,
+      "toll": 3000,
+      "seats": 12
+    },
+    {
+      "place": "Skardu Valley",
+      "startCity": "Air",
+      "mode": "air",
+      "vehicle": "Gli Car",
+      "rent": 6000,
+      "fuel": 6000,
+      "toll": 1000,
+      "seats": 4
+    },
+    {
+      "place": "Hunza Valley",
+      "startCity": "Air",
+      "mode": "air",
+      "vehicle": "Prado",
+      "rent": 9000,
+      "fuel": 12000,
+      "toll": 1000,
+      "seats": 5
+    },
+    {
+      "place": "Hunza Valley",
+      "startCity": "Air",
+      "mode": "air",
+      "vehicle": "Coaster 4c",
+      "rent": 17000,
+      "fuel": 20000,
+      "toll": 5000,
+      "seats": 22
+    },
+    {
+      "place": "Hunza Valley",
+      "startCity": "Air",
+      "mode": "air",
+      "vehicle": "Grand Cabin",
+      "rent": 12000,
+      "fuel": 12000,
+      "toll": 5000,
+      "seats": 12
+    },
+    {
+      "place": "Hunza Valley",
+      "startCity": "Air",
+      "mode": "air",
+      "vehicle": "Gli Car",
+      "rent": 6500,
+      "fuel": 7000,
+      "toll": 3000,
+      "seats": 4
+    },
+    {
+      "place": "Minimarg Astor Valley",
+      "startCity": "Air",
+      "mode": "air",
+      "vehicle": "Prado",
+      "rent": 12000,
+      "fuel": 11000,
+      "toll": 3000,
+      "seats": 5
+    },
+    {
+      "place": "Minimarg Astor Valley",
+      "startCity": "Air",
+      "mode": "air",
+      "vehicle": "Coaster 4c",
+      "rent": 0,
+      "fuel": 0,
+      "toll": 0,
+      "seats": 0
+    },
+    {
+      "place": "Minimarg Astor Valley",
+      "startCity": "Air",
+      "mode": "air",
+      "vehicle": "Grand Cabin",
+      "rent": 0,
+      "fuel": 0,
+      "toll": 0,
+      "seats": 0
+    },
+    {
+      "place": "Minimarg Astor Valley",
+      "startCity": "Air",
+      "mode": "air",
+      "vehicle": "Gli Car",
+      "rent": 0,
+      "fuel": 0,
+      "toll": 0,
+      "seats": 0
+    },
+    {
+      "place": "Fairy Meadows Nanga Base Camp",
+      "startCity": "Air",
+      "mode": "air",
+      "vehicle": "Prado",
+      "rent": 9000,
+      "fuel": 8000,
+      "toll": 2500,
+      "seats": 5
+    },
+    {
+      "place": "Fairy Meadows Nanga Base Camp",
+      "startCity": "Air",
+      "mode": "air",
+      "vehicle": "Coaster 4c",
+      "rent": 17000,
+      "fuel": 20000,
+      "toll": 5000,
+      "seats": 21
+    },
+    {
+      "place": "Fairy Meadows Nanga Base Camp",
+      "startCity": "Air",
+      "mode": "air",
+      "vehicle": "Grand Cabin",
+      "rent": 12000,
+      "fuel": 12000,
+      "toll": 5000,
+      "seats": 12
+    },
+    {
+      "place": "Fairy Meadows Nanga Base Camp",
+      "startCity": "Air",
+      "mode": "air",
+      "vehicle": "Gli Car",
+      "rent": 7000,
+      "fuel": 8000,
+      "toll": 3000,
+      "seats": 4
+    },
+    {
+      "place": "Skardu & Hunza",
+      "startCity": "Air",
+      "mode": "air",
+      "vehicle": "Prado",
+      "rent": 9000,
+      "fuel": 12000,
+      "toll": 2000,
+      "seats": 5
+    },
+    {
+      "place": "Skardu & Hunza",
+      "startCity": "Air",
+      "mode": "air",
+      "vehicle": "Coaster 4c",
+      "rent": 17000,
+      "fuel": 18000,
+      "toll": 5000,
+      "seats": 21
+    },
+    {
+      "place": "Skardu & Hunza",
+      "startCity": "Air",
+      "mode": "air",
+      "vehicle": "Grand Cabin",
+      "rent": 12000,
+      "fuel": 12000,
+      "toll": 5000,
+      "seats": 12
+    },
+    {
+      "place": "Skardu & Hunza",
+      "startCity": "Air",
+      "mode": "air",
+      "vehicle": "Gli Car",
+      "rent": 6500,
+      "fuel": 7000,
+      "toll": 2000,
+      "seats": 4
+    }
+  ],
+  "air": {
+    "islamabadTicket": 55000,
+    "lahoreAdd": 15000,
+    "karachiAdd": 40000,
+    "welcomePack": 1500,
+    "entry": 4000,
+    "infantExtra": 800,
+    "sticker": 500
+  },
+  "startCityAirExtra": {
+    "Lahore": 15000,
+    "Karachi": 40000
+  },
+  "rules": {
+    "guidePerDay": 5000,
+    "breakfastPerPerson": 800,
+    "childFarePercent": 80,
+    "lapInfantFare": 1000,
+    "seatInfantFare": 5000,
+    "peoplePerRoom": 3
+  },
+  "meals": [
+    {
+      "grade": "Deluxe",
+      "dinner": 1800,
+      "lunch": 1800
+    },
+    {
+      "grade": "Premier",
+      "dinner": 2500,
+      "lunch": 2500
+    },
+    {
+      "grade": "Executive",
+      "dinner": 3000,
+      "lunch": 3000
+    },
+    {
+      "grade": "Luxury",
+      "dinner": 3500,
+      "lunch": 3500
+    },
+    {
+      "grade": "Ultra Luxury",
+      "dinner": 4000,
+      "lunch": 4000
+    }
+  ],
+  "margin": 20
+}
