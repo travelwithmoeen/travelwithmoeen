@@ -283,19 +283,9 @@ The first delivery does not promise a new uptime number. If the site is down, ch
 
 The next sprint is the Meadow office, BR-82. Moeen gets `docs/office-design/meadow.html` first. Then `/office` is rebuilt to match that file. The public site look stays. The prototype control that switches Owner, Manager, and Editor without a password stays out of the live office. This sprint is accepted before Phase 2. Section 11 says how it is built.
 
-Phase 2 is sprint 3. It is hours per stop, the labels Comfort, Luxury, Adventure, and Exploration, and the Kashmir, Swat, and Chitral jeep products. The four jeep lines in BR-27 stay in the baseline. Phase 2 does not start until BR-82 is accepted.
+Phase 2 is sprint 3: hours per stop, the labels Comfort, Luxury, Adventure, and Exploration, and the Kashmir, Swat, and Chitral jeep products. Section 19 says how it is built. The four jeep lines in BR-27 stay as they are. BR-82 was accepted on 21 November 2026.
 
-Phase 3 is sprint 4. These are not built in the baseline, in the next sprint, or in Phase 2. The Meadow file shows them on Trip plans for review. The live office does not.
-
-- Season trip plans by month. Blossom is in April. Summer is May through September. Autumn is 10 October through 30 November. Winter is 1 December through 30 March. The exact April dates are still to be named.
-- Fuel by kilometers. Gli uses 1 liter for each 14 km. Prado uses 1 liter for each 5 km. One petrol rate and one diesel rate update every quote.
-- Guide price by area. Islamabad and Murree can cost less than Skardu and Hunza.
-- Entry tickets by stop
-- A tracking code on a guest quote
-- A no-price field copy, with services, dates, flights, vehicles, and hotels, and no rupee amounts
-- PDF or image download of a guest quote. The guest file shows one total, not the staff lines and not the profit
-- Excel download of the live prices. Only the Owner and the Manager can download it
-
+Phase 3 is sprint 4: season plans by month, fuel by kilometers, guide price by area, entry tickets by stop, tracking codes, the guest PDF, the driver copy, and the Excel download. Section 20 says how it is built.
 
 ## 11. Meadow office, T-37
 
@@ -559,3 +549,92 @@ The rule is BR-131.
 - **Markup.** In `components/office/OfficeFrame.tsx` and `app/office/login/page.tsx`, replace the `TM` text in `<span className="logo">` with `next/image`, `src="/images/logo/logo.png"`, `alt=""`, because the name "Travel With Moeen" is next to it as text, and the `width` and `height` of the shown size. Add `priority` on the sign-in page only. Read the Next 16 guide for `Image` in `node_modules/next/dist/docs/` first.
 - **Size.** 32 pixels in the side menu, open and collapsed, and 64 pixels on the sign-in page, each a circle: `border-radius: 50%` and `object-fit: cover` on `.office .logo`, with the letter-badge background, colour, and font removed. Add a `.office .login-brand .logo` size rule for 64 pixels. Keep the `--logo-bg` and `--logo-ink` tokens, because the dark block sets them, but nothing reads them after this.
 - **Not changed.** The public site header and footer, the browser tab icon, and the Meadow prototype.
+
+## 19. Phase 2, T-70 to T-72
+
+Requirements section 8i. The reference is the Hours and labels tab and the Jeep products tab of the Meadow prototype's Trip plans screen, in `docs/office-design/src/screens.js`. The live office puts each part on the screen it belongs to, not on one Trip plans screen.
+
+### Tables, `drizzle/0010_phase2.sql`
+
+One additive migration, after T-58's `0009`. T-70 adds it whole.
+
+| Table | Columns |
+|---|---|
+| `day_plan_stops` | `id` serial, `day_plan_id` integer, references `day_plans` on delete cascade, `position` integer, `name` text, `hours` numeric(3,1), 0 to 16 in steps of 0.5, `extra` boolean default false. |
+| `day_plans` | adds `drive_hours` numeric(3,1) not null default 0. |
+| `pricing_rules` | adds `comfort_hours` numeric(3,1) not null default 8. |
+| `tours` | adds `style` text, null or one of `Comfort`, `Luxury`, `Adventure`, and `Exploration`, with a check. |
+| `quote_packages` | adds `style` text, with the same values and check. |
+| `place_air_fares` | `place` text primary key, a rate place, `fare` integer, the adult fare from Islamabad. |
+
+Add `day_plan_stops` and `place_air_fares` to `BACKUP_TABLES` before `activity`. `scripts/restore-backup.ts` restores a backup from before T-70, which has no stops and no fares.
+
+### Hours
+
+- `lib/package.ts` gains `dayHours(day)`, the drive hours plus the stops' hours, and `dayFlags(day, comfortHours)`, which gives `long` when the total is over the limit and `rushed` when a stop is extra. The Day plans screen, the Package tab, and the document all call them, so the rule is in one place.
+- On the Day plans screen, each day gets its drive hours and a Stops list under its sections. A stop can be added, changed, deleted, and moved up or down, with its name, hours, and an Extra tick. The day shows its total, such as "6.5 hours", and the Long day or Rushed day badge. Stops save through `POST /api/office/day-plans`, with one activity row for each save.
+- Hours are typed as numbers such as 1.5. A value that is not a half-hour step from 0 to 16 returns 400.
+- The comfort limit is a field on the Pricing rules tab, with the same steps.
+- The package document shows, under each day, "Stops: Shangrila, about 2 hours · Upper Kachura, about 1.5 hours" and "About 6.5 hours". A day with no stops shows neither.
+
+### Trip styles
+
+- The tour editor gets a Trip style select with None and the four styles. The public `TourCard` and the tour page show the style as a small label in the site's existing badge style. `/tours` gets a style filter next to its other filters, read from the address as `?style=Comfort`, so a filtered list can be shared. The public look is otherwise unchanged.
+- The Package tab gets the same select. With Comfort, each day over `comfort_hours` is named, such as "Day 3 is about 10 hours, over the 8 hour comfort limit."
+
+### Jeep lines and air fares
+
+- The Jeep lines tab gets Add jeep line, with the place, Road, Air, or Both, the label, the people, and the amount, and a Delete that only the Owner sees. They save through `POST /api/office/rates` with two new kinds, `jeep-add` and `jeep-delete`, as the other rate rows do. `buildQuote` already prices any live jeep line, so it needs no change for jeeps.
+- A new Air fares tab lists every rate place with its own fare, or "Islamabad ticket" when it has none. A blank fare deletes the row. `buildQuote` reads `place_air_fares` for the quote's place and uses it in place of `airExtras.islamabadTicket`. The ticket line's working names the place's fare.
+- There are no starting rows. The office types the Kashmir, Swat, and Chitral air rows, fares, and jeep lines when the team sends the amounts. The check adds its own test rows and removes them.
+
+## 20. Phase 3, T-73 to T-79
+
+Requirements section 9. The reference is the Month and fuel tab and the Quote files tab of the Meadow prototype's Trip plans screen.
+
+### Tables, `drizzle/0011_phase3.sql`
+
+One additive migration, after T-70's `0010`. T-73 adds it whole.
+
+| Table | Columns |
+|---|---|
+| `season_plans` | `id` serial, `name` text unique, `from_month`, `from_day`, `to_month`, and `to_day` integers, `margin` integer from 0 to 100, `sort_order` integer. The migration adds the four starting rows in BR-139, each with the margin copied from `seasons.percent`. |
+| `quotes` | adds `travel_date` date null, `season_name` text null, `code` text unique not null, `source` text not null default `office`, which is `office` or `guest`, and `flights` text not null default empty. The migration gives each existing row a code, with the same alphabet as `lib/quote-code.ts`. |
+| `pricing_rules` | adds `petrol_per_liter` and `diesel_per_liter`, integers, null until the office types them. |
+| `vehicle_fuel` | `vehicle` text primary key, a vehicle name from `vehicle_rates`, `fuel` text, `petrol` or `diesel`, and `km_per_liter` numeric(4,1). Starting rows: Gli Car, petrol, 14, and Parado, which is the Prado, diesel, 5. |
+| `route_km` | `place`, `start_city`, and `mode` text, with the primary key on all three, `out_and_back` integer, and `per_middle_day` integer, default 0. |
+| `guide_rates` | `place` text primary key, `per_day` integer. |
+| `day_plan_stops` | adds `ticket` integer not null default 0, for each adult and child. |
+| `guest_quote_saves` | `address_hash` text and `saved_at` timestamptz, with one index on both. |
+
+Add the new tables to `BACKUP_TABLES` before `activity`, except `guest_quote_saves`, which is not backed up. `restore-backup.ts` restores a backup from before T-73: it gets the starting season rows, and each quote without a code gets one.
+
+### Seasons and the travel date
+
+- `lib/seasons.ts` gains `seasonFor(date, plans)`: the plan whose days hold the date's day and month, across the year end when the first day falls after the last. `buildQuote` takes an optional `travelDate`. With a season, the margin starts at that season's percent, and the quote returns the season's name. The office margin slider still works. A saved quote stores the date and the season name.
+- A Seasons tab under Rates and quotes edits the season rows, and can add or delete one. The overlap check runs on every save, inside the transaction.
+- The guest builder gets "Travel date (optional)", a date field. `POST /api/quote` accepts `travelDate` as `YYYY-MM-DD`. A guest date before today, in Pakistan time, returns 400.
+
+### Fuel, guide, and tickets in `buildQuote`
+
+- The catalog that `buildQuote` reads gains `vehicleFuel`, `routeKm`, `guideRates`, the two fuel prices, and the stops of the trip's days. Each rule is one function next to the line it changes, and each line's working says which rule priced it, such as "(1,300 + 60 × 3) km ÷ 14 km per liter × 280" or "8,000 fuel × 5 days".
+- Fuel by kilometers replaces only the fuel part of BR-32, for each vehicle: `ceil(km ÷ kmPerLiter × price)`, times the vehicle count. The rent and the toll do not change.
+- The guide line uses `guide_rates` for the quote's place, or else `pricingRules.guidePerDay`.
+- Tickets: `packageDays` gives the days, the stops' tickets are added up, and the sum is times the adults and children. The line is "Entry tickets", with working such as "Deosai 1,500 + Khunjerab 800 = 2,300 × 3 people". The BR-39 entry is then left out.
+- With every new table empty, every quote total is the same as before T-73. The Step 2 and Step 3 figures do not change, and the check proves that before it adds its test rows.
+
+### Codes and the Quotes list
+
+- `lib/quote-code.ts` makes the code with `crypto.randomInt` from the alphabet `ABCDEFGHJKLMNPQRSTUVWXYZ23456789`, and tries again when the unique index refuses it.
+- `saveQuoteAs` stores the code, the source, the date, and the season. `POST /api/quote/save` saves a guest quote through the same `lib/` function, with the source `guest`, after the limit check in BR-145. The address is the first `x-forwarded-for` value, which Vercel sets, hashed with SHA-256 and `SESSION_SECRET`. A booking sent from the builder after a save starts its message with "Quote TWM-XXXXXX".
+- `/office/rates/quotes` lists saved quotes, 50 to a page, with the code search. `/office/rates/quotes/[id]` opens one, with the tabs Quote, Package from T-61, and Files.
+
+### Files
+
+- `GET /quote/[code]` is a public page for a guest quote only. An office quote's code returns 404 there. It renders the guest PDF page, with `robots: noindex` and a print style sheet for A4, from the saved quote, not from today's rates.
+- The office routes in requirements section 13 render the guest PDF and the driver copy of any saved quote the same way, from the saved quote and its package. They share one HTML builder with the T-61 document for the header and the print styles.
+- The check proves BR-66 by searching each guest PDF for every line amount, the subtotal, and the profit, and each driver copy for "Rs", "PKR", and every amount on the quote.
+
+### Excel
+
+- `GET /api/office/rates/export` writes an `.xlsx` with one sheet for each table in BR-149, built with `zlib`, the same way `lib/excel-rates.ts` reads one. No new package is added. The file name is `twm-live-prices-YYYY-MM-DD.xlsx`. The check reads the file back with the zip reader in `lib/excel-rates.ts` and compares each sheet's row count with its table.

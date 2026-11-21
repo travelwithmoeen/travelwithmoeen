@@ -2,7 +2,7 @@
 
 **Spec:** TWM-SPEC-REQ  
 **Proposal:** TWM-SOW-001, version 1.3, September 29, 2026  
-**Status:** Baseline and office media are built. The next sprint is the Meadow office, promised to Moeen. Phase 2 starts after that. Phase 3 starts after Phase 2.
+**Status:** Baseline, office media, and the Meadow office are built. T-37 was accepted on 21 November 2026. Phase 2 is section 8i. Phase 3 is section 9, and starts after Phase 2.
 
 This file says what the first delivery must do, and what is planned after it. What is already in the code is listed in `docs/audit/after-step03.md`.
 
@@ -126,8 +126,8 @@ The first delivery is the baseline. These items stay out of it.
 
 - A new look for the public site.
 - A new public tour page for Taobat.
-- Kashmir, Swat, and Chitral jeep packages by air and by road. These are Phase 2.
-- Hours on each stop, and the labels Comfort, Luxury, Adventure, and Exploration. These are Phase 2.
+- Kashmir, Swat, and Chitral jeep packages by air and by road. These are Phase 2, section 8i.
+- Hours on each stop, and the labels Comfort, Luxury, Adventure, and Exploration. These are Phase 2, section 8i.
 - Card payment on the website.
 - A login for guests.
 - Deleting the Excel file.
@@ -260,19 +260,38 @@ On 15 November 2026 Zeeshan asked for the Travel With Moeen logo in the office. 
 |---|---|
 | BR-131 | The office shows the round Travel With Moeen logo, the same picture as the public site header, in place of the "TM" badge: in the side menu next to "Travel With Moeen, Office", where it is the only mark left when the side menu is collapsed, and above the title on the sign-in page. It is a circle, sharp on a high-density screen, and looks right in every office look. The public site does not change. |
 
-## 9. Phase 3, after the baseline, office media, and Phase 2
+## 8i. Phase 2, 21 November 2026
 
-These were asked for on September 29, 2026. They are kept in the plan. They are sprint 4. They are not built in the baseline or in office media. The Meadow file shows them on Trip plans so they can be reviewed. They are not part of the live office until Phase 2 and Phase 3. Phase 2 is accepted before Phase 3 starts. Office media is accepted. The Meadow office, BR-82, is accepted before Phase 2 starts.
+Asked for on 25 September 2026 in voice note VN-1212, and kept as Phase 2 since the first delivery. On 21 November 2026 Zeeshan recorded sign-off row S-1 as Approved, so T-37 is accepted and Phase 2 can start. The screens follow the Trip plans screen of the Meadow prototype that Moeen reviewed. A number only the TWM team has is typed into the office, and until it is typed, the quote works as it does today. Tasks T-70 to T-72 build these rules.
 
-- Season plans by month. Blossom is in April, and the exact April dates still need to be named. Summer is May through September. Autumn is 10 October through 30 November. Winter is 1 December through 30 March.
-- Fuel by kilometers. A Gli car uses 1 liter for each 14 km. A Prado uses 1 liter for each 5 km. One petrol rate and one diesel rate update every quote.
-- A guide price the office can edit by area. Islamabad and Murree can cost less than Skardu and Hunza.
-- Entry tickets added from the day's plan, instead of one air entry amount.
-- A tracking code on each quote a guest builds or downloads.
-- A no-price copy for the driver and field team, with services, dates, flights, vehicles, and hotels.
-- A PDF or image download of the guest quote.
-- A download of the live prices back to Excel.
+| ID | Requirement |
+|---|---|
+| BR-132 | Each day in a day plan, BR-105, can list its stops in order. A stop has a name, the hours spent there, and whether it is an extra stop. Each day also has its drive hours. Hours are 0 to 16, in half hours. The day total is the drive hours plus the hours at every stop. For example, 3 hours of driving, about 2 hours at Shangrila, and about 1.5 hours at Upper Kachura make a 6.5 hour day. |
+| BR-133 | A day whose total is over the comfort limit shows "Long day" with its hours, and a day with an extra stop shows "Rushed day", on the Day plans screen and on the Package tab of a saved quote. The office can still save and send that day. The comfort limit is a pricing rule, BR-87, that starts at 8 hours. |
+| BR-134 | The package document, BR-109 to BR-116, lists each day's stops with "about" and their hours, and the day total. |
+| BR-135 | A tour can carry one trip style: Comfort, Luxury, Adventure, or Exploration, or none. The Owner and the Editor set it in the tour editor, as in BR-05. The public tour card and tour page show it as a label, and the tours page can be filtered by style. A package on a saved quote can carry one style too, and the document shows it. When a package is Comfort and one of its days is over the comfort limit, the Package tab names that day and its hours. The style does not change a price. |
+| BR-136 | The Owner and the Manager can add a jeep line: its place, road, air, or both, its label, the people for each jeep, from 1 to 20, and its amount. Only the Owner can delete one, which is BR-03. The office adds the Kashmir, Swat, and Chitral jeep products, such as a Kashmir jeep and permit, a Swat jeep to Mahodand, and a Chitral jeep to Kalash by air, when the team has the amounts. |
+| BR-137 | A rate place can have its own adult air fare from Islamabad, such as Chitral. A quote to that place uses it in place of the Islamabad ticket in BR-21, and the start city air extra and the child and infant fares in BR-40 apply on top of it as today. A place with no fare of its own uses the Islamabad ticket. With this fare, the air hotel and vehicle rows the office adds under BR-90, and the jeep lines in BR-136, Kashmir, Swat, and Chitral can be quoted by air. They are quoted by road already, with the desk v1.9 rates. |
+| BR-138 | Only the Owner and the Manager change stops, hours, the comfort limit, jeep lines, and air fares by place. After T-63, that means a role with the rates permission. The trip style on a tour is content, BR-05. Each save writes one activity row. The four security tests in section 12 run again before Phase 2 is accepted. |
 
+## 9. Phase 3, 21 November 2026
+
+Asked for on 29 September 2026, and kept as sprint 4. The screens follow the Month and fuel and Quote files tabs of the Meadow prototype's Trip plans screen. Phase 3 starts after Phase 2 is accepted. A number only the TWM team has, such as a fuel price, a route distance, a guide price, or a ticket price, is typed into the office, and until it is typed, the quote works as it does today. Tasks T-73 to T-79 build these rules.
+
+| ID | Requirement |
+|---|---|
+| BR-139 | The office keeps season plans. Each has a name, a first day and a last day, as a day and a month, and a profit margin, a whole percent from 0 to 100. A season can run across the new year. Two seasons cannot overlap, and a save that would make them overlap is refused. The starting seasons are Blossom, 1 to 30 April, Summer, 1 May to 30 September, Autumn, 10 October to 30 November, and Winter, 1 December to 30 March, each at the margin saved today. The exact April dates are for Moeen to name, and the office changes them. |
+| BR-140 | The office quote and the guest package builder take an optional travel date. When the date falls in a season, the margin starts at that season's percent, and the quote shows the season's name. With no date, or a date outside every season, the quote uses the margin in BR-22. The Owner and the Manager can still move the margin on the office quote. A saved quote keeps its date and its season. The guest builder refuses a date before today, and the guest still sees one total. |
+| BR-141 | Fuel by kilometers. The pricing rules hold one petrol price and one diesel price per liter. Each vehicle can have its fuel, petrol or diesel, and its kilometers per liter. The starting values are Gli Car, petrol, 14, and Prado, diesel, 5. Each route, which is a place, a start city, and road or air, can have its kilometers out and back and its kilometers for each middle day. When the route, the vehicle, and the fuel price all have values, each vehicle's fuel is the liters times the price, rounded up to the rupee. The liters are the out and back kilometers plus the middle-day kilometers times the middle days, divided by the kilometers per liter. The middle days are the days less 2, and never below 0. That fuel replaces the daily fuel times the days in BR-32. Otherwise the daily fuel stays. The line's working shows the kilometers, the kilometers per liter, and the price. A day changed in the day edits, BR-45 to BR-49, keeps its typed rent and fuel, and its middle-day kilometers are not counted. A price change applies to the next quote. A saved quote keeps its total. |
+| BR-142 | Each rate place can have its own guide price per day, so Islamabad and Murree can cost less than Skardu and Hunza. A place with no price of its own uses the guide per day in BR-87. |
+| BR-143 | Each stop, BR-132, can have an entry ticket for each adult and each child. Infants are free. A quote adds the tickets of the stops on its days, which are the days BR-106 builds for its place, mode, and days, with its package options when it has a package. When those days have at least one ticket, the quote has an "Entry tickets" line with its working, and the one entry amount in BR-39 is not added. When they have none, BR-39 applies as today. |
+| BR-144 | Each saved quote has a tracking code: "TWM-" and 6 letters and digits, chosen at random, without 0, O, 1, or I, and never used twice. The office Quote screen shows it after a save. |
+| BR-145 | When a guest downloads the guest PDF from the package builder, or sends a booking from it, the quote is saved as a guest quote with its code, and the guest sees the code. The booking request in the office names the code. One connection can save at most 20 guest quotes an hour. The count is kept in the database with a one-way hash of the address, never the address itself, and rows older than one day are removed. The 21st save in the hour is refused with 429 and "Too many quotes from this connection. Try again in an hour.", and the builder still shows the total. |
+| BR-146 | The office has a Quotes list under Rates and quotes, newest first, with the code, the date saved, office or guest, the place, the party, and the total. Searching a code opens that quote. An opened quote has its Quote, Package, and Files tabs. |
+| BR-147 | The guest PDF shows the logo, the code, the place, the days, road or air, the start city, the travel date when there is one, the party, the grade, and one total. It never holds the staff lines, the net cost, or the profit, which is BR-66. The guest downloads it from the package builder. The office downloads it from the Files tab of any saved quote. It is a page to print to PDF, as the package document is. An image download is not built. |
+| BR-148 | The driver copy is for the driver and the field team. It shows the code, the travel date, the party as counts, the flight details staff type on the Files tab, the vehicles and their count, the hotel names and the nights at each overnight place, the guide, the jeep lines by label, and each day's title, overnight place, and stops. It holds no rupee amount, which is BR-66. The office downloads it from the Files tab. |
+| BR-149 | The Owner and the Manager can download the live prices as an Excel file, with one sheet each for the hotel rates, vehicle rates, jeep lines, air items, start cities, pricing rules, meal rates, season plans, fuel, guide prices, routes, and air fares by place. The download writes one activity row. |
+| BR-150 | Only the Owner and the Manager change season plans, fuel, routes, guide prices, and tickets, read the Quotes list, and download the guest PDF, the driver copy, and the Excel file in the office. After T-63, that means a role with the rates permission. Each save writes one activity row. The four security tests in section 12 run again before Phase 3 is accepted. |
 
 ## 10. Done when
 
@@ -285,6 +304,8 @@ Step 3 is done when a test contact and a test booking stay in the office list, W
 Office media is done when BR-75 to BR-80 pass. An Editor can upload and remove a tour extra photo, a tour PDF, a place banner, a place section photo, a blog cover, a blog section photo, and a review avatar. A blog section can be added and removed. A place section can be removed. A Manager upload is refused. A file that is not a PDF is refused in the PDF field. A PDF over 10 MB is refused. A picture over 5 MB is refused. The public page on the preview site shows the file. Replacing or removing an office file deletes that file, including the office files on a deleted tour. A path under `/images/` or `/pdfs/` still loads.
 
 The Meadow prototype file is done. BR-81 passes on `main`. Moeen still needs that file. The live Meadow office is done when BR-82 and BR-84 to BR-86 pass: `/office` matches `docs/office-design/meadow.html`, the public site look is unchanged, a person cannot change role without signing in, and rows S-1 to S-8 in the sign-off table in `docs/specs/tasks.md` are Approved or Changed.
+
+Phase 2 is done when BR-132 to BR-138 pass and the checks in T-70 to T-72 pass. Phase 3 is done when BR-139 to BR-150 pass and the checks in T-73 to T-79 pass.
 
 ## 11. Security
 
@@ -390,6 +411,13 @@ This list is the whole project. A new office route is added to this list in the 
 | `POST /api/backup` | The nightly scheduled run only. It must send the backup secret. No session. |
 | `GET` and `POST /api/office/day-plans`, `/api/office/package-options`, and `/api/office/package-sections` | Owner or Manager. Reads and changes day plans, package options, and fixed sections. T-58 to T-60. |
 | `GET /api/office/quotes/[id]/package` | Owner or Manager. Returns the package document for a saved quote, as a page to print to PDF or, with `?format=word`, as a Word file. It never holds the lines or the profit. T-61. |
+| `POST /api/quote/save` | Anyone. No session. Saves a guest quote and returns its code, within the limit in BR-145. The response holds one total, never the lines or the profit. T-77. |
+| `GET /quote/[code]` | Anyone. No session. The guest PDF page of a guest quote: one total, no lines, no profit, and not indexed by search engines. An office quote's code returns 404. T-78. |
+| `GET` and `POST /api/office/trip-plans` | Owner or Manager. Reads and changes season plans (T-73), fuel and routes (T-74), and guide prices (T-75). Stops, hours, and tickets save through the day-plans route, and jeep lines and air fares through `POST /api/office/rates`. |
+| `GET /api/office/quotes` | Owner or Manager. The Quotes list and the search by code. T-77. |
+| `GET /api/office/quotes/[id]/guest` and `GET /api/office/quotes/[id]/driver` | Owner or Manager. The guest PDF and the driver copy of a saved quote. The guest PDF holds one total. The driver copy holds no rupee amount. T-78. |
+| `POST /api/office/quotes/[id]/files` | Owner or Manager. Saves the flight details for the driver copy. T-78. |
+| `GET /api/office/rates/export` | Owner or Manager. The live prices as an Excel file. T-79. |
 | Read guest requests | Owner, Manager, or Editor. |
 | Change a guest request status | Owner or Manager. |
 | Guest PDF or image | The guest sees one total. Staff lines and profit stay off that file. |
