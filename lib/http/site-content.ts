@@ -5,6 +5,7 @@ import type { GalleryImage } from "@/data/gallery";
 import type { Testimonial } from "@/data/testimonials";
 import type { Tour } from "@/data/tours";
 import type { HomeSlide, SiteSettings } from "@/lib/content-types";
+import type { DayPlanDesk } from "@/lib/office/day-plans";
 import type { loadRateDesk } from "@/lib/rates";
 
 export type RateDesk = Awaited<ReturnType<typeof loadRateDesk>>;
@@ -85,5 +86,19 @@ export async function getRateDesk(): Promise<RateDesk | null> {
   });
   if (!response.ok) return null;
   const body = (await response.json()) as { ok: boolean; desk?: RateDesk };
+  return body.ok && body.desk ? body.desk : null;
+}
+
+// T-58: the Day plans screen, read through GET /api/office/day-plans. Null for a signed-out or
+// refused read, or a place that is not a rate place.
+export async function getDayPlanDesk(place: string | null): Promise<DayPlanDesk | null> {
+  const headerStore = await headers();
+  const query = place ? `?${new URLSearchParams({ place })}` : "";
+  const response = await fetch(await apiUrl(`/api/office/day-plans${query}`), {
+    headers: { cookie: headerStore.get("cookie") ?? "" },
+    cache: "no-store",
+  });
+  if (!response.ok) return null;
+  const body = (await response.json()) as { ok: boolean; desk?: DayPlanDesk };
   return body.ok && body.desk ? body.desk : null;
 }

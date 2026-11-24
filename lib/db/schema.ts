@@ -16,6 +16,7 @@ import {
 import type { BlogSection } from "@/data/blog";
 import type { DestinationSection } from "@/data/destinations";
 import type { TourCategory, TourPackage, PackageType } from "@/data/tours";
+import type { DayPlanPart, DayPlanSection } from "@/lib/package";
 
 export const priceSource = pgEnum("price_source", ["excel", "website"]);
 export const guestRequestKind = pgEnum("guest_request_kind", ["contact", "custom", "booking"]);
@@ -363,4 +364,81 @@ export const activity = pgTable(
     text: text("text").notNull(),
   },
   (table) => [index("activity_at_idx").on(table.at), index("activity_kind_record_at_idx").on(table.kind, table.recordId, table.at)],
+);
+
+// T-58 (design section 15): the package tables, drizzle/0009_packages.sql.
+
+// BR-105: one day of a rate place's plan. pricedAs is the rate place this day's night is priced at
+// (BR-112) and whose hotel-names line it uses (BR-111). Null means the quote's own place.
+export const dayPlans = pgTable(
+  "day_plans",
+  {
+    id: serial("id").primaryKey(),
+    place: text("place").notNull(),
+    part: text("part").$type<DayPlanPart>().notNull(),
+    position: integer("position").notNull(),
+    title: text("title").notNull(),
+    overnight: text("overnight").notNull(),
+    pricedAs: text("priced_as"),
+    sections: jsonb("sections").$type<DayPlanSection[]>().notNull().default([]),
+  },
+  (table) => [
+    index("day_plans_place_part_position_idx").on(table.place, table.part, table.position),
+    check("day_plans_part_check", sql`${table.part} in ('out_air', 'out_road', 'middle', 'back_air', 'back_road')`),
+  ],
+);
+
+// BR-111: one hotel-names line for each rate place and grade. A blank line is not stored.
+export const placeHotelNames = pgTable(
+  "place_hotel_names",
+  {
+    place: text("place").notNull(),
+    grade: text("grade").notNull(),
+    names: text("names").notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.place, table.grade] })],
+);
+
+// BR-107: package options, used from T-59. places is empty for an option offered at every place.
+export const packageOptions = pgTable("package_options", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull().unique(),
+  places: text("places").array().notNull().default(sql`'{}'::text[]`),
+  dayOne: jsonb("day_one").$type<DayPlanSection>(),
+  swapFrom: text("swap_from"),
+  swapTo: integer("swap_to"),
+  restDays: boolean("rest_days").notNull().default(false),
+  badge: text("badge"),
+  intro: text("intro"),
+  notIncluded: text("not_included").array().notNull().default(sql`'{}'::text[]`),
+  sortOrder: integer("sort_order").notNull().default(0),
+});
+
+// BR-108: the fixed sections, in order, used from T-60.
+export const packageSections = pgTable(
+  "package_sections",
+  {
+    id: serial("id").primaryKey(),
+    title: text("title").notNull(),
+    kind: text("kind").$type<"text" | "rows" | "steps">().notNull(),
+    body: jsonb("body").notNull(),
+    sortOrder: integer("sort_order").notNull().default(0),
+  },
+  (table) => [check("package_sections_kind_check", sql`${table.kind} in ('text', 'rows', 'steps')`)],
+);
+
+// BR-109 and BR-114: a saved quote's package choices, used from T-61. Removed with its quote.
+export const quotePackages = pgTable(
+  "quote_packages",
+  {
+    quoteId: integer("quote_id")
+      .primaryKey()
+      .references(() => quotes.id, { onDelete: "cascade" }),
+    title: text("title").notNull(),
+    allGrades: boolean("all_grades").notNull().default(false),
+    flightNote: boolean("flight_note").notNull().default(true),
+    optionIds: integer("option_ids").array().notNull().default(sql`'{}'::integer[]`),
+    pictures: text("pictures").array().notNull().default(sql`'{}'::text[]`),
+  },
+  (table) => [check("quote_packages_pictures_check", sql`cardinality(${table.pictures}) <= 3`)],
 );
