@@ -27,7 +27,7 @@ const PART_HELP: Record<DayPlanPart, string> = {
 type Notice = { tone: "success" | "danger"; text: string } | null;
 
 // The drawer edits a new day in a part (null id) or a stored day.
-type Editing = { id: number | null; part: DayPlanPart; title: string; overnight: string; pricedAs: string; sections: DayPlanSection[] } | null;
+type Editing = { id: number | null; part: DayPlanPart; title: string; overnight: string; pricePlace: string; sections: DayPlanSection[] } | null;
 
 type HotelNamesLine = { grade: string; names: string; savedBy?: SavedBy };
 
@@ -166,7 +166,7 @@ export function DayPlansPanel({ places, place, days, hotelNames, daySavedBy }: D
                 size="sm"
                 icon="plus"
                 disabled={pending || partDays.length >= DAY_PLAN_LIMITS.daysPerPart}
-                onClick={() => openDay({ id: null, part, title: "", overnight: "", pricedAs: "", sections: [] })}
+                onClick={() => openDay({ id: null, part, title: "", overnight: "", pricePlace: "", sections: [] })}
               >
                 Add day<span className="sr-only"> to {label.toLowerCase()}</span>
               </Button>
@@ -202,7 +202,7 @@ export function DayPlansPanel({ places, place, days, hotelNames, daySavedBy }: D
                           {/* One child, so on a phone the priced-as line stays under the place, not under the label. */}
                           <span>
                             {day.overnight}
-                            <small className="cell-sub">Priced as {day.pricedAs ?? "the quote's place"}</small>
+                            <small className="cell-sub">Priced as {day.pricePlace ?? "the quote's place"}</small>
                           </span>
                         </td>
                         <td data-label="Paragraphs">{day.sections.length ? day.sections.map((section) => section.label).join(", ") : <span className="muted">None</span>}</td>
@@ -234,7 +234,7 @@ export function DayPlansPanel({ places, place, days, hotelNames, daySavedBy }: D
                                   variant="ghost"
                                   icon="edit"
                                   disabled={pending}
-                                  onClick={() => openDay({ id: day.id, part, title: day.title, overnight: day.overnight, pricedAs: day.pricedAs ?? "", sections: day.sections })}
+                                  onClick={() => openDay({ id: day.id, part, title: day.title, overnight: day.overnight, pricePlace: day.pricePlace ?? "", sections: day.sections })}
                                 >
                                   Edit<span className="sr-only"> {name}</span>
                                 </Button>
@@ -334,8 +334,8 @@ function DayForm({ editing, places, error, pending, onSubmit, onCancel }: DayFor
           <Field id="day-overnight" label="Overnight place" help={`Shown on the package, up to ${DAY_PLAN_LIMITS.overnight} characters, such as Skardu or Khaplu.`}>
             <input className="input" id="day-overnight" name="overnight" defaultValue={editing.overnight} maxLength={DAY_PLAN_LIMITS.overnight} required autoComplete="off" aria-describedby={helpId("day-overnight")} />
           </Field>
-          <Field id="day-priced-as" label="Priced as" optional help="The rate place this night is priced at, and whose hotel names the package shows. Blank uses the quote's own place.">
-            <select className="select" id="day-priced-as" name="pricedAs" defaultValue={editing.pricedAs} aria-describedby={helpId("day-priced-as")}>
+          <Field id="day-price-place" label="Priced as" optional help="The rate place this night is priced at, and whose hotel names the package shows. Blank uses the quote's own place.">
+            <select className="select" id="day-price-place" name="pricePlace" defaultValue={editing.pricePlace} aria-describedby={helpId("day-price-place")}>
               <option value="">The quote&apos;s place</option>
               {places.map((name) => (
                 <option key={name} value={name}>

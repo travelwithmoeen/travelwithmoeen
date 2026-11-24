@@ -2933,14 +2933,14 @@ async function assertBackupRestoresIntoCopy() {
 function assertPackageDaysRules() {
   const place = "T58 Rules Place";
   const section = (text: string) => [{ label: "Morning", text }];
-  const plan = (id: number, part: DayPlanRow["part"], position: number, title: string, overnight: string, pricedAs: string | null = null): DayPlanRow => ({
+  const plan = (id: number, part: DayPlanRow["part"], position: number, title: string, overnight: string, pricePlace: string | null = null): DayPlanRow => ({
     id,
     place,
     part,
     position,
     title,
     overnight,
-    pricedAs,
+    pricePlace,
     sections: section(`${title} from {ORIGIN}.`),
   });
   const plans: DayPlanRow[] = [
@@ -2976,7 +2976,7 @@ function assertPackageDaysRules() {
   }
   // The free days come after the middle days, at the last overnight place, priced as that day was.
   for (const [index, day] of nine.days.slice(5, 8).entries()) {
-    if (!day.free || day.day !== 6 + index || day.title !== freeDayTitle("Khaplu") || day.overnight !== "Khaplu" || day.pricedAs !== "T58 Khaplu") {
+    if (!day.free || day.day !== 6 + index || day.title !== freeDayTitle("Khaplu") || day.overnight !== "Khaplu" || day.pricePlace !== "T58 Khaplu") {
       throw new Error(`Day ${6 + index} of a 9-day plan is not a free day in Khaplu: ${JSON.stringify(day)}`);
     }
     if (day.sections.length !== 1 || day.sections[0].label !== FREE_DAY_LABEL || day.sections[0].text !== FREE_DAY_TEXT) throw new Error("A free day does not have the agreed text.");
@@ -2987,7 +2987,7 @@ function assertPackageDaysRules() {
   if (JSON.stringify(nine.days).includes("{ORIGIN}")) throw new Error("{ORIGIN} was left in a package day.");
   if (nine.days[0].sections[0].text !== "Fly Lahore to Skardu from Lahore.") throw new Error(`{ORIGIN} was not replaced in a paragraph: ${nine.days[0].sections[0].text}`);
   // A day with no "priced as" is priced at the quote's own place.
-  if (nine.days[1].pricedAs !== place || nine.days[4].pricedAs !== "T58 Khaplu") throw new Error("A day's priced-as place is wrong.");
+  if (nine.days[1].pricePlace !== place || nine.days[4].pricePlace !== "T58 Khaplu") throw new Error("A day's priced-as place is wrong.");
 
   // By road, the road parts are used. 6 days: 2 out, 2 middle, 2 back.
   const road = packageDays(trip("road", 6), plans);
@@ -2999,10 +2999,28 @@ function assertPackageDaysRules() {
   if (!two.ok || two.days.map((day) => day.title).join(" | ") !== "Fly Lahore to Skardu | Fly home to Lahore") throw new Error("A 2-day air plan is not the way out and the way back.");
   // Shorter than the way out and the way back: no package, with the lead's message.
   const short = packageDays(trip("road", 3), plans);
-  if (short.ok || short.error !== `A ${place} trip by road needs at least 4 days.`) throw new Error(`A 3-day road plan gave: ${JSON.stringify(short)}`);
+  if (short.ok || short.error !== `A ${place} trip by road needs at least 4 days.` || short.minimumDays !== 4) throw new Error(`A 3-day road plan gave: ${JSON.stringify(short)}`);
   if (packageMinimumDays(plans, { place, mode: "road" }) !== 4 || packageMinimumDays(plans, { place, mode: "air" }) !== 2) throw new Error("The fewest days of a trip are wrong.");
   const none = packageDays({ place: "T58 No Plans", mode: "air", days: 5, startCity: "Lahore" }, plans);
-  if (none.ok || none.error !== "T58 No Plans has no day plans yet.") throw new Error("A place with no day plans gave a package.");
+  if (none.ok || none.error !== "T58 No Plans has no day plans by air yet.") throw new Error(`A place with no day plans gave: ${JSON.stringify(none)}`);
+  // PR 69 review: a place with no way out or no way back for the trip's mode builds no package, so
+  // it never starts or ends at a middle day. With only road days, an air trip is refused, and the
+  // other way round.
+  const roadOnly = plans.filter((row) => row.part !== "out_air" && row.part !== "back_air");
+  const airOnRoadDays = packageDays(trip("air", 6), roadOnly);
+  if (airOnRoadDays.ok || airOnRoadDays.error !== `${place} has no day plans by air yet.` || airOnRoadDays.minimumDays !== undefined) {
+    throw new Error(`An air trip at a place with only road days gave: ${JSON.stringify(airOnRoadDays)}`);
+  }
+  if (!packageDays(trip("road", 6), roadOnly).ok) throw new Error("A road trip at a place with only road days was refused.");
+  const airOnly = plans.filter((row) => row.part !== "out_road" && row.part !== "back_road");
+  const roadOnAirDays = packageDays(trip("road", 6), airOnly);
+  if (roadOnAirDays.ok || roadOnAirDays.error !== `${place} has no day plans by road yet.`) throw new Error(`A road trip at a place with only air days gave: ${JSON.stringify(roadOnAirDays)}`);
+  const noBack = packageDays(trip("air", 5), plans.filter((row) => row.part !== "back_air"));
+  if (noBack.ok || noBack.error !== `${place} has no day plans by air yet.`) throw new Error("An air trip with no way back by air was not refused.");
+  const noOut = packageDays(trip("air", 5), plans.filter((row) => row.part !== "out_air"));
+  if (noOut.ok || noOut.error !== `${place} has no day plans by air yet.`) throw new Error("An air trip with no way out by air was not refused.");
+  const middleOnly = packageDays(trip("air", 3), plans.filter((row) => row.part === "middle"));
+  if (middleOnly.ok) throw new Error("A place with only middle days built a package.");
   // With no middle days, the free days are at the way out's last overnight place.
   const noMiddle = packageDays(trip("air", 4), plans.filter((row) => row.part !== "middle"));
   if (!noMiddle.ok || noMiddle.days.map((day) => day.title).join(" | ") !== "Fly Lahore to Skardu | Free day in Skardu | Free day in Skardu | Fly home to Lahore") {
@@ -3091,7 +3109,7 @@ async function assertDayPlans(editorCookie: string, managerCookie: string) {
     await saves(dayForm({ ...good, title: "t".repeat(121) }), managerCookie, 400, "A title of 121 characters", "Enter the day title of 120 characters or less.");
     await saves(dayForm({ ...good, overnight: "" }), managerCookie, 400, "A day with no overnight place", "Enter the overnight place.");
     await saves(dayForm({ ...good, overnight: "o".repeat(61) }), managerCookie, 400, "An overnight place of 61 characters");
-    await saves(dayForm({ ...good, pricedAs: "Skardu" }), managerCookie, 400, "A day priced as a place with no rates", "Choose a rate place to price the night at, or leave it blank.");
+    await saves(dayForm({ ...good, pricePlace: "Skardu" }), managerCookie, 400, "A day priced as a place with no rates", "Choose a rate place to price the night at, or leave it blank.");
     await saves(dayForm({ ...good, part: "middle_air" }), managerCookie, 400, "A day in an unknown part", "Choose a part of the trip.");
     await saves(dayForm({ ...good, place: "T58 Nowhere" }), managerCookie, 400, "A day for a place with no rates", "That place was not found.");
     await saves(dayForm(good, [1, 2, 3, 4, 5, 6, 7].map((number) => [`Part ${number}`, "Text"] as [string, string])), managerCookie, 400, "A day with 7 paragraphs", "A day can have up to 6 paragraphs.");
@@ -3112,7 +3130,7 @@ async function assertDayPlans(editorCookie: string, managerCookie: string) {
     if (first.body.ok !== true) throw new Error("A Manager's day add did not answer ok.");
     const secondTitle = `T58 Khaplu ${stamp}`;
     await saves(
-      dayForm({ ...good, title: `  ${secondTitle}  `, overnight: "Khaplu", pricedAs: "Hunza Valley" }, [["Morning", "Leave {ORIGIN}\r\nearly."], ["Evening", "Khaplu Palace."]]),
+      dayForm({ ...good, title: `  ${secondTitle}  `, overnight: "Khaplu", pricePlace: "Hunza Valley" }, [["Morning", "Leave {ORIGIN}\r\nearly."], ["Evening", "Khaplu Palace."]]),
       managerCookie,
       200,
       "A Manager's second day add",
@@ -3121,8 +3139,8 @@ async function assertDayPlans(editorCookie: string, managerCookie: string) {
     const firstRow = middle.find((row) => row.title === good.title);
     const secondRow = middle.find((row) => row.title === secondTitle);
     if (!firstRow || !secondRow) throw new Error("The added days were not stored.");
-    if (firstRow.sections.length !== 1 || firstRow.pricedAs !== null) throw new Error("A blank paragraph pair was stored, or a blank priced-as was not stored as none.");
-    if (secondRow.overnight !== "Khaplu" || secondRow.pricedAs !== "Hunza Valley" || secondRow.sections.map((section) => `${section.label}: ${section.text}`).join(" | ") !== "Morning: Leave {ORIGIN}\nearly. | Evening: Khaplu Palace.") {
+    if (firstRow.sections.length !== 1 || firstRow.pricePlace !== null) throw new Error("A blank paragraph pair was stored, or a blank priced-as was not stored as none.");
+    if (secondRow.overnight !== "Khaplu" || secondRow.pricePlace !== "Hunza Valley" || secondRow.sections.map((section) => `${section.label}: ${section.text}`).join(" | ") !== "Morning: Leave {ORIGIN}\nearly. | Evening: Khaplu Palace.") {
       throw new Error(`The second day was stored as ${JSON.stringify(secondRow)}.`);
     }
     if (middle.indexOf(secondRow) !== middle.indexOf(firstRow) + 1) throw new Error("A new day was not added at the end of its part.");
@@ -3144,9 +3162,9 @@ async function assertDayPlans(editorCookie: string, managerCookie: string) {
 
     // It is changed: a new title, no priced-as place, one paragraph. Its part and place stay.
     const changedTitle = `T58 Khaplu changed ${stamp}`;
-    await saves(dayForm({ action: "update", id: secondRow.id, place: "Hunza Valley", part: "out_air", title: changedTitle, overnight: "Khaplu", pricedAs: "" }, [["Day", "One paragraph."]]), managerCookie, 200, "Changing a day");
+    await saves(dayForm({ action: "update", id: secondRow.id, place: "Hunza Valley", part: "out_air", title: changedTitle, overnight: "Khaplu", pricePlace: "" }, [["Day", "One paragraph."]]), managerCookie, 200, "Changing a day");
     const [changed] = await db.select().from(dayPlans).where(eq(dayPlans.id, secondRow.id));
-    if (!changed || changed.title !== changedTitle || changed.pricedAs !== null || changed.place !== place || changed.part !== "middle" || changed.sections.length !== 1) {
+    if (!changed || changed.title !== changedTitle || changed.pricePlace !== null || changed.place !== place || changed.part !== "middle" || changed.sections.length !== 1) {
       throw new Error(`The changed day is ${JSON.stringify(changed)}.`);
     }
     const changeRow = await lastActivity();
@@ -3190,13 +3208,13 @@ async function assertDayPlans(editorCookie: string, managerCookie: string) {
 
     // BR-90: renaming a rate place renames its days, the days priced as it, and its hotel names.
     await db.insert(hotelRates).values({ place: testPlace, startCity: "Air", grade: "Deluxe", twin: 1000, triple: 1200 });
-    await saves(dayForm({ action: "add", place: testPlace, part: "middle", title: `T58 Rename day ${stamp}`, overnight: "Town", pricedAs: testPlace }), managerCookie, 200, "A day for the place to rename");
-    await saves(dayForm({ action: "add", place, part: "back_air", title: `T58 Priced elsewhere ${stamp}`, overnight: "Town", pricedAs: testPlace }), managerCookie, 200, "A Skardu Valley day priced as the place to rename");
+    await saves(dayForm({ action: "add", place: testPlace, part: "middle", title: `T58 Rename day ${stamp}`, overnight: "Town", pricePlace: testPlace }), managerCookie, 200, "A day for the place to rename");
+    await saves(dayForm({ action: "add", place, part: "back_air", title: `T58 Priced elsewhere ${stamp}`, overnight: "Town", pricePlace: testPlace }), managerCookie, 200, "A Skardu Valley day priced as the place to rename");
     await saves(dayForm({ action: "hotel_names", place: testPlace, grade: "Luxury", names: "T58 Rename Hotel" }), managerCookie, 200, "Hotel names for the place to rename");
     const rename = await officePost("/api/office/rates", formOf({ kind: "place_rename", place: testPlace, name: renamedPlace }), managerCookie);
     if (rename.status !== 200) throw new Error(`Renaming the test place returned ${rename.status}: ${rename.body.error ?? ""}`);
     const renamedDays = await db.select().from(dayPlans).where(like(dayPlans.title, `T58 % ${stamp}`));
-    if (renamedDays.length !== 2 || renamedDays.some((row) => row.pricedAs !== renamedPlace) || !renamedDays.some((row) => row.place === renamedPlace)) {
+    if (renamedDays.length !== 2 || renamedDays.some((row) => row.pricePlace !== renamedPlace) || !renamedDays.some((row) => row.place === renamedPlace)) {
       throw new Error(`After a rename, the days are ${JSON.stringify(renamedDays)}.`);
     }
     const renamedNames = await db.select().from(placeHotelNames).where(eq(placeHotelNames.place, renamedPlace));
@@ -3227,7 +3245,7 @@ async function withPackageRows(run: () => Promise<void>) {
   const marker = `T58 restore ${Date.now()}`;
   const [day] = await db
     .insert(dayPlans)
-    .values({ place: marker, part: "middle", position: 0, title: marker, overnight: "Skardu", pricedAs: "Skardu Valley", sections: [{ label: "Morning", text: "Leave {ORIGIN}." }] })
+    .values({ place: marker, part: "middle", position: 0, title: marker, overnight: "Skardu", pricePlace: "Skardu Valley", sections: [{ label: "Morning", text: "Leave {ORIGIN}." }] })
     .returning({ id: dayPlans.id });
   await db.insert(placeHotelNames).values({ place: marker, grade: "Deluxe", names: "Hotel Himalaya – Kesar Place Skardu" });
   const [option] = await db

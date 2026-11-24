@@ -329,7 +329,7 @@ export async function renamePlaceAs(actor: SessionUser, formData: FormData): Pro
     await tx.update(vehicleRates).set({ place: to.name }).where(eq(vehicleRates.place, from));
     await tx.update(jeepLines).set({ place: to.name }).where(eq(jeepLines.place, from));
     await tx.update(dayPlans).set({ place: to.name }).where(eq(dayPlans.place, from));
-    await tx.update(dayPlans).set({ pricedAs: to.name }).where(eq(dayPlans.pricedAs, from));
+    await tx.update(dayPlans).set({ pricePlace: to.name }).where(eq(dayPlans.pricePlace, from));
     await tx.update(placeHotelNames).set({ place: to.name }).where(eq(placeHotelNames.place, from));
     await recordActivity(tx, actor, { kind: "place_rename", text: `Renamed rate place ${from} to ${to.name}` });
     return { ok: true, message: `Place renamed: ${to.name}.` };

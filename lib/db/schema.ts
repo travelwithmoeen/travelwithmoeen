@@ -368,7 +368,7 @@ export const activity = pgTable(
 
 // T-58 (design section 15): the package tables, drizzle/0009_packages.sql.
 
-// BR-105: one day of a rate place's plan. pricedAs is the rate place this day's night is priced at
+// BR-105: one day of a rate place's plan. pricePlace is the rate place this day's night is priced at
 // (BR-112) and whose hotel-names line it uses (BR-111). Null means the quote's own place.
 export const dayPlans = pgTable(
   "day_plans",
@@ -379,7 +379,7 @@ export const dayPlans = pgTable(
     position: integer("position").notNull(),
     title: text("title").notNull(),
     overnight: text("overnight").notNull(),
-    pricedAs: text("priced_as"),
+    pricePlace: text("price_place"),
     sections: jsonb("sections").$type<DayPlanSection[]>().notNull().default([]),
   },
   (table) => [

@@ -58,7 +58,7 @@ function readSections(formData: FormData): Read<DayPlanSection[]> {
   return { ok: true, value: sections };
 }
 
-type DayFields = { title: string; overnight: string; pricedAs: string | null; sections: DayPlanSection[] };
+type DayFields = { title: string; overnight: string; pricePlace: string | null; sections: DayPlanSection[] };
 
 // The fields of a day. "Priced as" is blank for the quote's own place, or one of the rate places.
 function readDay(formData: FormData, places: string[]): Read<DayFields> {
@@ -66,11 +66,11 @@ function readDay(formData: FormData, places: string[]): Read<DayFields> {
   if (!title.ok) return title;
   const overnight = readLine(formData.get("overnight"), "the overnight place", DAY_PLAN_LIMITS.overnight);
   if (!overnight.ok) return overnight;
-  const pricedText = oneLine(formData.get("pricedAs"));
+  const pricedText = oneLine(formData.get("pricePlace"));
   if (pricedText && !places.includes(pricedText)) return { ok: false, error: "Choose a rate place to price the night at, or leave it blank." };
   const sections = readSections(formData);
   if (!sections.ok) return sections;
-  return { ok: true, value: { title: title.value, overnight: overnight.value, pricedAs: pricedText || null, sections: sections.value } };
+  return { ok: true, value: { title: title.value, overnight: overnight.value, pricePlace: pricedText || null, sections: sections.value } };
 }
 
 function toRow(row: typeof dayPlans.$inferSelect): DayPlanRow {
@@ -81,7 +81,7 @@ function toRow(row: typeof dayPlans.$inferSelect): DayPlanRow {
     position: row.position,
     title: row.title,
     overnight: row.overnight,
-    pricedAs: row.pricedAs,
+    pricePlace: row.pricePlace,
     sections: row.sections,
   };
 }

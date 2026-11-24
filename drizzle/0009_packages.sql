@@ -5,7 +5,7 @@
 SET client_min_messages TO warning;
 BEGIN;
 
--- BR-105: one row per day of a rate place's plan. priced_as is the rate place a night on this day is
+-- BR-105: one row per day of a rate place's plan. price_place is the rate place a night on this day is
 -- priced at (BR-112), and whose hotel-names line it uses (BR-111). Null means the quote's own place.
 CREATE TABLE IF NOT EXISTS day_plans (
   id serial PRIMARY KEY,
@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS day_plans (
   position integer NOT NULL,
   title text NOT NULL,
   overnight text NOT NULL,
-  priced_as text,
+  price_place text,
   sections jsonb NOT NULL DEFAULT '[]'::jsonb,
   CONSTRAINT day_plans_part_check CHECK (part IN ('out_air', 'out_road', 'middle', 'back_air', 'back_road'))
 );

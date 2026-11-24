@@ -43,7 +43,7 @@ export type DayPlanRow = {
   position: number;
   title: string;
   overnight: string;
-  pricedAs: string | null;
+  pricePlace: string | null;
   sections: DayPlanSection[];
 };
 
@@ -54,12 +54,14 @@ export type PackageDay = {
   title: string;
   overnight: string;
   // The rate place this day's night is priced at, BR-112, and whose hotel-names line it uses, BR-111.
-  pricedAs: string;
+  pricePlace: string;
   sections: DayPlanSection[];
   free: boolean;
 };
 
-export type PackageDaysResult = { ok: true; days: PackageDay[] } | { ok: false; error: string };
+// A refused trip has no days. A trip that is too short also carries the fewest days it needs
+// (design section 15), so the Package tab can say so.
+export type PackageDaysResult = { ok: true; days: PackageDay[] } | { ok: false; error: string; minimumDays?: number };
 
 export function outPart(mode: TripMode): DayPlanPart {
   return mode === "air" ? "out_air" : "out_road";
@@ -91,17 +93,19 @@ export function packageDays(trip: PackageTrip, plans: DayPlanRow[]): PackageDays
   const out = inOrder(plans, trip.place, outPart(trip.mode));
   const middle = inOrder(plans, trip.place, "middle");
   const back = inOrder(plans, trip.place, backPart(trip.mode));
-  if (out.length + middle.length + back.length === 0) return { ok: false, error: `${trip.place} has no day plans yet.` };
+  // A package starts with the way out and ends with the way back for its mode. Without either, it
+  // would start or end at a middle day, so it is not built.
+  if (out.length === 0 || back.length === 0) return { ok: false, error: `${trip.place} has no day plans by ${trip.mode} yet.` };
   const needed = out.length + back.length;
   if (trip.days < needed) {
-    return { ok: false, error: `A ${trip.place} trip by ${trip.mode} needs at least ${needed} days.` };
+    return { ok: false, error: `A ${trip.place} trip by ${trip.mode} needs at least ${needed} days.`, minimumDays: needed };
   }
 
   const middleCount = trip.days - needed;
   const chosen = [...out, ...middle.slice(0, middleCount)];
   const last = chosen.at(-1);
-  const restOvernight = last?.overnight ?? back[0]?.overnight ?? trip.place;
-  const restPricedAs = last ? (last.pricedAs ?? trip.place) : trip.place;
+  const restOvernight = last?.overnight ?? trip.place;
+  const restPricePlace = last?.pricePlace ?? trip.place;
   const freeCount = Math.max(0, middleCount - middle.length);
 
   const days: PackageDay[] = [];
@@ -110,7 +114,7 @@ export function packageDays(trip: PackageTrip, plans: DayPlanRow[]): PackageDays
       day: days.length + 1,
       title: withOrigin(plan.title, trip.startCity),
       overnight: withOrigin(plan.overnight, trip.startCity),
-      pricedAs: plan.pricedAs ?? trip.place,
+      pricePlace: plan.pricePlace ?? trip.place,
       sections: plan.sections.map((section) => ({ label: section.label, text: withOrigin(section.text, trip.startCity) })),
       free: false,
     });
@@ -121,7 +125,7 @@ export function packageDays(trip: PackageTrip, plans: DayPlanRow[]): PackageDays
       day: days.length + 1,
       title: freeDayTitle(overnight),
       overnight,
-      pricedAs: restPricedAs,
+      pricePlace: restPricePlace,
       sections: [{ label: FREE_DAY_LABEL, text: FREE_DAY_TEXT }],
       free: true,
     });
@@ -136,7 +140,7 @@ export function packageDays(trip: PackageTrip, plans: DayPlanRow[]): PackageDays
 export function hotelLine(days: PackageDay[], grade: string, names: { place: string; grade: string; names: string }[]) {
   const places: string[] = [];
   for (const day of days.slice(0, -1)) {
-    if (!places.includes(day.pricedAs)) places.push(day.pricedAs);
+    if (!places.includes(day.pricePlace)) places.push(day.pricePlace);
   }
   return places
     .map((place) => names.find((row) => row.place === place && row.grade === grade)?.names.trim() ?? "")
