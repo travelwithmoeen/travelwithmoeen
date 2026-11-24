@@ -474,7 +474,7 @@ One additive migration, after T-63's `0008`.
 |---|---|
 | `day_plans` | `id` serial, `place` text, a rate place, `part` text: `out_air`, `out_road`, `middle`, `back_air`, or `back_road`, `position` integer, `title` text, `overnight` text, `price_place` text null, a rate place, or null for the quote's place, `sections` jsonb, a list of `{ label, text }`. The limits are in BR-105. A `price_place` that is not a rate place returns 400. |
 | `place_hotel_names` | `place` text, a rate place, `grade` text, one of the four guest grades in BR-18, `names` text, up to 300 characters, primary key on both. A blank line is not stored. |
-| `package_options` | `id` serial, `name` text unique, `places` text array, empty for every place, `day_one` jsonb `{ label, text }` or null, `swap_from` text, a middle day title, or null, `swap_to` integer, a `day_plans` id, or null, `rest_days` boolean, `badge` text or null, `intro` text or null, `not_included` text array, `sort_order` integer. |
+| `package_options` | `id` serial, `name` text unique, `places` text array, empty for every place, `day_one` jsonb `{ label, text }` or null, `swap_from` text, a middle day title, or null, `swap_to` integer, the `day_plans` id of a middle day, or null, `rest_days` boolean, `badge` text or null, `intro` text or null, `not_included` text array, `sort_order` integer. |
 | `package_sections` | `id` serial, `title` text, `kind` text: `text`, `rows`, or `steps`, `body` jsonb, `sort_order` integer. |
 | `quote_packages` | `quote_id` integer primary key, references `quotes` on delete cascade, `title` text, `all_grades` boolean, `flight_note` boolean, `option_ids` integer array, `pictures` text array of up to 3 media addresses. |
 
@@ -482,7 +482,7 @@ Add the five tables to `BACKUP_TABLES` before `activity`.
 
 ### Building the days, `lib/package.ts`
 
-- `packageDays(quote, options)` takes the way out for the mode, the middle days in `position` order after any swap, and the way back. When rest days are on, it holds back the rest-day count in BR-107 and puts a free day after every third sightseeing day. Extra days are free days at the last overnight place, with the free-day text in BR-106. When the quote's days are fewer than the way out and the way back together, it returns no days and the shortest count, and the Package tab shows the BR-106 message.
+- `packageDays(quote, options)` takes the way out for the mode, the middle days in `position` order after any swap, and the way back. A middle day that is any option's `swap_to` is left out of the middle days unless that option is ticked, and the swap is done before the days are cut to length. When rest days are on, it holds back the rest-day count in BR-107 and puts a rest day after every third sightseeing day, with any left after the last one, at the overnight and priced-as place of the day before. Extra days are free days at the last overnight place, with the free-day text in BR-106. When the quote's days are fewer than the way out and the way back together, it returns no days and the shortest count, and the Package tab shows the BR-106 message.
 - Each day returns its title, overnight place, priced-as place, and sections, with `{ORIGIN}` replaced and an option's day-one paragraph added to day 1.
 - The desk's own loop rules for Skardu and Hunza are not copied. The team keeps the middle days in the order they want, and changes them in the office.
 
@@ -500,7 +500,7 @@ Add the five tables to `BACKUP_TABLES` before `activity`.
 
 ### Screens
 
-- **Day plans**, `/office/rates/day-plans`: pick a place, then its five parts, each a list of days that can be added, changed, deleted, and moved up or down. Under them, one hotel-names line for each grade, saved on its own, which is BR-111. The document's hotel line for a grade joins the lines of the priced-as places from `packageDays`, in order, with a blank one read as the quote's place. Each day's form has Overnight, free text, and Priced as, a list of the rate places with a blank first choice.
+- **Day plans**, `/office/rates/day-plans`: pick a place, then its five parts, each a list of days that can be added, changed, deleted, and moved up or down. Under them, one hotel-names line for each grade, saved on its own, which is BR-111. The document's hotel line for a grade joins the lines of the priced-as places from `packageDays`, in order, with a blank one read as the quote's place. Each day's form has Overnight, free text, and Priced as, a list of the rate places with a blank first choice. A day an option swaps to shows "Only in packages with" and the option's name, and deleting it is refused with that name.
 - **Package options** and **Fixed sections**, `/office/rates/package-options` and `/office/rates/package-sections`: a list with an add drawer, edit, delete, and order.
 - **Package**, a tab on a saved quote: the title, starting from the place, days, mode, start city, and party, then All categories, Flight ticket note, the option ticks, and 1 to 3 pictures. It shows a preview of the document, with Download PDF and Download Word.
 
