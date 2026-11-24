@@ -695,9 +695,10 @@
     .office .tbl-wrap:not(.flat) .tbl tbody tr:hover td { background: none; }
     .office .tbl-wrap:not(.flat) .tbl td > .badge { justify-self: start; }
     .office .day-plans .card > .tbl-wrap:not(.flat) { border-top: 0; padding: 0 var(--pad) var(--pad); }
-    .office .day-plans .tbl td.day-tools { grid-template-columns: 1fr; }
-    .office .day-plans .tbl td.day-tools::before { display: none; }
-    .office .day-plans .tbl td.day-tools .row-tools { justify-content: flex-start; }
+    /* T-58 and T-59: the row buttons of the Day plans and Package options tables sit on one line. */
+    .office .tbl-wrap:not(.flat) .tbl td.day-tools { grid-template-columns: 1fr; }
+    .office .tbl-wrap:not(.flat) .tbl td.day-tools::before { display: none; }
+    .office .tbl-wrap:not(.flat) .tbl td.day-tools .row-tools { justify-content: flex-start; }
   }
 
   /* T-62: the Appearance and Density choices on the Settings page, from the prototype. */

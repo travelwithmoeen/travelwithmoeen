@@ -1,6 +1,6 @@
 import { and, asc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { dayPlans, placeHotelNames } from "@/lib/db/schema";
+import { dayPlans, packageOptions, placeHotelNames } from "@/lib/db/schema";
 import { can } from "@/lib/auth/permissions";
 import type { SessionUser } from "@/lib/auth/session";
 import { forbidden, type ActionResult } from "@/lib/http/result";
@@ -14,13 +14,13 @@ import { GUEST_GRADES } from "@/lib/quote";
 // hotel-names lines. Owner and Manager only, through the rates permission. Each save writes one
 // activity row in area rates.
 
-type Read<T> = { ok: true; value: T } | { ok: false; error: string };
+export type Read<T> = { ok: true; value: T } | { ok: false; error: string };
 
-function oneLine(value: FormDataEntryValue | null) {
+export function oneLine(value: FormDataEntryValue | null) {
   return String(value ?? "").trim().replace(/\s+/g, " ");
 }
 
-function readLine(value: FormDataEntryValue | null, label: string, max: number, required = true): Read<string> {
+export function readLine(value: FormDataEntryValue | null, label: string, max: number, required = true): Read<string> {
   const text = oneLine(value);
   if (!text && required) return { ok: false, error: `Enter ${label}.` };
   if (text.length > max) return { ok: false, error: `Enter ${label} of ${max} characters or less.` };
@@ -99,6 +99,9 @@ export type DayPlanDesk = {
   place: string | null;
   days: DayPlanRow[];
   hotelNames: { grade: string; names: string }[];
+  // T-59: the options that swap to a day, by day id. Such a day only appears in packages with one of
+  // them ticked, so the screen says so.
+  swapOptions: Record<number, string[]>;
 };
 
 // GET /api/office/day-plans: the rate places, and the days and hotel-names lines of the place asked
@@ -108,13 +111,17 @@ export async function loadDayPlansAs(actor: SessionUser, asked: string | null) {
   const places = (await ratePlaces()).sort((a, b) => a.localeCompare(b));
   const place = asked ? (places.find((name) => name === asked) ?? null) : (places[0] ?? null);
   if (asked && !place) return { ok: false as const, error: "That place was not found." };
-  const desk: DayPlanDesk = { places, place, days: [], hotelNames: [] };
+  const desk: DayPlanDesk = { places, place, days: [], hotelNames: [], swapOptions: {} };
   if (place) {
-    const [days, names] = await Promise.all([
+    const [days, names, options] = await Promise.all([
       db.select().from(dayPlans).where(eq(dayPlans.place, place)).orderBy(asc(dayPlans.part), asc(dayPlans.position), asc(dayPlans.id)),
       db.select().from(placeHotelNames).where(eq(placeHotelNames.place, place)),
+      db.select({ name: packageOptions.name, swapTo: packageOptions.swapTo }).from(packageOptions).orderBy(asc(packageOptions.sortOrder), asc(packageOptions.id)),
     ]);
     desk.days = days.map(toRow);
+    for (const option of options) {
+      if (option.swapTo !== null && days.some((day) => day.id === option.swapTo)) (desk.swapOptions[option.swapTo] ??= []).push(option.name);
+    }
     desk.hotelNames = GUEST_GRADES.map((grade) => ({ grade, names: names.find((row) => row.grade === grade)?.names ?? "" }));
   }
   return { ok: true as const, desk };
@@ -152,6 +159,15 @@ async function updateDay(tx: Transaction, actor: SessionUser, formData: FormData
   const day = readDay(formData, places);
   if (!day.ok) return day;
   await tx.update(dayPlans).set(day.value).where(eq(dayPlans.id, row.id));
+  // T-59: an option that swaps this middle day for one of the same place follows its new title, so the
+  // swap keeps working. The option itself is not a separate save, so it writes no row of its own.
+  if (row.part === "middle" && day.value.title !== row.title) {
+    const swaps = await tx.select({ id: packageOptions.id, swapTo: packageOptions.swapTo }).from(packageOptions).where(eq(packageOptions.swapFrom, row.title));
+    const placeDays = new Set((await tx.select({ id: dayPlans.id }).from(dayPlans).where(eq(dayPlans.place, row.place))).map((plan) => plan.id));
+    for (const option of swaps) {
+      if (option.swapTo !== null && placeDays.has(option.swapTo)) await tx.update(packageOptions).set({ swapFrom: day.value.title }).where(eq(packageOptions.id, option.id));
+    }
+  }
   await recordActivity(tx, actor, { kind: "day_plan", recordId: row.id, text: `Changed day ${day.value.title}, ${row.place}, ${partLabel(row.part)}` });
   return { ok: true, message: `Day saved: ${day.value.title}.` };
 }
@@ -159,6 +175,9 @@ async function updateDay(tx: Transaction, actor: SessionUser, formData: FormData
 async function deleteDay(tx: Transaction, actor: SessionUser, formData: FormData): Promise<ActionResult> {
   const row = await findDay(tx, formData);
   if (!row) return { ok: false, error: "That day was not found." };
+  // T-59: a day an option swaps to stays until that option is changed.
+  const [swap] = await tx.select({ name: packageOptions.name }).from(packageOptions).where(eq(packageOptions.swapTo, row.id)).orderBy(asc(packageOptions.sortOrder)).limit(1);
+  if (swap) return { ok: false, error: `The option ${swap.name} swaps to this day. Change that option first.` };
   await tx.delete(dayPlans).where(eq(dayPlans.id, row.id));
   await recordActivity(tx, actor, { kind: "day_plan", recordId: row.id, text: `Deleted day ${row.title}, ${row.place}, ${partLabel(row.part)}` });
   return { ok: true, message: `Day deleted: ${row.title}.` };

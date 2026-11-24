@@ -37,11 +37,13 @@ type DayPlansPanelProps = {
   days: DayPlanRow[];
   hotelNames: HotelNamesLine[];
   daySavedBy: Record<number, string>;
+  // T-59: the options that swap to a day, by day id.
+  swapOptions: Record<number, string[]>;
 };
 
 // T-58 (BR-105, BR-111, BR-116). Every save goes to POST /api/office/day-plans, which checks the rates
 // permission, the place, and every field again.
-export function DayPlansPanel({ places, place, days, hotelNames, daySavedBy }: DayPlansPanelProps) {
+export function DayPlansPanel({ places, place, days, hotelNames, daySavedBy, swapOptions }: DayPlansPanelProps) {
   const router = useRouter();
   const [editing, setEditing] = useState<Editing>(null);
   const [error, setError] = useState("");
@@ -197,6 +199,8 @@ export function DayPlansPanel({ places, place, days, hotelNames, daySavedBy }: D
                             <span className="muted">{index + 1}.</span> {day.title}
                           </b>
                           {daySavedBy[day.id] ? <small className="cell-sub">{daySavedBy[day.id]}</small> : null}
+                          {/* T-59: a day an option swaps to is left out of the normal middle days. */}
+                          {swapOptions[day.id] ? <small className="cell-sub">Only in packages with {swapOptions[day.id].join(" or ")}</small> : null}
                         </td>
                         <td data-label="Overnight">
                           {/* One child, so on a phone the priced-as line stays under the place, not under the label. */}

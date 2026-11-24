@@ -6,6 +6,7 @@ import type { Testimonial } from "@/data/testimonials";
 import type { Tour } from "@/data/tours";
 import type { HomeSlide, SiteSettings } from "@/lib/content-types";
 import type { DayPlanDesk } from "@/lib/office/day-plans";
+import type { PackageOptionDesk } from "@/lib/office/package-options";
 import type { loadRateDesk } from "@/lib/rates";
 
 export type RateDesk = Awaited<ReturnType<typeof loadRateDesk>>;
@@ -100,5 +101,17 @@ export async function getDayPlanDesk(place: string | null): Promise<DayPlanDesk 
   });
   if (!response.ok) return null;
   const body = (await response.json()) as { ok: boolean; desk?: DayPlanDesk };
+  return body.ok && body.desk ? body.desk : null;
+}
+
+// T-59: the Package options screen, read through GET /api/office/package-options.
+export async function getPackageOptionDesk(): Promise<PackageOptionDesk | null> {
+  const headerStore = await headers();
+  const response = await fetch(await apiUrl("/api/office/package-options"), {
+    headers: { cookie: headerStore.get("cookie") ?? "" },
+    cache: "no-store",
+  });
+  if (!response.ok) return null;
+  const body = (await response.json()) as { ok: boolean; desk?: PackageOptionDesk };
   return body.ok && body.desk ? body.desk : null;
 }

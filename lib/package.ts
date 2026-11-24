@@ -28,7 +28,8 @@ export const DAY_PLAN_LIMITS = {
   hotelNames: 300,
 } as const;
 
-// The text of a free day (BR-106), agreed with the lead on 24 November 2026.
+// The text of a free day (BR-106), agreed with the lead on 24 November 2026. A rest day (BR-107)
+// has the same text, agreed on 25 November 2026.
 export const FREE_DAY_LABEL = "Day";
 export const FREE_DAY_TEXT = "A free day to rest or explore at your own pace.";
 
@@ -85,13 +86,97 @@ export function packageMinimumDays(plans: DayPlanRow[], trip: Pick<PackageTrip, 
   return inOrder(plans, trip.place, outPart(trip.mode)).length + inOrder(plans, trip.place, backPart(trip.mode)).length;
 }
 
-// BR-106: the way out for the mode, then the middle days in their order, then the way back, so the
-// count matches the quote's days. Days past the middle days are free days at the last overnight place
-// before the way back. A trip shorter than the way out and the way back has no package: the quote
-// itself still prices as before.
-export function packageDays(trip: PackageTrip, plans: DayPlanRow[]): PackageDaysResult {
+// BR-107: a package option, as stored. places is empty for an option offered at every place.
+export type PackageOption = {
+  id: number;
+  name: string;
+  places: string[];
+  dayOne: DayPlanSection | null;
+  swapFrom: string | null;
+  swapTo: number | null;
+  restDays: boolean;
+  badge: string | null;
+  intro: string | null;
+  notIncluded: string[];
+  sortOrder: number;
+};
+
+// The longest values an option can hold, agreed with the lead on 25 November 2026.
+export const PACKAGE_OPTION_LIMITS = {
+  name: 60,
+  badge: 40,
+  intro: 1000,
+  notIncludedLines: 10,
+  notIncludedLine: 120,
+  options: 50,
+} as const;
+
+function byOrder(options: PackageOption[]) {
+  return [...options].sort((a, b) => a.sortOrder - b.sortOrder || a.id - b.id);
+}
+
+// The options offered for a place: those with no places, and those that name it.
+export function optionsFor(place: string, options: PackageOption[]) {
+  return byOrder(options).filter((option) => option.places.length === 0 || option.places.includes(place));
+}
+
+// The ticked options that apply at the trip's place, in option order.
+function tickedFor(place: string, options: PackageOption[], tickedIds: number[]) {
+  return optionsFor(place, options).filter((option) => tickedIds.includes(option.id));
+}
+
+// BR-107: the header badge, the opening paragraph, and the extra Services not included lines of the
+// ticked options. The first badge and the first opening paragraph win, and the lines are joined in
+// option order with repeats left out.
+export function packageExtras(place: string, options: PackageOption[], tickedIds: number[]) {
+  const ticked = tickedFor(place, options, tickedIds);
+  const notIncluded: string[] = [];
+  for (const line of ticked.flatMap((option) => option.notIncluded)) {
+    if (!notIncluded.some((seen) => seen.toLowerCase() === line.toLowerCase())) notIncluded.push(line);
+  }
+  return {
+    badge: ticked.find((option) => option.badge)?.badge ?? null,
+    intro: ticked.find((option) => option.intro)?.intro ?? null,
+    notIncluded,
+  };
+}
+
+// BR-107: rest days are one for every three middle days, at least one, and leave at least one
+// sightseeing day. With 1 middle day there is none.
+export function restDayCount(middleDays: number) {
+  if (middleDays < 2) return 0;
+  return Math.min(Math.max(1, Math.floor(middleDays / 3)), middleDays - 1);
+}
+
+// The middle days a trip can use at its place. A day an option swaps to is left out, so it only
+// appears in a package with that option ticked. Each swap of the ticked options then puts its day in
+// place of the middle day with the swap_from title, at that day's place only. Only the first swap of
+// a day applies. The swap happens before the trip is cut to length.
+function middleDays(plans: DayPlanRow[], place: string, options: PackageOption[], ticked: PackageOption[]) {
+  const swapTargets = new Set(options.flatMap((option) => (option.swapTo === null ? [] : [option.swapTo])));
+  const middle = inOrder(plans, place, "middle").filter((plan) => !swapTargets.has(plan.id));
+  const swapped = new Set<number>();
+  for (const option of ticked) {
+    if (option.swapTo === null || !option.swapFrom) continue;
+    const target = plans.find((plan) => plan.id === option.swapTo && plan.place === place && plan.part === "middle");
+    const index = middle.findIndex((plan) => plan.title === option.swapFrom && !swapped.has(plan.id));
+    if (!target || index < 0 || swapped.has(target.id)) continue;
+    middle[index] = target;
+    swapped.add(target.id);
+  }
+  return middle;
+}
+
+// BR-106 and BR-107: the way out for the mode, then the middle days in their order after any swap,
+// then the way back, so the count matches the quote's days. Days past the middle days are free days
+// at the last overnight place before the way back. With rest days ticked, some middle days are rest
+// days: one after every third sightseeing day, and any left after the last one, each at the day
+// before's overnight and priced-as place. The sightseeing days that do not fit drop off the end, as
+// on a short trip. A trip shorter than the way out and the way back has no package: the quote itself
+// still prices as before. options is every stored option, so a day an option swaps to is always left
+// out. tickedIds are the options ticked on this package.
+export function packageDays(trip: PackageTrip, plans: DayPlanRow[], options: PackageOption[] = [], tickedIds: number[] = []): PackageDaysResult {
   const out = inOrder(plans, trip.place, outPart(trip.mode));
-  const middle = inOrder(plans, trip.place, "middle");
   const back = inOrder(plans, trip.place, backPart(trip.mode));
   // A package starts with the way out and ends with the way back for its mode. Without either, it
   // would start or end at a middle day, so it is not built.
@@ -101,12 +186,12 @@ export function packageDays(trip: PackageTrip, plans: DayPlanRow[]): PackageDays
     return { ok: false, error: `A ${trip.place} trip by ${trip.mode} needs at least ${needed} days.`, minimumDays: needed };
   }
 
+  const ticked = tickedFor(trip.place, options, tickedIds);
+  const middle = middleDays(plans, trip.place, options, ticked);
   const middleCount = trip.days - needed;
-  const chosen = [...out, ...middle.slice(0, middleCount)];
-  const last = chosen.at(-1);
-  const restOvernight = last?.overnight ?? trip.place;
-  const restPricePlace = last?.pricePlace ?? trip.place;
-  const freeCount = Math.max(0, middleCount - middle.length);
+  const restCount = ticked.some((option) => option.restDays) ? restDayCount(middleCount) : 0;
+  const sightseeingCount = middleCount - restCount;
+  const sightseeing = middle.slice(0, sightseeingCount);
 
   const days: PackageDay[] = [];
   const add = (plan: DayPlanRow) =>
@@ -118,19 +203,38 @@ export function packageDays(trip: PackageTrip, plans: DayPlanRow[]): PackageDays
       sections: plan.sections.map((section) => ({ label: section.label, text: withOrigin(section.text, trip.startCity) })),
       free: false,
     });
-  chosen.forEach(add);
-  for (let index = 0; index < freeCount; index += 1) {
-    const overnight = withOrigin(restOvernight, trip.startCity);
+  // A free day or a rest day stays at the day before's overnight place and priced-as place.
+  const addFree = () => {
+    const before = days.at(-1);
+    const overnight = before?.overnight ?? trip.place;
     days.push({
       day: days.length + 1,
       title: freeDayTitle(overnight),
       overnight,
-      pricePlace: restPricePlace,
+      pricePlace: before?.pricePlace ?? trip.place,
       sections: [{ label: FREE_DAY_LABEL, text: FREE_DAY_TEXT }],
       free: true,
     });
+  };
+
+  out.forEach(add);
+  let restsLeft = restCount;
+  for (let index = 0; index < sightseeingCount; index += 1) {
+    // A middle day while there are some, then BR-106 free days at the last overnight place.
+    if (index < sightseeing.length) add(sightseeing[index]);
+    else addFree();
+    if ((index + 1) % 3 === 0 && restsLeft > 0) {
+      addFree();
+      restsLeft -= 1;
+    }
   }
+  for (; restsLeft > 0; restsLeft -= 1) addFree();
   back.forEach(add);
+
+  // BR-107: each ticked option's day-one paragraph follows day 1's own paragraphs, in option order.
+  for (const option of ticked) {
+    if (option.dayOne) days[0].sections.push({ label: option.dayOne.label, text: withOrigin(option.dayOne.text, trip.startCity) });
+  }
   return { ok: true, days };
 }
 

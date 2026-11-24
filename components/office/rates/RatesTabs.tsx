@@ -12,6 +12,7 @@ export const RATE_TABS = [
   { href: "/office/rates/margin", label: "Profit margin" },
   { href: "/office/rates/rules", label: "Pricing rules" },
   { href: "/office/rates/day-plans", label: "Day plans" },
+  { href: "/office/rates/package-options", label: "Package options" },
   { href: "/office/rates/quote", label: "Quote" },
 ];
 

@@ -31,6 +31,7 @@ export default async function RatesDayPlansPage({ searchParams }: { searchParams
       place={desk.place}
       days={desk.days}
       hotelNames={desk.hotelNames.map((row, index) => ({ ...row, savedBy: savedByText(namesSaved[records[index]], now) }))}
+      swapOptions={desk.swapOptions}
       daySavedBy={Object.fromEntries(desk.days.map((day) => [day.id, savedByText(daysSaved[String(day.id)], now)?.text ?? ""]))}
     />
   );
