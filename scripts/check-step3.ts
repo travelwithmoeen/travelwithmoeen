@@ -15,7 +15,7 @@ import { authenticate } from "../lib/auth/authenticate";
 import { createUserAs, removeUserAs } from "../lib/office/users";
 import { officeMediaPath } from "../lib/office/media";
 import { BACKUP_TABLES, readBackupFile } from "../lib/office/backup";
-import { FREE_DAY_LABEL, FREE_DAY_TEXT, freeDayTitle, hotelLine, packageDays, packageMinimumDays, type DayPlanRow } from "../lib/package";
+import { FREE_DAY_LABEL, FREE_DAY_TEXT, freeDayTitle, hotelLine, optionsFor, packageDays, packageExtras, packageMinimumDays, restDayCount, type DayPlanRow, type PackageOption } from "../lib/package";
 import { buildQuote, quoteOptions, type QuoteInput } from "../lib/quote";
 import { loadCatalog } from "../lib/rates";
 import { GUEST_EMAIL_LIMIT, GUEST_MESSAGE_LIMIT, GUEST_NAME_LIMIT, GUEST_PHONE_LIMIT } from "../lib/requests";
@@ -858,6 +858,7 @@ async function assertOfficeRequests(savedIds: number[]) {
     await assertDeskPricing(managerCookie);
     await assertStartCities(editorCookie, managerCookie);
     await assertDayPlans(editorCookie, managerCookie);
+    await assertPackageOptions(editorCookie, managerCookie);
     await assertQuoteScreenV2(editorCookie, managerCookie);
     await assertBadRecordIds(editorCookie, managerCookie, ownerCookie, saved.body.id);
     await assertTourDeleteNotFound(editorCookie, managerCookie);
@@ -3235,6 +3236,281 @@ async function assertDayPlans(editorCookie: string, managerCookie: string) {
     await db.delete(hotelRates).where(inArray(hotelRates.place, [testPlace, renamedPlace]));
     await db.delete(placeHotelNames).where(and(eq(placeHotelNames.place, place), eq(placeHotelNames.grade, "Deluxe")));
     if (savedLine) await db.insert(placeHotelNames).values(savedLine);
+  }
+}
+
+// T-59 (BR-107, design section 15, the lead's answers of 25 November 2026): the option rules in
+// packageDays, without the database.
+function assertPackageOptionRules() {
+  const place = "T59 Rules Place";
+  let nextId = 1;
+  const day = (part: DayPlanRow["part"], position: number, title: string, overnight = "Skardu", pricePlace: string | null = null): DayPlanRow => ({
+    id: nextId++,
+    place,
+    part,
+    position,
+    title,
+    overnight,
+    pricePlace,
+    sections: [{ label: "Morning", text: `${title}.` }],
+  });
+  const middleTitles = ["Shigar", "Deosai National Park", "Khaplu", "Upper Kachura", "Satpara", "Manthoka"];
+  const plans: DayPlanRow[] = [day("out_air", 0, "Fly {ORIGIN} to Skardu"), ...middleTitles.map((title, index) => day("middle", index, title, title === "Khaplu" ? "Khaplu" : "Skardu", title === "Khaplu" ? "T59 Khaplu" : null))];
+  const basho = day("middle", 2, "Basho Valley");
+  plans.push(basho, day("back_air", 0, "Fly home to {ORIGIN}", "Home"));
+  const option = (id: number, values: Partial<PackageOption>): PackageOption => ({
+    id,
+    name: `T59 option ${id}`,
+    places: [],
+    dayOne: null,
+    swapFrom: null,
+    swapTo: null,
+    restDays: false,
+    badge: null,
+    intro: null,
+    notIncluded: [],
+    sortOrder: id,
+    ...values,
+  });
+  const autumn = option(1, { name: "Autumn season", dayOne: { label: "Autumn", text: "Golden poplars on the way from {ORIGIN}." }, badge: "Autumn", notIncluded: ["Warm jackets"] });
+  const swap = option(2, { name: "Basho instead of Deosai", places: [place], swapFrom: "Deosai National Park", swapTo: basho.id });
+  const relaxed = option(3, { name: "Relaxed pace", restDays: true, badge: "Relaxed", intro: "A slower trip.", notIncluded: ["warm jackets", "Porters"] });
+  const hunzaOnly = option(4, { name: "Hunza only", places: ["Hunza Valley"], badge: "Hunza", dayOne: { label: "Hunza", text: "Not here." } });
+  const options = [autumn, swap, relaxed, hunzaOnly];
+  const trip = (days: number) => ({ place, mode: "air" as const, days, startCity: "Lahore" });
+  const titles = (result: ReturnType<typeof packageDays>) => (result.ok ? result.days.map((row) => row.title).join(" | ") : result.error);
+
+  // A day an option swaps to is left out when no option is ticked, so not every package gets Basho.
+  const plain = packageDays(trip(8), plans, options);
+  if (titles(plain) !== "Fly Lahore to Skardu | Shigar | Deosai National Park | Khaplu | Upper Kachura | Satpara | Manthoka | Fly home to Lahore") throw new Error(`With no option ticked the days are: ${titles(plain)}`);
+  // Without the options passed, the swap day is a normal middle day, as in T-58.
+  if (!titles(packageDays(trip(8), plans)).includes("Basho Valley")) throw new Error("With no stored options, a middle day was left out.");
+
+  // Autumn adds its paragraph after day 1's own, with {ORIGIN} replaced, and sets the badge.
+  const autumnDays = packageDays(trip(5), plans, options, [autumn.id]);
+  if (!autumnDays.ok) throw new Error(autumnDays.error);
+  const dayOne = autumnDays.days[0].sections;
+  if (dayOne.length !== 2 || dayOne[0].label !== "Morning" || dayOne[1].label !== "Autumn" || dayOne[1].text !== "Golden poplars on the way from Lahore.") throw new Error(`Day 1 with Autumn is ${JSON.stringify(dayOne)}.`);
+  if (autumnDays.days.slice(1).some((row) => row.sections.some((section) => section.label === "Autumn"))) throw new Error("The Autumn paragraph was added to a day other than day 1.");
+  const autumnExtras = packageExtras(place, options, [autumn.id]);
+  if (autumnExtras.badge !== "Autumn" || autumnExtras.intro !== null || autumnExtras.notIncluded.join("|") !== "Warm jackets") throw new Error(`Autumn extras are ${JSON.stringify(autumnExtras)}.`);
+  if (packageExtras(place, options, []).badge !== null) throw new Error("A package with no options has a badge.");
+
+  // Basho shows in Deosai's place, once. The swap happens before the trip is cut.
+  const swapped = packageDays(trip(5), plans, options, [swap.id]);
+  if (titles(swapped) !== "Fly Lahore to Skardu | Shigar | Basho Valley | Khaplu | Fly home to Lahore") throw new Error(`With the swap the days are: ${titles(swapped)}`);
+  const swappedLong = packageDays(trip(8), plans, options, [swap.id]);
+  if (!swappedLong.ok || swappedLong.days.filter((row) => row.title === "Basho Valley").length !== 1 || swappedLong.days.some((row) => row.title === "Deosai National Park")) throw new Error(`A long swapped trip is: ${titles(swappedLong)}`);
+  // The swap applies only at the swap day's place. At another place the option's other parts apply.
+  // Every day but Basho moves to another place, so Basho stays a day of the first place.
+  const elsewhere = plans.map((row) => (row.id === basho.id ? row : { ...row, place: "T59 Other" }));
+  const everyPlaceSwap = option(5, { name: "Swap and paragraph", swapFrom: "Deosai National Park", swapTo: basho.id, dayOne: { label: "Note", text: "Still added." } });
+  const other = packageDays({ ...trip(5), place: "T59 Other" }, elsewhere, [everyPlaceSwap], [everyPlaceSwap.id]);
+  if (!other.ok || !titles(other).includes("Deosai National Park") || other.days[0].sections.at(-1)?.label !== "Note") throw new Error(`At another place the swap option gave: ${titles(other)}`);
+  // With no middle day of the swap_from title, nothing is swapped and Basho stays out.
+  const noDeosai = packageDays(trip(5), plans.filter((row) => row.title !== "Deosai National Park"), options, [swap.id]);
+  if (titles(noDeosai) !== "Fly Lahore to Skardu | Shigar | Khaplu | Upper Kachura | Fly home to Lahore") throw new Error(`With no Deosai day the swap gave: ${titles(noDeosai)}`);
+
+  // Relaxed pace: 6 middle days give 4 sightseeing days and 2 rest days, S S S R S R. A rest day is at
+  // the day before's overnight and priced-as place.
+  const six = packageDays(trip(8), plans, options, [relaxed.id]);
+  if (!six.ok) throw new Error(six.error);
+  const sixMiddle = six.days.slice(1, -1);
+  if (sixMiddle.map((row) => (row.free ? "R" : "S")).join(" ") !== "S S S R S R") throw new Error(`6 middle days with Relaxed pace are ${sixMiddle.map((row) => row.title).join(" | ")}.`);
+  if (sixMiddle.filter((row) => !row.free).map((row) => row.title).join(" | ") !== "Shigar | Deosai National Park | Khaplu | Upper Kachura") throw new Error("The sightseeing days that do not fit did not drop off the end.");
+  if (sixMiddle[3].title !== freeDayTitle("Khaplu") || sixMiddle[3].pricePlace !== "T59 Khaplu" || sixMiddle[5].overnight !== "Skardu" || sixMiddle[5].pricePlace !== place) {
+    throw new Error(`A rest day is not at the day before's places: ${JSON.stringify([sixMiddle[3], sixMiddle[5]])}`);
+  }
+  if (sixMiddle[3].sections[0]?.text !== FREE_DAY_TEXT) throw new Error("A rest day does not have the free-day text.");
+  const two = packageDays(trip(4), plans, options, [relaxed.id]);
+  if (!two.ok || two.days.slice(1, -1).map((row) => (row.free ? "R" : "S")).join(" ") !== "S R") throw new Error(`2 middle days with Relaxed pace are ${titles(two)}.`);
+  const one = packageDays(trip(3), plans, options, [relaxed.id]);
+  if (!one.ok || one.days.slice(1, -1).map((row) => (row.free ? "R" : "S")).join(" ") !== "S") throw new Error(`1 middle day with Relaxed pace is ${titles(one)}.`);
+  const counts = [0, 1, 2, 3, 4, 5, 6, 9, 12].map((n) => restDayCount(n)).join(",");
+  if (counts !== "0,0,1,1,1,1,2,3,4") throw new Error(`The rest-day counts for 0 to 12 middle days are ${counts}.`);
+  // With more middle days than stored, the free days of BR-106 fill in, and the rest days still fit.
+  const nine = packageDays(trip(11), plans, options, [relaxed.id]);
+  if (!nine.ok || nine.days.length !== 11 || nine.days.slice(1, -1).filter((row) => row.free).length !== 3) throw new Error(`9 middle days with Relaxed pace are ${titles(nine)}.`);
+  // Rest days and the swap together.
+  const both = packageDays(trip(8), plans, options, [swap.id, relaxed.id]);
+  if (!both.ok || both.days.slice(1, -1).filter((row) => !row.free).map((row) => row.title).join(" | ") !== "Shigar | Basho Valley | Khaplu | Upper Kachura") throw new Error(`The swap with rest days gave ${titles(both)}.`);
+
+  // An option limited to another place is not offered, and ticking it changes nothing.
+  if (optionsFor("Hunza Valley", options).some((row) => row.id === swap.id) || !optionsFor("Hunza Valley", options).some((row) => row.id === hunzaOnly.id)) throw new Error("The options offered for Hunza Valley are wrong.");
+  if (optionsFor(place, options).map((row) => row.name).join(" | ") !== "Autumn season | Basho instead of Deosai | Relaxed pace") throw new Error("The options offered at a place are wrong.");
+  const notHere = packageDays(trip(5), plans, options, [hunzaOnly.id]);
+  if (!notHere.ok || notHere.days[0].sections.length !== 1 || packageExtras(place, options, [hunzaOnly.id]).badge !== null) throw new Error("An option for another place changed the package.");
+  // Two options: the first badge and opening paragraph in option order win, and lines are not repeated.
+  const mixed = packageExtras(place, options, [relaxed.id, autumn.id]);
+  if (mixed.badge !== "Autumn" || mixed.intro !== "A slower trip." || mixed.notIncluded.join("|") !== "Warm jackets|Porters") throw new Error(`Two options gave ${JSON.stringify(mixed)}.`);
+  const reordered = packageExtras(place, options.map((row) => (row.id === relaxed.id ? { ...row, sortOrder: 0 } : row)), [relaxed.id, autumn.id]);
+  if (reordered.badge !== "Relaxed") throw new Error("Moving an option up did not make its badge win.");
+}
+
+async function assertPackageOptions(editorCookie: string, managerCookie: string) {
+  assertPackageOptionRules();
+  const place = "Skardu Valley";
+  const stamp = Date.now();
+  const testPlace = `T59 Place ${stamp}`;
+  const renamedPlace = `T59 Renamed ${stamp}`;
+  const daysBefore = (await db.select({ id: dayPlans.id }).from(dayPlans)).map((row) => row.id);
+  const optionsBefore = (await db.select({ id: packageOptions.id }).from(packageOptions)).map((row) => row.id);
+  const snapshot = async () => JSON.stringify(await db.select().from(packageOptions).orderBy(packageOptions.id));
+  const saves = async (form: FormData, cookie: string, status: number, what: string, error?: string) => {
+    const rowsBefore = await activityCount();
+    const before = await snapshot();
+    const result = await officePost("/api/office/package-options", form, cookie);
+    if (result.status !== status) throw new Error(`${what} returned ${result.status}, not ${status}: ${result.body.error ?? ""}`);
+    if (error && result.body.error !== error) throw new Error(`${what} said "${result.body.error ?? ""}", not "${error}".`);
+    const written = (await activityCount()) - rowsBefore;
+    if (written !== (status === 200 ? 1 : 0)) throw new Error(`${what} wrote ${written} activity rows.`);
+    if (status !== 200 && (await snapshot()) !== before) throw new Error(`${what} changed a stored option.`);
+    return result;
+  };
+  const daySave = async (values: Record<string, string | number>, what: string, status = 200) => {
+    const result = await officePost("/api/office/day-plans", formOf(values), managerCookie);
+    if (result.status !== status) throw new Error(`${what} returned ${result.status}: ${result.body.error ?? ""}`);
+    return result;
+  };
+  const optionForm = (values: Record<string, string | number>, placesList: string[] = []) => {
+    const form = formOf(values);
+    for (const name of placesList) form.append("places", name);
+    return form;
+  };
+  const stored = async (name: string) => (await db.select().from(packageOptions).where(eq(packageOptions.name, name)))[0];
+  const lastActivity = async () => (await db.select().from(activity).orderBy(desc(activity.id)).limit(1))[0];
+
+  try {
+    const editorRead = await fetch(`${siteBase()}/api/office/package-options`, { headers: { cookie: editorCookie } });
+    if (editorRead.status !== 403) throw new Error(`An Editor read the package options with ${editorRead.status}.`);
+    await saves(optionForm({ action: "add", name: `T59 Editor ${stamp}` }), editorCookie, 403, "An Editor's option add");
+    const editorPage = await officePage("/office/rates/package-options", editorCookie);
+    if (editorPage.status < 300 || editorPage.status >= 400) throw new Error(`The Package options page gave an Editor ${editorPage.status}.`);
+
+    // Skardu Valley days for the swap: the way out and back by air, and middle days with Deosai and Basho.
+    const mark = `${stamp}`;
+    await daySave({ action: "add", place, part: "out_air", title: `T59 Fly in ${mark}`, overnight: "Skardu" }, "The way out");
+    for (const title of [`T59 Shigar ${mark}`, `T59 Deosai National Park ${mark}`, `T59 Khaplu ${mark}`, `T59 Basho Valley ${mark}`]) await daySave({ action: "add", place, part: "middle", title, overnight: "Skardu" }, title);
+    await daySave({ action: "add", place, part: "back_air", title: `T59 Fly home ${mark}`, overnight: "Home" }, "The way back");
+    const rows = await db.select().from(dayPlans).where(like(dayPlans.title, `T59 % ${mark}`));
+    const byTitle = (prefix: string) => rows.find((row) => row.title === `T59 ${prefix} ${mark}`);
+    const deosai = byTitle("Deosai National Park");
+    const bashoDay = byTitle("Basho Valley");
+    const flyIn = byTitle("Fly in");
+    if (!deosai || !bashoDay || !flyIn) throw new Error("The T-59 days were not stored.");
+
+    // Refused saves.
+    const name = `T59 Autumn ${stamp}`;
+    const good = { action: "add", name };
+    await saves(optionForm({ ...good, name: " " }), managerCookie, 400, "An option with no name", "Enter the option name.");
+    await saves(optionForm({ ...good, name: "n".repeat(61) }), managerCookie, 400, "A name of 61 characters", "Enter the option name of 60 characters or less.");
+    await saves(optionForm(good, ["T59 Nowhere"]), managerCookie, 400, "An option for a place with no rates", "Choose rate places only, or none for every place.");
+    await saves(optionForm({ ...good, dayOneLabel: "Autumn" }), managerCookie, 400, "A day 1 label with no text", "Enter the text of the day 1 paragraph.");
+    await saves(optionForm({ ...good, dayOneText: "Text" }), managerCookie, 400, "A day 1 text with no label");
+    await saves(optionForm({ ...good, dayOneLabel: "l".repeat(31), dayOneText: "Text" }), managerCookie, 400, "A day 1 label of 31 characters");
+    await saves(optionForm({ ...good, swapTo: flyIn.id, swapFrom: deosai.title }), managerCookie, 400, "A swap to a way-out day", "Choose a middle day to swap to.");
+    await saves(optionForm({ ...good, swapTo: bashoDay.id }), managerCookie, 400, "A swap with no day to replace", "Choose the middle day it replaces.");
+    await saves(optionForm({ ...good, swapTo: bashoDay.id, swapFrom: "Nowhere" }), managerCookie, 400, "A swap of a day the place does not have", `Choose a middle day of ${place} for it to replace.`);
+    await saves(optionForm({ ...good, swapTo: bashoDay.id, swapFrom: bashoDay.title }), managerCookie, 400, "A swap of a day for itself");
+    await saves(optionForm({ ...good, swapFrom: deosai.title }), managerCookie, 400, "A day to replace with no day to swap in", "Choose the day to swap to.");
+    await saves(optionForm({ ...good, swapTo: bashoDay.id, swapFrom: deosai.title }, ["Hunza Valley"]), managerCookie, 400, "A swap at a place the option is not offered at", `Offer the option at ${place}, the place of its swap, or at every place.`);
+    await saves(optionForm({ ...good, badge: "b".repeat(41) }), managerCookie, 400, "A badge of 41 characters");
+    await saves(optionForm({ ...good, intro: "i".repeat(1001) }), managerCookie, 400, "An opening paragraph of 1,001 characters");
+    await saves(optionForm({ ...good, notIncluded: Array.from({ length: 11 }, (unused, index) => `Line ${index + 1}`).join("\n") }), managerCookie, 400, "11 not included lines", "Enter up to 10 not included lines.");
+    await saves(optionForm({ ...good, notIncluded: "l".repeat(121) }), managerCookie, 400, "A not included line of 121 characters");
+    await saves(optionForm({ ...good, action: "rename" }), managerCookie, 400, "An unknown action", "Choose what to save.");
+    await saves(optionForm({ action: "update", id: "abc", name }), managerCookie, 400, "A change with a bad id", "That option was not found.");
+    await saves(optionForm({ action: "delete", id: 999999 }), managerCookie, 400, "A delete of a missing option", "That option was not found.");
+
+    // A Manager adds Autumn, changes it, and the stored values are trimmed.
+    await saves(optionForm({ ...good, name: `  ${name}  `, dayOneLabel: "Autumn", dayOneText: "Golden poplars.\r\nCool nights.", badge: "Autumn", notIncluded: " Warm jackets \n\n Porters " }), managerCookie, 200, "Adding Autumn");
+    let autumnRow = await stored(name);
+    if (!autumnRow || autumnRow.dayOne?.text !== "Golden poplars.\nCool nights." || autumnRow.badge !== "Autumn" || autumnRow.notIncluded.join("|") !== "Warm jackets|Porters" || autumnRow.places.length !== 0 || autumnRow.swapTo !== null) {
+      throw new Error(`Autumn was stored as ${JSON.stringify(autumnRow)}.`);
+    }
+    const addRow = await lastActivity();
+    if (addRow?.kind !== "package_option" || addRow.area !== "rates" || addRow.recordId !== String(autumnRow.id) || addRow.text !== `Added package option ${name}`) throw new Error(`The option add activity row is ${JSON.stringify(addRow)}.`);
+    await saves(optionForm({ ...good, name: name.toUpperCase() }), managerCookie, 400, "A name another option has, in other case", "Another option already has that name.");
+    await saves(optionForm({ action: "update", id: autumnRow.id, name, dayOneLabel: "Autumn", dayOneText: "Golden poplars.", badge: "Autumn season", restDays: "on" }, [place]), managerCookie, 200, "Changing Autumn");
+    autumnRow = await stored(name);
+    if (!autumnRow || autumnRow.badge !== "Autumn season" || !autumnRow.restDays || autumnRow.places.join() !== place || autumnRow.notIncluded.length !== 0) throw new Error(`The changed Autumn is ${JSON.stringify(autumnRow)}.`);
+    if ((await lastActivity())?.text !== `Changed package option ${name}`) throw new Error("Changing an option did not write its activity row.");
+
+    // Basho instead of Deosai, limited to Skardu Valley.
+    const swapName = `T59 Basho instead of Deosai ${stamp}`;
+    await saves(optionForm({ action: "add", name: swapName, swapTo: bashoDay.id, swapFrom: deosai.title }, [place]), managerCookie, 200, "Adding the Basho swap");
+    const swapRow = await stored(swapName);
+    if (!swapRow || swapRow.swapTo !== bashoDay.id || swapRow.swapFrom !== deosai.title) throw new Error(`The swap was stored as ${JSON.stringify(swapRow)}.`);
+    // It is last, and moves up above Autumn.
+    await saves(optionForm({ action: "move", id: swapRow.id, direction: "up" }), managerCookie, 200, "Moving the swap up");
+    const order = await db.select().from(packageOptions).orderBy(packageOptions.sortOrder, packageOptions.id);
+    if (order.findIndex((row) => row.id === swapRow.id) !== order.findIndex((row) => row.id === autumnRow.id) - 1 || order.some((row, index) => row.sortOrder !== index)) throw new Error("Moving an option up did not put it above the one before.");
+    await saves(optionForm({ action: "move", id: order[0].id, direction: "up" }), managerCookie, 400, "Moving the first option up", "That option is already first.");
+
+    // With the stored days and options, the package shows Basho only with the swap ticked.
+    const storedPlans = (await db.select().from(dayPlans).where(eq(dayPlans.place, place))).map((row) => ({ ...row, sections: row.sections }));
+    const storedOptions = (await db.select().from(packageOptions)).map((row) => ({ ...row, dayOne: row.dayOne ?? null }));
+    const real = (ticked: number[]) => packageDays({ place, mode: "air", days: 5, startCity: "Lahore" }, storedPlans, storedOptions, ticked);
+    const plainTitles = real([]);
+    if (!plainTitles.ok || plainTitles.days.some((row) => row.title === bashoDay.title)) throw new Error("A stored Skardu Valley package with no option has Basho.");
+    const swapTitles = real([swapRow.id]);
+    if (!swapTitles.ok) throw new Error(swapTitles.error);
+    const deosaiIndex = plainTitles.days.findIndex((row) => row.title === deosai.title);
+    if (deosaiIndex < 0 || swapTitles.days[deosaiIndex]?.title !== bashoDay.title || swapTitles.days.some((row) => row.title === deosai.title)) throw new Error("The stored swap did not put Basho in Deosai's place.");
+    // An option limited to Skardu Valley is not offered for Hunza Valley.
+    if (optionsFor("Hunza Valley", storedOptions).some((row) => row.id === swapRow.id || row.id === autumnRow.id)) throw new Error("An option limited to Skardu Valley is offered for Hunza Valley.");
+
+    // The Day plans screen marks Basho, and Basho cannot be deleted while the option swaps to it.
+    const desk = (await (await fetch(`${siteBase()}/api/office/day-plans?place=${encodeURIComponent(place)}`, { headers: { cookie: managerCookie } })).json()) as { desk?: { swapOptions?: Record<string, string[]> } };
+    if (desk.desk?.swapOptions?.[String(bashoDay.id)]?.join() !== swapName) throw new Error(`The day plans read does not mark Basho: ${JSON.stringify(desk.desk?.swapOptions)}`);
+    const dayPage = await officePage(`/office/rates/day-plans?place=${encodeURIComponent(place)}`, managerCookie);
+    // React puts an empty comment between the text and the name, so it is taken out first.
+    if (!decodeHtml(dayPage.html.replaceAll("<!-- -->", "")).includes(`Only in packages with ${swapName}`)) throw new Error("The Day plans screen does not say Basho is only in packages with the swap.");
+    const rowsBeforeDelete = await activityCount();
+    const refusedDelete = await officePost("/api/office/day-plans", formOf({ action: "delete", id: bashoDay.id }), managerCookie);
+    if (refusedDelete.status !== 400 || refusedDelete.body.error !== `The option ${swapName} swaps to this day. Change that option first.` || (await activityCount()) !== rowsBeforeDelete) {
+      throw new Error(`Deleting the swap day returned ${refusedDelete.status}: ${refusedDelete.body.error ?? ""}`);
+    }
+    if ((await db.select().from(dayPlans).where(eq(dayPlans.id, bashoDay.id))).length !== 1) throw new Error("The swap day was deleted.");
+    // A new title for Deosai follows into the swap, so it keeps working.
+    const newDeosai = `T59 Deosai Plains ${mark}`;
+    await daySave({ action: "update", id: deosai.id, title: newDeosai, overnight: "Skardu" }, "Renaming Deosai");
+    if ((await stored(swapName))?.swapFrom !== newDeosai) throw new Error("A new title for the swapped day did not follow into the option.");
+
+    // The screen lists the options, and the tab is on the rates pages.
+    const page = await officePage("/office/rates/package-options", managerCookie);
+    const pageHtml = decodeHtml(page.html);
+    if (page.status !== 200 || !pageHtml.includes(name) || !pageHtml.includes(swapName)) throw new Error(`The Package options page for a Manager returned ${page.status} without the options.`);
+    if (!(await officePage("/office/rates", managerCookie)).html.includes('href="/office/rates/package-options"')) throw new Error("The rates pages have no Package options tab.");
+
+    // BR-90: renaming a rate place renames it in an option's places.
+    await db.insert(hotelRates).values({ place: testPlace, startCity: "Air", grade: "Deluxe", twin: 1000, triple: 1200 });
+    const renameOption = `T59 Rename option ${stamp}`;
+    await saves(optionForm({ action: "add", name: renameOption, badge: "x" }, [testPlace, place]), managerCookie, 200, "An option for the place to rename");
+    const renamed = await officePost("/api/office/rates", formOf({ kind: "place_rename", place: testPlace, name: renamedPlace }), managerCookie);
+    if (renamed.status !== 200) throw new Error(`Renaming the T-59 place returned ${renamed.status}.`);
+    if ((await stored(renameOption))?.places.join("|") !== `${renamedPlace}|${place}`) throw new Error(`After a rename the option places are ${(await stored(renameOption))?.places.join("|")}.`);
+
+    // Deleting options, one row each. Then the swap day can go.
+    for (const optionName of [renameOption, swapName, name]) {
+      const row = await stored(optionName);
+      if (!row) throw new Error(`${optionName} is missing.`);
+      await saves(optionForm({ action: "delete", id: row.id }), managerCookie, 200, `Deleting ${optionName}`);
+      if (await stored(optionName)) throw new Error(`${optionName} was not deleted.`);
+    }
+    if ((await lastActivity())?.text !== `Deleted package option ${name}`) throw new Error("Deleting an option did not write its activity row.");
+    await daySave({ action: "delete", id: bashoDay.id }, "Deleting Basho after its option");
+
+    // Up to 50 options.
+    const fillers = Array.from({ length: Math.max(0, 50 - optionsBefore.length) }, (unused, index) => ({ name: `T59 Filler ${stamp} ${index}`, sortOrder: 100 + index }));
+    if (fillers.length) await db.insert(packageOptions).values(fillers);
+    await saves(optionForm({ action: "add", name: `T59 Fifty-first ${stamp}` }), managerCookie, 400, "A 51st option", "The office can keep up to 50 package options.");
+  } finally {
+    const addedOptions = (await db.select({ id: packageOptions.id }).from(packageOptions)).map((row) => row.id).filter((id) => !optionsBefore.includes(id));
+    if (addedOptions.length) await db.delete(packageOptions).where(inArray(packageOptions.id, addedOptions));
+    const addedDays = (await db.select({ id: dayPlans.id }).from(dayPlans)).map((row) => row.id).filter((id) => !daysBefore.includes(id));
+    if (addedDays.length) await db.delete(dayPlans).where(inArray(dayPlans.id, addedDays));
+    await db.delete(hotelRates).where(inArray(hotelRates.place, [testPlace, renamedPlace]));
   }
 }
 

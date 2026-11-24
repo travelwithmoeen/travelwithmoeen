@@ -311,7 +311,8 @@ export async function addVehicleRateAs(actor: SessionUser, formData: FormData): 
 }
 
 // BR-90: rename a place on every hotel rate, vehicle rate, and jeep line, in one save. From T-58 its
-// day plans, the days priced as it, and its hotel-names lines follow too. The public places table is
+// day plans, the days priced as it, and its hotel-names lines follow too, and from T-59 the options
+// limited to it. The public places table is
 // not touched.
 export async function renamePlaceAs(actor: SessionUser, formData: FormData): Promise<ActionResult> {
   if (!can(actor, "rates.edit")) return forbidden("You cannot change a price.");
@@ -331,6 +332,8 @@ export async function renamePlaceAs(actor: SessionUser, formData: FormData): Pro
     await tx.update(dayPlans).set({ place: to.name }).where(eq(dayPlans.place, from));
     await tx.update(dayPlans).set({ pricePlace: to.name }).where(eq(dayPlans.pricePlace, from));
     await tx.update(placeHotelNames).set({ place: to.name }).where(eq(placeHotelNames.place, from));
+    // T-59: an option limited to the place keeps it under its new name.
+    await tx.execute(sql`update package_options set places = array_replace(places, ${from}, ${to.name}) where ${from} = any(places)`);
     await recordActivity(tx, actor, { kind: "place_rename", text: `Renamed rate place ${from} to ${to.name}` });
     return { ok: true, message: `Place renamed: ${to.name}.` };
   });
