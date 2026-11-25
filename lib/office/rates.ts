@@ -537,7 +537,7 @@ export async function saveQuoteAs(actor: SessionUser, formData: FormData): Promi
   const catalog = await loadCatalog();
   const quote = buildQuote(parsed.input, catalog);
   if (!quote.ok) return quote;
-  await db.transaction(async (tx) => {
+  const savedId = await db.transaction(async (tx) => {
     const [saved] = await tx
       .insert(quotes)
       .values({
@@ -552,6 +552,7 @@ export async function saveQuoteAs(actor: SessionUser, formData: FormData): Promi
         grade: parsed.input.grade,
         vehicle: parsed.input.vehicle,
         otherNote: parsed.input.otherNote ?? "",
+        otherSeats: vehicleKey(parsed.input.vehicle) === "other" ? (parsed.input.otherSeats ?? null) : null,
         guide: parsed.input.guide,
         meals: parsed.input.meals,
         lunch: Boolean(parsed.input.lunch),
@@ -564,9 +565,11 @@ export async function saveQuoteAs(actor: SessionUser, formData: FormData): Promi
         total: quote.total,
       })
       .returning({ id: quotes.id });
-    if (!saved) return;
+    if (!saved) return null;
     if (quote.nights.length > 0) {
-      await tx.insert(quoteNights).values(quote.nights.map((night) => ({ quoteId: saved.id, ...night })));
+      // T-61 (BR-112): a night whose rate staff typed is marked, so the package keeps it for this grade.
+      const typedNights = new Set((parsed.input.nightEdits ?? []).map((edit) => edit.night));
+      await tx.insert(quoteNights).values(quote.nights.map((night) => ({ quoteId: saved.id, ...night, typed: typedNights.has(night.night) })));
     }
     if (quote.days.length > 0) {
       await tx.insert(quoteDays).values(
@@ -586,8 +589,14 @@ export async function saveQuoteAs(actor: SessionUser, formData: FormData): Promi
       await tx.insert(quoteExtras).values(extras.map((extra) => ({ quoteId: saved.id, name: extra.name, amount: extra.amount })));
     }
     await recordActivity(tx, actor, { kind: "quote", recordId: saved.id, text: `Saved quote ${saved.id}, ${parsed.input.place}, total Rs ${quote.total.toLocaleString("en-US")}` });
+    return saved.id;
   });
-  return { ok: true, message: `Quote saved. Total Rs ${quote.total.toLocaleString("en-US")}.` };
+  // T-61: the saved quote page, with its Package tab.
+  return {
+    ok: true,
+    message: `Quote saved. Total Rs ${quote.total.toLocaleString("en-US")}.`,
+    ...(savedId ? { href: `/office/rates/quotes/${savedId}` } : {}),
+  };
 }
 
 export async function savePriceFromKind(actor: SessionUser, formData: FormData): Promise<ActionResult> {

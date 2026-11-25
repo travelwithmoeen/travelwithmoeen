@@ -73,7 +73,7 @@ function readDay(formData: FormData, places: string[]): Read<DayFields> {
   return { ok: true, value: { title: title.value, overnight: overnight.value, pricePlace: pricedText || null, sections: sections.value } };
 }
 
-function toRow(row: typeof dayPlans.$inferSelect): DayPlanRow {
+export function toDayPlanRow(row: typeof dayPlans.$inferSelect): DayPlanRow {
   return {
     id: row.id,
     place: row.place,
@@ -118,7 +118,7 @@ export async function loadDayPlansAs(actor: SessionUser, asked: string | null) {
       db.select().from(placeHotelNames).where(eq(placeHotelNames.place, place)),
       db.select({ name: packageOptions.name, swapTo: packageOptions.swapTo }).from(packageOptions).orderBy(asc(packageOptions.sortOrder), asc(packageOptions.id)),
     ]);
-    desk.days = days.map(toRow);
+    desk.days = days.map(toDayPlanRow);
     for (const option of options) {
       if (option.swapTo !== null && days.some((day) => day.id === option.swapTo)) (desk.swapOptions[option.swapTo] ??= []).push(option.name);
     }

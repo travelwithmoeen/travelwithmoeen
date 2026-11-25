@@ -66,4 +66,12 @@ CREATE TABLE IF NOT EXISTS quote_packages (
   CONSTRAINT quote_packages_pictures_check CHECK (cardinality(pictures) <= 3)
 );
 
+-- T-61 (BR-112): true when that night's rate was typed on the office Quote screen. Quotes saved
+-- before this column have no typed nights.
+ALTER TABLE quote_nights ADD COLUMN IF NOT EXISTS typed boolean NOT NULL DEFAULT false;
+
+-- T-61: the seats of an Other vehicle, so the package works out the same vehicle count again. Null on
+-- every other quote, and on Other quotes saved before this column.
+ALTER TABLE quotes ADD COLUMN IF NOT EXISTS other_seats integer;
+
 COMMIT;

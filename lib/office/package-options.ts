@@ -39,7 +39,7 @@ function toOption(row: typeof packageOptions.$inferSelect): PackageOption {
   };
 }
 
-async function storedOptions(reader: typeof db | Transaction) {
+export async function storedOptions(reader: typeof db | Transaction) {
   return (await reader.select().from(packageOptions).orderBy(asc(packageOptions.sortOrder), asc(packageOptions.id))).map(toOption);
 }
 

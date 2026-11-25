@@ -23,7 +23,7 @@ function toSection(row: typeof packageSections.$inferSelect): PackageSection {
   return { id: row.id, title: row.title, kind: row.kind, body: row.body as PackageSectionBody, sortOrder: row.sortOrder };
 }
 
-async function storedSections(reader: typeof db | Transaction) {
+export async function storedSections(reader: typeof db | Transaction) {
   return (await reader.select().from(packageSections).orderBy(asc(packageSections.sortOrder), asc(packageSections.id))).map(toSection);
 }
 

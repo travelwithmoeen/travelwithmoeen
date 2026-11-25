@@ -145,6 +145,10 @@ export type QuoteInput = {
   tickets?: boolean;
   seasonPercent?: MarginPercent;
   nightEdits?: NightEdit[];
+  // T-61 (BR-112): the priced-as place of each night, night 1 first, from a package's day plans. A
+  // blank place, a missing night, or a place with no offered rate row for this trip uses the quote's
+  // place. A guest quote never sends it.
+  pricePlaces?: string[];
   dayEdits?: DayEdit[];
   paidExtras?: { name: string; amount: number }[];
   otherNote?: string;
@@ -214,6 +218,13 @@ function countText(count: number, one: string, many: string) {
 export function findStartCity(startCities: StartCityRow[], name: string) {
   const key = name.trim().toLowerCase();
   return startCities.find((row) => row.name.trim().toLowerCase() === key);
+}
+
+// BR-21 and BR-91: the Islamabad ticket plus the start city's air extra, and the child fare as a
+// percent of it. The package's flight ticket note shows the same fares (BR-113).
+export function airFares(air: AirExtraRow, start: StartCityRow, rules: PricingRules) {
+  const adultFare = air.islamabadTicket + start.airExtra;
+  return { adultFare, childFare: Math.round((adultFare * rules.childFarePercent) / 100) };
 }
 
 export function buildQuote(input: QuoteInput, catalog: RateCatalog): QuoteResult {
@@ -324,31 +335,50 @@ export function buildQuote(input: QuoteInput, catalog: RateCatalog): QuoteResult
   const tripleRooms =
     input.share === "triple" ? rooms : input.share === "twin" ? 0 : Math.min(Math.max(seats - TWIN_ROOM_PEOPLE * rooms, 0), rooms);
   const twinRooms = rooms - tripleRooms;
-  const nightCost = hotel.triple * tripleRooms + hotel.twin * twinRooms;
   const nightsCount = input.days > 1 ? input.days - 1 : 0;
+  // BR-112: each night's rate row. The quote's own row unless the night's priced-as place has an
+  // offered row for the same start city or Air and grade.
+  const nightRow = (night: number) => {
+    const pricePlace = storedPlace(input.pricePlaces?.[night - 1] ?? "");
+    if (!pricePlace || pricePlace === place) return hotel;
+    return (
+      catalog.hotels.find((row) => row.place === pricePlace && row.startCity === city && row.grade === input.grade && row.offered) ?? hotel
+    );
+  };
+  const roomsCost = (row: HotelRateRow) => row.triple * tripleRooms + row.twin * twinRooms;
   const nights: NightLine[] = [];
   let hotelCost = 0;
+  // Plain nights are counted together for each rate row, in the order the trip reaches them.
+  const plainGroups: { row: HotelRateRow; count: number }[] = [];
   for (let night = 1; night <= nightsCount; night += 1) {
     const edit = input.nightEdits?.find((row) => row.night === night);
+    const row = nightRow(night);
+    const nightCost = roomsCost(row);
     // A typed night rate is for every room that night. A night with both kinds of room keeps the
     // average room rate on its line, and the hotel cost uses the exact sum.
     hotelCost += edit ? edit.rate * rooms : nightCost;
+    if (!edit) {
+      const group = plainGroups.find((item) => item.row === row);
+      if (group) group.count += 1;
+      else plainGroups.push({ row, count: 1 });
+    }
     nights.push({
       night,
-      rate: edit ? edit.rate : tripleRooms === 0 ? hotel.twin : twinRooms === 0 ? hotel.triple : Math.round(nightCost / rooms),
-      hotelName: edit?.hotelName?.trim() || hotel.hotelName,
+      rate: edit ? edit.rate : tripleRooms === 0 ? row.twin : twinRooms === 0 ? row.triple : Math.round(nightCost / rooms),
+      hotelName: edit?.hotelName?.trim() || row.hotelName,
     });
   }
   const editedNights = nights.filter((night) => input.nightEdits?.some((row) => row.night === night.night));
-  const plainNights = nightsCount - editedNights.length;
   const hotelParts: string[] = [];
-  if (plainNights > 0) {
+  for (const group of plainGroups) {
     const roomParts: string[] = [];
-    if (tripleRooms > 0) roomParts.push(`${countText(tripleRooms, "room", "rooms")} × ${rupeeText(hotel.triple)} 3-share`);
-    if (twinRooms > 0) roomParts.push(`${countText(twinRooms, "room", "rooms")} × ${rupeeText(hotel.twin)} twin`);
+    if (tripleRooms > 0) roomParts.push(`${countText(tripleRooms, "room", "rooms")} × ${rupeeText(group.row.triple)} 3-share`);
+    if (twinRooms > 0) roomParts.push(`${countText(twinRooms, "room", "rooms")} × ${rupeeText(group.row.twin)} twin`);
     // With both kinds of room, the rooms are in brackets, so the nights multiply both.
     const roomsText = roomParts.length > 1 ? `(${roomParts.join(" + ")})` : roomParts[0];
-    hotelParts.push(`${roomsText} × ${countText(plainNights, "night", "nights")}`);
+    // A night priced as another place names that place.
+    const where = group.row === hotel ? "" : ` in ${group.row.place}`;
+    hotelParts.push(`${roomsText} × ${countText(group.count, "night", "nights")}${where}`);
   }
   for (const night of editedNights) {
     hotelParts.push(`${countText(rooms, "room", "rooms")} × ${rupeeText(night.rate)} on night ${night.night}`);
@@ -446,9 +476,7 @@ export function buildQuote(input: QuoteInput, catalog: RateCatalog): QuoteResult
   let infantExtraCost = 0;
   let stickerCost = 0;
   if (input.mode === "air") {
-    // BR-21 and BR-91: the Islamabad ticket plus the start city's air extra.
-    const adultFare = catalog.air.islamabadTicket + start.airExtra;
-    const childFare = Math.round((adultFare * rules.childFarePercent) / 100);
+    const { adultFare, childFare } = airFares(catalog.air, start, rules);
     if (tickets) {
       ticketCost =
         adultFare * input.adults +
