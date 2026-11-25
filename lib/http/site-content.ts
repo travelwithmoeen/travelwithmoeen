@@ -7,6 +7,7 @@ import type { Tour } from "@/data/tours";
 import type { HomeSlide, SiteSettings } from "@/lib/content-types";
 import type { DayPlanDesk } from "@/lib/office/day-plans";
 import type { PackageOptionDesk } from "@/lib/office/package-options";
+import type { loadQuotePackageAs } from "@/lib/office/quote-package";
 import type { PackageSection } from "@/lib/package";
 import type { loadRateDesk } from "@/lib/rates";
 
@@ -127,4 +128,19 @@ export async function getPackageSections(): Promise<PackageSection[] | null> {
   if (!response.ok) return null;
   const body = (await response.json()) as { ok: boolean; sections?: PackageSection[] };
   return body.ok && body.sections ? body.sections : null;
+}
+
+export type SavedQuoteDesk = Extract<Awaited<ReturnType<typeof loadQuotePackageAs>>, { ok: true }>;
+
+// T-61: one saved quote and its package choices, read through GET /api/office/quotes/[id]. Null for
+// a signed-out or refused read, or a quote that does not exist.
+export async function getSavedQuote(id: string): Promise<SavedQuoteDesk | null> {
+  const headerStore = await headers();
+  const response = await fetch(await apiUrl(`/api/office/quotes/${encodeURIComponent(id)}`), {
+    headers: { cookie: headerStore.get("cookie") ?? "" },
+    cache: "no-store",
+  });
+  if (!response.ok) return null;
+  const body = (await response.json()) as SavedQuoteDesk | { ok: false };
+  return body.ok ? body : null;
 }

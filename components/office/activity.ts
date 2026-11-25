@@ -58,6 +58,7 @@ const LIST_OF_KIND: Record<string, string> = {
   hotel_names: "/office/rates/day-plans",
   package_option: "/office/rates/package-options",
   package_section: "/office/rates/package-sections",
+  quote_package: "/office/rates/quote",
   request: "/office/requests",
   user: "/office/users",
   role: "/office/roles",

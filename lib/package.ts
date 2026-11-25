@@ -285,3 +285,34 @@ export const PACKAGE_SECTION_LIMITS = {
   step: 500,
   sections: 20,
 } as const;
+
+// T-61 (BR-110, sign-off row S-13): a package price is the quote total rounded up to the next 10,000,
+// never down. Per person is that rounded total divided by the adults and children, rounded up to the
+// rupee. Change the step here, with its check, if Moeen changes the rounding.
+export const PACKAGE_PRICE_STEP = 10_000;
+
+export function packagePrice(total: number, payers: number) {
+  const rounded = Math.ceil(total / PACKAGE_PRICE_STEP) * PACKAGE_PRICE_STEP;
+  return { total: rounded, perPerson: payers > 0 ? Math.ceil(rounded / payers) : null };
+}
+
+// BR-112: night n is spent at day n's overnight place and priced as day n's priced-as place. The last
+// day is the way home and has no night.
+export function nightPricePlaces(days: PackageDay[]) {
+  return days.slice(0, -1).map((day) => day.pricePlace);
+}
+
+// BR-115: the nights at each overnight place, in the order the trip reaches them, such as 3 in
+// Skardu and 1 in Khaplu. A place the trip comes back to adds to its first count.
+export function nightsByOvernight(days: PackageDay[]) {
+  const counts: { place: string; nights: number }[] = [];
+  for (const day of days.slice(0, -1)) {
+    const seen = counts.find((row) => row.place === day.overnight);
+    if (seen) seen.nights += 1;
+    else counts.push({ place: day.overnight, nights: 1 });
+  }
+  return counts;
+}
+
+// The package settings saved with a quote, BR-109, BR-113, BR-114.
+export const QUOTE_PACKAGE_LIMITS = { title: 120, pictures: 3 };

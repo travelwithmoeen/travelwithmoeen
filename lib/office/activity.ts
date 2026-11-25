@@ -30,6 +30,8 @@ export const ACTIVITY_AREA_OF_KIND = {
   package_option: "rates",
   // T-60 (BR-116): a fixed section added, changed, moved, or deleted.
   package_section: "rates",
+  // T-61 (BR-116): a saved quote's package choices saved.
+  quote_package: "rates",
   request: "requests",
   user: "users",
   // T-62: a person changed their own name. The Owner sees it with the other login rows.

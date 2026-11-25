@@ -278,6 +278,8 @@ export const quotes = pgTable("quotes", {
   grade: text("grade").notNull(),
   vehicle: text("vehicle").notNull(),
   otherNote: text("other_note").notNull().default(""),
+  // T-61: the seats typed for an Other vehicle. Null for every other vehicle.
+  otherSeats: integer("other_seats"),
   guide: boolean("guide").notNull(),
   meals: boolean("meals").notNull(),
   lunch: boolean("lunch").notNull().default(false),
@@ -301,6 +303,9 @@ export const quoteNights = pgTable("quote_nights", {
   night: integer("night").notNull(),
   rate: integer("rate").notNull(),
   hotelName: text("hotel_name").notNull(),
+  // T-61 (BR-112): true when staff typed this night's rate. The package price table keeps a typed
+  // rate for the quote's own grade only.
+  typed: boolean("typed").notNull().default(false),
 });
 
 export const quoteDays = pgTable("quote_days", {

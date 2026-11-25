@@ -22,7 +22,7 @@ export function RatesTabs() {
   return (
     <nav className="tabs" aria-label="Rates">
       {RATE_TABS.map((tab) => (
-        <Link className="tab" href={tab.href} key={tab.href} aria-current={pathname === tab.href ? "page" : undefined}>
+        <Link className="tab" href={tab.href} key={tab.href} aria-current={pathname === tab.href || (tab.href === "/office/rates/quote" && pathname.startsWith("/office/rates/quotes/")) ? "page" : undefined}>
           {tab.label}
         </Link>
       ))}
