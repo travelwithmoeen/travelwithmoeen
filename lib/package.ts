@@ -251,3 +251,37 @@ export function hotelLine(days: PackageDay[], grade: string, names: { place: str
     .filter(Boolean)
     .join(" / ");
 }
+
+// T-60 (BR-108): a fixed section of the package document. Its body depends on its kind: text is a
+// list of paragraphs, rows a list of label and value pairs, and steps a list of numbered items.
+export type PackageSectionKind = "text" | "rows" | "steps";
+export type SectionRow = { label: string; value: string };
+export type PackageSectionBody = string[] | SectionRow[];
+
+export type PackageSection = {
+  id: number;
+  title: string;
+  kind: PackageSectionKind;
+  body: PackageSectionBody;
+  sortOrder: number;
+};
+
+export const PACKAGE_SECTION_KINDS: readonly PackageSectionKind[] = ["text", "rows", "steps"];
+
+export const PACKAGE_SECTION_KIND_LABELS: Record<PackageSectionKind, string> = {
+  text: "Text",
+  rows: "Rows",
+  steps: "Numbered items",
+};
+
+// The longest values a section can hold, agreed on 25 November 2026.
+export const PACKAGE_SECTION_LIMITS = {
+  title: 80,
+  text: 4000,
+  rows: 30,
+  rowLabel: 80,
+  rowValue: 500,
+  steps: 30,
+  step: 500,
+  sections: 20,
+} as const;

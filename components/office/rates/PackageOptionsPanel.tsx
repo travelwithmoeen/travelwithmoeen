@@ -226,7 +226,6 @@ function OptionForm({ option, places, middleDays, error, pending, onSubmit, onCa
   const [swapFrom, setSwapFrom] = useState(option?.swapFrom ?? "");
   const target = middleDays.find((day) => String(day.id) === swapTo);
   const replaceable = target ? [...new Set(middleDays.filter((day) => day.place === target.place && day.id !== target.id).map((day) => day.title))] : [];
-  const swapPlaces = [...new Set(middleDays.map((day) => day.place))];
   return (
     <form className="stack" onSubmit={onSubmit} aria-busy={pending || undefined}>
       {error ? (
@@ -278,16 +277,11 @@ function OptionForm({ option, places, middleDays, error, pending, onSubmit, onCa
                 }}
               >
                 <option value="">No swap</option>
-                {swapPlaces.map((place) => (
-                  <optgroup label={place} key={place}>
-                    {middleDays
-                      .filter((day) => day.place === place)
-                      .map((day) => (
-                        <option key={day.id} value={day.id}>
-                          {day.title}
-                        </option>
-                      ))}
-                  </optgroup>
+                {/* PR 71 review: each day names its place, since titles repeat across places. */}
+                {middleDays.map((day) => (
+                  <option key={day.id} value={day.id}>
+                    {day.place}: {day.title}
+                  </option>
                 ))}
               </select>
             </Field>

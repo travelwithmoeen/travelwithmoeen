@@ -859,6 +859,7 @@ async function assertOfficeRequests(savedIds: number[]) {
     await assertStartCities(editorCookie, managerCookie);
     await assertDayPlans(editorCookie, managerCookie);
     await assertPackageOptions(editorCookie, managerCookie);
+    await assertPackageSections(editorCookie, managerCookie);
     await assertQuoteScreenV2(editorCookie, managerCookie);
     await assertBadRecordIds(editorCookie, managerCookie, ownerCookie, saved.body.id);
     await assertTourDeleteNotFound(editorCookie, managerCookie);
@@ -3511,6 +3512,124 @@ async function assertPackageOptions(editorCookie: string, managerCookie: string)
     const addedDays = (await db.select({ id: dayPlans.id }).from(dayPlans)).map((row) => row.id).filter((id) => !daysBefore.includes(id));
     if (addedDays.length) await db.delete(dayPlans).where(inArray(dayPlans.id, addedDays));
     await db.delete(hotelRates).where(inArray(hotelRates.place, [testPlace, renamedPlace]));
+  }
+}
+
+// T-60 (BR-108, BR-116, design section 15): the fixed sections of the package document.
+async function assertPackageSections(editorCookie: string, managerCookie: string) {
+  const stamp = Date.now();
+  const before = (await db.select({ id: packageSections.id }).from(packageSections)).map((row) => row.id);
+  const snapshot = async () => JSON.stringify(await db.select().from(packageSections).orderBy(packageSections.id));
+  const saves = async (form: FormData, cookie: string, status: number, what: string, error?: string) => {
+    const rowsBefore = await activityCount();
+    const stored = await snapshot();
+    const result = await officePost("/api/office/package-sections", form, cookie);
+    if (result.status !== status) throw new Error(`${what} returned ${result.status}, not ${status}: ${result.body.error ?? ""}`);
+    if (error && result.body.error !== error) throw new Error(`${what} said "${result.body.error ?? ""}", not "${error}".`);
+    const written = (await activityCount()) - rowsBefore;
+    if (written !== (status === 200 ? 1 : 0)) throw new Error(`${what} wrote ${written} activity rows.`);
+    if (status !== 200 && (await snapshot()) !== stored) throw new Error(`${what} changed a stored section.`);
+    return result;
+  };
+  // Repeated fields, such as rowLabel and rowValue, are sent once for each entry.
+  const sectionForm = (values: Record<string, string | number>, repeated: Record<string, string[]> = {}) => {
+    const form = formOf(values);
+    for (const [key, list] of Object.entries(repeated)) for (const value of list) form.append(key, value);
+    return form;
+  };
+  const byTitle = async (title: string) => (await db.select().from(packageSections).where(eq(packageSections.title, title)))[0];
+  const lastActivity = async () => (await db.select().from(activity).orderBy(desc(activity.id)).limit(1))[0];
+  const textTitle = `T60 Cancellation policy ${stamp}`;
+  const rowsTitle = `T60 Check-in and check-out ${stamp}`;
+  const stepsTitle = `T60 Payment procedure ${stamp}`;
+
+  try {
+    const editorRead = await fetch(`${siteBase()}/api/office/package-sections`, { headers: { cookie: editorCookie } });
+    if (editorRead.status !== 403) throw new Error(`An Editor read the fixed sections with ${editorRead.status}.`);
+    await saves(sectionForm({ action: "add", title: `T60 Editor ${stamp}`, kind: "text", text: "x" }), editorCookie, 403, "An Editor's section add");
+    const editorPage = await officePage("/office/rates/package-sections", editorCookie);
+    if (editorPage.status < 300 || editorPage.status >= 400) throw new Error(`The Fixed sections page gave an Editor ${editorPage.status}.`);
+
+    // Refused saves.
+    const text = { action: "add", title: textTitle, kind: "text" };
+    const rows = { action: "add", title: rowsTitle, kind: "rows" };
+    const steps = { action: "add", title: stepsTitle, kind: "steps" };
+    await saves(sectionForm({ ...text, title: " ", text: "x" }), managerCookie, 400, "A section with no title", "Enter the section title.");
+    await saves(sectionForm({ ...text, title: "t".repeat(81), text: "x" }), managerCookie, 400, "A title of 81 characters", "Enter the section title of 80 characters or less.");
+    await saves(sectionForm({ ...text, kind: "table", text: "x" }), managerCookie, 400, "An unknown kind", "Choose text, rows, or numbered items.");
+    await saves(sectionForm({ ...text, text: "  \n " }), managerCookie, 400, "Text with nothing in it", "Enter the section text.");
+    await saves(sectionForm({ ...text, text: "x".repeat(4001) }), managerCookie, 400, "Text of 4,001 characters", "Enter text of 4,000 characters or less.");
+    await saves(sectionForm(rows, { rowLabel: [" "], rowValue: [""] }), managerCookie, 400, "Rows with nothing in them", "Enter at least one row.");
+    await saves(sectionForm(rows, { rowLabel: ["Check-in"], rowValue: [""] }), managerCookie, 400, "A row label with no value", "Enter the value for Check-in.");
+    await saves(sectionForm(rows, { rowLabel: [""], rowValue: ["2:00 pm"] }), managerCookie, 400, "A row value with no label", "Enter a label for row 1, such as Check-in.");
+    await saves(sectionForm(rows, { rowLabel: ["l".repeat(81)], rowValue: ["x"] }), managerCookie, 400, "A row label of 81 characters");
+    await saves(sectionForm(rows, { rowLabel: ["Check-in"], rowValue: ["v".repeat(501)] }), managerCookie, 400, "A row value of 501 characters");
+    const many = [...Array(31).keys()].map((index) => `Row ${index + 1}`);
+    await saves(sectionForm(rows, { rowLabel: many, rowValue: many }), managerCookie, 400, "31 rows", "A section can have up to 30 rows.");
+    await saves(sectionForm(rows, { rowLabel: ["Check-in", "Check-out"], rowValue: ["2:00 pm"] }), managerCookie, 400, "Labels and values that do not pair up", "Send the form again.");
+    await saves(sectionForm(steps, { step: ["", " "] }), managerCookie, 400, "Numbered items with nothing in them", "Enter at least one item.");
+    await saves(sectionForm(steps, { step: many }), managerCookie, 400, "31 numbered items", "A section can have up to 30 items.");
+    await saves(sectionForm(steps, { step: ["s".repeat(501)] }), managerCookie, 400, "An item of 501 characters", "Enter items of 500 characters or less.");
+    await saves(sectionForm({ ...text, action: "rename", text: "x" }), managerCookie, 400, "An unknown action", "Choose what to save.");
+    await saves(sectionForm({ action: "update", id: "abc", title: textTitle, kind: "text", text: "x" }), managerCookie, 400, "A change with a bad id", "That section was not found.");
+    await saves(sectionForm({ action: "delete", id: 999999 }), managerCookie, 400, "A delete of a missing section", "That section was not found.");
+
+    // A Manager adds a text section. A blank line starts a paragraph, and a single line break stays.
+    await saves(sectionForm({ ...text, title: `  ${textTitle}  `, text: "Cancel 7 days before\r\nfor a full refund.\r\n\r\n\r\nNo refund after that.  " }), managerCookie, 200, "Adding a text section");
+    const textRow = await byTitle(textTitle);
+    if (!textRow || textRow.kind !== "text" || JSON.stringify(textRow.body) !== JSON.stringify(["Cancel 7 days before\nfor a full refund.", "No refund after that."])) throw new Error(`The text section was stored as ${JSON.stringify(textRow)}.`);
+    const added = await lastActivity();
+    if (added?.kind !== "package_section" || added.area !== "rates" || added.recordId !== String(textRow.id) || added.text !== `Added fixed section ${textTitle}`) throw new Error(`The section add activity row is ${JSON.stringify(added)}.`);
+
+    // Rows: a blank pair is dropped and each cell trimmed.
+    await saves(sectionForm(rows, { rowLabel: [" Check-in ", "", "Check-out"], rowValue: [" 2:00 pm ", "", "12:00 noon"] }), managerCookie, 200, "Adding a rows section");
+    let rowsRow = await byTitle(rowsTitle);
+    if (!rowsRow || JSON.stringify(rowsRow.body) !== JSON.stringify([{ label: "Check-in", value: "2:00 pm" }, { label: "Check-out", value: "12:00 noon" }])) throw new Error(`The rows section was stored as ${JSON.stringify(rowsRow?.body)}.`);
+    // Its rows change: one changed, one added, in a new order.
+    await saves(sectionForm({ action: "update", id: rowsRow.id, title: rowsTitle, kind: "rows" }, { rowLabel: ["Check-out", "Check-in", "Early check-in"], rowValue: ["11:00 am", "2:00 pm", "On request"] }), managerCookie, 200, "Changing the rows");
+    rowsRow = await byTitle(rowsTitle);
+    if (JSON.stringify(rowsRow?.body) !== JSON.stringify([{ label: "Check-out", value: "11:00 am" }, { label: "Check-in", value: "2:00 pm" }, { label: "Early check-in", value: "On request" }])) throw new Error(`The changed rows are ${JSON.stringify(rowsRow?.body)}.`);
+    if ((await lastActivity())?.text !== `Changed fixed section ${rowsTitle}`) throw new Error("Changing a section did not write its activity row.");
+
+    // Numbered items, in order.
+    await saves(sectionForm(steps, { step: ["Pay 50 percent to book.", " ", "Pay the rest on arrival."] }), managerCookie, 200, "Adding a numbered section");
+    const stepsRow = await byTitle(stepsTitle);
+    if (JSON.stringify(stepsRow?.body) !== JSON.stringify(["Pay 50 percent to book.", "Pay the rest on arrival."])) throw new Error(`The numbered section was stored as ${JSON.stringify(stepsRow?.body)}.`);
+
+    // The kind can change when editing: only the chosen kind's fields are read.
+    await saves(sectionForm({ action: "update", id: textRow.id, title: textTitle, kind: "steps", text: "ignored" }, { step: ["Cancel 7 days before."], rowLabel: ["ignored"], rowValue: ["ignored"] }), managerCookie, 200, "Changing a text section to numbered items");
+    const changedKind = await byTitle(textTitle);
+    if (changedKind?.kind !== "steps" || JSON.stringify(changedKind.body) !== JSON.stringify(["Cancel 7 days before."])) throw new Error(`The section changed to items is ${JSON.stringify(changedKind)}.`);
+
+    // The numbered section moves up, above the rows, and the order is numbered again from 0.
+    await saves(sectionForm({ action: "move", id: stepsRow!.id, direction: "up" }), managerCookie, 200, "Moving a section up");
+    const order = await db.select().from(packageSections).orderBy(packageSections.sortOrder, packageSections.id);
+    if (order.findIndex((row) => row.id === stepsRow!.id) !== order.findIndex((row) => row.id === rowsRow!.id) - 1 || order.some((row, index) => row.sortOrder !== index)) throw new Error("Moving a section up did not put it above the one before.");
+    if (!(await lastActivity())?.text.startsWith(`Moved fixed section ${stepsTitle} up to place `)) throw new Error("Moving a section did not write its activity row.");
+    await saves(sectionForm({ action: "move", id: order[0].id, direction: "up" }), managerCookie, 400, "Moving the first section up", "That section is already first.");
+    await saves(sectionForm({ action: "move", id: order.at(-1)!.id, direction: "down" }), managerCookie, 400, "Moving the last section down", "That section is already last.");
+
+    // The screen lists them in order, and the tab is on the rates pages.
+    const page = await officePage("/office/rates/package-sections", managerCookie);
+    const html = decodeHtml(page.html.replaceAll("<!-- -->", ""));
+    if (page.status !== 200 || !html.includes(stepsTitle) || !html.includes("Rows · 3 rows") || html.indexOf(stepsTitle) > html.indexOf(rowsTitle)) throw new Error(`The Fixed sections page for a Manager returned ${page.status} without the sections in order.`);
+    if (!(await officePage("/office/rates", managerCookie)).html.includes('href="/office/rates/package-sections"')) throw new Error("The rates pages have no Fixed sections tab.");
+
+    // Each is deleted, with one activity row.
+    for (const title of [textTitle, rowsTitle, stepsTitle]) {
+      const row = await byTitle(title);
+      await saves(sectionForm({ action: "delete", id: row!.id }), managerCookie, 200, `Deleting ${title}`);
+      if (await byTitle(title)) throw new Error(`${title} was not deleted.`);
+    }
+    if ((await lastActivity())?.text !== `Deleted fixed section ${stepsTitle}`) throw new Error("Deleting a section did not write its activity row.");
+
+    // Up to 20 sections.
+    const fillers = [...Array(Math.max(0, 20 - before.length)).keys()].map((index) => ({ title: `T60 Filler ${stamp} ${index}`, kind: "steps" as const, body: ["x"], sortOrder: 100 + index }));
+    if (fillers.length) await db.insert(packageSections).values(fillers);
+    await saves(sectionForm({ ...steps, title: `T60 Twenty-first ${stamp}` }, { step: ["x"] }), managerCookie, 400, "A 21st section", "The office can keep up to 20 fixed sections.");
+  } finally {
+    const added = (await db.select({ id: packageSections.id }).from(packageSections)).map((row) => row.id).filter((id) => !before.includes(id));
+    if (added.length) await db.delete(packageSections).where(inArray(packageSections.id, added));
   }
 }
 
