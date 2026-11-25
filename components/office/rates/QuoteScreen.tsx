@@ -584,7 +584,7 @@ export function QuoteScreen({ options, vehicles, margin, rates }: QuoteScreenPro
         </section>
       </div>
       </fieldset>
-      <SaveBar label="Save quote" pending={saving} result={saved} hint="Saving keeps this quote with its nights and days." />
+      <SaveBar label="Save quote" pending={saving} result={saved} hint="Saving keeps this quote with its nights and days." savedLinkLabel="Open the saved quote and its package" />
     </form>
   );
 }

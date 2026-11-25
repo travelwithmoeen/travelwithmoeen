@@ -359,6 +359,17 @@
   .office .owner-only { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-2); }
   .office .owner-only li { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-sm); }
   .office .owner-only svg { flex: none; color: var(--text-2); }
+  /* T-58: a hotel-names line and its own Save button, side by side, the button on the input's line. */
+  .office .hotel-names-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-2) var(--space-3); align-items: start; }
+  .office .hotel-names-row > .btn { margin-top: calc(var(--text-sm) * var(--leading-body) + var(--space-2)); }
+  /* T-61: the Package tab's picture choices and the document preview. */
+  .office .sb-msg a { color: inherit; font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
+  .office .package-picture { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--space-3); align-items: center; }
+  .office .package-thumb { width: var(--space-24); aspect-ratio: 4 / 3; border-radius: var(--r-s); background: var(--surface-2) center / cover no-repeat; display: grid; place-items: center; color: var(--text-3); }
+  .office .package-preview { display: block; width: 100%; height: 900px; border: 1px solid var(--border); border-radius: var(--r-s); background: #ffffff; }
+  .office .toolbar .select { max-width: 100%; }
+  /* T-58, Day plans only: a table that is a card's whole body runs edge to edge under the head, with no second frame. */
+  .office .day-plans .card > .tbl-wrap { margin-top: var(--space-4); border: 0; border-top: var(--border-w) solid var(--border); border-radius: 0 0 var(--r-m) var(--r-m); box-shadow: none; }
   .office .tbl-plain th[scope="row"] { position: static; background: none; font-size: var(--text-sm); color: var(--text); width: 30%; white-space: normal; }
   .office .cell-sub { display: block; color: var(--text-2); font-size: var(--text-xs); }
 
@@ -688,6 +699,11 @@
     .office .tbl-wrap:not(.flat) .tbl td:first-child::before { display: none; }
     .office .tbl-wrap:not(.flat) .tbl tbody tr:hover td { background: none; }
     .office .tbl-wrap:not(.flat) .tbl td > .badge { justify-self: start; }
+    .office .day-plans .card > .tbl-wrap:not(.flat) { border-top: 0; padding: 0 var(--pad) var(--pad); }
+    /* T-58 and T-59: the row buttons of the Day plans and Package options tables sit on one line. */
+    .office .tbl-wrap:not(.flat) .tbl td.day-tools { grid-template-columns: 1fr; }
+    .office .tbl-wrap:not(.flat) .tbl td.day-tools::before { display: none; }
+    .office .tbl-wrap:not(.flat) .tbl td.day-tools .row-tools { justify-content: flex-start; }
   }
 
   /* T-62: the Appearance and Density choices on the Settings page, from the prototype. */

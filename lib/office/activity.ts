@@ -23,6 +23,15 @@ export const ACTIVITY_AREA_OF_KIND = {
   pricing_rule: "rates",
   meal_rate: "rates",
   quote: "rates",
+  // T-58 (BR-116): a day plan added, changed, moved, or deleted, and a hotel-names line saved.
+  day_plan: "rates",
+  hotel_names: "rates",
+  // T-59 (BR-116): a package option added, changed, moved, or deleted.
+  package_option: "rates",
+  // T-60 (BR-116): a fixed section added, changed, moved, or deleted.
+  package_section: "rates",
+  // T-61 (BR-116): a saved quote's package choices saved.
+  quote_package: "rates",
   request: "requests",
   user: "users",
   // T-62: a person changed their own name. The Owner sees it with the other login rows.

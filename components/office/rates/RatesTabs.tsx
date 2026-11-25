@@ -11,6 +11,9 @@ export const RATE_TABS = [
   { href: "/office/rates/start-cities", label: "Start cities" },
   { href: "/office/rates/margin", label: "Profit margin" },
   { href: "/office/rates/rules", label: "Pricing rules" },
+  { href: "/office/rates/day-plans", label: "Day plans" },
+  { href: "/office/rates/package-options", label: "Package options" },
+  { href: "/office/rates/package-sections", label: "Fixed sections" },
   { href: "/office/rates/quote", label: "Quote" },
 ];
 
@@ -19,7 +22,7 @@ export function RatesTabs() {
   return (
     <nav className="tabs" aria-label="Rates">
       {RATE_TABS.map((tab) => (
-        <Link className="tab" href={tab.href} key={tab.href} aria-current={pathname === tab.href ? "page" : undefined}>
+        <Link className="tab" href={tab.href} key={tab.href} aria-current={pathname === tab.href || (tab.href === "/office/rates/quote" && pathname.startsWith("/office/rates/quotes/")) ? "page" : undefined}>
           {tab.label}
         </Link>
       ))}

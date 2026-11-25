@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { takeSavedMessage } from "@/components/office/content/media";
 import { Button } from "@/components/office/ui/Button";
@@ -12,11 +13,13 @@ type SaveBarProps = {
   hint?: string;
   // The editor's own scope for the message its save left, such as "photo:12" (T-50).
   scope?: string;
+  // T-61: the words of a link to the saved record, shown after a save that returns its address.
+  savedLinkLabel?: string;
 };
 
 // Sticks to the bottom of the form. It shows the last save result, or the message a save left
 // before the editor opened again with the saved data.
-export function SaveBar({ label, pending, result, hint = "Changes go live when you save.", scope = "" }: SaveBarProps) {
+export function SaveBar({ label, pending, result, hint = "Changes go live when you save.", scope = "", savedLinkLabel }: SaveBarProps) {
   const [savedBefore, setSavedBefore] = useState<string | null>(null);
 
   useEffect(() => {
@@ -40,6 +43,12 @@ export function SaveBar({ label, pending, result, hint = "Changes go live when y
     message = (
       <span className="sb-msg is-saved" role="status">
         {result.message ?? "Saved."}
+        {savedLinkLabel && result.href ? (
+          <>
+            {" "}
+            <Link href={result.href}>{savedLinkLabel}</Link>
+          </>
+        ) : null}
       </span>
     );
   } else if (savedBefore) {

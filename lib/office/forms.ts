@@ -75,7 +75,7 @@ async function discardStored(stored: string[]) {
   }
 }
 
-async function keepFilesOnlyIfSaved(stored: string[], save: () => Promise<ActionResult>): Promise<ActionResult> {
+export async function keepFilesOnlyIfSaved(stored: string[], save: () => Promise<ActionResult>): Promise<ActionResult> {
   let result: ActionResult;
   try {
     result = await save();
@@ -95,7 +95,7 @@ function uploadedFile(formData: FormData, name: string) {
 // A chosen file comes one of two ways. A small one can still come in the form, as before. Since T-51
 // the office uploads it straight to the media store and sends its address as <name>Uploaded, which
 // is checked here. Either way the stored file joins the save's list, so a refused save deletes it.
-async function chosenFile(actor: SessionUser, stored: string[], formData: FormData, name: string, kind: UploadKind): Promise<string | ActionResult | null> {
+export async function chosenFile(actor: SessionUser, stored: string[], formData: FormData, name: string, kind: UploadKind): Promise<string | ActionResult | null> {
   const file = uploadedFile(formData, name);
   if (file) return kind === "pdf" ? storePdf(actor, stored, file) : storeImage(actor, stored, file);
   const sent = formData.get(`${name}Uploaded`);

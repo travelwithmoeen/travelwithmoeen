@@ -2,9 +2,11 @@ import { and, eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
   airExtras,
+  dayPlans,
   hotelRates,
   jeepLines,
   mealRates,
+  placeHotelNames,
   pricingRules,
   quoteDays,
   quoteExtras,
@@ -126,7 +128,7 @@ function sameName(a: string, b: string) {
   return a.trim().toLowerCase() === b.trim().toLowerCase();
 }
 
-type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
+export type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
 type Reader = typeof db | Transaction;
 
 // T-48: a save that adds or renames a start city, a place, or a rate row takes this lock first and
@@ -134,13 +136,13 @@ type Reader = typeof db | Transaction;
 // other, so the second gets the clash message, not a 500 or two places merged into one.
 const RATE_NAMES_LOCK = 4801;
 
-async function lockRateNames(tx: Transaction) {
+export async function lockRateNames(tx: Transaction) {
   await tx.execute(sql`select pg_advisory_xact_lock(${RATE_NAMES_LOCK})`);
 }
 
 // Every place named on a hotel rate, a vehicle rate, or a jeep line (BR-90). A rate place is not a
 // public Places page.
-async function ratePlaces(reader: Reader = db) {
+export async function ratePlaces(reader: Reader = db) {
   const [hotels, vehicles, jeeps] = await Promise.all([
     reader.selectDistinct({ place: hotelRates.place }).from(hotelRates),
     reader.selectDistinct({ place: vehicleRates.place }).from(vehicleRates),
@@ -308,8 +310,10 @@ export async function addVehicleRateAs(actor: SessionUser, formData: FormData): 
   });
 }
 
-// BR-90: rename a place on every hotel rate, vehicle rate, and jeep line, in one save. The public
-// places table is not touched.
+// BR-90: rename a place on every hotel rate, vehicle rate, and jeep line, in one save. From T-58 its
+// day plans, the days priced as it, and its hotel-names lines follow too, and from T-59 the options
+// limited to it. The public places table is
+// not touched.
 export async function renamePlaceAs(actor: SessionUser, formData: FormData): Promise<ActionResult> {
   if (!can(actor, "rates.edit")) return forbidden("You cannot change a price.");
   const from = String(formData.get("place") ?? "").trim();
@@ -325,6 +329,11 @@ export async function renamePlaceAs(actor: SessionUser, formData: FormData): Pro
     await tx.update(hotelRates).set({ place: to.name }).where(eq(hotelRates.place, from));
     await tx.update(vehicleRates).set({ place: to.name }).where(eq(vehicleRates.place, from));
     await tx.update(jeepLines).set({ place: to.name }).where(eq(jeepLines.place, from));
+    await tx.update(dayPlans).set({ place: to.name }).where(eq(dayPlans.place, from));
+    await tx.update(dayPlans).set({ pricePlace: to.name }).where(eq(dayPlans.pricePlace, from));
+    await tx.update(placeHotelNames).set({ place: to.name }).where(eq(placeHotelNames.place, from));
+    // T-59: an option limited to the place keeps it under its new name.
+    await tx.execute(sql`update package_options set places = array_replace(places, ${from}, ${to.name}) where ${from} = any(places)`);
     await recordActivity(tx, actor, { kind: "place_rename", text: `Renamed rate place ${from} to ${to.name}` });
     return { ok: true, message: `Place renamed: ${to.name}.` };
   });
@@ -528,7 +537,7 @@ export async function saveQuoteAs(actor: SessionUser, formData: FormData): Promi
   const catalog = await loadCatalog();
   const quote = buildQuote(parsed.input, catalog);
   if (!quote.ok) return quote;
-  await db.transaction(async (tx) => {
+  const savedId = await db.transaction(async (tx) => {
     const [saved] = await tx
       .insert(quotes)
       .values({
@@ -543,6 +552,7 @@ export async function saveQuoteAs(actor: SessionUser, formData: FormData): Promi
         grade: parsed.input.grade,
         vehicle: parsed.input.vehicle,
         otherNote: parsed.input.otherNote ?? "",
+        otherSeats: vehicleKey(parsed.input.vehicle) === "other" ? (parsed.input.otherSeats ?? null) : null,
         guide: parsed.input.guide,
         meals: parsed.input.meals,
         lunch: Boolean(parsed.input.lunch),
@@ -555,9 +565,11 @@ export async function saveQuoteAs(actor: SessionUser, formData: FormData): Promi
         total: quote.total,
       })
       .returning({ id: quotes.id });
-    if (!saved) return;
+    if (!saved) return null;
     if (quote.nights.length > 0) {
-      await tx.insert(quoteNights).values(quote.nights.map((night) => ({ quoteId: saved.id, ...night })));
+      // T-61 (BR-112): a night whose rate staff typed is marked, so the package keeps it for this grade.
+      const typedNights = new Set((parsed.input.nightEdits ?? []).map((edit) => edit.night));
+      await tx.insert(quoteNights).values(quote.nights.map((night) => ({ quoteId: saved.id, ...night, typed: typedNights.has(night.night) })));
     }
     if (quote.days.length > 0) {
       await tx.insert(quoteDays).values(
@@ -577,8 +589,14 @@ export async function saveQuoteAs(actor: SessionUser, formData: FormData): Promi
       await tx.insert(quoteExtras).values(extras.map((extra) => ({ quoteId: saved.id, name: extra.name, amount: extra.amount })));
     }
     await recordActivity(tx, actor, { kind: "quote", recordId: saved.id, text: `Saved quote ${saved.id}, ${parsed.input.place}, total Rs ${quote.total.toLocaleString("en-US")}` });
+    return saved.id;
   });
-  return { ok: true, message: `Quote saved. Total Rs ${quote.total.toLocaleString("en-US")}.` };
+  // T-61: the saved quote page, with its Package tab.
+  return {
+    ok: true,
+    message: `Quote saved. Total Rs ${quote.total.toLocaleString("en-US")}.`,
+    ...(savedId ? { href: `/office/rates/quotes/${savedId}` } : {}),
+  };
 }
 
 export async function savePriceFromKind(actor: SessionUser, formData: FormData): Promise<ActionResult> {
