@@ -7,6 +7,7 @@ import type { Tour } from "@/data/tours";
 import type { HomeSlide, SiteSettings } from "@/lib/content-types";
 import type { DayPlanDesk } from "@/lib/office/day-plans";
 import type { PackageOptionDesk } from "@/lib/office/package-options";
+import type { PackageSection } from "@/lib/package";
 import type { loadRateDesk } from "@/lib/rates";
 
 export type RateDesk = Awaited<ReturnType<typeof loadRateDesk>>;
@@ -114,4 +115,16 @@ export async function getPackageOptionDesk(): Promise<PackageOptionDesk | null> 
   if (!response.ok) return null;
   const body = (await response.json()) as { ok: boolean; desk?: PackageOptionDesk };
   return body.ok && body.desk ? body.desk : null;
+}
+
+// T-60: the Fixed sections screen, read through GET /api/office/package-sections.
+export async function getPackageSections(): Promise<PackageSection[] | null> {
+  const headerStore = await headers();
+  const response = await fetch(await apiUrl("/api/office/package-sections"), {
+    headers: { cookie: headerStore.get("cookie") ?? "" },
+    cache: "no-store",
+  });
+  if (!response.ok) return null;
+  const body = (await response.json()) as { ok: boolean; sections?: PackageSection[] };
+  return body.ok && body.sections ? body.sections : null;
 }
