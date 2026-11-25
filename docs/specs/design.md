@@ -468,7 +468,7 @@ Requirements section 8e. The references are the sample package PDF in the feedba
 
 ### Tables, `drizzle/0009_packages.sql`
 
-One additive migration, after T-63's `0008`. It also adds `typed` boolean not null default false to `quote_nights`, with `ADD COLUMN IF NOT EXISTS`, true when that night's rate was typed. Quotes saved before it have no typed nights.
+One additive migration, after T-63's `0008`. It also adds `typed` boolean not null default false to `quote_nights`, with `ADD COLUMN IF NOT EXISTS`, true when that night's rate was typed. Quotes saved before it have no typed nights. It also adds `other_seats` integer null to `quotes`, with `ADD COLUMN IF NOT EXISTS`, the seats of the quote's Other vehicle, saved only on a quote with an Other vehicle, so the package can count the vehicles again. An older Other quote with no seats and no typed vehicle count builds no package, and the Package tab says to save the quote again with the vehicle count typed.
 
 | Table | Columns |
 |---|---|
