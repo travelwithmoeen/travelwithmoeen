@@ -468,7 +468,7 @@ Requirements section 8e. The references are the sample package PDF in the feedba
 
 ### Tables, `drizzle/0009_packages.sql`
 
-One additive migration, after T-63's `0008`.
+One additive migration, after T-63's `0008`. It also adds `typed` boolean not null default false to `quote_nights`, with `ADD COLUMN IF NOT EXISTS`, true when that night's rate was typed. Quotes saved before it have no typed nights.
 
 | Table | Columns |
 |---|---|
@@ -496,12 +496,13 @@ Add the five tables to `BACKUP_TABLES` before `activity`.
 - `GET /api/office/quotes/[id]/package` renders one HTML document with inline styles, in the sample's order: header, At a glance, Day-by-day, Package category and pricing, Services included and not included, Flight ticket note, then the fixed sections in order.
 - PDF is the browser's Print to PDF of that page, with a print style sheet for A4. `?format=word` returns the same HTML with `Content-Type: application/msword` and a `.doc` name, which Word opens. No new package.
 - The response never holds the net cost, the lines, or the profit. The check proves it by searching the document for the subtotal and the profit.
-- Header pictures are gallery addresses or new uploads through `POST /api/office/uploads`. No other file is stored. A package is built from the data on each download and is not saved as a file.
+- Header pictures are gallery addresses or new uploads through `POST /api/office/uploads`, which only the Owner can start, so a Manager picks from the gallery. No other file is stored. A package is built from the data on each download and is not saved as a file.
 
 ### Screens
 
 - **Day plans**, `/office/rates/day-plans`: pick a place, then its five parts, each a list of days that can be added, changed, deleted, and moved up or down. Under them, one hotel-names line for each grade, saved on its own, which is BR-111. The document's hotel line for a grade joins the lines of the priced-as places from `packageDays`, in order, with a blank one read as the quote's place. Each day's form has Overnight, free text, and Priced as, a list of the rate places with a blank first choice. A day an option swaps to shows "Only in packages with" and the option's name, and deleting it is refused with that name.
 - **Package options** and **Fixed sections**, `/office/rates/package-options` and `/office/rates/package-sections`: a list with an add drawer, edit, delete, and order.
+- **Saved quote**, `/office/rates/quotes/[id]`: a read-only Quote tab and the Package tab. After Save quote, the Quote screen links to it. Until the Quotes list in T-77, an older quote opens by its address.
 - **Package**, a tab on a saved quote: the title, starting from the place, days, mode, start city, and party, then All categories, Flight ticket note, the option ticks, and 1 to 3 pictures. It shows a preview of the document, with Download PDF and Download Word.
 
 ### Starting data
